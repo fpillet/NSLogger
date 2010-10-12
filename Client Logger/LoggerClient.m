@@ -76,7 +76,7 @@
  */
 
 // Set this to 1 to activate console logs when running the logger itself
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 1
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -280,6 +280,12 @@ static void *LoggerWorkerThread(Logger *logger)
 	
 	if (logger->browseBonjour)
 		LoggerStopBonjourBrowsing(logger);
+	if (logger->logStream != NULL)
+	{
+		CFWriteStreamClose(logger->logStream);
+		CFRelease(logger->logStream);
+		logger->logStream = NULL;
+	}
 	
 	CFMessagePortInvalidate(logger->messagePort);
 	CFRelease(logger->messagePort);
