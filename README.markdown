@@ -3,20 +3,49 @@
 
 Clients automatically find the logger application running on Mac OS X via Bonjour networking. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger*.
 
+![Desktop Viewer (main window)](http://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
+
 # One-step setup #
 All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
 
+# Using the desktop logger #
+Start the NSLogger application on Mac OS X. Your client app must run on a device that is on the same network as your Mac. When it starts logging traces, it will automatically look for the desktop NSLogger using Bonjour. As soon as traces start coming, a new window will open on your Mac.
+
+You can create custom filters to quickly switch between different views of your logs.
+
 # Evolved logging facility #
-It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices. (*this feature is currently in development*).
+It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices. (*direct connection to a specific address/port is not yet implemented*).
 
 # Powerful desktop viewer #
 The desktop viewer application provides powerful tools, like:
-- Filters (with regular expression matching) that let your perform data mining in your traces
-- Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
-- Image and binary data display directly in the log window
-- Very fast navigation in your traces
+ - Filters (with regular expression matching) that let your perform data mining in your traces
+ - Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
+ - Image and binary data display directly in the log window
+ - Very fast navigation in your traces
+ 
+Your traces can be saved to a `.nsloggerdata` file, and reloaded later.
+Note that the NSLogger desktop viewer **requires Mac OS X 10.6** or later.
+
+![Filter Editor](http://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
 
 # High performance, low overhead #
 *NSLogger* runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
 
 *NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
+
+# Work in progress - Current status #
+This tool comes from a personal need for a more powerful logger. It is currently functional, but needs some polish and additional work. Here is what's not implemented yet, and some of the planned features, by current priority order:
+ - Display tags in logs
+ - Support drag-and-drop from logs
+ - Support export to other formats than the native .nsloggerdata file format
+ - Support for accepting logger connections on a specific TCP/IP port (desktop side)
+ - Support for connecting to a specific IP address / port (client side)
+ - Allow font selection for log text (desktop side)
+ - Support time-based filtering (filter clause based on the time lapse between a previous trace)
+ - Document extensibility (the NSLogger code is designed to make it easy to support other kings of log sources)
+
+The main view is currently split, the intent was to group selected traces and show them in a selectable text view in the bottom pane. I'll probably remove this pane and focus on drag-and-drop and export formats instead.
+
+Some documentation is also needed, although using NSLogger is fairly straightforward.
+
+NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
