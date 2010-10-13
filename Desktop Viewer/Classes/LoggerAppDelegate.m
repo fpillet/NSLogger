@@ -63,10 +63,26 @@
 			filters = [[NSMutableArray alloc] init];
 		if (![filters count])
 		{
+			// Create a few default filters
 			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithInteger:1], @"uid",
 								NSLocalizedString(@"All logs", @""), @"title",
 								[NSPredicate predicateWithValue:YES], @"predicate",
+								nil]];
+			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+								[NSNumber numberWithInteger:2], @"uid",
+								NSLocalizedString(@"Text messages", @""), @"title",
+								[NSPredicate predicateWithFormat:@"(messageType == \"text\")"], @"predicate",
+								nil]];
+			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+								[NSNumber numberWithInteger:3], @"uid",
+								NSLocalizedString(@"Images", @""), @"title",
+								[NSPredicate predicateWithFormat:@"(messageType == \"img\")"], @"predicate",
+								nil]];
+			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+								[NSNumber numberWithInteger:4], @"uid",
+								NSLocalizedString(@"Data blocks", @""), @"title",
+								[NSPredicate predicateWithFormat:@"(messageType == \"data\")"], @"predicate",
 								nil]];
 		}
 	}
