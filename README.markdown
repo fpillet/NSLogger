@@ -51,6 +51,6 @@ This tool comes from a personal need for a more powerful logger. It is currently
 
 The main view is currently split, the intent was to group selected traces and show them in a selectable text view in the bottom pane. I'll probably remove this pane and focus on drag-and-drop and export formats instead.
 
-Some documentation is also needed, although using NSLogger is fairly straightforward. You'll find some preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
+You'll find some preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
