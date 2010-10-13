@@ -182,7 +182,7 @@
 	else
 		format = NSLocalizedString(@"%@ disconnected", @"");
 	if ([NSThread isMainThread])
-		return [[NSString stringWithFormat:format, [self clientDescription]] retain];
+		return [NSString stringWithFormat:format, [self clientDescription]];
 	__block NSString *status;
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		status = [[NSString stringWithFormat:format, [self clientDescription]] retain];
