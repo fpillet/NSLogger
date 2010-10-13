@@ -76,7 +76,7 @@
  */
 
 // Set this to 1 to activate console logs when running the logger itself
-#define LOGGER_DEBUG 1
+#define LOGGER_DEBUG 0
 #ifdef NSLog
 	#undef NSLog
 #endif
