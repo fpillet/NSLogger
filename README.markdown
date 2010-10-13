@@ -49,8 +49,6 @@ This tool comes from a personal need for a more powerful logger. It is currently
  * Document extensibility (the NSLogger code is designed to make it easy to support other kinds of log sources, and the protocol itself supports arbitrary data embedding, allowing the use of NSLogger to transfer and display more information)
 
 
-The main view is currently split, the intent was to group selected traces and show them in a selectable text view in the bottom pane. I'll probably remove this pane and focus on drag-and-drop and export formats instead.
-
 You'll find some preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
