@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="460"/>
+			<integer value="371"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -215,16 +215,12 @@
 																	</object>
 																	<int key="NSResizingMask">3</int>
 																	<bool key="NSIsResizeable">YES</bool>
-																	<bool key="NSIsEditable">YES</bool>
 																	<reference key="NSTableView" ref="150938961"/>
 																</object>
 															</object>
 															<double key="NSIntercellSpacingWidth">3</double>
 															<double key="NSIntercellSpacingHeight">2</double>
-															<object class="NSColor" key="NSBackgroundColor" id="291633625">
-																<int key="NSColorSpace">3</int>
-																<bytes key="NSWhite">MQA</bytes>
-															</object>
+															<reference key="NSBackgroundColor" ref="95618980"/>
 															<object class="NSColor" key="NSGridColor">
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
@@ -242,8 +238,7 @@
 															<int key="NSDraggingSourceMaskForLocal">15</int>
 															<int key="NSDraggingSourceMaskForNonLocal">0</int>
 															<bool key="NSAllowsTypeSelect">YES</bool>
-															<int key="NSTableViewSelectionHighlightStyle">1</int>
-															<int key="NSTableViewDraggingDestinationStyle">1</int>
+															<int key="NSTableViewDraggingDestinationStyle">0</int>
 														</object>
 													</object>
 													<string key="NSFrame">{{0, 17}, {215, 628}}</string>
@@ -375,7 +370,10 @@
 																			</object>
 																			<double key="NSIntercellSpacingWidth">3</double>
 																			<double key="NSIntercellSpacingHeight">2</double>
-																			<reference key="NSBackgroundColor" ref="291633625"/>
+																			<object class="NSColor" key="NSBackgroundColor" id="291633625">
+																				<int key="NSColorSpace">3</int>
+																				<bytes key="NSWhite">MQA</bytes>
+																			</object>
 																			<object class="NSColor" key="NSGridColor">
 																				<int key="NSColorSpace">1</int>
 																				<bytes key="NSRGB">MC45MzkyMzg1NDgzIDAuOTM5MjM4NTQ4MyAwLjkzOTIzODU0ODMAA</bytes>
@@ -2815,6 +2813,14 @@
 					</object>
 					<int key="connectionID">891</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">filterTable</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="150938961"/>
+					</object>
+					<int key="connectionID">893</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3669,9 +3675,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{25, 466}, {885, 666}}</string>
+					<string>{{427, 181}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{25, 466}, {885, 666}}</string>
+					<string>{{427, 181}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -3799,7 +3805,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">891</int>
+			<int key="maxID">893</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3868,6 +3874,7 @@
 							<string>filterEditorWindow</string>
 							<string>filterListController</string>
 							<string>filterName</string>
+							<string>filterTable</string>
 							<string>logTable</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -3876,6 +3883,7 @@
 							<string>NSWindow</string>
 							<string>NSArrayController</string>
 							<string>NSTextField</string>
+							<string>NSTableView</string>
 							<string>NSTableView</string>
 						</object>
 					</object>
@@ -3887,6 +3895,7 @@
 							<string>filterEditorWindow</string>
 							<string>filterListController</string>
 							<string>filterName</string>
+							<string>filterTable</string>
 							<string>logTable</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -3906,6 +3915,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">filterName</string>
 								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">filterTable</string>
+								<string key="candidateClassName">NSTableView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">logTable</string>

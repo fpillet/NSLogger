@@ -81,6 +81,8 @@
 	[tc setDataCell:cell];
 	[cell release];
 	[logTable setIntercellSpacing:NSMakeSize(0, 0)];
+	[filterTable setTarget:self];
+	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 	[self updateFilterPredicate:nil];
 	loadComplete = YES;
@@ -343,25 +345,32 @@ didReceiveMessages:(NSArray *)theMessages
 // -----------------------------------------------------------------------------
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	// setup the message to be displayed
-	LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
-	cell.message = [displayedMessages objectAtIndex:rowIndex];
-	if (rowIndex)
-		cell.previousMessage = [displayedMessages objectAtIndex:rowIndex-1];
-	else
-		cell.previousMessage = nil;
+	if (aTableView == logTable)
+	{
+		// setup the message to be displayed
+		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
+		cell.message = [displayedMessages objectAtIndex:rowIndex];
+		if (rowIndex)
+			cell.previousMessage = [displayedMessages objectAtIndex:rowIndex-1];
+		else
+			cell.previousMessage = nil;
+	}
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	assert([NSThread isMainThread]);
-	LoggerMessage *msg = [displayedMessages objectAtIndex:row];
-	CGFloat cachedHeight = msg.cachedCellSize.height;
-	CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg
-											   maxSize:[tableView frame].size];
-	if (cachedHeight && newHeight != cachedHeight)
-		[logTable noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:row]];
-	return newHeight;
+	if (tableView == logTable)
+	{
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		CGFloat cachedHeight = msg.cachedCellSize.height;
+		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg
+																maxSize:[tableView frame].size];
+		if (cachedHeight && newHeight != cachedHeight)
+			[logTable noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:row]];
+		return newHeight;
+	}
+	return [tableView rowHeight];
 }
 
 // -----------------------------------------------------------------------------

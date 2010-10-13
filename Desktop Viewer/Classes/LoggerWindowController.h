@@ -35,6 +35,7 @@
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
 {
 	IBOutlet NSTableView *logTable;
+	IBOutlet NSTableView *filterTable;
 
 	IBOutlet NSArrayController *filterListController;
 	
