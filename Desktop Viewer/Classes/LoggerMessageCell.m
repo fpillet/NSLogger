@@ -260,7 +260,7 @@ static CGFloat sMinimumHeightForCell = 0;
 		return cellSize.height;
 	cellSize.width = sz.width;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 4;
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 6;
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
@@ -333,45 +333,43 @@ static CGFloat sMinimumHeightForCell = 0;
 			return;
 	}
 	
-	// Draw cell background and bottom separator (using blocks, just for fun)
+	// Draw cell background and separators
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.95f, 1.0f);
+		CGColorRef cellBgColor = CGColorCreateGenericGray(0.96f, 1.0f);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);
 	}
-
-	CGColorRef cellSeparatorDark = CGColorCreateGenericGray(0.75f, 1.0f);
-	CGColorRef cellSeparatorLight = CGColorCreateGenericGray(1.0f, 1.0f);
+	CGContextSetShouldAntialias(ctx, false);
+	CGContextSetLineWidth(ctx, 1.0f);
+	CGContextSetLineCap(ctx, kCGLineCapSquare);
+	CGColorRef cellSeparatorDark = CGColorCreateGenericGray(0.80f, 1.0f);
+	CGContextSetStrokeColorWithColor(ctx, cellSeparatorDark);
+	CGColorRelease(cellSeparatorDark);
+	CGContextBeginPath(ctx);
+	if (!highlighted)
+	{
+		// horizontal bottom separator
+		CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame) - 1));
+		CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame) - 1));
+	}
+	// timestamp/thread separator
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-2));
+	// thread/message separator
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-2));
+	CGContextStrokePath(ctx);
+	CGContextSetShouldAntialias(ctx, true);
 	
-	void (^drawSeparators)(CGColorRef, CGFloat) = ^(CGColorRef color, CGFloat offset) {
-		CGContextSetLineWidth(ctx, 0.75f);
-		CGContextSetStrokeColorWithColor(ctx, color);
-		CGContextBeginPath(ctx);
-		if (!highlighted) {
-			// horizontal bottom separator
-			CGContextMoveToPoint(ctx, NSMinX(cellFrame), NSMaxY(cellFrame) - 1 + offset);
-			CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), NSMaxY(cellFrame) - 1 + offset);
-		}
-		// timestamp/thread separator
-		CGContextMoveToPoint(ctx, NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + offset, NSMinY(cellFrame));
-		CGContextAddLineToPoint(ctx, NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + offset, NSMaxY(cellFrame)-1);
-		// thread/message separator
-		CGContextMoveToPoint(ctx, NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + offset, NSMinY(cellFrame));
-		CGContextAddLineToPoint(ctx, NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + offset, NSMaxY(cellFrame)-1);
-		CGContextStrokePath(ctx);
-	};
-	drawSeparators(cellSeparatorDark, 0);
-	drawSeparators(cellSeparatorLight, 1);
-
 	// Draw timestamp and time delta column
 	NSRect r, tr;
 	r = NSMakeRect(NSMinX(cellFrame),
 				   NSMinY(cellFrame),
 				   TIMESTAMP_COLUMN_WIDTH,
 				   NSHeight(cellFrame));
-	tr = NSInsetRect(r, 2, 2);
+	tr = NSInsetRect(r, 2, 0);
 
 	struct timeval tv = message.timestamp;
 	struct timeval td;
@@ -442,7 +440,7 @@ static CGFloat sMinimumHeightForCell = 0;
 		NSString *levelString = nil;
 		NSMutableDictionary *tagAttrs = nil;
 		NSMutableDictionary *levelAttrs = nil;
-		r.origin.y += NSHeight(r) + 2;
+		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
 			tagAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -469,7 +467,7 @@ static CGFloat sMinimumHeightForCell = 0;
 			levelSize.height += 2;
 		}
 		CGFloat h = fmaxf(tagSize.height, levelSize.height);
-		NSRect tagRect = NSMakeRect(NSMinX(r) + 2,
+		NSRect tagRect = NSMakeRect(NSMinX(r) + 3,
 									NSMinY(r),
 									tagSize.width,
 									h);
@@ -511,10 +509,10 @@ static CGFloat sMinimumHeightForCell = 0;
 	}
 
 	// Draw message
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 2,
-				   NSMinY(cellFrame) + 2,
-				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 4,
-				   NSHeight(cellFrame) - 4);
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 3,
+				   NSMinY(cellFrame),
+				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
+				   NSHeight(cellFrame));
 
 	if (message.contentsType == kMessageString)
 	{
