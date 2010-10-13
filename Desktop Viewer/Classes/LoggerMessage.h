@@ -59,7 +59,7 @@
 @property (nonatomic, readonly) short contentsType;
 @property (nonatomic, readonly) NSDictionary *parts;
 @property (nonatomic, readonly) struct timeval timestamp;	// full timestamp (seconds & microseconds)
-@property (nonatomic, assign) NSString *tag;
+@property (nonatomic, retain) NSString *tag;
 @property (nonatomic, retain) id message;
 @property (nonatomic, readonly) short type;
 @property (nonatomic, readonly) short level;

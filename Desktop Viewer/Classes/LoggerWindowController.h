@@ -42,15 +42,14 @@
 	IBOutlet NSPredicateEditor *filterEditor;
 	IBOutlet NSTextField *filterName;
 	
-	IBOutlet NSTextView *detailsView;
-
 	LoggerConnection *attachedConnection;
 
-	NSString *sourceName;
+	NSString *info;
 	NSMutableArray *displayedMessages;
-	
+
 	NSString *filterString;
 	NSPredicate *filterPredicate;
+	int logLevel;
 
 	dispatch_queue_t messageFilteringQueue;
 
@@ -58,7 +57,7 @@
 	BOOL loadComplete;
 }
 
-@property (nonatomic, retain) NSString *sourceName;
+@property (nonatomic, retain) NSString *info;
 @property (nonatomic, retain) NSString *filterString;
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
 

@@ -30,10 +30,9 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@interface LoggerUtils : NSObject 
-{
-}
+// String utils
+extern NSString *StringWithTimeDelta(struct timeval *td);
 
-+ (NSString *)stringWithTimeDelta:(struct timeval *)td;
-
-@end
+// Graphics utils
+extern CGColorRef CreateCGColorFromNSColor(NSColor * color);
+void MakeRoundedPath(CGContextRef ctx, CGRect r, CGFloat radius);

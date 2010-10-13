@@ -81,7 +81,7 @@
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		LogMessageTo(currentLogger, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], 0, s);
+		LogMessageTo(currentLogger, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
 	}
 	else if (phase == 1)
 	{

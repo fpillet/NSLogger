@@ -233,7 +233,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	@try
 	{
-		listenerPort = [self setupWithPort:listenerPort];			// if listenerPort is 0, let the OS choose the port we're listening on
+		[self setupWithPort:listenerPort];			// if listenerPort is 0, let the OS choose the port we're listening on
 		while (![listenerThread isCancelled])
 		{
 			NSDate *next = [[NSDate alloc] initWithTimeIntervalSinceNow:0.10];

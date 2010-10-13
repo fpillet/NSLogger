@@ -30,9 +30,7 @@
  */
 #import "LoggerUtils.h"
 
-@implementation LoggerUtils
-
-+ (NSString *)stringWithTimeDelta:(struct timeval *)td
+NSString *StringWithTimeDelta(struct timeval *td)
 {
 	if (td->tv_sec)
 	{
@@ -67,4 +65,22 @@
 	return [NSString stringWithFormat:@"+%d.%dms", td->tv_usec / 1000, td->tv_usec % 1000];
 }
 
-@end
+CGColorRef CreateCGColorFromNSColor(NSColor * color)
+{
+    NSColor * rgbColor = [color colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+    CGFloat r, g, b, a;
+    [rgbColor getRed:&r green:&g blue:&b alpha:&a];
+    return CGColorCreateGenericRGB(r, g, b, a);
+}
+
+void MakeRoundedPath(CGContextRef ctx, CGRect r, CGFloat radius)
+{
+	CGContextBeginPath(ctx);
+	CGContextMoveToPoint(ctx, CGRectGetMinX(r), CGRectGetMidY(r));
+	CGContextAddArcToPoint(ctx, CGRectGetMinX(r), CGRectGetMinY(r), CGRectGetMidX(r), CGRectGetMinY(r), radius);
+	CGContextAddArcToPoint(ctx, CGRectGetMaxX(r), CGRectGetMinY(r), CGRectGetMaxX(r), CGRectGetMidY(r), radius);
+	CGContextAddArcToPoint(ctx, CGRectGetMaxX(r), CGRectGetMaxY(r), CGRectGetMidX(r), CGRectGetMaxY(r), radius);
+	CGContextAddArcToPoint(ctx, CGRectGetMinX(r), CGRectGetMaxY(r), CGRectGetMinX(r), CGRectGetMidY(r), radius);
+	CGContextClosePath(ctx);
+}
+

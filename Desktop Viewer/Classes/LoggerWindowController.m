@@ -44,7 +44,7 @@
 
 @implementation LoggerWindowController
 
-@synthesize sourceName, filterString;
+@synthesize info, filterString;
 @synthesize attachedConnection;
 
 // -----------------------------------------------------------------------------
@@ -67,7 +67,7 @@
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
 	[attachedConnection release];
-	[sourceName release];
+	[info release];
 	[filterString release];
 	[filterPredicate release];
 	[displayedMessages release];
@@ -94,32 +94,15 @@
 		return displayName;
 	if (attachedConnection.connected)
 		return [attachedConnection clientAppDescription];
-	return [NSString stringWithFormat:NSLocalizedString(@"%@ (disconnected)", @""), [attachedConnection clientDescription]];
+	return [NSString stringWithFormat:NSLocalizedString(@"%@ (disconnected)", @""),
+			[attachedConnection clientDescription]];
 }
 
 - (void)updateClientInfo
 {
 	// Update the source label
 	assert([NSThread isMainThread]);
-	if ([[self document] fileURL] != nil)
-	{
-		// file loaded from disk
-		self.sourceName = [NSString stringWithFormat:NSLocalizedString(@"%@ (replay)", @""),
-						   [attachedConnection clientDescription]];
-	}
-	else if (attachedConnection.connected)
-	{
-		// connected log source
-		self.sourceName = [attachedConnection clientDescription];
-		[[self window] setTitle:[attachedConnection clientAppDescription]];
-	}
-	else
-	{
-		// disconnected log source
-		self.sourceName = [NSString stringWithFormat:NSLocalizedString(@"%@ (closed)", @""),
-						   [attachedConnection clientDescription]];
-		[self synchronizeWindowTitleWithDocumentName];
-	}
+	[self synchronizeWindowTitleWithDocumentName];
 }
 
 - (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate
@@ -127,22 +110,35 @@
 	[filterPredicate autorelease];
 	if (currentFilterPredicate == nil)
 		currentFilterPredicate = [self currentFilterPredicate];
-	if (![filterString length])
+	NSPredicate *p = currentFilterPredicate;
+	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:2];
+	if (logLevel)
 	{
-		filterPredicate = [currentFilterPredicate retain];
+		NSExpression *lhs = [NSExpression expressionForKeyPath:@"level"];
+		NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:logLevel]];
+		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
+																	rightExpression:rhs
+																		   modifier:NSDirectPredicateModifier
+																			   type:NSLessThanPredicateOperatorType
+																			options:0]];
 	}
-	else
+	if ([filterString length])
 	{
 		NSExpression *lhs = [NSExpression expressionForKeyPath:@"messageText"];
 		NSExpression *rhs = [NSExpression expressionForConstantValue:filterString];
-		NSPredicate *regex = [NSComparisonPredicate predicateWithLeftExpression:lhs
-																rightExpression:rhs
-																	   modifier:NSDirectPredicateModifier
-																		   type:NSContainsPredicateOperatorType
-																		options:NSCaseInsensitivePredicateOption];
-		filterPredicate = [[NSCompoundPredicate andPredicateWithSubpredicates:
-							[NSArray arrayWithObjects:regex,currentFilterPredicate,nil]] retain];
-	}	
+		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
+																	rightExpression:rhs
+																		   modifier:NSDirectPredicateModifier
+																			   type:NSContainsPredicateOperatorType
+																			options:NSCaseInsensitivePredicateOption]];
+	}
+	if ([andPredicates count])
+	{
+		[andPredicates addObject:p];
+		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
+	}
+	filterPredicate = [p retain];
+	[andPredicates release];
 }
 
 - (void)refreshMessagesIfPredicateChanged:(NSPredicate *)currentFilterPredicate
@@ -185,6 +181,7 @@
 	if (lastVisible)
 		[logTable scrollRowToVisible:[displayedMessages count] - 1];
 	lastMessageRow = [displayedMessages count];
+	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
 }
 
 // -----------------------------------------------------------------------------
@@ -258,6 +255,26 @@
 	{
 		[filterString autorelease];
 		filterString = [newString copy];
+		[self updateFilterPredicate:nil];
+		[self refreshAllMessages];
+	}
+}
+
+- (NSNumber *)logLevel
+{
+	return [NSNumber numberWithInteger:logLevel];
+}
+
+- (void)setLogLevel:(NSNumber *)newLogLevel
+{
+	int l = [newLogLevel integerValue];
+	if (l == -1)
+		l = 0;
+	if (l != logLevel)
+	{
+		[self willChangeValueForKey:@"logLevel"];
+		logLevel = l;
+		[self didChangeValueForKey:@"logLevel"];
 		[self updateFilterPredicate:nil];
 		[self refreshAllMessages];
 	}

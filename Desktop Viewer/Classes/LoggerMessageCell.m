@@ -46,6 +46,8 @@ static NSMutableDictionary *sDefaultMessageAttributes = nil;
 static NSMutableDictionary *sDefaultMessageDataAttributes = nil;
 static NSFont *sDefaultFont = nil;
 static NSFont *sDefaultMonospacedFont = nil;
+static NSFont *sDefaultTagAndLevelFont = nil;
+static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 
 @implementation LoggerMessageCell
@@ -73,10 +75,12 @@ static CGFloat sMinimumHeightForCell = 0;
 
 + (void)setDefaultFont:(NSFont *)aFont monospacedFont:(NSFont *)aMonospacedFont
 {
-	[sDefaultFont autorelease];
+	[sDefaultFont release];
 	sDefaultFont = [aFont retain];
-	[sDefaultMonospacedFont autorelease];
+	[sDefaultMonospacedFont release];
 	sDefaultMonospacedFont = [aMonospacedFont retain];
+	[sDefaultTagAndLevelFont release];
+	sDefaultTagAndLevelFont = [[NSFont fontWithDescriptor:[aFont fontDescriptor] size:[aFont pointSize]-2] retain];
 	[sDefaultTimestampAttributes autorelease];
 	sDefaultTimestampAttributes = nil;
 	[sDefaultTimedeltaAttributes autorelease];
@@ -102,6 +106,13 @@ static CGFloat sMinimumHeightForCell = 0;
 	if (sDefaultMonospacedFont == nil)
 		sDefaultMonospacedFont = [[NSFont userFixedPitchFontOfSize:11] retain];
 	return sDefaultMonospacedFont;
+}
+
++ (NSFont *)defaultTagAndLevelFont
+{
+	if (sDefaultTagAndLevelFont == nil)
+		sDefaultTagAndLevelFont = [[NSFont boldSystemFontOfSize:9] retain];
+	return sDefaultTagAndLevelFont;
 }
 
 + (NSMutableDictionary *)defaultTextAttributes
@@ -169,6 +180,19 @@ static CGFloat sMinimumHeightForCell = 0;
 		sDefaultMessageDataAttributes = dict;
 	}
 	return sDefaultMessageDataAttributes;
+}
+
++ (NSColor *)defaultTagAndLevelColor
+{
+	if (sDefaultTagAndLevelColor == nil)
+		sDefaultTagAndLevelColor = [[NSColor colorWithCalibratedRed:0.51f green:0.57f blue:0.79f alpha:1.0f] retain];
+	return sDefaultTagAndLevelColor;
+}
+
++ (NSColor *)colorForTag:(NSString *)tag
+{
+	// @@@ TODO
+	return [self defaultTagAndLevelColor];
 }
 
 + (NSArray *)stringsWithData:(NSData *)data
@@ -270,8 +294,6 @@ static CGFloat sMinimumHeightForCell = 0;
 
 	// cache and return cell height
 	cellSize.height = fmaxf(sz.height + 4, [self minimumHeightForCell]);
-//if (aMessage.cachedCellSize.height && aMessage.cachedCellSize.height != cellSize.height)
-//	NSLog(@"Old height=%d new height=%d aMessage=%@", (int)aMessage.cachedCellSize.height, (int)cellSize.height, aMessage);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -366,23 +388,14 @@ static CGFloat sMinimumHeightForCell = 0;
 	
 	NSString *timeDeltaStr = nil;
 	if (previousMessage != nil)
-		timeDeltaStr = [LoggerUtils stringWithTimeDelta:&td];
+		timeDeltaStr = StringWithTimeDelta(&td);
 
 	NSMutableDictionary *attrs = [[self class] defaultTimestampAttributes];
 	NSRect bounds = [timestampStr boundingRectWithSize:tr.size
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:attrs];
-	NSRect timeRect, deltaRect;
-	if (flippedDrawing)
-	{
-		timeRect = NSMakeRect(NSMinX(tr), NSMinY(tr), NSWidth(tr), NSHeight(bounds));
-		deltaRect = NSMakeRect(NSMinX(tr), NSMaxY(timeRect)+1, NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
-	}
-	else
-	{
-		timeRect = NSMakeRect(NSMinX(tr), NSMaxY(tr) - NSHeight(bounds), NSWidth(tr), NSHeight(bounds));
-		deltaRect = NSMakeRect(NSMinX(tr), NSMinY(timeRect) - 1 - NSHeight(bounds), NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
-	}
+	NSRect timeRect = NSMakeRect(NSMinX(tr), NSMinY(tr), NSWidth(tr), NSHeight(bounds));
+	NSRect deltaRect = NSMakeRect(NSMinX(tr), NSMaxY(timeRect)+1, NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
 
 	if (highlighted)
 	{
@@ -412,9 +425,90 @@ static CGFloat sMinimumHeightForCell = 0;
 	}
 	r = NSOffsetRect(r, TIMESTAMP_COLUMN_WIDTH, 0);
 	r.size.width = THREAD_COLUMN_WIDTH;
-	[message.threadID drawWithRect:NSInsetRect(r, 3, 2)
+	r.size.height = [message.threadID boundingRectWithSize:NSMakeSize(NSWidth(r), NSHeight(cellFrame))
+												   options:NSStringDrawingUsesLineFragmentOrigin
+												attributes:attrs].size.height;
+	[message.threadID drawWithRect:NSInsetRect(r, 3, 0)
 						   options:NSStringDrawingUsesLineFragmentOrigin
 						attributes:attrs];
+
+	// Draw tag and level, if provided
+	NSString *tag = message.tag;
+	int level = message.level;
+	if ([tag length] || level)
+	{
+		NSSize tagSize = NSZeroSize;
+		NSSize levelSize = NSZeroSize;
+		NSString *levelString = nil;
+		NSMutableDictionary *tagAttrs = nil;
+		NSMutableDictionary *levelAttrs = nil;
+		r.origin.y += NSHeight(r) + 2;
+		if ([tag length])
+		{
+			tagAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
+						[[self class] defaultTagAndLevelFont], NSFontAttributeName,
+						[NSColor whiteColor], NSForegroundColorAttributeName,
+						nil];
+			tagSize = [tag boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
+										options:NSStringDrawingUsesLineFragmentOrigin
+									 attributes:tagAttrs].size;
+			tagSize.width += 4;
+			tagSize.height += 2;
+		}
+		if (level)
+		{
+			levelString = [NSString stringWithFormat:@"%d", level];
+			levelAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
+						  [[self class] defaultTagAndLevelFont], NSFontAttributeName,
+						  [NSColor whiteColor], NSForegroundColorAttributeName,
+						  nil];
+			levelSize = [levelString boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
+												  options:NSStringDrawingUsesLineFragmentOrigin
+											   attributes:levelAttrs].size;
+			levelSize.width += 4;
+			levelSize.height += 2;
+		}
+		CGFloat h = fmaxf(tagSize.height, levelSize.height);
+		NSRect tagRect = NSMakeRect(NSMinX(r) + 2,
+									NSMinY(r),
+									tagSize.width,
+									h);
+		NSRect levelRect = NSMakeRect(NSMaxX(tagRect),
+									  NSMinY(tagRect),
+									  levelSize.width,
+									  h);
+		NSRect tagAndLevelRect = NSUnionRect(tagRect, levelRect);
+
+		MakeRoundedPath(ctx, NSRectToCGRect(tagAndLevelRect), 3.0f);
+		CGColorRef fillColor = CreateCGColorFromNSColor([[self class] colorForTag:tag]);
+		CGContextSetFillColorWithColor(ctx, fillColor);
+		CGColorRelease(fillColor);
+		CGContextFillPath(ctx);
+		if (levelSize.width)
+		{
+			CGColorRef black = CGColorCreateGenericGray(0.25f, 1.0f);
+			CGContextSetFillColorWithColor(ctx, black);
+			CGColorRelease(black);
+			CGContextSaveGState(ctx);
+			CGContextClipToRect(ctx, NSRectToCGRect(levelRect));
+			MakeRoundedPath(ctx, NSRectToCGRect(tagAndLevelRect), 3.0f);
+			CGContextFillPath(ctx);
+			CGContextRestoreGState(ctx);
+		}
+
+		if (tagSize.width)
+		{
+			[tag drawWithRect:NSInsetRect(tagRect, 2, 1)
+					  options:NSStringDrawingUsesLineFragmentOrigin
+				   attributes:tagAttrs];
+		}
+		if (levelSize.width)
+		{
+			[levelString drawWithRect:NSInsetRect(levelRect, 2, 1)
+							  options:NSStringDrawingUsesLineFragmentOrigin
+						   attributes:levelAttrs];
+		}
+	}
 
 	// Draw message
 	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 2,

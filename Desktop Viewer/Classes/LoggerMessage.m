@@ -146,6 +146,10 @@ static NSMutableArray *sTags = nil;
 	return @"img";
 }
 
+//- (NSNumber *)logLevel
+//{
+//	return [NSNumber numberWithInteger:level];
+//}
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Other
@@ -155,7 +159,7 @@ static NSMutableArray *sTags = nil;
 	// we're accumulating the various domains in a global list
 	// so as to reduce memory use
 	NSUInteger pos = [sTags indexOfObject:aTag];
-	if (pos == NSNotFound)
+	if (pos == NSNotFound || sTags == nil)
 	{
 		if (sTags == nil)
 			sTags = [[NSMutableArray alloc] init];
