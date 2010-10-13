@@ -20,10 +20,12 @@ It's very easy to log binary data or images using *NSLogger*. Use the *LogData()
 
 # Powerful desktop viewer #
 The desktop viewer application provides powerful tools, like:
- - Filters (with regular expression matching) that let your perform data mining in your traces
- - Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
- - Image and binary data display directly in the log window
- - Very fast navigation in your traces
+
+ * Filters (with regular expression matching) that let your perform data mining in your traces
+ * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
+ * Image and binary data display directly in the log window
+ * Very fast navigation in your traces
+ 
  
 Your traces can be saved to a `.nsloggerdata` file, and reloaded later.
 Note that the NSLogger desktop viewer **requires Mac OS X 10.6** or later.
@@ -44,11 +46,11 @@ This tool comes from a personal need for a more powerful logger. It is currently
  * Support for connecting to a specific IP address / port (client side)
  * Allow font selection for log text (desktop side)
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
- * Document extensibility (the NSLogger code is designed to make it easy to support other kings of log sources)
+ * Document extensibility (the NSLogger code is designed to make it easy to support other kinds of log sources, and the protocol itself supports arbitrary data embedding, allowing the use of NSLogger to transfer and display more information)
 
 
 The main view is currently split, the intent was to group selected traces and show them in a selectable text view in the bottom pane. I'll probably remove this pane and focus on drag-and-drop and export formats instead.
 
-Some documentation is also needed, although using NSLogger is fairly straightforward.
+Some documentation is also needed, although using NSLogger is fairly straightforward. You'll find some preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
