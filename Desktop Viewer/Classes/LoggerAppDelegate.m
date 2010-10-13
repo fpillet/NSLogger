@@ -72,17 +72,17 @@
 			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithInteger:2], @"uid",
 								NSLocalizedString(@"Text messages", @""), @"title",
-								[NSPredicate predicateWithFormat:@"(messageType == \"text\")"], @"predicate",
+								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
 								nil]];
 			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithInteger:3], @"uid",
 								NSLocalizedString(@"Images", @""), @"title",
-								[NSPredicate predicateWithFormat:@"(messageType == \"img\")"], @"predicate",
+								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
 								nil]];
 			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithInteger:4], @"uid",
 								NSLocalizedString(@"Data blocks", @""), @"title",
-								[NSPredicate predicateWithFormat:@"(messageType == \"data\")"], @"predicate",
+								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
 								nil]];
 		}
 	}
