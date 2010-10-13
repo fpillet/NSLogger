@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="480"/>
+			<integer value="372"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -481,8 +481,8 @@
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<object class="NSSearchField" id="360120797">
 													<reference key="NSNextResponder" ref="919832767"/>
-													<int key="NSvFlags">265</int>
-													<string key="NSFrame">{{388, 2}, {158, 19}}</string>
+													<int key="NSvFlags">289</int>
+													<string key="NSFrame">{{301, 2}, {221, 19}}</string>
 													<reference key="NSSuperview" ref="919832767"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSSearchFieldCell" key="NSCell" id="65372940">
@@ -551,7 +551,7 @@
 												<object class="NSTextField" id="984409547">
 													<reference key="NSNextResponder" ref="919832767"/>
 													<int key="NSvFlags">266</int>
-													<string key="NSFrame">{{36, 4}, {347, 14}}</string>
+													<string key="NSFrame">{{36, 4}, {216, 14}}</string>
 													<reference key="NSSuperview" ref="919832767"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSTextFieldCell" key="NSCell" id="166932449">
@@ -640,8 +640,8 @@
 												</object>
 												<object class="NSPopUpButton" id="147142494">
 													<reference key="NSNextResponder" ref="919832767"/>
-													<int key="NSvFlags">268</int>
-													<string key="NSFrame">{{551, 0}, {92, 22}}</string>
+													<int key="NSvFlags">289</int>
+													<string key="NSFrame">{{527, 0}, {116, 22}}</string>
 													<reference key="NSSuperview" ref="919832767"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSPopUpButtonCell" key="NSCell" id="715639568">
@@ -686,7 +686,7 @@
 																</object>
 																<object class="NSMenuItem" id="605677912">
 																	<reference key="NSMenu" ref="863461541"/>
-																	<string key="NSTitle">Levels 0-1</string>
+																	<string key="NSTitle">Levels up to 1</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
@@ -697,7 +697,7 @@
 																</object>
 																<object class="NSMenuItem" id="1009192122">
 																	<reference key="NSMenu" ref="863461541"/>
-																	<string key="NSTitle">Levels 0-2</string>
+																	<string key="NSTitle">Levels up to 2</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
@@ -750,7 +750,7 @@
 								</object>
 								<object class="NSMutableArray" key="dict.values">
 									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="200"/>
+									<integer value="140"/>
 									<integer value="400"/>
 								</object>
 							</object>
@@ -3676,9 +3676,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{7, 181}, {885, 666}}</string>
+					<string>{{14, 312}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{7, 181}, {885, 666}}</string>
+					<string>{{14, 312}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -3779,10 +3779,10 @@
 					<string>{{52, 341}, {123, 22}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABECcAAwZAAAA</bytes>
+						<bytes key="NSTransformStruct">P4AAAL+AAABECcAAwaAAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{790, 417}, {117, 71}}</string>
+					<string>{{755, 263}, {135, 71}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
