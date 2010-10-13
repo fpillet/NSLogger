@@ -111,7 +111,7 @@
 					else
 						threadID = @"";
 					break;
-				case PART_KEY_DOMAIN:
+				case PART_KEY_TAG:
 					self.tag = (NSString *)part;
 					break;
 				case PART_KEY_LEVEL:

@@ -63,7 +63,7 @@
 #define PART_KEY_TIMESTAMP_MS	2			// milliseconds component of timestamp (optional, mutually exclusive with PART_KEY_TIMESTAMP_US)
 #define PART_KEY_TIMESTAMP_US	3			// microseconds component of timestamp (optional, mutually exclusive with PART_KEY_TIMESTAMP_MS)
 #define PART_KEY_THREAD_ID		4
-#define	PART_KEY_DOMAIN			5
+#define	PART_KEY_TAG			5
 #define	PART_KEY_LEVEL			6
 #define	PART_KEY_MESSAGE		7
 #define PART_KEY_IMAGE_WIDTH	8			// messages containing an image should also contain a part with the image size

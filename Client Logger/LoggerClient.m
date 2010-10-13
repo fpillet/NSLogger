@@ -862,7 +862,7 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 				EncodeTimestampAndThreadID(encoder);
 				EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
 				if (domain != nil && [domain length])
-					EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_DOMAIN);
+					EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 				if (level)
 					EncodeLoggerInt32(encoder, level, PART_KEY_LEVEL);
 				EncodeLoggerString(encoder, msgString, PART_KEY_MESSAGE);
@@ -885,7 +885,7 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
 		if (domain != nil && [domain length])
-			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_DOMAIN);
+			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
 			EncodeLoggerInt32(encoder, level, PART_KEY_LEVEL);
 		if (width && height)
@@ -916,7 +916,7 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
 		if (domain != nil && [domain length])
-			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_DOMAIN);
+			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
 			EncodeLoggerInt32(encoder, level, PART_KEY_LEVEL);
 		EncodeLoggerData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, binaryOrImageType);
