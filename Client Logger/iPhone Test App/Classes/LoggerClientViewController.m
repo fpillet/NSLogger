@@ -73,11 +73,11 @@
 
 - (void)sendTimerFired:(NSTimer *)timer
 {
-	static int phase = 0;
 	static int image = 1;
+	int phase = arc4random() % 10;
 	if (phase != 1 && phase != 5)
 	{
-		NSMutableString *s = [NSMutableString stringWithFormat:@"test log message %d - ", counter++];
+		NSMutableString *s = [NSMutableString stringWithFormat:@"test log message %d - Random characters follow: ", counter++];
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
@@ -122,8 +122,7 @@
 		[NSThread detachNewThreadSelector:@selector(sendLogFromAnotherThread:)
 								 toTarget:self
 							   withObject:[NSNumber numberWithInteger:counter++]];
-	 }
-	phase = (phase + 1) % 6;
+	}
 	messagesSentLabel.text = [NSString stringWithFormat:@"%d", counter];
 	imagesSentLabel.text = [NSString stringWithFormat:@"%d", imagesCounter];
 }
