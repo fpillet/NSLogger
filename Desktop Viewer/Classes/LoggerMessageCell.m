@@ -247,7 +247,7 @@ static CGFloat sMinimumHeightForCell = 0;
 		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
 											options:NSStringDrawingUsesLineFragmentOrigin
 										 attributes:[self defaultTimedeltaAttributes]];
-		sMinimumHeightForCell = NSHeight(r1) + NSHeight(r2) + 6;
+		sMinimumHeightForCell = NSHeight(r1) + NSHeight(r2) + 4;
 	}
 	return sMinimumHeightForCell;
 }
@@ -285,7 +285,7 @@ static CGFloat sMinimumHeightForCell = 0;
 			
 		case kMessageImage: {
 			NSSize imgSize = aMessage.imageSize;
-			sz.height = fminf(fminf(sz.width, sz.height/2), imgSize.height); 
+			sz.height = fminf(fminf(sz.width, sz.height/2), imgSize.height + 1); 
 			break;
 		}
 		default:
@@ -560,7 +560,7 @@ static CGFloat sMinimumHeightForCell = 0;
 	else if (message.contentsType == kMessageImage)
 	{
 		// Make the image fit in the cell
-		r = NSInsetRect(r, 2, 2);
+		r = NSInsetRect(r, 0, 1);
 		NSSize srcSize = message.imageSize;
 		NSSize imgSize = srcSize;
 		if (imgSize.width > NSWidth(r))
