@@ -146,10 +146,6 @@ static NSMutableArray *sTags = nil;
 	return @"img";
 }
 
-//- (NSNumber *)logLevel
-//{
-//	return [NSNumber numberWithInteger:level];
-//}
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Other
@@ -172,17 +168,12 @@ static NSMutableArray *sTags = nil;
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage
 {
-	td->tv_sec = timestamp.tv_sec - 1 - previousMessage->timestamp.tv_sec;
-	if (td->tv_sec < 0)
-		td->tv_sec = 0;
-	td->tv_usec = timestamp.tv_usec - previousMessage->timestamp.tv_usec;
-	if (timestamp.tv_sec != previousMessage->timestamp.tv_sec)
-		td->tv_usec += 1000000;
-	if (td->tv_usec > 1000000)
-	{
-		td->tv_sec++;
-		td->tv_usec -= 1000000;
-	}
+	assert(previousMessage != NULL);
+	double t1 = (double)timestamp.tv_sec + ((double)timestamp.tv_usec) / 1000000.0;
+	double t2 = (double)previousMessage->timestamp.tv_sec + ((double)previousMessage->timestamp.tv_usec) / 1000000.0;
+	double t = t1 - t2;
+	td->tv_sec = (__darwin_time_t)t;
+	td->tv_usec = (__darwin_suseconds_t)((t - (double)td->tv_sec) * 1000000.0);
 }
 
 #ifdef DEBUG
