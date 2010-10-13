@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="371"/>
+			<integer value="480"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -328,7 +328,7 @@
 																		<object class="NSTableView" id="522308002">
 																			<reference key="NSNextResponder" ref="364781866"/>
 																			<int key="NSvFlags">4370</int>
-																			<string key="NSFrameSize">{645, 647}</string>
+																			<string key="NSFrameSize">{649, 647}</string>
 																			<reference key="NSSuperview" ref="364781866"/>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="_NSCornerView" key="NSCornerView">
@@ -340,7 +340,7 @@
 																				<bool key="EncodedWithXMLCoder">YES</bool>
 																				<object class="NSTableColumn" id="759397915">
 																					<string key="NSIdentifier">message</string>
-																					<double key="NSWidth">642</double>
+																					<double key="NSWidth">646</double>
 																					<double key="NSMinWidth">200</double>
 																					<double key="NSMaxWidth">10000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -410,6 +410,7 @@
 																	<int key="NSvFlags">-2147483392</int>
 																	<string key="NSFrame">{{-100, -100}, {650, 15}}</string>
 																	<reference key="NSSuperview" ref="1043255743"/>
+																	<bool key="NSEnabled">YES</bool>
 																	<int key="NSsFlags">1</int>
 																	<reference key="NSTarget" ref="1043255743"/>
 																	<string key="NSAction">_doScroller:</string>
@@ -419,7 +420,7 @@
 															<string key="NSFrameSize">{660, 647}</string>
 															<reference key="NSSuperview" ref="799990795"/>
 															<reference key="NSNextKeyView" ref="364781866"/>
-															<int key="NSsFlags">16</int>
+															<int key="NSsFlags">144</int>
 															<reference key="NSVScroller" ref="122654608"/>
 															<reference key="NSHScroller" ref="426073056"/>
 															<reference key="NSContentView" ref="364781866"/>
@@ -3675,9 +3676,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{427, 181}, {885, 666}}</string>
+					<string>{{7, 181}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{427, 181}, {885, 666}}</string>
+					<string>{{7, 181}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
