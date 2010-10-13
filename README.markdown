@@ -1,6 +1,8 @@
 # NSLogger #
 *NSLogger* is a high perfomance logging utility which displays traces emitted by client applications. It replaces your usual *NSLog()*-based traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
 
+Your application emits traces using the *NSLogger* [trace APIs](http://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
+
 Clients automatically find the logger application running on Mac OS X via Bonjour networking. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger*.
 
 ![Desktop Viewer (main window)](http://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
@@ -35,14 +37,15 @@ Note that the NSLogger desktop viewer **requires Mac OS X 10.6** or later.
 
 # Work in progress - Current status #
 This tool comes from a personal need for a more powerful logger. It is currently functional, but needs some polish and additional work. Here is what's not implemented yet, and some of the planned features, by current priority order:
- - Display tags in logs
- - Support drag-and-drop from logs
- - Support export to other formats than the native .nsloggerdata file format
- - Support for accepting logger connections on a specific TCP/IP port (desktop side)
- - Support for connecting to a specific IP address / port (client side)
- - Allow font selection for log text (desktop side)
- - Support time-based filtering (filter clause based on the time lapse between a previous trace)
- - Document extensibility (the NSLogger code is designed to make it easy to support other kings of log sources)
+
+ * Support drag-and-drop from logs
+ * Support export to other formats than the native .nsloggerdata file format
+ * Support for accepting logger connections on a specific TCP/IP port (desktop side)
+ * Support for connecting to a specific IP address / port (client side)
+ * Allow font selection for log text (desktop side)
+ * Support time-based filtering (filter clause based on the time lapse between a previous trace)
+ * Document extensibility (the NSLogger code is designed to make it easy to support other kings of log sources)
+
 
 The main view is currently split, the intent was to group selected traces and show them in a selectable text view in the bottom pane. I'll probably remove this pane and focus on drag-and-drop and export formats instead.
 
