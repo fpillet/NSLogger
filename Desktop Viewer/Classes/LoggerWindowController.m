@@ -87,6 +87,7 @@
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 	[self updateFilterPredicate:nil];
 	loadComplete = YES;
+	[logTable sizeToFit];
 	if (attachedConnection != nil)
 		[self refreshAllMessages];
 	
@@ -162,15 +163,34 @@
 	[currentPredicate release];	
 }
 
+- (void)tileLogTable:(BOOL)force
+{
+	NSUInteger displayed = [displayedMessages count];
+	NSSize sz = [logTable frame].size;
+	NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
+	for (NSUInteger row = 0; row < displayed; row++)
+	{
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		if (force)
+			msg.cachedCellSize = NSZeroSize;
+		CGFloat cachedHeight = msg.cachedCellSize.height;
+		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+		if (newHeight != cachedHeight)
+			[indexSet addIndex:row];
+	}
+	if ([indexSet count])
+		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
+}
+
 - (void)applyFontChanges
 {
-	@synchronized(attachedConnection.messages)
-	{
-		for (LoggerMessage *msg in attachedConnection.messages)
-			msg.cachedCellSize = NSZeroSize;
-	}
-	[logTable noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [displayedMessages count])]];
-//	[logTable reloadData];
+	[self tileLogTable:YES];
+	[logTable reloadData];
+}
+
+- (void)windowDidResize:(NSNotification *)notification
+{
+	[self tileLogTable:NO];
 }
 
 // -----------------------------------------------------------------------------
@@ -379,13 +399,8 @@ didReceiveMessages:(NSArray *)theMessages
 	assert([NSThread isMainThread]);
 	if (tableView == logTable)
 	{
-		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
-		CGFloat cachedHeight = msg.cachedCellSize.height;
-		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg
-																maxSize:[tableView frame].size];
-		if (cachedHeight && newHeight != cachedHeight)
-			[logTable noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:row]];
-		return newHeight;
+		return [LoggerMessageCell heightForCellWithMessage:[displayedMessages objectAtIndex:row]
+												   maxSize:[tableView frame].size];
 	}
 	return [tableView rowHeight];
 }

@@ -234,14 +234,14 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		return cellSize.height;
 	cellSize.width = sz.width;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 6;
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8 + (aMessage.indent * INDENTATION_TAB_WIDTH);
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
 	{
 		case kMessageString: {
 			NSRect lr = [aMessage.message boundingRectWithSize:sz
-													   options:NSStringDrawingUsesLineFragmentOrigin
+													   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 													attributes:[[self defaultAttributes] objectForKey:@"text"]];
 			sz.height = fminf(NSHeight(lr), sz.height);			
 			break;
@@ -251,7 +251,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			NSUInteger numBytes = [(NSData *)aMessage.message length];
 			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0);
 			NSRect lr = [@"000:" boundingRectWithSize:sz
-											  options:NSStringDrawingUsesLineFragmentOrigin
+											  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 										   attributes:[[self defaultAttributes] objectForKey:@"data"]];
 			sz.height = NSHeight(lr) * nLines;
 			break;
@@ -346,13 +346,11 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 
 	BOOL highlighted = [self isHighlighted];
-	BOOL flippedDrawing = [controlView isFlipped];
 	NSColor *highlightedTextColor = nil;
 	if (highlighted)
 		highlightedTextColor = [NSColor whiteColor];
 
 	// Update cell frame to take indent into account
-	//	cellFrame = NSInsetRect(cellFrame, 4, 0);
 	CGFloat indent = message.indent * INDENTATION_TAB_WIDTH;
 	if (indent)
 	{
@@ -396,10 +394,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 	// timestamp/thread separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-2));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
 	// thread/message separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-2));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
 	
@@ -557,9 +555,16 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		{
 			attrs = [[attrs mutableCopy] autorelease];
 			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-		}		
+		}
+		NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
+															  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+														   attributes:attrs];
+		r.size.height = lr.size.height;
+		CGFloat offset = floorf((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f);
+		if (offset > 0)
+			r.origin.y += offset;
 		[(NSString *)message.message drawWithRect:r
-										  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingTruncatesLastVisibleLine)
+										  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 									   attributes:attrs];
 	}
 	else if (message.contentsType == kMessageData)
@@ -571,15 +576,15 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			attrs = [[attrs mutableCopy] autorelease];
 			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
 		}
-		CGFloat y = flippedDrawing ? NSMinY(r) : NSMaxY(r);
+		CGFloat y = NSMinY(r);
 		CGFloat availHeight = NSHeight(r);
 		for (NSString *s in strings)
 		{
 			NSRect lr = [s boundingRectWithSize:r.size
-										options:NSStringDrawingUsesLineFragmentOrigin
+										options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 									 attributes:attrs];
 			[s drawWithRect:NSMakeRect(NSMinX(r),
-									   flippedDrawing ? y : y - NSHeight(lr),
+									   y,
 									   NSWidth(r),
 									   NSHeight(lr))
 					options:NSStringDrawingUsesLineFragmentOrigin
@@ -587,10 +592,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			availHeight -= NSHeight(lr);
 			if (availHeight < NSHeight(lr))
 				break;
-			if (flippedDrawing)
-				y += NSHeight(lr);
-			else
-				y -= NSHeight(lr);
+			y += NSHeight(lr);
 		}
 	}
 	else if (message.contentsType == kMessageImage)
