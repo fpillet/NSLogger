@@ -36,8 +36,8 @@
 #define MINIMUM_CELL_HEIGHT			30.0f
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
-#define TIMESTAMP_COLUMN_WIDTH		80.0f
-#define	THREAD_COLUMN_WIDTH			80.0f
+#define TIMESTAMP_COLUMN_WIDTH		85.0f
+#define	THREAD_COLUMN_WIDTH			85.0f
 
 static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
@@ -145,6 +145,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 {
 	[sDefaultAttributes release];
 	sDefaultAttributes = [newAttributes copy];
+	sMinimumHeightForCell = 0;
 	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:@"Message Attributes"];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
 }
@@ -214,7 +215,13 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
 											options:NSStringDrawingUsesLineFragmentOrigin
 										 attributes:[[self defaultAttributes] objectForKey:@"timedelta"]];
-		sMinimumHeightForCell = NSHeight(r1) + NSHeight(r2) + 4;
+		NSRect r3 = [@"Main Thread" boundingRectWithSize:NSMakeSize(1024, 1024)
+												 options:NSStringDrawingUsesLineFragmentOrigin
+											  attributes:[[self defaultAttributes] objectForKey:@"threadID"]];
+		NSRect r4 = [@"qWTy" boundingRectWithSize:NSMakeSize(1024, 1024)
+										  options:NSStringDrawingUsesLineFragmentOrigin
+									   attributes:[[self defaultAttributes] objectForKey:@"tag"]];
+		sMinimumHeightForCell = fmaxf(NSHeight(r1) + NSHeight(r2), NSHeight(r3) + NSHeight(r4)) + 4;
 	}
 	return sMinimumHeightForCell;
 }
@@ -402,6 +409,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				   NSMinY(cellFrame),
 				   TIMESTAMP_COLUMN_WIDTH,
 				   NSHeight(cellFrame));
+	CGContextSaveGState(ctx);
+	CGContextClipToRect(ctx, NSRectToCGRect(r));
 	tr = NSInsetRect(r, 2, 0);
 
 	struct timeval tv = message.timestamp;
@@ -446,6 +455,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[timeDeltaStr drawWithRect:deltaRect
 					   options:NSStringDrawingUsesLineFragmentOrigin
 					attributes:attrs];
+	CGContextRestoreGState(ctx);
 
 	// Draw thread ID
 	attrs = [self threadIDAttributes];
@@ -456,6 +466,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 	r = NSOffsetRect(r, TIMESTAMP_COLUMN_WIDTH, 0);
 	r.size.width = THREAD_COLUMN_WIDTH;
+	CGContextSaveGState(ctx);
+	CGContextClipToRect(ctx, NSRectToCGRect(r));
 	r.size.height = [message.threadID boundingRectWithSize:NSMakeSize(NSWidth(r), NSHeight(cellFrame))
 												   options:NSStringDrawingUsesLineFragmentOrigin
 												attributes:attrs].size.height;
@@ -530,6 +542,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 						   attributes:[self levelAttributes]];
 		}
 	}
+	CGContextRestoreGState(ctx);
 
 	// Draw message
 	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 3,
