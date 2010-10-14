@@ -30,7 +30,7 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@class LoggerConnection, LoggerStatusWindowController;
+@class LoggerConnection, LoggerStatusWindowController, LoggerPrefsWindowController;
 
 @interface LoggerAppDelegate : NSObject
 {
@@ -38,6 +38,7 @@
 	NSMutableArray *filters;
 	NSArray *filtersSortDescriptors;
 	LoggerStatusWindowController *statusController;
+	LoggerPrefsWindowController *prefsController;
 }
 
 @property (nonatomic, readonly) NSMutableArray *transports;

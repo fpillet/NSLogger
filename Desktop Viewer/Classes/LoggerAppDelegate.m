@@ -160,8 +160,9 @@
 
 - (IBAction)showPreferences:(id)sender
 {
-	LoggerPrefsWindowController *prefs = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
-	[prefs showWindow:sender];
+	if (prefsController == nil)
+		prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
+	[prefsController showWindow:sender];
 }
 
 @end

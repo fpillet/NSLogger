@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
+			<integer value="22"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -83,17 +83,17 @@
 											<object class="NSTextField" id="150717932">
 												<reference key="NSNextResponder" ref="702536803"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{14, 279}, {83, 17}}</string>
+												<string key="NSFrame">{{10, 279}, {87, 17}}</string>
 												<reference key="NSSuperview" ref="702536803"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="535671690">
 													<int key="NSCellFlags">68288064</int>
-													<int key="NSCellFlags2">272630784</int>
+													<int key="NSCellFlags2">71304192</int>
 													<string key="NSContents">Time Stamp:</string>
-													<object class="NSFont" key="NSSupport" id="817525701">
-														<string key="NSName">LucidaGrande</string>
+													<object class="NSFont" key="NSSupport" id="426593697">
+														<string key="NSName">LucidaGrande-Bold</string>
 														<double key="NSSize">13</double>
-														<int key="NSfFlags">1044</int>
+														<int key="NSfFlags">16</int>
 													</object>
 													<reference key="NSControlView" ref="150717932"/>
 													<object class="NSColor" key="NSBackgroundColor" id="686930456">
@@ -124,9 +124,9 @@
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="1064378425">
 													<int key="NSCellFlags">68288064</int>
-													<int key="NSCellFlags2">272630784</int>
+													<int key="NSCellFlags2">71304192</int>
 													<string key="NSContents">Thread ID:</string>
-													<reference key="NSSupport" ref="817525701"/>
+													<reference key="NSSupport" ref="426593697"/>
 													<reference key="NSControlView" ref="851549254"/>
 													<reference key="NSBackgroundColor" ref="686930456"/>
 													<reference key="NSTextColor" ref="752760597"/>
@@ -140,9 +140,9 @@
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="442554266">
 													<int key="NSCellFlags">68288064</int>
-													<int key="NSCellFlags2">272630784</int>
-													<string key="NSContents">Tag:</string>
-													<reference key="NSSupport" ref="817525701"/>
+													<int key="NSCellFlags2">71304192</int>
+													<string key="NSContents">Tag/Level:</string>
+													<reference key="NSSupport" ref="426593697"/>
 													<reference key="NSControlView" ref="766840397"/>
 													<reference key="NSBackgroundColor" ref="686930456"/>
 													<reference key="NSTextColor" ref="752760597"/>
@@ -156,9 +156,9 @@
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="933544165">
 													<int key="NSCellFlags">68288064</int>
-													<int key="NSCellFlags2">272630784</int>
+													<int key="NSCellFlags2">71304192</int>
 													<string key="NSContents">Text:</string>
-													<reference key="NSSupport" ref="817525701"/>
+													<reference key="NSSupport" ref="426593697"/>
 													<reference key="NSControlView" ref="708412932"/>
 													<reference key="NSBackgroundColor" ref="686930456"/>
 													<reference key="NSTextColor" ref="752760597"/>
@@ -172,9 +172,9 @@
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="736175171">
 													<int key="NSCellFlags">68288064</int>
-													<int key="NSCellFlags2">272630784</int>
+													<int key="NSCellFlags2">71304192</int>
 													<string key="NSContents">Data:</string>
-													<reference key="NSSupport" ref="817525701"/>
+													<reference key="NSSupport" ref="426593697"/>
 													<reference key="NSControlView" ref="379426397"/>
 													<reference key="NSBackgroundColor" ref="686930456"/>
 													<reference key="NSTextColor" ref="752760597"/>
@@ -190,7 +190,11 @@
 													<int key="NSCellFlags">68288064</int>
 													<int key="NSCellFlags2">272630784</int>
 													<string key="NSContents">*</string>
-													<reference key="NSSupport" ref="817525701"/>
+													<object class="NSFont" key="NSSupport" id="817525701">
+														<string key="NSName">LucidaGrande</string>
+														<double key="NSSize">13</double>
+														<int key="NSfFlags">1044</int>
+													</object>
 													<reference key="NSControlView" ref="712523593"/>
 													<reference key="NSBackgroundColor" ref="686930456"/>
 													<reference key="NSTextColor" ref="752760597"/>
