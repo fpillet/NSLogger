@@ -44,7 +44,6 @@ This tool comes from a personal need for a more powerful logger. It is currently
  * Support export to other formats than the native .nsloggerdata file format
  * Support for accepting logger connections on a specific TCP/IP port (desktop side)
  * Support for connecting to a specific IP address / port (client side)
- * Allow font selection for log text (desktop side)
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
  * Document extensibility (the NSLogger code is designed to make it easy to support other kinds of log sources, and the protocol itself supports arbitrary data embedding, allowing the use of NSLogger to transfer and display more information)
 
