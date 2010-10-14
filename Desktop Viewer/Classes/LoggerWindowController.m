@@ -179,7 +179,10 @@
 			[indexSet addIndex:row];
 	}
 	if ([indexSet count])
+	{
+		//NSLog(@"displayed=%d heights changed indexSet=%@", displayed, indexSet);
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
+	}
 }
 
 - (void)applyFontChanges
@@ -397,7 +400,9 @@ didReceiveMessages:(NSArray *)theMessages
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	assert([NSThread isMainThread]);
-	if (tableView == logTable)
+	// @@@ second part of this test is because I've seen cases where the table tries to get the
+	// height of one row past the last. Not sure why yet....
+	if (tableView == logTable && row < [displayedMessages count])
 	{
 		return [LoggerMessageCell heightForCellWithMessage:[displayedMessages objectAtIndex:row]
 												   maxSize:[tableView frame].size];
