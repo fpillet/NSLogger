@@ -73,6 +73,10 @@ typedef struct
  * -----------------------------------------------------------------
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Functions to set and get the default logger
 extern void LoggerSetDefaultLogger(Logger *aLogger);
 extern Logger *LoggerGetDefaultLogger();
@@ -126,3 +130,7 @@ extern void LogStartBlockTo(Logger *logger, NSString *format, ...);
 // Mark the end of a block
 extern void LogEndBlock();
 extern void LogEndBlockTo(Logger *logger);
+	
+#ifdef __cplusplus
+};
+#endif
