@@ -70,6 +70,7 @@
 					part = [[[NSString alloc] initWithBytes:p
 													 length:partSize
 												   encoding:NSUTF8StringEncoding] autorelease];
+					part = [part stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 				}
 				else if (partType == PART_TYPE_BINARY || partType == PART_TYPE_IMAGE)
 				{
