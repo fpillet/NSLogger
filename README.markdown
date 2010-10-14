@@ -1,5 +1,8 @@
 # NSLogger #
+
 *NSLogger* is a high perfomance logging utility which displays traces emitted by client applications. It replaces your usual *NSLog()*-based traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
+
+You'll find instructions for use in the [NSLogger wiki](http://github.com/fpillet/NSLogger/wiki/).
 
 Your application emits traces using the *NSLogger* [trace APIs](http://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
 
