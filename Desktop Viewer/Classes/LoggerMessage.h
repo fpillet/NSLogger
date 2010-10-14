@@ -56,16 +56,16 @@
 	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
 }
 
-@property (nonatomic, readonly) short contentsType;
-@property (nonatomic, readonly) NSDictionary *parts;
-@property (nonatomic, readonly) struct timeval timestamp;	// full timestamp (seconds & microseconds)
+@property (nonatomic, assign) short contentsType;
+@property (nonatomic, retain) NSDictionary *parts;
+@property (nonatomic, assign) struct timeval timestamp;	// full timestamp (seconds & microseconds)
 @property (nonatomic, retain) NSString *tag;
 @property (nonatomic, retain) id message;
-@property (nonatomic, readonly) short type;
-@property (nonatomic, readonly) short level;
+@property (nonatomic, assign) short type;
+@property (nonatomic, assign) short level;
 @property (nonatomic, assign) short indent;
 @property (nonatomic, assign) int distanceFromParent;
-@property (nonatomic, readonly) NSString *threadID;
+@property (nonatomic, retain) NSString *threadID;
 @property (nonatomic, readonly) NSSize imageSize;
 @property (nonatomic, assign) NSSize cachedCellSize;
 @property (nonatomic, retain) NSImage *image;

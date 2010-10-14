@@ -49,4 +49,6 @@
 - (NSNumber *)nextUniqueFilterIdentifier;
 - (void)saveFiltersDefinition;
 
+- (IBAction)showPreferences:(id)sender;
+
 @end

@@ -33,6 +33,7 @@
 #import "LoggerWindowController.h"
 #import "LoggerDocument.h"
 #import "LoggerStatusWindowController.h"
+#import "LoggerPrefsWindowController.h"
 
 @implementation LoggerAppDelegate
 
@@ -155,6 +156,12 @@
 	// identifier number so that no two filters are strictly identical -- makes
 	// things much easier with NSArrayController
 	return [NSNumber numberWithInteger:[[filters valueForKeyPath:@"@max.uid"] integerValue] + 1];
+}
+
+- (IBAction)showPreferences:(id)sender
+{
+	LoggerPrefsWindowController *prefs = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
+	[prefs showWindow:sender];
 }
 
 @end

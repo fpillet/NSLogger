@@ -39,20 +39,15 @@
 #define TIMESTAMP_COLUMN_WIDTH		80.0f
 #define	THREAD_COLUMN_WIDTH			80.0f
 
-static NSMutableDictionary *sDefaultTimestampAttributes = nil;
-static NSMutableDictionary *sDefaultTimedeltaAttributes = nil;
-static NSMutableDictionary *sDefaultThreadIDAttributes = nil;
-static NSMutableDictionary *sDefaultMessageAttributes = nil;
-static NSMutableDictionary *sDefaultMessageDataAttributes = nil;
-static NSFont *sDefaultFont = nil;
-static NSFont *sDefaultMonospacedFont = nil;
-static NSFont *sDefaultTagAndLevelFont = nil;
+static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 
+NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
+
 @implementation LoggerMessageCell
 
-@synthesize message, previousMessage;
+@synthesize message, previousMessage, messageAttributes;
 
 // -----------------------------------------------------------------------------
 // Class methods
@@ -73,113 +68,85 @@ static CGFloat sMinimumHeightForCell = 0;
 	return sColor;
 }
 
-+ (void)setDefaultFont:(NSFont *)aFont monospacedFont:(NSFont *)aMonospacedFont
++ (NSDictionary *)defaultAttributesDictionary
 {
-	[sDefaultFont release];
-	sDefaultFont = [aFont retain];
-	[sDefaultMonospacedFont release];
-	sDefaultMonospacedFont = [aMonospacedFont retain];
-	[sDefaultTagAndLevelFont release];
-	sDefaultTagAndLevelFont = [[NSFont fontWithDescriptor:[aFont fontDescriptor] size:[aFont pointSize]-2] retain];
-	[sDefaultTimestampAttributes autorelease];
-	sDefaultTimestampAttributes = nil;
-	[sDefaultTimedeltaAttributes autorelease];
-	sDefaultTimedeltaAttributes = nil;
-	[sDefaultThreadIDAttributes autorelease];
-	sDefaultThreadIDAttributes = nil;
-	[sDefaultMessageAttributes autorelease];
-	sDefaultMessageAttributes = nil;
-	[sDefaultMessageDataAttributes autorelease];
-	sDefaultMessageDataAttributes = nil;
-	sMinimumHeightForCell = 0;
-}
-
-+ (NSFont *)defaultFont
-{
-	if (sDefaultFont == nil)
-		sDefaultFont = [[NSFont boldSystemFontOfSize:11] retain];
-	return sDefaultFont;
-}
-
-+ (NSFont *)defaultMonospacedFont
-{
-	if (sDefaultMonospacedFont == nil)
-		sDefaultMonospacedFont = [[NSFont userFixedPitchFontOfSize:11] retain];
-	return sDefaultMonospacedFont;
-}
-
-+ (NSFont *)defaultTagAndLevelFont
-{
-	if (sDefaultTagAndLevelFont == nil)
-		sDefaultTagAndLevelFont = [[NSFont boldSystemFontOfSize:9] retain];
-	return sDefaultTagAndLevelFont;
-}
-
-+ (NSMutableDictionary *)defaultTextAttributes
-{
+	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+	
+	NSFont *defaultFont = [[NSFont boldSystemFontOfSize:11] retain];
+	NSFont *defaultMonospacedFont = [[NSFont userFixedPitchFontOfSize:11] retain];
+	NSFont *defaultTagAndLevelFont = [[NSFont boldSystemFontOfSize:9] retain];
+	
+	// Default text attributes
+	NSMutableDictionary *dict;
 	NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByTruncatingTail];
-	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-								   [self defaultFont], NSFontAttributeName,
-								   [NSColor blackColor], NSForegroundColorAttributeName,
-								   style, NSParagraphStyleAttributeName,
-								   nil];
+	NSMutableDictionary *textAttrs = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+									  defaultFont, NSFontAttributeName,
+									  [NSColor blackColor], NSForegroundColorAttributeName,
+									  style, NSParagraphStyleAttributeName,
+									  nil];
 	[style release];
-	return dict;
+	
+	// Timestamp attributes
+	[attrs setObject:textAttrs forKey:@"timestamp"];
+	
+	// Time Delta attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+	[attrs setObject:dict forKey:@"timedelta"];
+	[dict release];
+	
+	// Thread ID attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+	[attrs setObject:dict forKey:@"threadID"];
+	[dict release];
+	
+	// Tag and Level attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
+	[dict setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+	[attrs setObject:dict forKey:@"tag"];
+	[attrs setObject:dict forKey:@"level"];
+	
+	// Text message attributes
+	dict = [textAttrs mutableCopy];
+	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	[style setLineBreakMode:NSLineBreakByWordWrapping];
+	[dict setObject:style forKey:NSParagraphStyleAttributeName];
+	[style release];
+	[attrs setObject:dict forKey:@"text"];
+	[dict release];
+	
+	// Data message attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
+	[attrs setObject:dict forKey:@"data"];
+	[dict release];
+	
+	return attrs;
 }
 
-+ (NSMutableDictionary *)defaultTimestampAttributes
++ (NSDictionary *)defaultAttributes
 {
-	if (sDefaultTimestampAttributes == nil)
-		sDefaultTimestampAttributes = [[self defaultTextAttributes] retain];
-	return sDefaultTimestampAttributes;
-}
-
-+ (NSMutableDictionary *)defaultTimedeltaAttributes
-{
-	if (sDefaultTimedeltaAttributes == nil)
+	if (sDefaultAttributes == nil)
 	{
-		NSMutableDictionary *dict = [[self defaultTimestampAttributes] mutableCopy];
-		[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
-		sDefaultTimedeltaAttributes = dict;
+		// Try to load the default text attributes from user defaults
+		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:@"Message Attributes"];
+		if (data != nil)
+			sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		if (sDefaultAttributes == nil)
+			[self setDefaultAttributes:[self defaultAttributesDictionary]];
 	}
-	return sDefaultTimedeltaAttributes;
+	return sDefaultAttributes;
 }
 
-+ (NSMutableDictionary *)defaultThreadIDAttributes
++ (void)setDefaultAttributes:(NSDictionary *)newAttributes
 {
-	if (sDefaultThreadIDAttributes == nil)
-	{
-		NSMutableDictionary *dict = [[self defaultTextAttributes] retain];
-		[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
-		sDefaultThreadIDAttributes = [dict retain];
-	}
-	return sDefaultThreadIDAttributes;
-}
-
-+ (NSMutableDictionary *)defaultMessageAttributes
-{
-	if (sDefaultMessageAttributes == nil)
-	{
-		NSMutableDictionary *dict = [[self defaultTextAttributes] retain];
-		NSMutableParagraphStyle *style = [dict objectForKey:NSParagraphStyleAttributeName];
-		[style setLineBreakMode:NSLineBreakByWordWrapping];
-		sDefaultMessageAttributes = dict;
-	}
-	return sDefaultMessageAttributes;
-}
-
-+ (NSMutableDictionary *)defaultMessageDataAttributes
-{
-	if (sDefaultMessageDataAttributes == nil)
-	{
-		NSMutableDictionary *dict = [[self defaultTextAttributes] retain];
-		[dict setObject:[self defaultMonospacedFont] forKey:NSFontAttributeName];
-		NSMutableParagraphStyle *style = [dict objectForKey:NSParagraphStyleAttributeName];
-		[style setLineBreakMode:NSLineBreakByClipping];
-		sDefaultMessageDataAttributes = dict;
-	}
-	return sDefaultMessageDataAttributes;
+	[sDefaultAttributes release];
+	sDefaultAttributes = [newAttributes copy];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:@"Message Attributes"];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
 }
 
 + (NSColor *)defaultTagAndLevelColor
@@ -191,7 +158,7 @@ static CGFloat sMinimumHeightForCell = 0;
 
 + (NSColor *)colorForTag:(NSString *)tag
 {
-	// @@@ TODO
+	// @@@ TODO: tag color customization mechanism
 	return [self defaultTagAndLevelColor];
 }
 
@@ -243,10 +210,10 @@ static CGFloat sMinimumHeightForCell = 0;
 	{
 		NSRect r1 = [@"10:10:10.256" boundingRectWithSize:NSMakeSize(1024, 1024)
 												  options:NSStringDrawingUsesLineFragmentOrigin
-											   attributes:[self defaultTimestampAttributes]];
+											   attributes:[[self defaultAttributes] objectForKey:@"timestamp"]];
 		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
 											options:NSStringDrawingUsesLineFragmentOrigin
-										 attributes:[self defaultTimedeltaAttributes]];
+										 attributes:[[self defaultAttributes] objectForKey:@"timedelta"]];
 		sMinimumHeightForCell = NSHeight(r1) + NSHeight(r2) + 4;
 	}
 	return sMinimumHeightForCell;
@@ -268,7 +235,7 @@ static CGFloat sMinimumHeightForCell = 0;
 		case kMessageString: {
 			NSRect lr = [aMessage.message boundingRectWithSize:sz
 													   options:NSStringDrawingUsesLineFragmentOrigin
-													attributes:[self defaultMessageAttributes]];
+													attributes:[[self defaultAttributes] objectForKey:@"text"]];
 			sz.height = fminf(NSHeight(lr), sz.height);			
 			break;
 		}
@@ -278,7 +245,7 @@ static CGFloat sMinimumHeightForCell = 0;
 			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0);
 			NSRect lr = [@"000:" boundingRectWithSize:sz
 											  options:NSStringDrawingUsesLineFragmentOrigin
-										   attributes:[self defaultMessageDataAttributes]];
+										   attributes:[[self defaultAttributes] objectForKey:@"data"]];
 			sz.height = NSHeight(lr) * nLines;
 			break;
 		}
@@ -301,6 +268,72 @@ static CGFloat sMinimumHeightForCell = 0;
 // -----------------------------------------------------------------------------
 // Instance methods
 // -----------------------------------------------------------------------------
+- (id)copyWithZone:(NSZone *)zone
+{
+	LoggerMessageCell *c = [super copyWithZone:zone];
+	c->message = [message retain];
+	c->previousMessage = [previousMessage retain];
+	c->messageAttributes = [messageAttributes retain];
+	return c;
+}
+
+- (void)dealloc
+{
+	[message release];
+	[previousMessage release];
+	[messageAttributes release];
+	[super dealloc];
+}
+
+- (NSMutableDictionary *)timestampAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"timestamp"];
+	return [messageAttributes objectForKey:@"timestamp"];
+}
+
+- (NSMutableDictionary *)timedeltaAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"timedelta"];
+	return [messageAttributes objectForKey:@"timedelta"];
+}
+
+- (NSMutableDictionary *)threadIDAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"threadID"];
+	return [messageAttributes objectForKey:@"threadID"];
+}
+
+- (NSMutableDictionary *)tagAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"tag"];
+	return [messageAttributes objectForKey:@"tag"];	
+}
+
+- (NSMutableDictionary *)levelAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"level"];
+	return [messageAttributes objectForKey:@"level"];
+}
+
+- (NSMutableDictionary *)messageTextAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"text"];
+	return [messageAttributes objectForKey:@"text"];
+}
+
+- (NSMutableDictionary *)messageDataAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"data"];
+	return [messageAttributes objectForKey:@"data"];
+}
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
@@ -351,8 +384,8 @@ static CGFloat sMinimumHeightForCell = 0;
 	if (!highlighted)
 	{
 		// horizontal bottom separator
-		CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame) - 1));
-		CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame) - 1));
+		CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
+		CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
 	}
 	// timestamp/thread separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
@@ -388,7 +421,7 @@ static CGFloat sMinimumHeightForCell = 0;
 	if (previousMessage != nil)
 		timeDeltaStr = StringWithTimeDelta(&td);
 
-	NSMutableDictionary *attrs = [[self class] defaultTimestampAttributes];
+	NSMutableDictionary *attrs = [self timestampAttributes];
 	NSRect bounds = [timestampStr boundingRectWithSize:tr.size
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:attrs];
@@ -404,7 +437,7 @@ static CGFloat sMinimumHeightForCell = 0;
 					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 					attributes:attrs];
 
-	attrs = [[self class] defaultTimedeltaAttributes];
+	attrs = [self timedeltaAttributes];
 	if (highlighted)
 	{
 		attrs = [[attrs mutableCopy] autorelease];
@@ -415,7 +448,7 @@ static CGFloat sMinimumHeightForCell = 0;
 					attributes:attrs];
 
 	// Draw thread ID
-	attrs = [[self class] defaultThreadIDAttributes];
+	attrs = [self threadIDAttributes];
 	if (highlighted)
 	{
 		attrs = [[attrs mutableCopy] autorelease];
@@ -438,31 +471,21 @@ static CGFloat sMinimumHeightForCell = 0;
 		NSSize tagSize = NSZeroSize;
 		NSSize levelSize = NSZeroSize;
 		NSString *levelString = nil;
-		NSMutableDictionary *tagAttrs = nil;
-		NSMutableDictionary *levelAttrs = nil;
 		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
-			tagAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-						[[self class] defaultTagAndLevelFont], NSFontAttributeName,
-						[NSColor whiteColor], NSForegroundColorAttributeName,
-						nil];
 			tagSize = [tag boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
 										options:NSStringDrawingUsesLineFragmentOrigin
-									 attributes:tagAttrs].size;
+									 attributes:[self tagAttributes]].size;
 			tagSize.width += 4;
 			tagSize.height += 2;
 		}
 		if (level)
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
-			levelAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-						  [[self class] defaultTagAndLevelFont], NSFontAttributeName,
-						  [NSColor whiteColor], NSForegroundColorAttributeName,
-						  nil];
 			levelSize = [levelString boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
-											   attributes:levelAttrs].size;
+											   attributes:[self levelAttributes]].size;
 			levelSize.width += 4;
 			levelSize.height += 2;
 		}
@@ -498,13 +521,13 @@ static CGFloat sMinimumHeightForCell = 0;
 		{
 			[tag drawWithRect:NSInsetRect(tagRect, 2, 1)
 					  options:NSStringDrawingUsesLineFragmentOrigin
-				   attributes:tagAttrs];
+				   attributes:[self tagAttributes]];
 		}
 		if (levelSize.width)
 		{
 			[levelString drawWithRect:NSInsetRect(levelRect, 2, 1)
 							  options:NSStringDrawingUsesLineFragmentOrigin
-						   attributes:levelAttrs];
+						   attributes:[self levelAttributes]];
 		}
 	}
 
@@ -516,7 +539,7 @@ static CGFloat sMinimumHeightForCell = 0;
 
 	if (message.contentsType == kMessageString)
 	{
-		attrs = [[self class] defaultMessageAttributes];
+		attrs = [self messageTextAttributes];
 		if (highlighted)
 		{
 			attrs = [[attrs mutableCopy] autorelease];
@@ -529,7 +552,7 @@ static CGFloat sMinimumHeightForCell = 0;
 	else if (message.contentsType == kMessageData)
 	{
 		NSArray *strings = [[self class] stringsWithData:(NSData *)message.message];
-		attrs = [[self class] defaultMessageDataAttributes];
+		attrs = [self messageDataAttributes];
 		if (highlighted)
 		{
 			attrs = [[attrs mutableCopy] autorelease];

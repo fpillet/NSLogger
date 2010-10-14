@@ -64,6 +64,7 @@
 
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
 	[attachedConnection release];
@@ -88,6 +89,11 @@
 	loadComplete = YES;
 	if (attachedConnection != nil)
 		[self refreshAllMessages];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(applyFontChanges)
+												 name:kMessageAttributesChangedNotification
+											   object:nil];
 }
 
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
@@ -154,6 +160,17 @@
 		[self performSelector:@selector(refreshAllMessages) withObject:nil afterDelay:0];
 	}
 	[currentPredicate release];	
+}
+
+- (void)applyFontChanges
+{
+	@synchronized(attachedConnection.messages)
+	{
+		for (LoggerMessage *msg in attachedConnection.messages)
+			msg.cachedCellSize = NSZeroSize;
+	}
+	[logTable noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [displayedMessages count])]];
+//	[logTable reloadData];
 }
 
 // -----------------------------------------------------------------------------

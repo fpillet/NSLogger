@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D027B2C12663E1200E6F241 /* LoggerPrefs.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */; };
+		3D027B2F12663E3F00E6F241 /* LoggerPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */; };
 		3D18EFA10F553B3800EC6DCC /* LoggerUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */; };
 		3D24C40C125638A500435837 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; };
 		3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; };
@@ -75,6 +77,9 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* NSLogger_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLogger_Prefix.pch; sourceTree = "<group>"; };
+		3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoggerPrefs.xib; sourceTree = "<group>"; };
+		3D027B2D12663E3F00E6F241 /* LoggerPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerPrefsWindowController.h; path = Classes/LoggerPrefsWindowController.h; sourceTree = "<group>"; };
+		3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerPrefsWindowController.m; path = Classes/LoggerPrefsWindowController.m; sourceTree = "<group>"; };
 		3D18EF9F0F553B3800EC6DCC /* LoggerUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerUtils.h; path = Classes/LoggerUtils.h; sourceTree = "<group>"; };
 		3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerUtils.m; path = Classes/LoggerUtils.m; sourceTree = "<group>"; };
 		3D24C36912560C1700435837 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/LoggerCommon.h"; sourceTree = SOURCE_ROOT; };
@@ -138,6 +143,8 @@
 				3D6A34691262F60400D0EC3A /* LoggerDocument.m */,
 				3D4EA1DF0F3854C300DF81E6 /* LoggerWindowController.h */,
 				3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */,
+				3D027B2D12663E3F00E6F241 /* LoggerPrefsWindowController.h */,
+				3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */,
 				3D18EF9F0F553B3800EC6DCC /* LoggerUtils.h */,
 				3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */,
 				3DADCB9E125FC3B200807A7D /* ValueTransformers.h */,
@@ -204,6 +211,7 @@
 				3D6A34A71262FD5500D0EC3A /* MainMenu.xib */,
 				3D6A37C8126399D700D0EC3A /* LoggerStatus.xib */,
 				3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */,
+				3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -341,6 +349,7 @@
 				3D6A34AC1262FD6300D0EC3A /* LoggerWindow.xib in Resources */,
 				3D6A34AD1262FD6C00D0EC3A /* MainMenu.xib in Resources */,
 				3D6A37C9126399D700D0EC3A /* LoggerStatus.xib in Resources */,
+				3D027B2C12663E1200E6F241 /* LoggerPrefs.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,6 +375,7 @@
 				3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */,
 				3D6A346A1262F60400D0EC3A /* LoggerDocument.m in Sources */,
 				3D6A37C51263998A00D0EC3A /* LoggerStatusWindowController.m in Sources */,
+				3D027B2F12663E3F00E6F241 /* LoggerPrefsWindowController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,10 +395,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../BWToolkit\"",
-				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
@@ -406,10 +412,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../../BWToolkit\"",
-				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NSLogger_Prefix.pch;

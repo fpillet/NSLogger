@@ -1,5 +1,5 @@
 /*
- * LoggerMessageCell.h
+ * LoggerPrefsWindowController.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -30,25 +30,31 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@class LoggerMessage;
-
-@interface LoggerMessageCell : NSCell
+@interface LoggerPrefsWindowController : NSWindowController
 {
-	LoggerMessage *message;
-	LoggerMessage *previousMessage;
+	IBOutlet NSTabView *tabView;
+
+	IBOutlet NSControl *sampleMessage;
+	IBOutlet NSControl *sampleDataMessage;
 	
-	NSDictionary *messageAttributes;
+	IBOutlet NSTextField *timestampFontName;
+	IBOutlet NSTextField *threadIDFontName;
+	IBOutlet NSTextField *tagFontName;
+	IBOutlet NSTextField *textFontName;
+	IBOutlet NSTextField *dataFontName;
+
+	int currentFontSelection;
+	NSDictionary *attributes;
 }
 
-@property (nonatomic, retain) LoggerMessage *message;
-@property (nonatomic, retain) LoggerMessage *previousMessage;
-@property (nonatomic, retain) NSDictionary *messageAttributes;
-
-+ (NSDictionary *)defaultAttributesDictionary;
-+ (NSDictionary *)defaultAttributes;
-+ (void)setDefaultAttributes:(NSDictionary *)newAttributes;
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz;
+- (IBAction)selectFont:(id)sender;
+- (IBAction)applyChanges:(id)sender;
+- (IBAction)cancelChanges:(id)sender;
+- (IBAction)saveChanges:(id)sender;
+- (IBAction)revertToDefaults:(id)sender;
 
 @end
 
-extern NSString * const kMessageAttributesChangedNotification;
+
+@interface SampleMessageControl : NSControl
+@end
