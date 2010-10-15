@@ -70,6 +70,5 @@
 - (IBAction)startEditingFilter:(id)sender;
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
-- (IBAction)filterPredicateChanged:(id)sender;
 
 @end

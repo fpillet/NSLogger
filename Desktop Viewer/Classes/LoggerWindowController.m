@@ -587,10 +587,4 @@ didReceiveMessages:(NSArray *)theMessages
 	[filterEditorWindow orderOut:self];
 }
 
-- (IBAction)filterPredicateChanged:(id)sender
-{
-	// Perform live update while editing predicate
-	[self refreshMessagesIfPredicateChanged:[filterEditor predicate]];
-}
-
 @end
