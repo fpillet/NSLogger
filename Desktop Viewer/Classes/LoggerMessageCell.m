@@ -33,6 +33,8 @@
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 
+#define MAX_DATA_LINES				16				// max number of data lines to show
+
 #define MINIMUM_CELL_HEIGHT			30.0f
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
@@ -172,8 +174,17 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	char buffer[6+16*3+1+16+1+1];
 	buffer[0] = '\0';
 	const unsigned char *q = [data bytes];
+	if (dataLen == 1)
+		[strings addObject:NSLocalizedString(@"Raw data, 1 byte:", @"")];
+	else
+		[strings addObject:[NSString stringWithFormat:NSLocalizedString(@"Raw data, %u bytes:", @""), dataLen]];
 	while (dataLen)
 	{
+		if ([strings count] == MAX_DATA_LINES)
+		{
+			[strings addObject:NSLocalizedString(@"Double-click to see all data...", @"")];
+			break;
+		}
 		int i, b = sprintf(buffer,"%04x: ", offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
@@ -249,7 +260,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 
 		case kMessageData: {
 			NSUInteger numBytes = [(NSData *)aMessage.message length];
-			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0);
+			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
+			if (nLines > MAX_DATA_LINES)
+				nLines = MAX_DATA_LINES + 1;
 			NSRect lr = [@"000:" boundingRectWithSize:sz
 											  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 										   attributes:[[self defaultAttributes] objectForKey:@"data"]];
@@ -575,8 +588,15 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		}
 		CGFloat y = NSMinY(r);
 		CGFloat availHeight = NSHeight(r);
+		int lineIndex = 0;
 		for (NSString *s in strings)
 		{
+			if (lineIndex == 16)
+			{
+				attrs = [[attrs mutableCopy] autorelease];
+				[attrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
+				[attrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
+			}
 			NSRect lr = [s boundingRectWithSize:r.size
 										options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 									 attributes:attrs];
@@ -590,6 +610,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			if (availHeight < NSHeight(lr))
 				break;
 			y += NSHeight(lr);
+			lineIndex++;
 		}
 	}
 	else if (message.contentsType == kMessageImage)
