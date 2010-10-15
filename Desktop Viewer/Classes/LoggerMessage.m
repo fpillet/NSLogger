@@ -68,16 +68,34 @@ static NSMutableArray *sTags = nil;
 
 - (NSString *)textRepresentation
 {
-	if (contentsType == kMessageString)
-		return message;
-	if (contentsType == kMessageImage)
-		return @"";
+	// Prepare a text representation of the message, suitable for export of text field display
+	time_t sec = timestamp.tv_sec;
+	struct tm *t = localtime(&sec);
+	NSString *timestampStr;
+	if (timestamp.tv_usec == 0)
+		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d    ", t->tm_hour, t->tm_min, t->tm_sec];
+	else
+		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000];
+	NSString *tagStr = @"";
+	if ([tag length])
+		tagStr = [NSString stringWithFormat:@" %@ |", tag];
+	NSString *threadIDStr = @"";
+	if ([threadID length])
+		threadIDStr = [NSString stringWithFormat:@" %@ |", threadID];
+
+	NSString *header = [NSString stringWithFormat:@"%@ |%@%@ ", timestampStr, tagStr, threadIDStr];
 	
+	if (contentsType == kMessageString)
+		return [header stringByAppendingString:message];
+	if (contentsType == kMessageImage)
+		return [NSString stringWithFormat:@"%@<image %dx%d>", header, (int)self.imageSize.width, (int)self.imageSize.height];
+
 	assert([message isKindOfClass:[NSData class]]);
 	NSMutableString *s = [[NSMutableString alloc] init];
+	[s appendString:header];
 	NSUInteger offset = 0, dataLen = [message length];
 	NSString *str;
-	char buffer[6+16*3+1+16+1+1+1];
+	char buffer[1+6+16*3+1+16+1+1+1];
 	buffer[0] = '\0';
 	const unsigned char *q = [message bytes];
 	if (dataLen == 1)
@@ -86,7 +104,7 @@ static NSMutableArray *sTags = nil;
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer,"%04x: ", offset);
+		int i, b = sprintf(buffer," %04x: ", offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)

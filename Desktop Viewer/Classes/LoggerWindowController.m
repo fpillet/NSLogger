@@ -51,6 +51,7 @@
 
 @synthesize info, filterString, filterTag;
 @synthesize attachedConnection;
+@synthesize messagesSelected;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -91,7 +92,7 @@
 	[cell release];
 	[logTable setIntercellSpacing:NSMakeSize(0, 0)];
 	[logTable setTarget:self];
-	[logTable setDoubleAction:@selector(openMessagesDetails:)];
+	[logTable setDoubleAction:@selector(openDetailsWindow:)];
 	
 	[filterTable setTarget:self];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
@@ -216,6 +217,11 @@
 	[self tileLogTable:NO];
 }
 
+- (IBAction)resetQuickFilter
+{
+	// @@@ TODO
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Quick filter
@@ -335,13 +341,17 @@
 	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
 }
 
-- (void)openMessagesDetails:(id)sender
+- (IBAction)openDetailsWindow:(id)sender
 {
 	// open a details view window for the selected messages
-	LoggerDetailsWindowController *wc = [[LoggerDetailsWindowController alloc] initWithWindowNibName:@"LoggerDetailsWindow"];
-	wc.messages = [displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]];
-	[[self document] addWindowController:wc];
-	[wc showWindow:self];
+	if (detailsWindowController == nil)
+	{
+		detailsWindowController = [[LoggerDetailsWindowController alloc] initWithWindowNibName:@"LoggerDetailsWindow"];
+		[detailsWindowController window];	// force window to load
+		[[self document] addWindowController:detailsWindowController];
+	}
+	[detailsWindowController setMessages:[displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]]];
+	[detailsWindowController showWindow:self];
 }
 
 // -----------------------------------------------------------------------------
@@ -512,6 +522,16 @@ didReceiveMessages:(NSArray *)theMessages
 												   maxSize:[tableView frame].size];
 	}
 	return [tableView rowHeight];
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+	if ([aNotification object] == logTable)
+	{
+		self.messagesSelected = ([logTable selectedRow] >= 0);
+		if (messagesSelected && detailsWindowController != nil && [[detailsWindowController window] isVisible])
+			[detailsWindowController setMessages:[displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]]];
+	}
 }
 
 // -----------------------------------------------------------------------------

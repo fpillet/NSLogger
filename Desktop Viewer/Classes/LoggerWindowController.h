@@ -30,7 +30,7 @@
  */
 #import "LoggerConnection.h"
 
-@class LoggerFilter, LoggerMessageCell;
+@class LoggerFilter, LoggerMessageCell, LoggerDetailsWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
 {
@@ -45,6 +45,7 @@
 	IBOutlet NSTextField *filterName;
 	
 	LoggerConnection *attachedConnection;
+	LoggerDetailsWindowController *detailsWindowController;
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
@@ -59,16 +60,19 @@
 	dispatch_queue_t messageFilteringQueue;
 
 	int lastMessageRow;
+	BOOL messagesSelected;
 	BOOL loadComplete;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
+@property (nonatomic, assign) BOOL messagesSelected;
 
 - (IBAction)selectQuickFilterLevel:(id)sender;
-
+- (IBAction)openDetailsWindow:(id)sender;
 - (IBAction)addFilter:(id)sender;
 - (IBAction)startEditingFilter:(id)sender;
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
+- (IBAction)resetQuickFilter;
 
 @end

@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -43,7 +43,7 @@
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 226}, {490, 284}}</string>
 				<int key="NSWTFlags">544735232</int>
-				<string key="NSWindowTitle">Message Details</string>
+				<string key="NSWindowTitle">Details</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -65,7 +65,7 @@
 										<object class="NSTextView" id="552433678">
 											<reference key="NSNextResponder" ref="592996454"/>
 											<int key="NSvFlags">2322</int>
-											<string key="NSFrameSize">{153, 22}</string>
+											<string key="NSFrame">{{0, 8}, {153, 14}}</string>
 											<reference key="NSSuperview" ref="592996454"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="744760226">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -92,7 +92,7 @@
 												<nil key="NSMarkedAttributes"/>
 												<object class="NSColor" key="NSBackgroundColor">
 													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MC44OTk5OTk5NzYyAA</bytes>
+													<bytes key="NSWhite">MQA</bytes>
 												</object>
 												<object class="NSDictionary" key="NSSelectedAttributes">
 													<bool key="EncodedWithXMLCoder">YES</bool>
@@ -107,7 +107,7 @@
 															<int key="NSColorSpace">6</int>
 															<string key="NSCatalogName">System</string>
 															<string key="NSColorName">selectedTextBackgroundColor</string>
-															<object class="NSColor" key="NSColor">
+															<object class="NSColor" key="NSColor" id="146722854">
 																<int key="NSColorSpace">3</int>
 																<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 															</object>
@@ -158,8 +158,10 @@
 									<reference key="NSNextKeyView" ref="552433678"/>
 									<reference key="NSDocView" ref="552433678"/>
 									<object class="NSColor" key="NSBGColor">
-										<int key="NSColorSpace">3</int>
-										<bytes key="NSWhite">MC44OTk5OTk5NzYyAA</bytes>
+										<int key="NSColorSpace">6</int>
+										<string key="NSCatalogName">System</string>
+										<string key="NSColorName">controlBackgroundColor</string>
+										<reference key="NSColor" ref="146722854"/>
 									</object>
 									<object class="NSCursor" key="NSCursor">
 										<string key="NSHotSpot">{4, -5}</string>
@@ -203,6 +205,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSFrameAutosaveName">DetailsWindow</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -326,10 +329,10 @@
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>{{322, 507}, {490, 284}}</string>
+					<string>{{28, 843}, {490, 284}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{322, 507}, {490, 284}}</string>
+					<string>{{28, 843}, {490, 284}}</string>
 					<integer value="1"/>
 					<string>{196, 240}</string>
 					<string>{{202, 428}, {480, 270}}</string>
