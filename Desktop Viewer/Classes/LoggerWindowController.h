@@ -36,9 +36,10 @@
 {
 	IBOutlet NSTableView *logTable;
 	IBOutlet NSTableView *filterTable;
+	IBOutlet NSPopUpButton *quickFilter;
 
 	IBOutlet NSArrayController *filterListController;
-	
+
 	IBOutlet NSWindow *filterEditorWindow;
 	IBOutlet NSPredicateEditor *filterEditor;
 	IBOutlet NSTextField *filterName;
@@ -47,9 +48,12 @@
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
+	NSMutableSet *tags;
+
+	NSPredicate *filterPredicate;				// created from current selected filters, + quick filter string / tag / log level
 
 	NSString *filterString;
-	NSPredicate *filterPredicate;
+	NSString *filterTag;
 	int logLevel;
 
 	dispatch_queue_t messageFilteringQueue;
@@ -58,9 +62,9 @@
 	BOOL loadComplete;
 }
 
-@property (nonatomic, retain) NSString *info;
-@property (nonatomic, retain) NSString *filterString;
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
+
+- (IBAction)selectQuickFilterLevel:(id)sender;
 
 - (IBAction)addFilter:(id)sender;
 - (IBAction)startEditingFilter:(id)sender;

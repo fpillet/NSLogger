@@ -34,7 +34,11 @@
 #import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
 
-@interface LoggerWindowController (Private)
+@interface LoggerWindowController ()
+@property (nonatomic, retain) NSString *info;
+@property (nonatomic, retain) NSString *filterString;
+@property (nonatomic, retain) NSString *filterTag;
+- (void)rebuildQuickFilterPopup;
 - (void)updateClientInfo;
 - (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate;
 - (void)refreshAllMessages;
@@ -44,7 +48,7 @@
 
 @implementation LoggerWindowController
 
-@synthesize info, filterString;
+@synthesize info, filterString, filterTag;
 @synthesize attachedConnection;
 
 // -----------------------------------------------------------------------------
@@ -57,6 +61,7 @@
 	{
 		messageFilteringQueue = dispatch_queue_create("com.florentpillet.nslogger.messageFiltering", NULL);
 		displayedMessages = [[NSMutableArray alloc] initWithCapacity:4096];
+		tags = [[NSMutableSet alloc] init];
 		[self setShouldCloseDocument:YES];
 	}
 	return self;
@@ -70,8 +75,10 @@
 	[attachedConnection release];
 	[info release];
 	[filterString release];
+	[filterTag release];
 	[filterPredicate release];
 	[displayedMessages release];
+	[tags release];
 	[super dealloc];
 }
 
@@ -85,12 +92,13 @@
 	[filterTable setTarget:self];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
+	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate:nil];
 	loadComplete = YES;
 	[logTable sizeToFit];
 	if (attachedConnection != nil)
 		[self refreshAllMessages];
-	
+
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(applyFontChanges)
 												 name:kMessageAttributesChangedNotification
@@ -129,6 +137,16 @@
 																	rightExpression:rhs
 																		   modifier:NSDirectPredicateModifier
 																			   type:NSLessThanPredicateOperatorType
+																			options:0]];
+	}
+	if (filterTag != nil)
+	{
+		NSExpression *lhs = [NSExpression expressionForKeyPath:@"tag"];
+		NSExpression *rhs = [NSExpression expressionForConstantValue:filterTag];
+		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
+																	rightExpression:rhs
+																		   modifier:NSDirectPredicateModifier
+																			   type:NSEqualToPredicateOperatorType
 																			options:0]];
 	}
 	if ([filterString length])
@@ -179,10 +197,7 @@
 			[indexSet addIndex:row];
 	}
 	if ([indexSet count])
-	{
-		//NSLog(@"displayed=%d heights changed indexSet=%@", displayed, indexSet);
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
-	}
 }
 
 - (void)applyFontChanges
@@ -194,6 +209,95 @@
 - (void)windowDidResize:(NSNotification *)notification
 {
 	[self tileLogTable:NO];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Quick filter
+// -----------------------------------------------------------------------------
+- (void)rebuildQuickFilterPopup
+{
+	NSMenu *menu = [quickFilter menu];
+	
+	// remove all tags
+	while (![[menu itemAtIndex:0] isSeparatorItem])
+		[menu removeItemAtIndex:0];
+	[menu insertItemWithTitle:@"" action:NULL keyEquivalent:@"" atIndex:0];	// title
+
+	// set selected level checkmark
+	NSString *levelTitle = nil;
+	for (NSMenuItem *menuItem in [menu itemArray])
+	{
+		if ([menuItem tag] == logLevel)
+		{
+			[menuItem setState:NSOnState];
+			levelTitle = [menuItem title];
+		}
+		else
+			[menuItem setState:NSOffState];
+	}
+
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"All Tags", @"")
+												  action:@selector(selectQuickFilterTag:)
+										   keyEquivalent:@""];
+	[item setTarget:self];
+	[item setTag:-1];
+	NSString *tagTitle;
+	if (filterTag == nil)
+	{
+		[item setState:NSOnState];
+		tagTitle = [item title];
+	}
+	else
+		tagTitle = [NSString stringWithFormat:NSLocalizedString(@"Tag: %@", @""), filterTag];
+	[menu insertItem:item atIndex:1];
+	[item release];
+
+	int i = 1;
+	for (NSString *tag in [[tags allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)])
+	{
+		item = [[NSMenuItem alloc] initWithTitle:tag action:@selector(selectQuickFilterTag:) keyEquivalent:@""];
+		[item setRepresentedObject:tag];
+		if ([filterTag isEqualToString:tag])
+			[item setState:NSOnState];
+		[menu insertItem:item atIndex:++i];
+		[item release];
+	}
+
+	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", tagTitle, levelTitle]];
+}
+
+- (void)addTags:(NSArray *)newTags
+{
+	// complete the set of "seen" tags in messages
+	// if changed, update the quick filter popup
+	NSUInteger numTags = [tags count];
+	[tags addObjectsFromArray:newTags];
+	if ([tags count] != numTags)
+		[self rebuildQuickFilterPopup];
+}
+
+- (void)selectQuickFilterTag:(id)sender
+{
+	if (filterTag != [sender representedObject])
+	{
+		self.filterTag = [sender representedObject];
+		[self rebuildQuickFilterPopup];
+		[self updateFilterPredicate:nil];
+		[self refreshAllMessages];
+	}
+}
+
+- (IBAction)selectQuickFilterLevel:(id)sender
+{
+	int level = [sender tag];
+	if (level != logLevel)
+	{
+		logLevel = level;
+		[self rebuildQuickFilterPopup];
+		[self updateFilterPredicate:nil];
+		[self refreshAllMessages];
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -263,19 +367,23 @@
 - (void)filterIncomingMessages:(NSArray *)messages
 					withFilter:(NSPredicate *)aFilter
 {
+	// collect all tags
+	NSArray *msgTags = [messages valueForKeyPath:@"@distinctUnionOfObjects.tag"];
+
 	// find out which messages we want to keep. Executed on the message filtering queue
 	NSArray *filteredMessages = [messages filteredArrayUsingPredicate:aFilter];
 	if ([filteredMessages count])
 	{
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[self appendMessagesToTable:filteredMessages];
+			[self addTags:msgTags];
 		});
 	}
 }
 
 // -----------------------------------------------------------------------------
 #pragma mark -
-#pragma mark Properties accessors
+#pragma mark Properties and bindings
 // -----------------------------------------------------------------------------
 - (void)setAttachedConnection:(LoggerConnection *)aConnection
 {
@@ -297,26 +405,6 @@
 	{
 		[filterString autorelease];
 		filterString = [newString copy];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
-	}
-}
-
-- (NSNumber *)logLevel
-{
-	return [NSNumber numberWithInteger:logLevel];
-}
-
-- (void)setLogLevel:(NSNumber *)newLogLevel
-{
-	int l = [newLogLevel integerValue];
-	if (l == -1)
-		l = 0;
-	if (l != logLevel)
-	{
-		[self willChangeValueForKey:@"logLevel"];
-		logLevel = l;
-		[self didChangeValueForKey:@"logLevel"];
 		[self updateFilterPredicate:nil];
 		[self refreshAllMessages];
 	}
@@ -401,8 +489,10 @@ didReceiveMessages:(NSArray *)theMessages
 {
 	assert([NSThread isMainThread]);
 	// @@@ second part of this test is because I've seen cases where the table tries to get the
-	// height of one row past the last. Not sure why yet....
-	if (tableView == logTable && row < [displayedMessages count])
+	// height of one row past the last. Not sure why yet.... It looks like when I send
+	// noteHeightOfRowsWithIndexesChanged: to the table, we sometimes receive a tableView:heightOfRow:
+	// message with row==[displayedMessages count].
+	if (tableView == logTable && row >= 0 && row < [displayedMessages count])
 	{
 		return [LoggerMessageCell heightForCellWithMessage:[displayedMessages objectAtIndex:row]
 												   maxSize:[tableView frame].size];
