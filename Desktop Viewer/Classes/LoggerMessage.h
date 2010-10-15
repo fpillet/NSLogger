@@ -71,6 +71,7 @@
 @property (nonatomic, retain) NSImage *image;
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage;
+- (NSString *)textRepresentation;
 
 @end
 

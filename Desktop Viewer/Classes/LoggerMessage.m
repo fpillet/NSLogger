@@ -66,6 +66,58 @@ static NSMutableArray *sTags = nil;
 	return imageSize;
 }
 
+- (NSString *)textRepresentation
+{
+	if (contentsType == kMessageString)
+		return message;
+	if (contentsType == kMessageImage)
+		return @"";
+	
+	assert([message isKindOfClass:[NSData class]]);
+	NSMutableString *s = [[NSMutableString alloc] init];
+	NSUInteger offset = 0, dataLen = [message length];
+	NSString *str;
+	char buffer[6+16*3+1+16+1+1+1];
+	buffer[0] = '\0';
+	const unsigned char *q = [message bytes];
+	if (dataLen == 1)
+		[s appendString:NSLocalizedString(@"Raw data, 1 byte:\n", @"")];
+	else
+		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
+	while (dataLen)
+	{
+		int i, b = sprintf(buffer,"%04x: ", offset);
+		for (i=0; i < 16 && i < dataLen; i++)
+			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
+		for (int j=i; j < 16; j++)
+			strcat(buffer, "   ");
+		
+		b = strlen(buffer);
+		buffer[b++] = '\'';
+		for (i=0; i < 16 && i < dataLen; i++, q++)
+		{
+			if (*q >= 32 && *q < 128)
+				buffer[b++] = *q;
+			else
+				buffer[b++] = ' ';
+		}
+		for (int j=i; j < 16; j++)
+			buffer[b++] = ' ';
+		buffer[b++] = '\'';
+		buffer[b++] = '\n';
+		buffer[b] = 0;
+		
+		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
+		[s appendString:str];
+		[str release];
+		
+		dataLen -= i;
+		offset += i;
+		q += i;
+	}
+	return [s autorelease];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark NSCoding

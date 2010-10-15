@@ -29,6 +29,7 @@
  * 
  */
 #import "LoggerWindowController.h"
+#import "LoggerDetailsWindowController.h"
 #import "LoggerMessageCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
@@ -89,9 +90,13 @@
 	[tc setDataCell:cell];
 	[cell release];
 	[logTable setIntercellSpacing:NSMakeSize(0, 0)];
+	[logTable setTarget:self];
+	[logTable setDoubleAction:@selector(openMessagesDetails:)];
+	
 	[filterTable setTarget:self];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
+
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate:nil];
 	loadComplete = YES;
@@ -328,6 +333,15 @@
 		[logTable scrollRowToVisible:[displayedMessages count] - 1];
 	lastMessageRow = [displayedMessages count];
 	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
+}
+
+- (void)openMessagesDetails:(id)sender
+{
+	// open a details view window for the selected messages
+	LoggerDetailsWindowController *wc = [[LoggerDetailsWindowController alloc] initWithWindowNibName:@"LoggerDetailsWindow"];
+	wc.messages = [displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]];
+	[[self document] addWindowController:wc];
+	[wc showWindow:self];
 }
 
 // -----------------------------------------------------------------------------
