@@ -709,7 +709,7 @@ static void EncodeTimestampAndThreadID(CFMutableDataRef encoder)
 
 static CFMutableDataRef CreateLoggerData()
 {
-	CFMutableDataRef data = CFDataCreateMutable(NULL, 4096);
+	CFMutableDataRef data = CFDataCreateMutable(NULL, 0);
 	CFDataIncreaseLength(data, 6);
 	UInt8 *p = CFDataGetMutableBytePtr(data);
 	p[3] = 2;		// size 0x00000002 in big endian
