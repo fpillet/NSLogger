@@ -182,10 +182,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		
 		b = strlen(buffer);
 		buffer[b++] = '\'';
-		for (i=0; i < 16 && i < dataLen; i++)
+		for (i=0; i < 16 && i < dataLen; i++, q++)
 		{
 			if (*q >= 32 && *q < 128)
-				buffer[b++] = *q++;
+				buffer[b++] = *q;
 			else
 				buffer[b++] = ' ';
 		}
@@ -382,16 +382,13 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
-	CGColorRef cellSeparatorDark = CGColorCreateGenericGray(0.80f, 1.0f);
-	CGContextSetStrokeColorWithColor(ctx, cellSeparatorDark);
-	CGColorRelease(cellSeparatorDark);
+	CGColorRef cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
+	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
+	CGColorRelease(cellSeparatorColor);
 	CGContextBeginPath(ctx);
-	if (!highlighted)
-	{
-		// horizontal bottom separator
-		CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
-		CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
-	}
+	// horizontal bottom separator
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
+	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
 	// timestamp/thread separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
