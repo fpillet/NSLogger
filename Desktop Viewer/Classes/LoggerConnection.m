@@ -55,7 +55,8 @@
 
 - (void)dealloc
 {
-	dispatch_release(messageProcessingQueue);
+	if (messageProcessingQueue != nil)
+		dispatch_release(messageProcessingQueue);
 	[messages release];
 	[parentIndexesStack release];
 	[clientName release];
