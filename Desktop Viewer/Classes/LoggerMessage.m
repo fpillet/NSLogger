@@ -42,7 +42,7 @@ static NSMutableArray *sTags = nil;
 
 - (void)dealloc
 {
-	// remember that domain is non-retained
+	// remember that tag is non-retained
 	[parts release];
 	[message release];
 	[image release];
@@ -76,7 +76,6 @@ static NSMutableArray *sTags = nil;
 	{
 		timestamp.tv_sec = [decoder decodeInt64ForKey:@"s"];
 		timestamp.tv_usec = [decoder decodeInt64ForKey:@"us"];
-		tag = [[decoder decodeObjectForKey:@"tag"] retain];
 		parts = [[decoder decodeObjectForKey:@"p"] retain];
 		message = [[decoder decodeObjectForKey:@"m"] retain];
 		sequence = [decoder decodeIntForKey:@"n"];
@@ -86,6 +85,7 @@ static NSMutableArray *sTags = nil;
 		contentsType = [decoder decodeIntForKey:@"ct"];
 		indent = [decoder decodeIntForKey:@"i"];
 		distanceFromParent = [decoder decodeIntForKey:@"d"];
+		self.tag = [decoder decodeObjectForKey:@"tag"];
 	}
 	return self;
 }
