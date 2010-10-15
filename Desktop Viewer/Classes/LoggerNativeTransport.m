@@ -90,8 +90,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (NSString *)status
 {
-	// status is being observed by LoggerStatusWindowController and changes once when setupPort either
-	// succeeds or fails
 	if (listenerThread == nil)
 		return NSLocalizedString(@"Bonjour service starting up...", @"");
 	if (listenerSocket_ipv4 == NULL && listenerSocket_ipv6 == NULL)
