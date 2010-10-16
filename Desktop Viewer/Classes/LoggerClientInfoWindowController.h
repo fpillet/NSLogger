@@ -1,5 +1,5 @@
 /*
- * LoggerWindowController.h
+ * LoggerClientInfoWindowController.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,55 +28,15 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "LoggerConnection.h"
+#import <Cocoa/Cocoa.h>
 
-@class LoggerFilter, LoggerMessageCell;
-@class LoggerDetailsWindowController, LoggerClientInfoWindowController;
+@class LoggerConnection;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
+@interface LoggerClientInfoWindowController : NSWindowController
 {
-	IBOutlet NSTableView *logTable;
-	IBOutlet NSTableView *filterTable;
-	IBOutlet NSPopUpButton *quickFilter;
-
-	IBOutlet NSArrayController *filterListController;
-
-	IBOutlet NSWindow *filterEditorWindow;
-	IBOutlet NSPredicateEditor *filterEditor;
-	IBOutlet NSTextField *filterName;
-	
 	LoggerConnection *attachedConnection;
-	LoggerDetailsWindowController *detailsWindowController;
-	LoggerClientInfoWindowController *clientDetailsWindowController;
-
-	NSString *info;
-	NSMutableArray *displayedMessages;
-	NSMutableSet *tags;
-
-	NSPredicate *filterPredicate;				// created from current selected filters, + quick filter string / tag / log level
-
-	NSString *filterString;
-	NSString *filterTag;
-	int logLevel;
-
-	dispatch_queue_t messageFilteringQueue;
-
-	int lastMessageRow;
-	BOOL messagesSelected;
-	BOOL loadComplete;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
-@property (nonatomic, assign) BOOL messagesSelected;
-
-- (IBAction)selectQuickFilterLevel:(id)sender;
-- (IBAction)openDetailsWindow:(id)sender;
-- (IBAction)addFilter:(id)sender;
-- (IBAction)startEditingFilter:(id)sender;
-- (IBAction)cancelFilterEdition:(id)sender;
-- (IBAction)validateFilterEdition:(id)sender;
-- (IBAction)resetQuickFilter;
-- (IBAction)deleteSelectedFilters:(id)sender;
-- (IBAction)showClientInfo:(id)sender;
 
 @end

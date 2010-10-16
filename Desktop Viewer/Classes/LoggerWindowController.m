@@ -30,6 +30,7 @@
  */
 #import "LoggerWindowController.h"
 #import "LoggerDetailsWindowController.h"
+#import "LoggerClientInfoWindowController.h"
 #import "LoggerMessageCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
@@ -72,6 +73,7 @@
 - (void)dealloc
 {
 	[detailsWindowController release];
+	[clientDetailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
@@ -221,6 +223,17 @@
 - (IBAction)resetQuickFilter
 {
 	// @@@ TODO
+}
+
+- (IBAction)showClientInfo:(id)sender
+{
+	if (clientDetailsWindowController == nil)
+	{
+		clientDetailsWindowController = [[LoggerClientInfoWindowController alloc] initWithWindowNibName:@"LoggerClientInfoWindow"];
+		clientDetailsWindowController.attachedConnection = attachedConnection;
+		[[self document] addWindowController:clientDetailsWindowController];
+	}
+	[clientDetailsWindowController showWindow:self];
 }
 
 // -----------------------------------------------------------------------------

@@ -21,12 +21,11 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="458"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.brandonwalkin.BWToolkit</string>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+			<string>com.brandonwalkin.BWToolkit</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<string key="NS.key.0">PluginDependencyRecalculationVersion</string>
@@ -51,10 +50,10 @@
 				<string key="NSWindowTitle">NSLogger</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{700, 500}</string>
 				<object class="NSView" key="NSWindowView" id="439893737">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -203,7 +202,7 @@
 																			<string key="NSColorName">controlBackgroundColor</string>
 																			<object class="NSColor" key="NSColor" id="362555436">
 																				<int key="NSColorSpace">3</int>
-																				<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+																				<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 																			</object>
 																		</object>
 																		<object class="NSColor" key="NSTextColor" id="474791504">
@@ -492,8 +491,7 @@
 																</object>
 																<object class="NSMenuItem" id="1702">
 																	<reference key="NSMenu" ref="927169185"/>
-																	<bool key="NSIsDisabled">YES</bool>
-																	<string key="NSTitle">Client Details...</string>
+																	<string key="NSTitle">Client Info...</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSMnemonicLoc">2147483647</int>
 																	<reference key="NSOnImage" ref="220151771"/>
@@ -824,11 +822,10 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{885, 666}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
 				<string key="NSMinSize">{700, 522}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSArrayController" id="923242454">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
@@ -853,7 +850,7 @@
 				<string key="NSWindowTitle">Filter Editor</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{400, 200}</string>
 				<object class="NSView" key="NSWindowView" id="825133058">
 					<nil key="NSNextResponder"/>
@@ -2578,7 +2575,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
 				<string key="NSMinSize">{400, 222}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2927,6 +2924,14 @@
 						<reference key="destination" ref="219283996"/>
 					</object>
 					<int key="connectionID">926</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showClientInfo:</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="1702"/>
+					</object>
+					<int key="connectionID">928</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3875,7 +3880,7 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{270, 401}, {177, 81}}</string>
+					<string>{{281, 401}, {177, 81}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -3971,7 +3976,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">926</int>
+			<int key="maxID">928</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3988,11 +3993,13 @@
 							<string>deleteSelectedFilters:</string>
 							<string>openDetailsWindow:</string>
 							<string>selectQuickFilterLevel:</string>
+							<string>showClientInfo:</string>
 							<string>startEditingFilter:</string>
 							<string>validateFilterEdition:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -4011,6 +4018,7 @@
 							<string>deleteSelectedFilters:</string>
 							<string>openDetailsWindow:</string>
 							<string>selectQuickFilterLevel:</string>
+							<string>showClientInfo:</string>
 							<string>startEditingFilter:</string>
 							<string>validateFilterEdition:</string>
 						</object>
@@ -4034,6 +4042,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">selectQuickFilterLevel:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">showClientInfo:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -4754,7 +4766,7 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{10, 10}</string>
+				<string>{15, 15}</string>
 				<string>{8, 8}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
