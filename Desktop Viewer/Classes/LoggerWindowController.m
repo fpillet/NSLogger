@@ -607,6 +607,7 @@ didReceiveMessages:(NSArray *)theMessages
 	if (returnCode)
 	{
 		// update filter & refresh list
+		// @@@ TODO: make this undoable
 		NSMutableDictionary *dict = [[filterListController selectedObjects] lastObject];
 		NSPredicate *predicate = [filterEditor predicate];
 		if (predicate == nil)
@@ -620,6 +621,12 @@ didReceiveMessages:(NSArray *)theMessages
 		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
 	}
 	[filterEditorWindow orderOut:self];
+}
+
+- (IBAction)deleteSelectedFilters:(id)sender
+{
+	// @@@ TODO: make this undoable
+	[filterListController removeObjects:[filterListController selectedObjects]];
 }
 
 @end

@@ -74,5 +74,6 @@
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
 - (IBAction)resetQuickFilter;
+- (IBAction)deleteSelectedFilters:(id)sender;
 
 @end
