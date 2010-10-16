@@ -86,9 +86,9 @@ static NSMutableArray *sTags = nil;
 	NSString *header = [NSString stringWithFormat:@"%@ |%@%@ ", timestampStr, tagStr, threadIDStr];
 	
 	if (contentsType == kMessageString)
-		return [header stringByAppendingString:message];
+		return [NSString stringWithFormat:@"%@%@\n", header, message];
 	if (contentsType == kMessageImage)
-		return [NSString stringWithFormat:@"%@<image %dx%d>", header, (int)self.imageSize.width, (int)self.imageSize.height];
+		return [NSString stringWithFormat:@"%@<image %dx%d>\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
 
 	assert([message isKindOfClass:[NSData class]]);
 	NSMutableString *s = [[NSMutableString alloc] init];

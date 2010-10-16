@@ -40,6 +40,11 @@
 	[super dealloc];
 }
 
+- (void)windowDidLoad
+{
+	[detailsView setTextContainerInset:NSMakeSize(2, 2)];
+}
+
 - (void)setMessages:(NSArray *)messages
 {
 	NSTextStorage *storage = [detailsView textStorage];
@@ -75,10 +80,7 @@
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
 				for (NSAttributedString *as in strings)
-				{
 					[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withAttributedString:as];
-					[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withString:@"\n"];
-				}
 				if ((range.location + range.length) >= numMessages)
 				{
 					[progressIndicator stopAnimation:self];
