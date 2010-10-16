@@ -991,12 +991,22 @@ void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format,
 	va_end(args);
 }
 
+void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args)
+{
+	LogMessageTo_internal(logger, domain, level, format, args);
+}
+
 void LogMessage(NSString *domain, int level, NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
 	LogMessageTo_internal(sDefaultLogger, domain, level, format, args);
 	va_end(args);
+}
+
+void LogMessage_va(NSString *domain, int level, NSString *format, va_list args)
+{
+	LogMessageTo_internal(sDefaultLogger, domain, level, format, args);
 }
 
 void LogData(NSString *domain, int level, NSData *data)

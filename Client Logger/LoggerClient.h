@@ -115,6 +115,10 @@ extern void LogMessageCompatTo(Logger *logger, NSString *format, ...);
 extern void LogMessage(NSString *domain, int level, NSString *format, ...);
 extern void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format, ...);
 
+// Log a message. domain can be nil if default domain (versions with va_list format args instead of ...)
+extern void LogMessage_va(NSString *domain, int level, NSString *format, va_list args);
+extern void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args);
+
 // Send binary data to remote logger
 extern void LogData(NSString *domain, int level, NSData *data);
 extern void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data);
