@@ -34,25 +34,60 @@
 
 @implementation LoggerDetailsWindowController
 
+- (void)dealloc
+{
+	dispatch_release(detailsQueue);
+	[super dealloc];
+}
+
 - (void)setMessages:(NSArray *)messages
 {
 	NSTextStorage *storage = [detailsView textStorage];
 	[storage replaceCharactersInRange:NSMakeRange(0, [storage length]) withString:@""];
 
+	NSUInteger numMessages = [messages count];
+	[detailsInfo setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Details for %d log messages", @""), numMessages]];
+	[progressIndicator setHidden:NO];
+	[progressIndicator startAnimation:self];
+
 	NSDictionary *textAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"text"];
 	NSDictionary *dataAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"data"];
-	
-	for (LoggerMessage *msg in messages)
+
+	NSUInteger i = 0;
+	while (i < numMessages)
 	{
-		if (msg.contentsType == kMessageImage)
-			continue;
-		NSAttributedString *as = [[NSAttributedString alloc] initWithString:[msg textRepresentation]
-																 attributes:(msg.contentsType == kMessageString) ? textAttributes : dataAttributes];
+		NSRange range = NSMakeRange(i, MIN(numMessages-i, 100));
+		if (range.length == 0)
+			break;
+		i += range.length;
+
+		if (detailsQueue == NULL)
+			detailsQueue = dispatch_queue_create("com.florentpillet.nslogger.detailsQueue", NULL);
 		
-		[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withAttributedString:as];
-		[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withString:@"\n"];
-		[as release];
-	}	
+		dispatch_async(detailsQueue, ^{
+			NSMutableArray *strings = [[NSMutableArray alloc] initWithCapacity:range.length];
+			for (LoggerMessage *msg in [messages subarrayWithRange:range])
+			{
+				NSAttributedString *as = [[NSAttributedString alloc] initWithString:[msg textRepresentation]
+																		 attributes:(msg.contentsType == kMessageString) ? textAttributes : dataAttributes];
+				[strings addObject:as];
+				[as release];
+			}
+			dispatch_async(dispatch_get_main_queue(), ^{
+				for (NSAttributedString *as in strings)
+				{
+					[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withAttributedString:as];
+					[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withString:@"\n"];
+				}
+				if ((range.location + range.length) >= numMessages)
+				{
+					[progressIndicator stopAnimation:self];
+					[progressIndicator setHidden:YES];
+				}
+			});
+			[strings release];
+		});
+	}
 }
 
 @end

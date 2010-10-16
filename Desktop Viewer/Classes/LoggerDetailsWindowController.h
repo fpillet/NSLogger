@@ -34,6 +34,12 @@
 @interface LoggerDetailsWindowController : NSWindowController
 {
 	IBOutlet NSTextView *detailsView;
+	IBOutlet NSTextField *detailsInfo;
+	IBOutlet NSProgressIndicator *progressIndicator;
+	
+	dispatch_queue_t detailsQueue;
 }
+
+- (void)setMessages:(NSArray *)messages;
 
 @end

@@ -71,6 +71,7 @@
 
 - (void)dealloc
 {
+	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
