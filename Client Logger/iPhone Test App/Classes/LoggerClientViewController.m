@@ -129,7 +129,7 @@
 
 - (void)sendLogFromAnotherThread:(NSNumber *)counterNum
 {
-	LogMessageTo(currentLogger, @"alt", 0, @"message %d from standalone thread", [counterNum integerValue]);
+	LogMessageTo(currentLogger, @"transfers", 0, @"message %d from standalone thread", [counterNum integerValue]);
 }
 
 @end
