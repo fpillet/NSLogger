@@ -63,20 +63,24 @@
 
 	int lastMessageRow;
 	BOOL messagesSelected;
+	BOOL hasQuickFilter;
 	BOOL loadComplete;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
 @property (nonatomic, assign) BOOL messagesSelected;
+@property (nonatomic, assign) BOOL hasQuickFilter;
+
+- (IBAction)openDetailsWindow:(id)sender;
+- (IBAction)showClientInfo:(id)sender;
 
 - (IBAction)selectQuickFilterLevel:(id)sender;
-- (IBAction)openDetailsWindow:(id)sender;
+- (IBAction)resetQuickFilter:(id)sender;
+
 - (IBAction)addFilter:(id)sender;
 - (IBAction)startEditingFilter:(id)sender;
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
-- (IBAction)resetQuickFilter;
 - (IBAction)deleteSelectedFilters:(id)sender;
-- (IBAction)showClientInfo:(id)sender;
 
 @end

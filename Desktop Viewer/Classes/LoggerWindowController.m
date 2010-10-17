@@ -52,7 +52,7 @@
 
 @synthesize info, filterString, filterTag;
 @synthesize attachedConnection;
-@synthesize messagesSelected;
+@synthesize messagesSelected, hasQuickFilter;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -220,11 +220,6 @@
 	[self tileLogTable:NO];
 }
 
-- (IBAction)resetQuickFilter
-{
-	// @@@ TODO
-}
-
 - (IBAction)showClientInfo:(id)sender
 {
 	if (clientDetailsWindowController == nil)
@@ -290,6 +285,8 @@
 	}
 
 	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", tagTitle, levelTitle]];
+	
+	self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 }
 
 - (void)addTags:(NSArray *)newTags
@@ -323,6 +320,18 @@
 		[self updateFilterPredicate:nil];
 		[self refreshAllMessages];
 	}
+}
+
+- (IBAction)resetQuickFilter:(id)sender
+{
+	[filterString release];
+	filterString = @"";
+	[filterTag release];
+	filterTag = nil;
+	logLevel = 0;
+	[self rebuildQuickFilterPopup];
+	[self updateFilterPredicate:nil];
+	[self refreshAllMessages];
 }
 
 // -----------------------------------------------------------------------------
@@ -445,6 +454,7 @@
 		filterString = [newString copy];
 		[self updateFilterPredicate:nil];
 		[self refreshAllMessages];
+		self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 	}
 }
 
