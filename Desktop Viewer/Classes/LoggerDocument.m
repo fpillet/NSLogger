@@ -120,7 +120,10 @@ didReceiveMessages:(NSArray *)theMessages
 			 range:(NSRange)rangeInMessagesList
 {
 	for (LoggerWindowController *controller in [self windowControllers])
-		[controller connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
+	{
+		if ([controller isKindOfClass:[LoggerWindowController class]])
+			[controller connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
+	}
 	if (theConnection.connected)
 		[self updateChangeCount:NSChangeDone];
 }
