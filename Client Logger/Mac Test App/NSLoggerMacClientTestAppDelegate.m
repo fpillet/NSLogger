@@ -55,7 +55,7 @@
 		imagesCounter = 0;
 		currentLogger = LoggerInit();
 		LoggerStart(currentLogger);
-		sendTimer = [[NSTimer scheduledTimerWithTimeInterval:0.05f
+		sendTimer = [[NSTimer scheduledTimerWithTimeInterval:0.20f
 													  target:self
 													selector:@selector(sendTimerFired:)
 													userInfo:nil
