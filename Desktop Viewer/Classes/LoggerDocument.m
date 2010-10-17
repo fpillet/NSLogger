@@ -111,6 +111,17 @@
     return YES;
 }
 
+- (LoggerWindowController *)mainWindowController
+{
+	for (LoggerWindowController *controller in [self windowControllers])
+	{
+		if ([controller isKindOfClass:[LoggerWindowController class]])
+			return controller;
+	}
+	assert(false);
+	return nil;
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark LoggerConnectionDelegate
@@ -119,25 +130,19 @@
 didReceiveMessages:(NSArray *)theMessages
 			 range:(NSRange)rangeInMessagesList
 {
-	for (LoggerWindowController *controller in [self windowControllers])
-	{
-		if ([controller isKindOfClass:[LoggerWindowController class]])
-			[controller connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
-	}
+	[[self mainWindowController] connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
 	if (theConnection.connected)
 		[self updateChangeCount:NSChangeDone];
 }
 
 - (void)remoteConnected:(LoggerConnection *)theConnection
 {
-	for (LoggerWindowController *controller in [self windowControllers])
-		[controller remoteConnected:theConnection];
+	[[self mainWindowController] remoteConnected:theConnection];
 }
 
 - (void)remoteDisconnected:(LoggerConnection *)theConnection
 {
-	for (LoggerWindowController *controller in [self windowControllers])
-		[controller remoteDisconnected:theConnection];
+	[[self mainWindowController] remoteDisconnected:theConnection];
 }
 
 @end

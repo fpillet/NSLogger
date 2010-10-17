@@ -29,6 +29,7 @@
  * 
  */
 #import "LoggerClientInfoWindowController.h"
+#import "LoggerWindowController.h"
 
 @implementation LoggerClientInfoWindowController
 
@@ -38,6 +39,11 @@
 {
 	[attachedConnection release];
 	[super dealloc];
+}
+
+- (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
+{
+	return [[[self document] mainWindowController] windowTitleForDocumentDisplayName:displayName];
 }
 
 @end
