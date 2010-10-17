@@ -356,6 +356,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
+	cellFrame.size = message.cachedCellSize;
+
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 
 	BOOL highlighted = [self isHighlighted];
