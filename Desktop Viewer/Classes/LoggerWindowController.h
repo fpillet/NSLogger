@@ -31,7 +31,7 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerFilter, LoggerMessageCell;
+@class LoggerMessageCell;
 @class LoggerDetailsWindowController, LoggerClientInfoWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
