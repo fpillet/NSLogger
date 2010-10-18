@@ -29,7 +29,6 @@
  * 
  */
 #import <Cocoa/Cocoa.h>
-#import "LoggerClient.h"
 
 @interface NSLoggerMacClientTestAppDelegate : NSObject <NSApplicationDelegate> {
     NSWindow *window;
@@ -42,8 +41,6 @@
 	NSArray *tagsArray;
 	int counter;
 	int imagesCounter;
-	
-	Logger *currentLogger;
 }
 
 @property (assign) IBOutlet NSWindow *window;

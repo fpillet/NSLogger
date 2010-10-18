@@ -29,6 +29,7 @@
  * 
  */
 #import "NSLoggerMacClientTestAppDelegate.h"
+#import "LoggerClient.h"
 
 @implementation NSLoggerMacClientTestAppDelegate
 
@@ -41,9 +42,7 @@
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-	if (currentLogger != nil)
-		LoggerStop(currentLogger);
-	currentLogger = nil;
+	LoggerStop(NULL);
 	[NSApp terminate:self];
 }
 
@@ -53,8 +52,6 @@
 	{
 		counter = 0;
 		imagesCounter = 0;
-		currentLogger = LoggerInit();
-		LoggerStart(currentLogger);
 		sendTimer = [[NSTimer scheduledTimerWithTimeInterval:0.20f
 													  target:self
 													selector:@selector(sendTimerFired:)
@@ -64,8 +61,6 @@
 	}
 	else
 	{
-		LoggerStop(currentLogger);
-		currentLogger = NULL;
 		[sendTimer invalidate];
 		[sendTimer release];
 		sendTimer = nil;
@@ -83,7 +78,7 @@
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		LogMessageTo(currentLogger, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
 	}
 	else if (phase == 1)
 	{
@@ -92,7 +87,7 @@
 		for (int i = 0; i < n; i++)
 			buf[i] = (unsigned char)arc4random();
 		NSData *d = [[NSData alloc] initWithBytesNoCopy:buf length:n];
-		LogDataTo(currentLogger, @"main", 1, d);
+		LogData(@"main", 1, d);
 		[d release];
 	}
 	else if (phase == 5)
@@ -128,7 +123,7 @@
 		[bitmapRep release];
 		[img release];
 
-		LogImageDataTo(currentLogger, @"image", 0, 100, 100, bitmapData);
+		LogImageData(@"image", 0, 100, 100, bitmapData);
 	}
 	if (phase == 0)
 	{
@@ -142,7 +137,7 @@
 
 - (void)sendLogFromAnotherThread:(NSNumber *)counterNum
 {
-	LogMessageTo(currentLogger, @"transfers", 0, @"message %d from standalone thread", [counterNum integerValue]);
+	LogMessage(@"transfers", 0, @"message %d from standalone thread", [counterNum integerValue]);
 }
 
 @end

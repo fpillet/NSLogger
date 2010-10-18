@@ -43,9 +43,6 @@
 	{
 		counter = 0;
 		imagesCounter = 0;
-		// Create a new 
-		currentLogger = LoggerInit();
-		LoggerStart(currentLogger);
 		sendTimer = [[NSTimer scheduledTimerWithTimeInterval:0.20f
 													  target:self
 													selector:@selector(sendTimerFired:)
@@ -55,8 +52,6 @@
 	}
 	else
 	{
-		LoggerStop(currentLogger);
-		currentLogger = NULL;
 		[sendTimer invalidate];
 		[sendTimer release];
 		sendTimer = nil;
@@ -81,7 +76,7 @@
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		LogMessageTo(currentLogger, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
 	}
 	else if (phase == 1)
 	{
@@ -90,7 +85,7 @@
 		for (int i = 0; i < n; i++)
 			buf[i] = (unsigned char)arc4random();
 		NSData *d = [[NSData alloc] initWithBytesNoCopy:buf length:n];
-		LogDataTo(currentLogger, @"main", 1, d);
+		LogData(@"main", 1, d);
 		[d release];
 	}
 	else if (phase == 5)
@@ -114,7 +109,7 @@
 		CGContextShowTextAtPoint(ctx, 0, 50, buf, strlen(buf));
 		UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
 		CGSize sz = img.size;
-		LogImageDataTo(currentLogger, @"image", 0, sz.width, sz.height, UIImagePNGRepresentation(img));
+		LogImageData(@"image", 0, sz.width, sz.height, UIImagePNGRepresentation(img));
 		UIGraphicsEndImageContext();
 	}
 	if (phase == 0)
@@ -129,7 +124,7 @@
 
 - (void)sendLogFromAnotherThread:(NSNumber *)counterNum
 {
-	LogMessageTo(currentLogger, @"transfers", 0, @"message %d from standalone thread", [counterNum integerValue]);
+	LogMessage(@"transfers", 0, @"message %d from standalone thread", [counterNum integerValue]);
 }
 
 @end
