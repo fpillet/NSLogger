@@ -178,8 +178,15 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 {
 	LOGGERDBG(CFSTR("LoggerSetOptions logToConsole=%d bufferLocally=%d browseBonjour=%d browseOnlyLocalDomains=%d"),
 			  (int)logToConsole, (int)bufferLocallyUntilConnection, (int)browseBonjour, (int)browseOnlyLocalDomains);
-	
-	assert(logger != NULL);
+	if (logger == NULL)
+	{
+		logger = sDefaultLogger;
+		if (logger == NULL)
+		{
+			LoggerStart(LoggerInit());
+			logger = sDefaultLogger;
+		}
+	}
 	logger->logToConsole = logToConsole;
 	logger->bufferLogsUntilConnection = bufferLocallyUntilConnection;
 	logger->browseBonjour = browseBonjour;
@@ -189,8 +196,13 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 void LoggerStart(Logger *logger)
 {
 	LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
-	assert(logger != NULL);
-	if (!logger->logToConsole)
+	if (logger == NULL)
+	{
+		logger = sDefaultLogger;
+		if (logger == NULL)
+			logger = LoggerInit();
+	}
+	if (logger->workerThread == NULL)
 	{
 		// Start the work thread which performs the Bonjour search,
 		// connects to the logging service and forwards the logs
@@ -202,8 +214,13 @@ void LoggerStop(Logger *logger)
 {
 	// Stop logging remotely, stop Bonjour discovery, redirect all traces to console
 	LOGGERDBG(CFSTR("LoggerStop"));
-	if (logger == NULL)
+	if (logger == NULL || logger == sDefaultLogger)
+	{
+		pthread_mutex_lock(&sDefaultLoggerMutex);
 		logger = sDefaultLogger;
+		sDefaultLogger = NULL;
+		pthread_mutex_unlock(&sDefaultLoggerMutex);
+	}
 	if (logger != NULL)
 	{
 		if (logger->workerThread)
@@ -212,10 +229,6 @@ void LoggerStop(Logger *logger)
 			pthread_join(logger->workerThread, NULL);
 		}
 		free(logger);
-		pthread_mutex_lock(&sDefaultLoggerMutex);
-		if (logger == sDefaultLogger)
-			sDefaultLogger = NULL;
-		pthread_mutex_unlock(&sDefaultLoggerMutex);
 	}
 }
 
