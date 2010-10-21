@@ -41,16 +41,15 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 *NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
 
 # Work in progress - Current status #
-This tool comes from a personal need for a more powerful logger. It is currently functional, but needs some polish and additional work. Here is what's not implemented yet, and some of the planned features, by current priority order:
+This tool comes from a personal need for a more powerful logger. Not all the initial functionalities I wanted have been implemented yet. Here is what's not implemented, and some of the planned features, by current priority order:
 
+ * Support for connecting to a specific IP address / port (client side)
  * Support drag-and-drop from logs
  * Support export to other formats than the native .nsloggerdata file format
- * Support for accepting logger connections on a specific TCP/IP port (desktop side)
- * Support for connecting to a specific IP address / port (client side)
+ * Support for storing logs in a file (client side) and push them later to the viewer
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
- * Document extensibility (the NSLogger code is designed to make it easy to support other kinds of log sources, and the protocol itself supports arbitrary data embedding, allowing the use of NSLogger to transfer and display more information)
 
 
-You'll find some preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
+You'll find preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
