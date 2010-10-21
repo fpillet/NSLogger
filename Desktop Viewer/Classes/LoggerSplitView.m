@@ -1,5 +1,5 @@
 /*
- * LoggerAppDelegate.h
+ * LoggerSplitView.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,32 +28,29 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
+#import "LoggerSplitView.h"
 
-@class LoggerConnection, LoggerStatusWindowController, LoggerPrefsWindowController;
+@implementation LoggerSplitView
 
-@interface LoggerAppDelegate : NSObject
+- (void)mouseDown:(NSEvent *)theEvent
 {
-	NSMutableArray *transports;
-	NSMutableArray *filters;
-	NSArray *filtersSortDescriptors;
-	LoggerStatusWindowController *statusController;
-	LoggerPrefsWindowController *prefsController;
+	// hack: to detect the end of a split view drag, post a message that will be sent
+	// only when the runloop returns to the default run loop mode. At this point, we will
+	// send a notification that will force a logTable re-tile if needed
+	// (explanation: during a split view divided drag, the runloop is being set in a
+	// special mode and will exit this mode only when dragging ends -- since we don't
+	// get any notification that a divider drag ended, I had to find another way to
+	// detect the end of a divider drag).
+	[self performSelector:@selector(sendTableRetileNotification)
+			   withObject:nil
+			   afterDelay:0
+				  inModes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
+	[super mouseDown:theEvent];
 }
 
-@property (nonatomic, readonly) NSMutableArray *transports;
-@property (nonatomic, readonly) NSMutableArray *filters;
-@property (nonatomic, retain) NSArray *filtersSortDescriptors;
-@property (nonatomic, readonly) LoggerStatusWindowController *statusController;
-
-- (void)newConnection:(LoggerConnection *)aConnection;
-- (NSNumber *)nextUniqueFilterIdentifier;
-- (void)saveFiltersDefinition;
-
-- (IBAction)showPreferences:(id)sender;
+- (void)sendTableRetileNotification
+{
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"TileLogTableNotification" object:nil];
+}
 
 @end
-
-extern NSString * const kPrefPublishesBonjourService;
-extern NSString * const kPrefHasDirectTCPIPResponder;
-extern NSString * const kPrefDirectTCPIPResponderPort;

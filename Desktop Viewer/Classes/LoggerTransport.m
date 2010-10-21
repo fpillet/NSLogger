@@ -35,6 +35,8 @@
 
 @implementation LoggerTransport
 
+@synthesize active;
+
 - (id)init
 {
 	if ((self = [super init]) != nil)

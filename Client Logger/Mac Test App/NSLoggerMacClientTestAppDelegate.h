@@ -1,5 +1,5 @@
 /*
- * LoggerAppDelegate.h
+ * NSLoggerMacClientTestAppDelegate.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -30,30 +30,21 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@class LoggerConnection, LoggerStatusWindowController, LoggerPrefsWindowController;
+@interface NSLoggerMacClientTestAppDelegate : NSObject <NSApplicationDelegate> {
+    NSWindow *window;
+	
+	IBOutlet NSTextField *messagesCountLabel;
+	IBOutlet NSTextField *imagesCountLabel;
+	IBOutlet NSButton *startStopButton;
 
-@interface LoggerAppDelegate : NSObject
-{
-	NSMutableArray *transports;
-	NSMutableArray *filters;
-	NSArray *filtersSortDescriptors;
-	LoggerStatusWindowController *statusController;
-	LoggerPrefsWindowController *prefsController;
+	NSTimer *sendTimer;
+	NSArray *tagsArray;
+	int counter;
+	int imagesCounter;
 }
 
-@property (nonatomic, readonly) NSMutableArray *transports;
-@property (nonatomic, readonly) NSMutableArray *filters;
-@property (nonatomic, retain) NSArray *filtersSortDescriptors;
-@property (nonatomic, readonly) LoggerStatusWindowController *statusController;
+@property (assign) IBOutlet NSWindow *window;
 
-- (void)newConnection:(LoggerConnection *)aConnection;
-- (NSNumber *)nextUniqueFilterIdentifier;
-- (void)saveFiltersDefinition;
-
-- (IBAction)showPreferences:(id)sender;
+- (IBAction)startStopLogging:(id)sender;
 
 @end
-
-extern NSString * const kPrefPublishesBonjourService;
-extern NSString * const kPrefHasDirectTCPIPResponder;
-extern NSString * const kPrefDirectTCPIPResponderPort;

@@ -178,8 +178,15 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 {
 	LOGGERDBG(CFSTR("LoggerSetOptions logToConsole=%d bufferLocally=%d browseBonjour=%d browseOnlyLocalDomains=%d"),
 			  (int)logToConsole, (int)bufferLocallyUntilConnection, (int)browseBonjour, (int)browseOnlyLocalDomains);
-	
-	assert(logger != NULL);
+	if (logger == NULL)
+	{
+		logger = sDefaultLogger;
+		if (logger == NULL)
+		{
+			LoggerStart(LoggerInit());
+			logger = sDefaultLogger;
+		}
+	}
 	logger->logToConsole = logToConsole;
 	logger->bufferLogsUntilConnection = bufferLocallyUntilConnection;
 	logger->browseBonjour = browseBonjour;
@@ -189,8 +196,13 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 void LoggerStart(Logger *logger)
 {
 	LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
-	assert(logger != NULL);
-	if (!logger->logToConsole)
+	if (logger == NULL)
+	{
+		logger = sDefaultLogger;
+		if (logger == NULL)
+			logger = LoggerInit();
+	}
+	if (logger->workerThread == NULL)
 	{
 		// Start the work thread which performs the Bonjour search,
 		// connects to the logging service and forwards the logs
@@ -202,16 +214,22 @@ void LoggerStop(Logger *logger)
 {
 	// Stop logging remotely, stop Bonjour discovery, redirect all traces to console
 	LOGGERDBG(CFSTR("LoggerStop"));
-	
-	if (logger->workerThread)
+	if (logger == NULL || logger == sDefaultLogger)
 	{
-		logger->quit = YES;
-		pthread_join(logger->workerThread, NULL);
-	}
-	
-	free(logger);
-	if (logger == sDefaultLogger)
+		pthread_mutex_lock(&sDefaultLoggerMutex);
+		logger = sDefaultLogger;
 		sDefaultLogger = NULL;
+		pthread_mutex_unlock(&sDefaultLoggerMutex);
+	}
+	if (logger != NULL)
+	{
+		if (logger->workerThread)
+		{
+			logger->quit = YES;
+			pthread_join(logger->workerThread, NULL);
+		}
+		free(logger);
+	}
 }
 
 static void LoggerDbg(CFStringRef format, ...)
@@ -404,6 +422,8 @@ static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, 
 	// if we want to reuse it past the scope of this callout
 	Logger *logger = (Logger *)info;
 	assert(logger != NULL);
+	if (!logger->connected && !logger->bufferLogsUntilConnection)
+		return NULL;
 	CFMutableDataRef d = CFDataCreateMutableCopy(NULL, CFDataGetLength(data), data);
 	CFArrayAppendValue(logger->logQueue, d);
 	CFRelease(d);
@@ -849,7 +869,16 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 	CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
 	if (msgString != NULL)
 	{
-		if (logger == NULL || logger->logToConsole)
+		if (logger == NULL)
+		{
+			logger = sDefaultLogger;
+			if (logger == NULL)
+			{
+				logger = LoggerInit();
+				LoggerStart(logger);
+			}
+		}
+		if (logger->logToConsole)
 		{
 			// Gracefully degrade to logging the message to console
 			CFShow(msgString);
@@ -876,9 +905,24 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 
 static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int width, int height, NSData *data)
 {
-	if (logger == NULL || logger->logToConsole)
+	if (logger == NULL)
+	{
+		logger = sDefaultLogger;
+		if (logger == NULL)
+		{
+			logger = LoggerInit();
+			LoggerStart(logger);
+		}
+	}
+	if (logger->logToConsole)
+	{
+		char s[32];
+		sprintf(s, "<image %dx%d>", width, height);
+		CFStringRef str = CFStringCreateWithBytes(NULL, (const UInt8 *)s, strlen(s), kCFStringEncodingASCII, false);
+		CFShow(str);
+		CFRelease(str);
 		return;
-	
+	}
 	CFMutableDataRef encoder = CreateLoggerData();
 	if (encoder != NULL)
 	{
@@ -900,16 +944,22 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 	}
 }
 
-static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSData *data, int binaryOrImageType)
+static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSData *data)
 {
-	if (logger == NULL || logger->logToConsole)
+	if (logger == NULL)
 	{
-		// Log the data block to console, don't "log" images
-		if (binaryOrImageType == PART_TYPE_BINARY)
-			CFShow(data);
+		logger = sDefaultLogger;
+		if (logger == NULL)
+		{
+			logger = LoggerInit();
+			LoggerStart(logger);
+		}
+	}
+	if (logger->logToConsole)
+	{
+		CFShow(data);
 		return;
 	}
-	
 	CFMutableDataRef encoder = CreateLoggerData();
 	if (encoder != NULL)
 	{
@@ -919,7 +969,7 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
 			EncodeLoggerInt32(encoder, level, PART_KEY_LEVEL);
-		EncodeLoggerData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, binaryOrImageType);
+		EncodeLoggerData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
 		
 		PushMessageToLoggerQueue(logger, encoder);
 		CFRelease(encoder);
@@ -1011,12 +1061,12 @@ void LogMessage_va(NSString *domain, int level, NSString *format, va_list args)
 
 void LogData(NSString *domain, int level, NSData *data)
 {
-	LogDataTo_internal(sDefaultLogger, domain, level, data, PART_TYPE_BINARY);
+	LogDataTo_internal(sDefaultLogger, domain, level, data);
 }
 
 void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data)
 {
-	LogDataTo_internal(logger, domain, level, data, PART_TYPE_BINARY);
+	LogDataTo_internal(logger, domain, level, data);
 }
 
 void LogImageData(NSString *domain, int level, int width, int height, NSData *data)

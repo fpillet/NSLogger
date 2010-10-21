@@ -1,5 +1,5 @@
 /*
- * LoggerAppDelegate.h
+ * LoggerSplitView.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,32 +28,10 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
+#import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerConnection, LoggerStatusWindowController, LoggerPrefsWindowController;
-
-@interface LoggerAppDelegate : NSObject
+@interface LoggerSplitView : BWSplitView
 {
-	NSMutableArray *transports;
-	NSMutableArray *filters;
-	NSArray *filtersSortDescriptors;
-	LoggerStatusWindowController *statusController;
-	LoggerPrefsWindowController *prefsController;
 }
 
-@property (nonatomic, readonly) NSMutableArray *transports;
-@property (nonatomic, readonly) NSMutableArray *filters;
-@property (nonatomic, retain) NSArray *filtersSortDescriptors;
-@property (nonatomic, readonly) LoggerStatusWindowController *statusController;
-
-- (void)newConnection:(LoggerConnection *)aConnection;
-- (NSNumber *)nextUniqueFilterIdentifier;
-- (void)saveFiltersDefinition;
-
-- (IBAction)showPreferences:(id)sender;
-
 @end
-
-extern NSString * const kPrefPublishesBonjourService;
-extern NSString * const kPrefHasDirectTCPIPResponder;
-extern NSString * const kPrefDirectTCPIPResponderPort;

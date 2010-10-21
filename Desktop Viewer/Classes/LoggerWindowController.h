@@ -29,8 +29,9 @@
  * 
  */
 #import "LoggerConnection.h"
+#import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerFilter, LoggerMessageCell;
+@class LoggerMessageCell;
 @class LoggerDetailsWindowController, LoggerClientInfoWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
@@ -38,6 +39,7 @@
 	IBOutlet NSTableView *logTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
+	IBOutlet BWAnchoredButtonBar *buttonBar;
 
 	IBOutlet NSArrayController *filterListController;
 
@@ -65,6 +67,7 @@
 	BOOL messagesSelected;
 	BOOL hasQuickFilter;
 	BOOL loadComplete;
+	BOOL tableNeedsTiling;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;

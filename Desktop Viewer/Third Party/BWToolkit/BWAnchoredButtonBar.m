@@ -406,4 +406,23 @@ static float scaleFactor = 0.0f;
 	return NO;
 }
 
+- (BOOL)splitView:(NSSplitView *)splitView shouldAdjustSizeOfSubview:(NSView *)subview
+{
+	if ([splitViewDelegate respondsToSelector:_cmd])
+		return [splitViewDelegate splitView:splitView shouldAdjustSizeOfSubview:subview];
+	return YES;
+}
+
+- (void)splitViewWillResizeSubviews:(NSNotification *)aNotification
+{
+	if ([splitViewDelegate respondsToSelector:_cmd])
+		[splitViewDelegate splitViewWillResizeSubviews:aNotification];
+}
+
+- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification
+{
+	if ([splitViewDelegate respondsToSelector:_cmd])
+		[splitViewDelegate splitViewDidResizeSubviews:aNotification];
+}
+
 @end

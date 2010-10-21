@@ -29,6 +29,8 @@
  * 
  */
 #import "LoggerDetailsWindowController.h"
+#import "LoggerWindowController.h"
+#import "LoggerDocument.h"
 #import "LoggerMessage.h"
 #import "LoggerMessageCell.h"
 
@@ -40,6 +42,11 @@
 	[super dealloc];
 }
 
+- (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
+{
+	return [[[self document] mainWindowController] windowTitleForDocumentDisplayName:displayName];
+}
+
 - (void)windowDidLoad
 {
 	[detailsView setTextContainerInset:NSMakeSize(2, 2)];
@@ -47,6 +54,7 @@
 
 - (void)setMessages:(NSArray *)messages
 {
+	// defer text generation to queues
 	NSTextStorage *storage = [detailsView textStorage];
 	[storage replaceCharactersInRange:NSMakeRange(0, [storage length]) withString:@""];
 
@@ -79,8 +87,10 @@
 				[as release];
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
+				[storage beginEditing];
 				for (NSAttributedString *as in strings)
 					[storage replaceCharactersInRange:NSMakeRange([storage length], 0) withAttributedString:as];
+				[storage endEditing];
 				if ((range.location + range.length) >= numMessages)
 				{
 					[progressIndicator stopAnimation:self];

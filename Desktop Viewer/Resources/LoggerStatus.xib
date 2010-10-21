@@ -39,7 +39,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSWindowTemplate" id="327296022">
-				<int key="NSWindowStyleMask">8337</int>
+				<int key="NSWindowStyleMask">8209</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{19, 913}, {414, 228}}</string>
 				<int key="NSWTFlags">611844096</int>
@@ -159,7 +159,7 @@
 									<reference key="NSDocView" ref="484752569"/>
 									<reference key="NSBGColor" ref="83204112"/>
 									<object class="NSCursor" key="NSCursor">
-										<string key="NSHotSpot">{1, -1}</string>
+										<string key="NSHotSpot">{4, 4}</string>
 										<int key="NSCursorType">0</int>
 									</object>
 									<int key="NScvFlags">2</int>
@@ -366,7 +366,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">LoggerStatusWindowController.h</string>
+						<string key="minorKey">Classes/LoggerStatusWindowController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

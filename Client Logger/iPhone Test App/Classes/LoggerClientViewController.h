@@ -41,8 +41,6 @@
 	NSArray *tagsArray;
 	int counter;
 	int imagesCounter;
-	
-	Logger *currentLogger;
 }
 
 - (IBAction)startStopSendingMessages;

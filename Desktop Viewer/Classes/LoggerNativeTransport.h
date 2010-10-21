@@ -42,9 +42,11 @@
 	CFSocketRef listenerSocket_ipv4;
 	CFSocketRef listenerSocket_ipv6;
 	int listenerPort;
+	BOOL publishBonjourService;
 }
 
-@property (nonatomic, readonly) int listenerPort;
+@property (nonatomic, assign) int listenerPort;
+@property (nonatomic, assign) BOOL publishBonjourService;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv6;
 

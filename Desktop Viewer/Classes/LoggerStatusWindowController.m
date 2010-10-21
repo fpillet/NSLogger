@@ -71,8 +71,11 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 - (void)showStatus:(NSNotification *)notification
 {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// in certain cases, status needs to be accessed from the main thread.
-		[self appendStatus:[[notification object] valueForKey:@"status"]];
+		id obj = [notification object];
+		if ([obj isKindOfClass:[NSString class]])
+			 [self appendStatus:obj];
+		else
+			 [self appendStatus:[[notification object] valueForKey:@"status"]];
 	});
 }
 

@@ -55,6 +55,7 @@
 
 @end
 
-
 @interface SampleMessageControl : NSControl
 @end
+
+extern NSString * const kPrefsChangedNotification;

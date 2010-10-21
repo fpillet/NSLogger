@@ -1,5 +1,5 @@
 /*
- * LoggerClientViewController.m
+ * NSLoggerMacClientTestAppDelegate.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,16 +28,25 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "LoggerClientViewController.h"
+#import "NSLoggerMacClientTestAppDelegate.h"
+#import "LoggerClient.h"
 
-@implementation LoggerClientViewController
+@implementation NSLoggerMacClientTestAppDelegate
+
+@synthesize window;
 
 - (void)awakeFromNib
 {
 	tagsArray = [[NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil] retain];
 }
 
-- (IBAction)startStopSendingMessages
+- (void)windowWillClose:(NSNotification *)notification
+{
+	LoggerStop(NULL);
+	[NSApp terminate:self];
+}
+
+- (IBAction)startStopLogging:(id)sender
 {
 	if (sendTimer == nil)
 	{
@@ -48,22 +57,15 @@
 													selector:@selector(sendTimerFired:)
 													userInfo:nil
 													 repeats:YES] retain];
-		[timerButton setTitle:@"Stop Sending Logs" forState:UIControlStateNormal];
+		[startStopButton setTitle:@"Stop Sending Logs"];
 	}
 	else
 	{
 		[sendTimer invalidate];
 		[sendTimer release];
 		sendTimer = nil;
-		[timerButton setTitle:@"Start Sending Logs" forState:UIControlStateNormal];
+		[startStopButton setTitle:@"Start Sending Logs"];
 	}
-}
-
-- (void)dealloc
-{
-	[sendTimer invalidate];
-	[sendTimer release];
-    [super dealloc];
 }
 
 - (void)sendTimerFired:(NSTimer *)timer
@@ -90,27 +92,38 @@
 	}
 	else if (phase == 5)
 	{
+		// nearly same code as iPhone example, could certainly be made shorter
 		imagesCounter++;
-		UIGraphicsBeginImageContext(CGSizeMake(100, 100));
-		CGContextRef ctx = UIGraphicsGetCurrentContext();
+		NSImage *img = [[NSImage alloc] initWithSize:NSMakeSize(100,100)];
+		[img lockFocusFlipped:YES];
+		CGContextRef ctx = (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 		CGFloat r = (CGFloat)(arc4random() % 256) / 255.0f;
 		CGFloat g = (CGFloat)(arc4random() % 256) / 255.0f;
 		CGFloat b = (CGFloat)(arc4random() % 256) / 255.0f;
-		UIColor *fillColor = [UIColor colorWithRed:r green:g blue:b alpha:1.0f];
-		CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
+		CGColorRef fillColor = CGColorCreateGenericRGB(r, g, b, 1.0f);
+		CGContextSetFillColorWithColor(ctx, fillColor);
+		CGColorRelease(fillColor);
 		CGContextFillRect(ctx, CGRectMake(0, 0, 100, 100));
 		CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
 		CGContextSelectFont(ctx, "Helvetica", 14.0, kCGEncodingMacRoman);
-		CGContextSetShadowWithColor(ctx, CGSizeMake(1, 1), 1.0f, [UIColor whiteColor].CGColor);
+		CGColorRef white = CGColorCreateGenericGray(1.0f, 1.0f);
+		CGContextSetShadowWithColor(ctx, CGSizeMake(1, 1), 1.0f, white);
+		CGColorRelease(white);
 		CGContextSetTextDrawingMode(ctx, kCGTextFill);
-		CGContextSetFillColorWithColor(ctx, [UIColor blackColor].CGColor);
+		CGColorRef black = CGColorCreateGenericGray(0.0f, 1.0f);
+		CGContextSetFillColorWithColor(ctx, black);
+		CGColorRelease(black);
 		char buf[64];
 		sprintf(buf, "Log Image %d", image++);
 		CGContextShowTextAtPoint(ctx, 0, 50, buf, strlen(buf));
-		UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
-		CGSize sz = img.size;
-		LogImageData(@"image", 0, sz.width, sz.height, UIImagePNGRepresentation(img));
-		UIGraphicsEndImageContext();
+		[img unlockFocus];
+		
+		NSBitmapImageRep *bitmapRep = [[NSBitmapImageRep alloc] initWithData:[img TIFFRepresentation]];
+		NSData *bitmapData = [bitmapRep representationUsingType:NSPNGFileType properties:nil];
+		[bitmapRep release];
+		[img release];
+
+		LogImageData(@"image", 0, 100, 100, bitmapData);
 	}
 	if (phase == 0)
 	{
@@ -118,8 +131,8 @@
 								 toTarget:self
 							   withObject:[NSNumber numberWithInteger:counter++]];
 	}
-	messagesSentLabel.text = [NSString stringWithFormat:@"%d", counter];
-	imagesSentLabel.text = [NSString stringWithFormat:@"%d", imagesCounter];
+	[messagesCountLabel setStringValue:[NSString stringWithFormat:@"%d", counter]];
+	[imagesCountLabel setStringValue:[NSString stringWithFormat:@"%d", imagesCounter]];
 }
 
 - (void)sendLogFromAnotherThread:(NSNumber *)counterNum

@@ -45,7 +45,7 @@
 
 - (id)transformedValue:(id)value
 {
-	// check if the All Logs entry (the only one 
+	// check if the All Logs entry (the only one with UID 1) is in selection
 	BOOL result = NO;
 	NSArray *selection = (NSArray *)value;
 	if ([selection count])

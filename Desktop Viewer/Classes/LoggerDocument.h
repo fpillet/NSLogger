@@ -30,6 +30,8 @@
  */
 #import "LoggerConnection.h"
 
+@class LoggerWindowController;
+
 @interface LoggerDocument : NSDocument <LoggerConnectionDelegate>
 {
 	LoggerConnection *attachedConnection;
@@ -38,5 +40,6 @@
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
 
 - (id)initWithConnection:(LoggerConnection *)aConnection;
+- (LoggerWindowController *)mainWindowController;
 
 @end

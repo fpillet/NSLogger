@@ -46,6 +46,7 @@
 - (void)refreshAllMessages;
 - (void)filterIncomingMessages:(NSArray *)messages withFilter:(NSPredicate *)aFilter;
 - (NSPredicate *)currentFilterPredicate;
+- (void)tileLogTable:(BOOL)force;
 @end
 
 @implementation LoggerWindowController
@@ -101,6 +102,8 @@
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
+	buttonBar.splitViewDelegate = self;
+
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate:nil];
 	loadComplete = YES;
@@ -111,6 +114,10 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(applyFontChanges)
 												 name:kMessageAttributesChangedNotification
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(tileLogTableNotification:)
+												 name:@"TileLogTableNotification"
 											   object:nil];
 }
 
@@ -129,6 +136,17 @@
 	// Update the source label
 	assert([NSThread isMainThread]);
 	[self synchronizeWindowTitleWithDocumentName];
+}
+
+- (IBAction)showClientInfo:(id)sender
+{
+	if (clientDetailsWindowController == nil)
+	{
+		clientDetailsWindowController = [[LoggerClientInfoWindowController alloc] initWithWindowNibName:@"LoggerClientInfoWindow"];
+		clientDetailsWindowController.attachedConnection = attachedConnection;
+		[[self document] addWindowController:clientDetailsWindowController];
+	}
+	[clientDetailsWindowController showWindow:self];
 }
 
 - (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate
@@ -190,45 +208,73 @@
 	[currentPredicate release];	
 }
 
-- (void)tileLogTable:(BOOL)force
+- (void)tileLogTableRowsInRange:(NSRange)range
 {
 	NSUInteger displayed = [displayedMessages count];
 	NSSize sz = [logTable frame].size;
 	NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
-	for (NSUInteger row = 0; row < displayed; row++)
+	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
 	{
-		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
-		if (force)
-			msg.cachedCellSize = NSZeroSize;
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
+		msg.cachedCellSize = NSZeroSize;
 		CGFloat cachedHeight = msg.cachedCellSize.height;
 		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
 		if (newHeight != cachedHeight)
-			[indexSet addIndex:row];
+			[indexSet addIndex:row+range.location];
 	}
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
+	
+}
+
+- (void)tileLogTable:(BOOL)force
+{
+	if (force || tableNeedsTiling)
+	{
+		// tile the visible rows (and a bit more) first, then tile all the rest
+		// this gives us a better perceived speed
+		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+		NSRange visibleRows = [logTable rowsInRect:r];
+		visibleRows.location = MAX(0, visibleRows.location - 5);
+		visibleRows.length = MIN(visibleRows.location + visibleRows.length + 10, [displayedMessages count] - visibleRows.location);
+		[self tileLogTableRowsInRange:visibleRows];
+		for (NSUInteger i = 0; i < [displayedMessages count]; i += 50)
+		{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				NSRange range = NSMakeRange(i, MIN(50, [displayedMessages count] - i));
+				if (range.length > 0)
+					[self tileLogTableRowsInRange:range];
+			});
+		}
+	}
+	tableNeedsTiling = NO;
+}
+
+- (void)tileLogTableNotification:(NSNotification *)note
+{
+	[self tileLogTable:NO];
+}
+
+- (void)windowDidResize:(NSNotification *)notification
+{
+	if (![[self window] inLiveResize])
+		[self tileLogTable:YES];
+}
+
+- (void)windowDidEndLiveResize:(NSNotification *)notification
+{
+	[self tileLogTable:YES];
+}
+
+- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+{
+	tableNeedsTiling = YES;
 }
 
 - (void)applyFontChanges
 {
 	[self tileLogTable:YES];
 	[logTable reloadData];
-}
-
-- (void)windowDidResize:(NSNotification *)notification
-{
-	[self tileLogTable:NO];
-}
-
-- (IBAction)showClientInfo:(id)sender
-{
-	if (clientDetailsWindowController == nil)
-	{
-		clientDetailsWindowController = [[LoggerClientInfoWindowController alloc] initWithWindowNibName:@"LoggerClientInfoWindow"];
-		clientDetailsWindowController.attachedConnection = attachedConnection;
-		[[self document] addWindowController:clientDetailsWindowController];
-	}
-	[clientDetailsWindowController showWindow:self];
 }
 
 // -----------------------------------------------------------------------------
@@ -521,7 +567,7 @@ didReceiveMessages:(NSArray *)theMessages
 // -----------------------------------------------------------------------------
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if (aTableView == logTable)
+	if (aTableView == logTable && rowIndex >= 0 && rowIndex < [displayedMessages count])
 	{
 		// setup the message to be displayed
 		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
@@ -536,13 +582,17 @@ didReceiveMessages:(NSArray *)theMessages
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	assert([NSThread isMainThread]);
-	// @@@ second part of this test is because I've seen cases where the table tries to get the
-	// height of one row past the last. Not sure why yet.... It looks like when I send
-	// noteHeightOfRowsWithIndexesChanged: to the table, we sometimes receive a tableView:heightOfRow:
-	// message with row==[displayedMessages count].
 	if (tableView == logTable && row >= 0 && row < [displayedMessages count])
 	{
-		return [LoggerMessageCell heightForCellWithMessage:[displayedMessages objectAtIndex:row]
+		// we play tricks to speed up live resizing and others: the cell will
+		// always display using its cached size, which is only recomputed the
+		// first time and when tileLogTable is called. Due to the large number
+		// of entries we can have in the table, this is a requirement.
+		LoggerMessage *message = [displayedMessages objectAtIndex:row];
+		NSSize cachedSize = message.cachedCellSize;
+		if (cachedSize.width != 0)
+			return cachedSize.height;
+		return [LoggerMessageCell heightForCellWithMessage:message
 												   maxSize:[tableView frame].size];
 	}
 	return [tableView rowHeight];
@@ -571,7 +621,9 @@ didReceiveMessages:(NSArray *)theMessages
 	objectValueForTableColumn:(NSTableColumn *)tableColumn
 	row:(int)rowIndex
 {
-	return [displayedMessages objectAtIndex:rowIndex];
+	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+		return [displayedMessages objectAtIndex:rowIndex];
+	return nil;
 }
 
 // -----------------------------------------------------------------------------
@@ -653,3 +705,4 @@ didReceiveMessages:(NSArray *)theMessages
 }
 
 @end
+

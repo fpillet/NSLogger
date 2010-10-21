@@ -34,6 +34,10 @@
 #import <pthread.h>
 #import <CoreFoundation/CoreFoundation.h>
 
+// This define is here so that user application can test whether NSLogger Client is
+// being included in the project, and potentially configure their macros accordingly
+#define NSLOGGER_WAS_HERE							1
+
 // Set this to 0 if you absolutely NOT want any access to Cocoa (Objective-C, NS* calls)
 // We need a couple ones to reliably obtain the thread number and device information
 // Note that since we need NSAutoreleasePool when using Cocoa in the logger's worker thread,

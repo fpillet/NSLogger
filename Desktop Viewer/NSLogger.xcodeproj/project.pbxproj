@@ -27,6 +27,7 @@
 		3D7C75560F4026D2006B55AD /* LoggerNativeTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75550F4026D2006B55AD /* LoggerNativeTransport.m */; };
 		3D8B60E21269C5D800659751 /* LoggerClientInfoWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D8B60E11269C5D800659751 /* LoggerClientInfoWindow.xib */; };
 		3D8B60E61269C70800659751 /* LoggerClientInfoWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B60E51269C70800659751 /* LoggerClientInfoWindowController.m */; };
+		3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B63DC126B79CA00659751 /* LoggerSplitView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
@@ -113,6 +114,8 @@
 		3D8B60E11269C5D800659751 /* LoggerClientInfoWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerClientInfoWindow.xib; path = Resources/LoggerClientInfoWindow.xib; sourceTree = "<group>"; };
 		3D8B60E41269C70800659751 /* LoggerClientInfoWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClientInfoWindowController.h; path = Classes/LoggerClientInfoWindowController.h; sourceTree = "<group>"; };
 		3D8B60E51269C70800659751 /* LoggerClientInfoWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClientInfoWindowController.m; path = Classes/LoggerClientInfoWindowController.m; sourceTree = "<group>"; };
+		3D8B63DB126B79CA00659751 /* LoggerSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerSplitView.h; path = Classes/LoggerSplitView.h; sourceTree = "<group>"; };
+		3D8B63DC126B79CA00659751 /* LoggerSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerSplitView.m; path = Classes/LoggerSplitView.m; sourceTree = "<group>"; };
 		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
 		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
@@ -246,6 +249,8 @@
 			children = (
 				3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */,
 				3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */,
+				3D8B63DB126B79CA00659751 /* LoggerSplitView.h */,
+				3D8B63DC126B79CA00659751 /* LoggerSplitView.m */,
 			);
 			name = "Views & Cells";
 			sourceTree = "<group>";
@@ -396,6 +401,7 @@
 				3D027B2F12663E3F00E6F241 /* LoggerPrefsWindowController.m in Sources */,
 				3DE01E941268D32100A39E7E /* LoggerDetailsWindowController.m in Sources */,
 				3D8B60E61269C70800659751 /* LoggerClientInfoWindowController.m in Sources */,
+				3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
