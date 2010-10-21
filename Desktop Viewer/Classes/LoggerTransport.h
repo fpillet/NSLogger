@@ -35,7 +35,10 @@
 @interface LoggerTransport : NSObject 
 {
 	NSMutableArray *connections;
+	BOOL active;
 }
+
+@property (nonatomic, readonly) BOOL active;
 
 - (void)startup;
 - (void)shutdown;

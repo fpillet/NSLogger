@@ -35,6 +35,10 @@
 #import "LoggerStatusWindowController.h"
 #import "LoggerPrefsWindowController.h"
 
+NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
+NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
+NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
+
 @implementation LoggerAppDelegate
 
 @synthesize transports, filters, filtersSortDescriptors, statusController;
@@ -110,8 +114,63 @@
 	}
 }
 
+- (void)prefsChangeNotification:(NSNotification *)note
+{
+	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
+}
+
+- (void)startStopTransports
+{
+	// Start and stop transports as needed
+	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
+	id udcv = [udc values];
+	for (LoggerTransport *transport in transports)
+	{
+		if ([transport isKindOfClass:[LoggerNativeTransport class]])
+		{
+			LoggerNativeTransport *t = (LoggerNativeTransport *)transport;
+			if (t.publishBonjourService)
+			{
+				if ([[udcv valueForKey:kPrefPublishesBonjourService] boolValue])
+					[t startup];
+				else
+					[t shutdown];
+			}
+			else
+			{
+				if ([[udcv valueForKey:kPrefHasDirectTCPIPResponder] boolValue])
+				{
+					int port = [[udcv valueForKey:kPrefDirectTCPIPResponderPort] integerValue];
+					if (t.listenerPort != port)
+					{
+						[t shutdown];
+						t.listenerPort = port;
+					}
+					[t startup];
+				}
+				else
+					[t shutdown];
+			}
+		}
+	}
+}
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+	// Initialize the user defaults controller
+	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
+	[udc setInitialValues:[NSDictionary dictionaryWithObjectsAndKeys:
+						   [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
+						   [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
+						   [NSNumber numberWithInteger:0], kPrefDirectTCPIPResponderPort,
+						   nil]];
+	[udc setAppliesImmediately:NO];
+	
+	// Listen to prefs change notifications, where we start / stop transports on demand
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(prefsChangeNotification:)
+												 name:kPrefsChangedNotification
+											   object:nil];
 	// Prepare the logger status
 	statusController = [[LoggerStatusWindowController alloc] initWithWindowNibName:@"LoggerStatus"];
 	[statusController showWindow:self];
@@ -119,16 +178,17 @@
 
 	// initialize all supported transports
 	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
-	if (t != nil)
-	{
-		[statusController appendStatus:[t valueForKey:@"status"]];
-		[transports addObject:t];
-		[t release];
-	}
-
+	t.publishBonjourService = YES;
+	[transports addObject:t];
+	[t release];
+	
+	t = [[LoggerNativeTransport alloc] init];
+	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
+	[transports addObject:t];
+	[t release];
+	
 	// start transports
-	for (LoggerTransport *transport in transports)
-		[transport performSelector:@selector(startup) withObject:nil afterDelay:0];
+	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
 }
 
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender

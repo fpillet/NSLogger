@@ -30,6 +30,7 @@
  */
 #include <sys/time.h>
 #import "LoggerPrefsWindowController.h"
+#import "LoggerAppDelegate.h"
 #import "LoggerMessage.h"
 #import "LoggerMessageCell.h"
 
@@ -40,6 +41,8 @@ enum {
 	kTextFont,
 	kDataFont
 };
+
+NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 @implementation SampleMessageControl
 - (BOOL)isFlipped
@@ -146,11 +149,18 @@ enum {
 - (IBAction)applyChanges:(id)sender
 {
 	[[LoggerMessageCell class] setDefaultAttributes:attributes];
+
+	// note: save is deferred to the next pass of the runloop. When we send out the notification,
+	// we also take this into account and deferr the update-from-prefs until the next runloop pass.
+	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
+	[udc save:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
 }
 
 - (IBAction)cancelChanges:(id)sender
 {
-	// Restore previous attributes
+	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
+	[udc revert:self];
 	[[self window] orderOut:sender];
 }
 
@@ -162,6 +172,9 @@ enum {
 
 - (IBAction)revertToDefaults:(id)sender
 {
+	[[NSUserDefaultsController sharedUserDefaultsController] revertToInitialValues:self];
+
+	// revert message defaults
 	[attributes release];
 	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributesDictionary]];
 	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
@@ -170,6 +183,8 @@ enum {
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
 	[self updateFontNames];
+	
+	[self applyChanges:self];
 }
 
 - (IBAction)selectFont:(id)sender
@@ -214,6 +229,7 @@ enum {
 {
 	return [NSString stringWithFormat:@"%@ %.1f", [aFont displayName], [aFont pointSize]];
 }
+
 - (void)updateFontNames
 {
 	[timestampFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName]]];

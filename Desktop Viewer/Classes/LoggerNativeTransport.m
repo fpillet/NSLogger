@@ -41,28 +41,44 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 @implementation LoggerNativeTransport
 
-@synthesize listenerPort, listenerSocket_ipv4, listenerSocket_ipv6;
+@synthesize listenerPort, listenerSocket_ipv4, listenerSocket_ipv6, publishBonjourService;
 
 - (void)startup
 {
-	[NSThread detachNewThreadSelector:@selector(listenerThread) toTarget:self withObject:nil];
+	if (!active)
+	{
+		active = YES;
+		[NSThread detachNewThreadSelector:@selector(listenerThread) toTarget:self withObject:nil];		
+	}
 }
 
 - (void)shutdown
 {
-	if (listenerThread != nil && [NSThread currentThread] != listenerThread)
+	if (!active)
+		return;
+
+	if ([NSThread currentThread] != listenerThread)
 	{
 		[self performSelector:_cmd onThread:listenerThread withObject:nil waitUntilDone:YES];
 		return;
 	}
 	
+	// post status update
+	NSString *status;
+	if (publishBonjourService)
+		status = NSLocalizedString(@"Bonjour service closing.", @"");
+	else
+		status = [NSString stringWithFormat:NSLocalizedString(@"TCP/IP responder for port %d closing.", @""), listenerPort];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+														object:status];
+
 	// stop Bonjour service
 	[bonjourService setDelegate:nil];
 	[bonjourService stop];
 	[bonjourService release];
 	bonjourService = nil;
 
-	// close listener sockets
+	// close listener sockets (removing input sources)
 	if (listenerSocket_ipv4)
 	{
 		CFSocketInvalidate(listenerSocket_ipv4);
@@ -79,6 +95,14 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	// shutdown all connections
 	while ([connections count])
 		[self removeConnection:[connections objectAtIndex:0]];
+	
+	[listenerThread cancel];
+	
+	// when exiting this selector, we'll get out of the runloop. Thread being cancelled, it will be
+	// deactivated immediately. We can safely reset active and listener thread just now so that
+	// another startup with a different port can take place.
+	listenerThread = nil;
+	active = NO;
 }
 
 - (void)dealloc
@@ -86,15 +110,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	[listenerThread cancel];
 	[bonjourService release];
 	[super dealloc];
-}
-
-- (NSString *)status
-{
-	if (listenerThread == nil)
-		return NSLocalizedString(@"Bonjour service starting up...", @"");
-	if (listenerSocket_ipv4 == NULL && listenerSocket_ipv6 == NULL)
-		return NSLocalizedString(@"Failed starting Bonjour service.", @"");
-	return [NSString stringWithFormat:@"Bonjour service ready (local port %d)", listenerPort];
 }
 
 - (void)removeConnection:(LoggerConnection *)aConnection
@@ -107,7 +122,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	[super removeConnection:aConnection];
 }
 
-- (BOOL)setupWithPort:(int)port
+- (BOOL)setup
 {
 	@try
 	{
@@ -147,7 +162,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		memset(&addr4, 0, sizeof(addr4));
 		addr4.sin_len = sizeof(addr4);
 		addr4.sin_family = AF_INET;
-		addr4.sin_port = htons(port);
+		addr4.sin_port = htons(listenerPort);
 		addr4.sin_addr.s_addr = htonl(INADDR_ANY);
 		NSData *address4 = [NSData dataWithBytes:&addr4 length:sizeof(addr4)];
 		
@@ -158,13 +173,13 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 										 userInfo:nil];
 		}
 		
-		if (port == 0)
+		if (listenerPort == 0)
 		{
 			// now that the binding was successful, we get the port number 
 			// -- we will need it for the v6 endpoint and for NSNetService
 			NSData *addr = [(NSData *)CFSocketCopyAddress(listenerSocket_ipv4) autorelease];
 			memcpy(&addr4, [addr bytes], [addr length]);
-			port = ntohs(addr4.sin_port);
+			listenerPort = ntohs(addr4.sin_port);
 		}
 		
 	    // set up the IPv6 endpoint
@@ -172,7 +187,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		memset(&addr6, 0, sizeof(addr6));
 		addr6.sin6_len = sizeof(addr6);
 		addr6.sin6_family = AF_INET6;
-		addr6.sin6_port = htons(port);
+		addr6.sin6_port = htons(listenerPort);
 		memcpy(&(addr6.sin6_addr), &in6addr_any, sizeof(addr6.sin6_addr));
 		NSData *address6 = [NSData dataWithBytes:&addr6 length:sizeof(addr6)];
 		
@@ -183,8 +198,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 										 userInfo:nil];
 		}
 		
-		listenerPort = port;
-
 		// set up the run loop sources for the sockets
 		CFRunLoopRef rl = CFRunLoopGetCurrent();
 		CFRunLoopSourceRef source4 = CFSocketCreateRunLoopSource(kCFAllocatorDefault, listenerSocket_ipv4, 0);
@@ -196,15 +209,35 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		CFRelease(source6);
 
 		// register Bonjour services
-		bonjourService = [[NSNetService alloc] initWithDomain:@""
-														 type:(NSString *)LOGGER_SERVICE_TYPE
-														 name:(NSString *)LOGGER_SERVICE_NAME
-														 port:port];
-		[bonjourService setDelegate:self];
-		[bonjourService publish];
+		NSString *status;
+		if (publishBonjourService)
+		{
+			bonjourService = [[NSNetService alloc] initWithDomain:@""
+															 type:(NSString *)LOGGER_SERVICE_TYPE
+															 name:(NSString *)LOGGER_SERVICE_NAME
+															 port:listenerPort];
+			[bonjourService setDelegate:self];
+			[bonjourService publish];
+
+			status = NSLocalizedString(@"Bonjour service starting up...", @"");
+		}
+		else
+		{
+			status = [NSString stringWithFormat:@"TCP/IP responder ready (local port %d)", listenerPort];
+		}
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+															object:status];
 	}
 	@catch (NSException * e)
 	{
+		NSString *status;
+		if (publishBonjourService)
+			status = NSLocalizedString(@"Failed creating sockets for Bonjour service.", @"");
+		else
+			status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting TCP/IP responder on port %d",@""), listenerPort];
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+															object:status];
 		if (listenerSocket_ipv4 != NULL)
 		{
 			CFRelease(listenerSocket_ipv4);
@@ -215,11 +248,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			CFRelease(listenerSocket_ipv6);
 			listenerSocket_ipv6 = NULL;
 		}
-		@throw e;
-	}
-	@finally
-	{
-		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:self];
+		return NO;
 	}
 	return YES;
 }
@@ -229,14 +258,20 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	listenerThread = [NSThread currentThread];
 	[[listenerThread threadDictionary] setObject:[NSRunLoop currentRunLoop] forKey:@"runLoop"];
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+#ifdef DEBUG
+	NSString *description = [self description];
+	NSLog(@"Entering listenerThread for transport %@", description);
+#endif
 	@try
 	{
-		[self setupWithPort:listenerPort];			// if listenerPort is 0, let the OS choose the port we're listening on
-		while (![listenerThread isCancelled])
+		if ([self setup])
 		{
-			NSDate *next = [[NSDate alloc] initWithTimeIntervalSinceNow:0.10];
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:next];
-			[next release];
+			while (![listenerThread isCancelled])
+			{
+				NSDate *next = [[NSDate alloc] initWithTimeIntervalSinceNow:0.10];
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:next];
+				[next release];
+			}
 		}
 	}
 	@catch (NSException * e)
@@ -244,14 +279,22 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 #ifdef DEBUG
 		NSLog(@"listenerThread catched exception %@", e);
 #endif
-		// @@@ TODO
-//		[NSApp presentError:];
 	}
 	@finally
 	{
+#ifdef DEBUG
+		NSLog(@"Exiting listenerThread for transport %@", description);
+#endif
 		[pool release];
 		listenerThread = nil;
+		active = NO;
 	}
+}
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%@ %p listenerPort=%d publishBonjourService=%d>", 
+			[self class], self, listenerPort, (int)publishBonjourService];
 }
 
 // -----------------------------------------------------------------------------
@@ -322,7 +365,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				break;
 				
 			case NSStreamEventErrorOccurred:
+#ifdef DEBUG
 				NSLog(@"Stream error occurred");
+#endif
 				// fall through
 			case NSStreamEventEndEncountered:
 				cnx.connected = NO;
@@ -351,7 +396,16 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 // -----------------------------------------------------------------------------
 - (void)netService:(NSNetService *)sender didNotPublish:(NSDictionary *)errorDict
 {
-	NSLog(@"netServiceDidNotPublish %@", errorDict);
+	[self shutdown];
+	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (error: %@).", @""), errorDict];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:status];
+}
+
+- (void)netServiceDidPublish:(NSNetService *)sender
+{
+	NSString *status = [NSString stringWithFormat:@"Bonjour service ready (%@ local port %d)", [sender domain], listenerPort];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+														object:status];
 }
 
 @end
