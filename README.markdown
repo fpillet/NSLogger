@@ -19,7 +19,7 @@ Start the NSLogger application on Mac OS X. Your client app must run on a device
 You can create custom filters to quickly switch between different views of your logs.
 
 # Evolved logging facility #
-It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices. (*direct connection to a specific address/port is not yet implemented*).
+It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices.
 
 # Powerful desktop viewer #
 The desktop viewer application provides powerful tools, like:
@@ -41,9 +41,8 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 *NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
 
 # Work in progress - Current status #
-This tool comes from a personal need for a more powerful logger. Not all the initial functionalities I wanted have been implemented yet. Here is what's not implemented, and some of the planned features, by current priority order:
+This tool comes from a personal need for a more powerful logger. NSLogger is already powerful, but there are more features in development. Quick list of features not yet implemented:
 
- * Support for connecting to a specific IP address / port (client side)
  * Support drag-and-drop from logs
  * Support export to other formats than the native .nsloggerdata file format
  * Support for storing logs in a file (client side) and push them later to the viewer
