@@ -361,6 +361,7 @@ static void *LoggerWorkerThread(Logger *logger)
 		CFRelease(logger->logStream);
 		logger->logStream = NULL;
 	}
+	LoggerStopReachabilityChecking(logger);
 
 	CFMessagePortInvalidate(logger->messagePort);
 	CFRelease(logger->messagePort);
