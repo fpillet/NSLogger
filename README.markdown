@@ -11,7 +11,7 @@ Clients automatically find the logger application running on Mac OS X via Bonjou
 ![Desktop Viewer (main window)](http://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
 # One-step setup #
-All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
+All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
 
 # Using the desktop logger #
 Start the NSLogger application on Mac OS X. Your client app must run on a device that is on the same network as your Mac. When it starts logging traces, it will automatically look for the desktop NSLogger using Bonjour. As soon as traces start coming, a new window will open on your Mac.
