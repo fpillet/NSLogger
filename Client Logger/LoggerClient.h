@@ -1,6 +1,8 @@
 /*
  * LoggerClient.h
  *
+ * version 1.0b2 2010-10-24
+ *
  * Part of NSLogger (client side)
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
@@ -33,6 +35,7 @@
 #import <unistd.h>
 #import <pthread.h>
 #import <CoreFoundation/CoreFoundation.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 
 // This define is here so that user application can test whether NSLogger Client is
 // being included in the project, and potentially configure their macros accordingly
@@ -46,6 +49,9 @@
 
 typedef struct
 {
+	CFStringRef host;								// Viewer host to connect to (instead of using Bonjour)
+	UInt32 port;									// port on the viewer host
+
 	CFMutableArrayRef bonjourServiceBrowsers;		// Active service browsers
 	CFMutableArrayRef bonjourServices;				// Services being tried
 	CFNetServiceBrowserRef bonjourDomainBrowser;	// Domain browser
@@ -57,6 +63,8 @@ typedef struct
 	
 	CFWriteStreamRef logStream;						// The connected stream we're writing to
 	
+	SCNetworkReachabilityRef reachability;			// The reachability object we use to determine when the target host becomes reachable
+
 	uint8_t *sendBuffer;							// data waiting to be sent
 	NSUInteger sendBufferSize;
 	NSUInteger sendBufferUsed;						// number of bytes of the send buffer currently in use
@@ -96,10 +104,13 @@ extern Logger* LoggerInit();
 // Set logger options if you don't want the default options
 extern void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntilConnection, BOOL browseBonjour, BOOL browseOnlyLocalDomains);
 
+// Directly set the viewer host (hostname or IP address) and port we want to connect to. If set, LoggerStart() will
+// try to connect there first before trying Bonjour
+extern void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port);
+
 // Activate the logger, try connecting
 extern void LoggerStart(Logger *logger);
 
-//extern void LoggerConnectToHost(CFStringRef hostName, int port);
 //extern void LoggerConnectToHost(CFDataRef address, int port);
 
 // Deactivate and free the logger.

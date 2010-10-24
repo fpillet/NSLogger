@@ -1,6 +1,8 @@
 /*
  * LoggerClient.m
  *
+ * version 1.0b2 2010-10-24
+ *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
  *
@@ -76,7 +78,7 @@
  */
 
 // Set this to 1 to activate console logs when running the logger itself
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 1
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -97,6 +99,11 @@ static void LoggerStartBonjourBrowsing(Logger *logger);
 static void LoggerStopBonjourBrowsing(Logger *logger);
 static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
 static void LoggerServiceBrowserCallBack(CFNetServiceBrowserRef browser, CFOptionFlags flags, CFTypeRef domainOrService, CFStreamError* error, void *info);
+
+// Reachability
+static void LoggerStartReachabilityChecking(Logger *logger);
+static void LoggerStopReachabilityChecking(Logger *logger);
+static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info);
 
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
@@ -120,7 +127,7 @@ static void EncodeLoggerString(CFMutableDataRef data, CFStringRef aString, int k
 static void EncodeLoggerData(CFMutableDataRef data, CFDataRef theData, int key, int partType);
 
 /* Static objects */
-static Logger *sDefaultLogger = NULL;
+static Logger* volatile sDefaultLogger = NULL;
 static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // -----------------------------------------------------------------------------
@@ -136,6 +143,19 @@ void LoggerSetDefautLogger(Logger *defaultLogger)
 
 Logger *LoggerGetDefaultLogger()
 {
+	if (sDefaultLogger == NULL)
+	{
+		pthread_mutex_lock(&sDefaultLoggerMutex);
+		Logger *logger = LoggerInit();
+		if (sDefaultLogger == NULL)
+		{
+			sDefaultLogger = logger;
+			logger = NULL;
+		}
+		pthread_mutex_unlock(&sDefaultLoggerMutex);
+		if (logger != NULL)
+			LoggerStop(logger);
+	}
 	return sDefaultLogger;
 }
 
@@ -149,7 +169,7 @@ Logger *LoggerInit()
 	
 	Logger *logger = (Logger *)malloc(sizeof(Logger));
 	bzero(logger, sizeof(Logger));
-	
+
 	logger->logQueue = CFArrayCreateMutable(NULL, 16, &kCFTypeArrayCallBacks);
 	logger->bonjourServiceBrowsers = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
 	logger->bonjourServices = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
@@ -166,10 +186,12 @@ Logger *LoggerInit()
 	logger->quit = NO;
 	
 	// Set this logger as the default logger is none exist already
-	pthread_mutex_lock(&sDefaultLoggerMutex);
-	if (sDefaultLogger == NULL)
-		sDefaultLogger = logger;
-	pthread_mutex_unlock(&sDefaultLoggerMutex);
+	if (!pthread_mutex_trylock(&sDefaultLoggerMutex))
+	{
+		if (sDefaultLogger == NULL)
+			sDefaultLogger = logger;
+		pthread_mutex_unlock(&sDefaultLoggerMutex);
+	}
 	
 	return logger;
 }
@@ -178,34 +200,51 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 {
 	LOGGERDBG(CFSTR("LoggerSetOptions logToConsole=%d bufferLocally=%d browseBonjour=%d browseOnlyLocalDomains=%d"),
 			  (int)logToConsole, (int)bufferLocallyUntilConnection, (int)browseBonjour, (int)browseOnlyLocalDomains);
+	
 	if (logger == NULL)
-	{
-		logger = sDefaultLogger;
-		if (logger == NULL)
-		{
-			LoggerStart(LoggerInit());
-			logger = sDefaultLogger;
-		}
-	}
+		logger = LoggerGetDefaultLogger();
+
 	logger->logToConsole = logToConsole;
 	logger->bufferLogsUntilConnection = bufferLocallyUntilConnection;
 	logger->browseBonjour = browseBonjour;
 	logger->browseOnlyLocalDomain = browseOnlyLocalDomains;
 }
 
+void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
+{
+	if (logger == NULL)
+		logger = LoggerGetDefaultLogger();
+	
+	if (hostName == NULL)
+	{
+		if (logger->host != NULL)
+		{
+			CFRelease(logger->host);
+			logger->host = NULL;
+		}
+		logger->port = 0;
+	}
+	else
+	{
+		CFRetain(hostName);
+		if (logger->host != NULL)
+			CFRelease(logger->host);
+		logger->host = hostName;
+		logger->port = port;
+	}
+}
+
 void LoggerStart(Logger *logger)
 {
-	LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
+	// will do nothing if logger is already started
 	if (logger == NULL)
-	{
-		logger = sDefaultLogger;
-		if (logger == NULL)
-			logger = LoggerInit();
-	}
+		logger = LoggerGetDefaultLogger();
+
 	if (logger->workerThread == NULL)
 	{
 		// Start the work thread which performs the Bonjour search,
 		// connects to the logging service and forwards the logs
+		LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
 		pthread_create(&logger->workerThread, NULL, (void *(*)(void *))&LoggerWorkerThread, logger);
 	}
 }
@@ -214,20 +253,30 @@ void LoggerStop(Logger *logger)
 {
 	// Stop logging remotely, stop Bonjour discovery, redirect all traces to console
 	LOGGERDBG(CFSTR("LoggerStop"));
+
+	pthread_mutex_lock(&sDefaultLoggerMutex);
 	if (logger == NULL || logger == sDefaultLogger)
 	{
-		pthread_mutex_lock(&sDefaultLoggerMutex);
 		logger = sDefaultLogger;
 		sDefaultLogger = NULL;
-		pthread_mutex_unlock(&sDefaultLoggerMutex);
 	}
+	pthread_mutex_unlock(&sDefaultLoggerMutex);
+
 	if (logger != NULL)
 	{
-		if (logger->workerThread)
+		if (logger->workerThread != NULL)
 		{
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
 		}
+		CFRelease(logger->bonjourServiceBrowsers);
+		CFRelease(logger->bonjourServices);
+		free(logger->sendBuffer);
+		if (logger->host != NULL)
+			CFRelease(logger->host);
+		// to make sure potential errors are catched, set the whole structure
+		// to a value that will make code crash if it tries using pointers to it
+		memset(logger, 0x55, sizeof(logger));
 		free(logger);
 	}
 }
@@ -276,9 +325,17 @@ static void *LoggerWorkerThread(Logger *logger)
 	CFRelease(messagePortSource);
 	
 	// Start Bonjour browsing, wait for remote logging service to be found
-	if (logger->browseBonjour)
+	if (logger->browseBonjour && logger->host == NULL)
+	{
+		LOGGERDBG(CFSTR("-> logger configured for Bonjour, no direct host set -- trying Bonjour first"));
 		LoggerStartBonjourBrowsing(logger);
-	
+	}
+	else if (logger->host != NULL)
+	{
+		LOGGERDBG(CFSTR("-> logger configured with direct host, trying it first"));
+		LoggerTryConnect(logger);
+	}
+
 	while (!logger->quit)
 	{
 		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.25, true);
@@ -304,7 +361,7 @@ static void *LoggerWorkerThread(Logger *logger)
 		CFRelease(logger->logStream);
 		logger->logStream = NULL;
 	}
-	
+
 	CFMessagePortInvalidate(logger->messagePort);
 	CFRelease(logger->messagePort);
 	logger->messagePort = NULL;
@@ -314,16 +371,11 @@ static void *LoggerWorkerThread(Logger *logger)
 
 static void LoggerWriteMoreData(Logger *logger)
 {
-	//LOGGERDBG(CFSTR("LoggerWriteMoreData"));
 	if (!logger->connected)
-	{
-		//LOGGERDBG(CFSTR("-> Logger not connected."));
 		return;
-	}
 	
 	while (CFWriteStreamCanAcceptBytes(logger->logStream))
 	{
-		//LOGGERDBG(CFSTR("-> can accept bytes"));
 		// prepare archived data with log queue contents, unblock the queue as soon as possible
 		CFMutableDataRef sendFirstItem = NULL;
 		if (logger->sendBufferUsed == 0)
@@ -343,13 +395,9 @@ static void LoggerWriteMoreData(Logger *logger)
 			{
 				// are we done yet?
 				if (CFArrayGetCount(logger->logQueue) == 0)
-				{
-					//LOGGERDBG(CFSTR("-> no more messages"));
 					break;
-				}
 				
 				// first item is too big to fit in a single packet, send it separately
-				//LOGGERDBG(CFSTR("-> first item too big, trying to send it separately"));
 				sendFirstItem = (CFMutableDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
 				logger->sendBufferOffset = 0;
 			}
@@ -573,8 +621,93 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 
 // -----------------------------------------------------------------------------
 #pragma mark -
+#pragma mark Reachability
+// -----------------------------------------------------------------------------
+static void LoggerStartReachabilityChecking(Logger *logger)
+{
+	if (logger->host != NULL && logger->reachability == NULL)
+	{
+		LOGGERDBG(CFSTR("Starting SCNetworkReachability to wait for host %@ to be reachable"), logger->host);
+
+		CFIndex length = CFStringGetLength(logger->host) * 3;
+		char *buffer = (char *)malloc(length + 1);
+		CFStringGetBytes(logger->host, CFRangeMake(0, CFStringGetLength(logger->host)), kCFStringEncodingUTF8, '?', false, (UInt8 *)buffer, length, &length);
+		buffer[length] = 0;
+		
+		logger->reachability = SCNetworkReachabilityCreateWithName(NULL, buffer);
+		
+		SCNetworkReachabilityContext context = {0, logger, NULL, NULL, NULL};
+		SCNetworkReachabilitySetCallback(logger->reachability, &LoggerReachabilityCallBack, &context);
+		SCNetworkReachabilityScheduleWithRunLoop(logger->reachability, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+
+		free(buffer);
+	}
+}
+
+static void LoggerStopReachabilityChecking(Logger *logger)
+{
+	if (logger->reachability)
+	{
+		LOGGERDBG(CFSTR("Stopping SCNetworkReachability"));
+		SCNetworkReachabilityUnscheduleFromRunLoop(logger->reachability, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+		CFRelease(logger->reachability);
+		logger->reachability = NULL;
+	}
+}
+
+static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info)
+{
+	Logger *logger = (Logger *)info;
+	assert(logger != NULL);
+	LOGGERDBG(CFSTR("LoggerReachabilityCallBack called with flags=0x%08lx"), flags);
+	if (flags & kSCNetworkReachabilityFlagsReachable)
+	{
+		// target host became reachable. If we have not other open connection,
+		// try direct connection to the host
+		if (logger->logStream == NULL && logger->host != NULL)
+		{
+			LOGGERDBG(CFSTR("-> host %@ became reachable, trying to connect."), logger->host);
+			CFArrayRemoveAllValues(logger->bonjourServices);
+			LoggerTryConnect(logger);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
 #pragma mark Stream management
 // -----------------------------------------------------------------------------
+static BOOL LoggerConfigureAndOpenStream(Logger *logger)
+{
+	// configure and open stream
+	LOGGERDBG(CFSTR("LoggerConfigureAndOpenStream configuring and opening log stream"));
+	CFStreamClientContext context = {0, (void *)logger, NULL, NULL, NULL};
+	if (CFWriteStreamSetClient(logger->logStream,
+							   (kCFStreamEventOpenCompleted |
+								kCFStreamEventCanAcceptBytes |
+								kCFStreamEventErrorOccurred |
+								kCFStreamEventEndEncountered),
+							   &LoggerWriteStreamCallback, &context))
+	{
+		CFWriteStreamScheduleWithRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+		if (CFWriteStreamOpen(logger->logStream))
+		{
+			LOGGERDBG(CFSTR("-> stream open attempt, waiting for open completion"));
+			return YES;
+		}
+		LOGGERDBG(CFSTR("-> stream open failed."));
+		CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+		CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, &context);
+	}
+	else
+	{
+		LOGGERDBG(CFSTR("-> stream set client failed."));
+	}
+	CFRelease(logger->logStream);
+	logger->logStream = NULL;
+	return NO;
+}
+
 static void LoggerTryConnect(Logger *logger)
 {
 	// Try connecting to the next address in the sConnectAttempts array
@@ -582,42 +715,57 @@ static void LoggerTryConnect(Logger *logger)
 	
 	// If we already have a connection established or being attempted, stop here
 	if (logger->logStream != NULL)
+	{
+		LOGGERDBG(CFSTR("-> another connection is opened or in progress, giving up for now"));
 		return;
-	
+	}
+
+	// If there are discovered Bonjour services, try them now
 	while (CFArrayGetCount(logger->bonjourServices))
 	{
 		CFNetServiceRef service = (CFNetServiceRef)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
-		LOGGERDBG(CFSTR("Trying to open write stream to service %@"), service);
+		LOGGERDBG(CFSTR("-> Trying to open write stream to service %@"), service);
 		CFStreamCreatePairWithSocketToNetService(NULL, service, NULL, &logger->logStream);
 		CFArrayRemoveValueAtIndex(logger->bonjourServices, 0);
 		if (logger->logStream == NULL)
 		{
+			// create pair failed
 			LOGGERDBG(CFSTR("-> failed."));
 		}
-		else
+		else if (LoggerConfigureAndOpenStream(logger))
 		{
-			// configure and open stream
-			LOGGERDBG(CFSTR("-> configuring and opening write stream"));
-			CFStreamClientContext context = {0, (void *)logger, NULL, NULL, NULL};
-			if (CFWriteStreamSetClient(logger->logStream,
-									   (kCFStreamEventOpenCompleted |
-										kCFStreamEventCanAcceptBytes |
-										kCFStreamEventErrorOccurred |
-										kCFStreamEventEndEncountered),
-									   &LoggerWriteStreamCallback, &context))
-			{
-				CFWriteStreamScheduleWithRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-				if (CFWriteStreamOpen(logger->logStream))
-				{
-					LOGGERDBG(CFSTR("-> stream open attempt, waiting for open completion"));
-					return;
-				}
-				CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-				CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, &context);
-				CFRelease(logger->logStream);
-				logger->logStream = NULL;
-			}
+			// open is now in progress
+			return;
 		}
+	}
+
+	// If there is a host to directly connect to, try it now (this will happen before
+	// Bonjour kicks in, Bonjour being handled as a fallback solution if direct Host
+	// fails)
+	if (logger->host != NULL)
+	{
+		LOGGERDBG(CFSTR("-> Trying to open direct connection to host %@ port %u"), logger->host, logger->port);
+		CFStreamCreatePairWithSocketToHost(NULL, logger->host, logger->port, NULL, &logger->logStream);
+		if (logger->logStream == NULL)
+		{
+			// Create stream failed
+			LOGGERDBG(CFSTR("-> failed."));
+		}
+		else if (LoggerConfigureAndOpenStream(logger))
+		{
+			// open is now in progress
+			return;
+		}
+		// Could not connect to host: start Reachability so we know when target host becomes reachable
+		// and can try to connect again
+		LoggerStartReachabilityChecking(logger);
+	}
+	
+	// Finally, if Bonjour is enabled and not started yet, start it now.
+	if (logger->browseBonjour &&
+		(logger->bonjourDomainBrowser == NULL || CFArrayGetCount(logger->bonjourServiceBrowsers) == 0))
+	{
+		LoggerStartBonjourBrowsing(logger);
 	}
 }
 
@@ -639,7 +787,6 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			break;
 			
 		case kCFStreamEventCanAcceptBytes:
-			//LOGGERDBG(CFSTR("Logger stream can accept bytes"));
 			LoggerWriteMoreData(logger);
 			break;
 			
@@ -651,12 +798,18 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 		}
 			
 		case kCFStreamEventEndEncountered:
-			LOGGERDBG(CFSTR("Logger DISCONNECTED"));
-			logger->connected = NO;
+			if (logger->connected)
+			{
+				LOGGERDBG(CFSTR("Logger DISCONNECTED"));
+				logger->connected = NO;
+			}
 			CFWriteStreamClose(logger->logStream);
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
-			LoggerTryConnect(logger);
+			if (logger->host != NULL && logger->browseBonjour == NO)
+				LoggerStartReachabilityChecking(logger);
+			else
+				LoggerTryConnect(logger);
 			break;
 	}
 }
@@ -871,12 +1024,8 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 	{
 		if (logger == NULL)
 		{
-			logger = sDefaultLogger;
-			if (logger == NULL)
-			{
-				logger = LoggerInit();
-				LoggerStart(logger);
-			}
+			logger = LoggerGetDefaultLogger();
+			LoggerStart(logger);
 		}
 		if (logger->logToConsole)
 		{
@@ -907,13 +1056,10 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 {
 	if (logger == NULL)
 	{
-		logger = sDefaultLogger;
-		if (logger == NULL)
-		{
-			logger = LoggerInit();
-			LoggerStart(logger);
-		}
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
 	}
+
 	if (logger->logToConsole)
 	{
 		char s[32];
@@ -948,13 +1094,10 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 {
 	if (logger == NULL)
 	{
-		logger = sDefaultLogger;
-		if (logger == NULL)
-		{
-			logger = LoggerInit();
-			LoggerStart(logger);
-		}
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
 	}
+
 	if (logger->logToConsole)
 	{
 		CFShow(data);
@@ -978,7 +1121,13 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 
 static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list args)
 {
-	if (logger == NULL || logger->logToConsole)
+	if (logger == NULL)
+	{
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
+	}
+	
+	if (logger->logToConsole)
 	{
 		if (format != nil)
 		{
@@ -991,6 +1140,7 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 		}
 		return;
 	}
+
 	CFMutableDataRef encoder = CreateLoggerData();
 	if (encoder != NULL)
 	{
@@ -1029,7 +1179,7 @@ void LogMessageCompat(NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	LogMessageTo_internal(sDefaultLogger, nil, 0, format, args);
+	LogMessageTo_internal(NULL, nil, 0, format, args);
 	va_end(args);
 }
 
@@ -1050,18 +1200,18 @@ void LogMessage(NSString *domain, int level, NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	LogMessageTo_internal(sDefaultLogger, domain, level, format, args);
+	LogMessageTo_internal(NULL, domain, level, format, args);
 	va_end(args);
 }
 
 void LogMessage_va(NSString *domain, int level, NSString *format, va_list args)
 {
-	LogMessageTo_internal(sDefaultLogger, domain, level, format, args);
+	LogMessageTo_internal(NULL, domain, level, format, args);
 }
 
 void LogData(NSString *domain, int level, NSData *data)
 {
-	LogDataTo_internal(sDefaultLogger, domain, level, data);
+	LogDataTo_internal(NULL, domain, level, data);
 }
 
 void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data)
@@ -1071,7 +1221,7 @@ void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data)
 
 void LogImageData(NSString *domain, int level, int width, int height, NSData *data)
 {
-	LogImageTo_internal(sDefaultLogger, domain, level, width, height, data);
+	LogImageTo_internal(NULL, domain, level, width, height, data);
 }
 
 void LogImageDataTo(Logger *logger, NSString *domain, int level, int width, int height, NSData *data)
@@ -1083,7 +1233,7 @@ void LogStartBlock(NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	LogStartBlockTo_internal(sDefaultLogger, format, args);
+	LogStartBlockTo_internal(NULL, format, args);
 	va_end(args);
 }
 
@@ -1097,6 +1247,12 @@ void LogStartBlockTo(Logger *logger, NSString *format, ...)
 
 void LogEndBlockTo(Logger *logger)
 {
+	if (logger == NULL)
+	{
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
+	}
+
 	if (logger->logToConsole)
 		return;
 	
@@ -1112,5 +1268,5 @@ void LogEndBlockTo(Logger *logger)
 
 void LogEndBlock()
 {
-	LogEndBlockTo(sDefaultLogger);
+	LogEndBlockTo(NULL);
 }

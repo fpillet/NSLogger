@@ -1,6 +1,8 @@
 /*
  * LoggerCommon.h
  *
+ * version 1.0b2 2010-10-24
+ *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
