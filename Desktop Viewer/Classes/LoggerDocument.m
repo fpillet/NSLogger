@@ -132,7 +132,13 @@ didReceiveMessages:(NSArray *)theMessages
 {
 	[[self mainWindowController] connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
 	if (theConnection.connected)
-		[self updateChangeCount:NSChangeDone];
+	{
+		// fixed a crash where calling updateChangeCount: which does not appear to be
+		// safe when called from a secondary thread
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self updateChangeCount:NSChangeDone];
+		});
+	}
 }
 
 - (void)remoteConnected:(LoggerConnection *)theConnection
