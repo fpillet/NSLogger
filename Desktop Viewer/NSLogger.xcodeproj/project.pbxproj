@@ -149,8 +149,8 @@
 			children = (
 				3D24C36912560C1700435837 /* LoggerCommon.h */,
 				3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */,
-				3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */,
 				3D6A37C31263998A00D0EC3A /* LoggerStatusWindowController.h */,
+				3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */,
 				3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */,
 				3D6A34681262F60400D0EC3A /* LoggerDocument.h */,
 				3D6A34691262F60400D0EC3A /* LoggerDocument.m */,

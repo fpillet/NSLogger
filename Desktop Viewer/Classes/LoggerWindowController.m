@@ -577,6 +577,20 @@ didReceiveMessages:(NSArray *)theMessages
 		else
 			cell.previousMessage = nil;
 	}
+	else if (aTableView == filterTable)
+	{
+		// want the "All Logs" entry (immutable) in Bold
+		NSArray *filterList = [filterListController arrangedObjects];
+		if (rowIndex >= 0 && rowIndex < [filterList count])
+		{
+			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
+			NSDictionary *filter = [filterList objectAtIndex:rowIndex];
+			if ([[filter objectForKey:@"uid"] integerValue] == 1)
+				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+			else
+				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+		}
+	}
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
@@ -655,7 +669,11 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (IBAction)startEditingFilter:(id)sender
 {
+	// start editing filter, unless no selection (happens when double-clicking the header)
+	// or when trying to edit the "All Logs" entry which is immutable
 	NSDictionary *dict = [[filterListController selectedObjects] lastObject];
+	if (dict == nil || [[dict objectForKey:@"uid"] integerValue] == 1)
+		return;
 	[filterName setStringValue:[dict objectForKey:@"title"]];
 	NSPredicate *predicate = [dict objectForKey:@"predicate"];
 	[filterEditor setObjectValue:[[predicate copy] autorelease]];
@@ -688,7 +706,7 @@ didReceiveMessages:(NSArray *)theMessages
 		if (predicate == nil)
 			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
 		[dict setObject:predicate forKey:@"predicate"];
-		NSString *title = [filterName stringValue];
+		NSString *title = [[filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 		if ([title length])
 			[dict setObject:title forKey:@"title"];
 		[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
