@@ -1020,7 +1020,12 @@ static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message)
 
 static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, NSString *format, va_list args)
 {
+#if ALLOW_COCOA_USE
+	// Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
+	CFStringRef msgString = (CFStringRef)[[NSString alloc] initWithFormat:format arguments:args];
+#else
 	CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
+#endif
 	if (msgString != NULL)
 	{
 		if (logger == NULL)
