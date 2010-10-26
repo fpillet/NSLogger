@@ -55,7 +55,8 @@
 											   object:nil];
 
 #if TEST_FILE_BUFFERING
-	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData"));
+	NSString *bufferPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLoggerTempData_iOS.rawnsloggerdata"];
+	LoggerSetBufferFile(NULL, (CFStringRef)bufferPath);
 #endif
 }
 

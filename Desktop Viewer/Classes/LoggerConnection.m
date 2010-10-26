@@ -41,6 +41,17 @@
 @synthesize connected, clientIDReceived;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
 
+- (id)init
+{
+	if (self = [super init])
+	{
+		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
+		messages = [[NSMutableArray alloc] initWithCapacity:1024];
+		parentIndexesStack = [[NSMutableArray alloc] init];		
+	}
+	return self;
+}
+
 - (id)initWithAddress:(NSData *)anAddress
 {
 	if ((self = [super init]) != nil)

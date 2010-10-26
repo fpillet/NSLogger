@@ -92,7 +92,6 @@
 	if ([typeName isEqualToString:@"NSLogger Data"])
 	{
 		attachedConnection = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-		return (attachedConnection != nil);
 	}
 	else if ([typeName isEqualToString:@"NSLogger Raw Data"])
 	{
@@ -132,7 +131,7 @@
 			[attachedConnection messagesReceived:msgs];
 		[msgs release];
 	}
-	return NO;
+	return (attachedConnection != nil);
 }
 
 - (void)makeWindowControllers
