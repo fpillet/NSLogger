@@ -34,8 +34,12 @@
  */
 #import <unistd.h>
 #import <pthread.h>
+#import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#if !TARGET_OS_EMBEDDED
+#import <CoreServices/CoreServices.h>
+#endif
 
 // This define is here so that user application can test whether NSLogger Client is
 // being included in the project, and potentially configure their macros accordingly
