@@ -54,10 +54,9 @@ This tool comes from a personal need for a more powerful logger. NSLogger is alr
 
  * Support drag-and-drop from logs
  * Support export to other formats than the native .nsloggerdata file format
- * Support for storing logs in a file (client side) and push them later to the viewer
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
 
 
-You'll find preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
+You'll find documentation in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
