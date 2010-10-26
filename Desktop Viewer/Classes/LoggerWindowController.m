@@ -286,14 +286,15 @@
 	NSMenu *menu = [quickFilter menu];
 	
 	// remove all tags
-	while (![[menu itemAtIndex:0] isSeparatorItem])
-		[menu removeItemAtIndex:0];
-	[menu insertItemWithTitle:@"" action:NULL keyEquivalent:@"" atIndex:0];	// title
+	while ([[menu itemAtIndex:[menu numberOfItems]-1] tag] != -1)
+		[menu removeItemAtIndex:[menu numberOfItems]-1];
 
 	// set selected level checkmark
 	NSString *levelTitle = nil;
 	for (NSMenuItem *menuItem in [menu itemArray])
 	{
+		if ([menuItem isSeparatorItem])
+			continue;
 		if ([menuItem tag] == logLevel)
 		{
 			[menuItem setState:NSOnState];
@@ -303,34 +304,31 @@
 			[menuItem setState:NSOffState];
 	}
 
-	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"All Tags", @"")
-												  action:@selector(selectQuickFilterTag:)
-										   keyEquivalent:@""];
-	[item setTarget:self];
-	[item setTag:-1];
 	NSString *tagTitle;
+	NSMenuItem *item = [[menu itemArray] lastObject];
 	if (filterTag == nil)
 	{
 		[item setState:NSOnState];
 		tagTitle = [item title];
 	}
 	else
+	{
+		[item setState:NSOffState];
 		tagTitle = [NSString stringWithFormat:NSLocalizedString(@"Tag: %@", @""), filterTag];
-	[menu insertItem:item atIndex:1];
-	[item release];
+	}
 
-	int i = 1;
 	for (NSString *tag in [[tags allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)])
 	{
 		item = [[NSMenuItem alloc] initWithTitle:tag action:@selector(selectQuickFilterTag:) keyEquivalent:@""];
 		[item setRepresentedObject:tag];
+		[item setIndentationLevel:1];
 		if ([filterTag isEqualToString:tag])
 			[item setState:NSOnState];
-		[menu insertItem:item atIndex:++i];
+		[menu addItem:item];
 		[item release];
 	}
 
-	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", tagTitle, levelTitle]];
+	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", levelTitle, tagTitle]];
 	
 	self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 }
@@ -345,7 +343,7 @@
 		[self rebuildQuickFilterPopup];
 }
 
-- (void)selectQuickFilterTag:(id)sender
+- (IBAction)selectQuickFilterTag:(id)sender
 {
 	if (filterTag != [sender representedObject])
 	{

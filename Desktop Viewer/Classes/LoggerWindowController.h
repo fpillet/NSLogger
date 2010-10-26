@@ -77,6 +77,7 @@
 - (IBAction)openDetailsWindow:(id)sender;
 - (IBAction)showClientInfo:(id)sender;
 
+- (IBAction)selectQuickFilterTag:(id)sender;
 - (IBAction)selectQuickFilterLevel:(id)sender;
 - (IBAction)resetQuickFilter:(id)sender;
 
