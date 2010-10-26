@@ -31,6 +31,8 @@
 #import "LoggerDocument.h"
 #import "LoggerWindowController.h"
 #import "LoggerTransport.h"
+#import "LoggerCommon.h"
+#import "LoggerNativeMessage.h"
 #import "LoggerAppDelegate.h"
 
 @implementation LoggerDocument
@@ -91,6 +93,44 @@
 	{
 		attachedConnection = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
 		return (attachedConnection != nil);
+	}
+	else if ([typeName isEqualToString:@"NSLogger Raw Data"])
+	{
+		attachedConnection = [[LoggerConnection alloc] init];
+		NSMutableArray *msgs = [[NSMutableArray alloc] init];
+		long dataLength = [data length];
+		const uint8_t *p = [data bytes];
+		while (dataLength)
+		{
+			// check whether we have a full message
+			uint32_t length;
+			memcpy(&length, p, 4);
+			length = ntohl(length);
+			if (dataLength < (length + 4))
+				break;		// incomplete last message
+			
+			// get one message
+			CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
+														   (unsigned char *)p + 4,
+														   length,
+														   kCFAllocatorNull);
+			if (subset != NULL)
+			{
+				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
+				if (message.type == LOGMSG_TYPE_CLIENTINFO)
+					[attachedConnection clientInfoReceived:message];
+				else
+					[msgs addObject:message];
+				[message release];
+				CFRelease(subset);
+			}
+			dataLength -= length + 4;
+			p += length + 4;
+		}
+		
+		if ([msgs count])
+			[attachedConnection messagesReceived:msgs];
+		[msgs release];
 	}
 	return NO;
 }
