@@ -30,6 +30,8 @@
  */
 #import "LoggerClientViewController.h"
 
+#define TEST_FILE_BUFFERING 0
+
 @implementation LoggerClientViewController
 
 - (void)awakeFromNib
@@ -51,6 +53,10 @@
 											 selector:@selector(textFieldDidChange:)
 												 name:UITextFieldTextDidChangeNotification
 											   object:nil];
+
+#if TEST_FILE_BUFFERING
+	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData"));
+#endif
 }
 
 - (IBAction)bonjourSettingChanged

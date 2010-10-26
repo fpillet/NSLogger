@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b2 2010-10-24
+ * version 1.0b3 2010-10-26
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -34,22 +34,22 @@
  * 
  */
 #import <sys/time.h>
+#import <fcntl.h>
 
 #import "LoggerClient.h"
 #import "LoggerCommon.h"
 
-/*
- * Implementation notes:
+/* --------------------------------------------------------------------------------
+ * IMPLEMENTATION NOTES:
  *
- * The implementation of the logger runs in a separate thread. It is written
+ * The logger runs in a separate thread. It is written
  * in straight C for maximum compatibility with all runtime environments
  * (does not use the Objective-C runtime, only uses unix and CoreFoundation
  * calls, except for get the thread name and device information, but these
  * can be disabled by setting ALLOW_COCOA_USE to 0).
- *
  * 
  * It is suitable for use in both Cocoa and low-level code. It does not activate
- * Cocoa multi-threading (no call to [NSThread detachNewThread...]. You can start
+ * Cocoa multi-threading (no call to [NSThread detachNewThread...]). You can start
  * logging very early (as soon as your code starts running), logs will be
  * buffered and sent to the log viewer as soon as a connection is acquired.
  * This makes the logger suitable for use in conditions where you usually
@@ -60,12 +60,17 @@
  * to return to your application as fast as possible. It enqueues logs to
  * send for processing by its own thread, while your application keeps running.
  *
- * The logger does buffer logs in memory while not connected to a desktop
+ * The logger does buffer logs while not connected to a desktop
  * logger. It uses Bonjour to find a logger on the local network, and can
  * optionally connect to a remote logger identified by an IP address / port
  * or a Host Name / port.
  *
  * The logger can optionally output its log to the console, like NSLog().
+ *
+ * The logger can optionally buffer its logs to a file for which you specify the
+ * full path. Upon connection to the desktop viewer, the file contents are
+ * transmitted to the viewer prior to sending new logs. When the whole file
+ * content has been transmitted, it is emptied.
  *
  * Multiple loggers can coexist at the same time. You can perfectly use a
  * logger for your debug traces, and another that connects remotely to help
@@ -74,7 +79,7 @@
  * Using the logger's flexible packet format, you can customize logging by
  * creating your own log types, and customize the desktop viewer to display
  * runtime information panels for your application.
- *
+ * --------------------------------------------------------------------------------
  */
 
 // Set this to 1 to activate console logs when running the logger itself
@@ -108,6 +113,11 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
 static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType event, void* info);
+
+// File buffering
+static void LoggerCreateBufferWriteStream(Logger *logger);
+static void LoggerCreateBufferReadStream(Logger *logger);
+static void LoggerEmptyBufferFile(Logger *logger);
 
 // IPC
 static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void* info);
@@ -203,6 +213,8 @@ void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntil
 	
 	if (logger == NULL)
 		logger = LoggerGetDefaultLogger();
+	if (logger == NULL)
+		return;
 
 	logger->logToConsole = logToConsole;
 	logger->bufferLogsUntilConnection = bufferLocallyUntilConnection;
@@ -214,24 +226,35 @@ void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 {
 	if (logger == NULL)
 		logger = LoggerGetDefaultLogger();
+	if (logger == NULL)
+		return;
 	
-	if (hostName == NULL)
+	if (logger->host != NULL)
 	{
-		if (logger->host != NULL)
-		{
-			CFRelease(logger->host);
-			logger->host = NULL;
-		}
-		logger->port = 0;
+		CFRelease(logger->host);
+		logger->host = NULL;
 	}
-	else
+	if (hostName != NULL)
 	{
-		CFRetain(hostName);
-		if (logger->host != NULL)
-			CFRelease(logger->host);
-		logger->host = hostName;
+		logger->host = CFStringCreateCopy(NULL, hostName);
 		logger->port = port;
 	}
+}
+
+void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
+{
+	if (logger == NULL)
+		logger = LoggerGetDefaultLogger();
+	if (logger == NULL)
+		return;
+
+	if (logger->bufferFile != NULL)
+	{
+		CFRelease(logger->bufferFile);
+		logger->bufferFile = NULL;
+	}
+	if (absolutePath != NULL)
+		logger->bufferFile = CFStringCreateCopy(NULL, absolutePath);
 }
 
 void LoggerStart(Logger *logger)
@@ -269,14 +292,19 @@ void LoggerStop(Logger *logger)
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
 		}
+
 		CFRelease(logger->bonjourServiceBrowsers);
 		CFRelease(logger->bonjourServices);
 		free(logger->sendBuffer);
 		if (logger->host != NULL)
 			CFRelease(logger->host);
+		if (logger->bufferFile != NULL)
+			CFRelease(logger->bufferFile);
+
 		// to make sure potential errors are catched, set the whole structure
-		// to a value that will make code crash if it tries using pointers to it
+		// to a value that will make code crash if it tries using pointers to it.
 		memset(logger, 0x55, sizeof(logger));
+
 		free(logger);
 	}
 }
@@ -336,6 +364,7 @@ static void *LoggerWorkerThread(Logger *logger)
 		LoggerTryConnect(logger);
 	}
 
+	// Run logging thread until LoggerStop() is called
 	while (!logger->quit)
 	{
 		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.25, true);
@@ -353,8 +382,10 @@ static void *LoggerWorkerThread(Logger *logger)
 		}
 	}
 	
+	// Cleanup
 	if (logger->browseBonjour)
 		LoggerStopBonjourBrowsing(logger);
+
 	if (logger->logStream != NULL)
 	{
 		CFWriteStreamClose(logger->logStream);
@@ -362,6 +393,21 @@ static void *LoggerWorkerThread(Logger *logger)
 		logger->logStream = NULL;
 	}
 	LoggerStopReachabilityChecking(logger);
+
+	if (logger->bufferWriteStream == NULL && logger->bufferFile != NULL && CFArrayGetCount(logger->logQueue))
+	{
+		// If there are messages in the queue and LoggerStop() was called and
+		// a buffer file was set just before LoggerStop() was called, flush
+		// the log queue to the buffer file
+		LoggerCreateBufferWriteStream(logger);
+	}
+
+	if (logger->bufferWriteStream != NULL)
+	{
+		CFWriteStreamClose(logger->bufferWriteStream);
+		CFRelease(logger->bufferWriteStream);
+		logger->bufferWriteStream = NULL;
+	}
 
 	CFMessagePortInvalidate(logger->messagePort);
 	CFRelease(logger->messagePort);
@@ -381,8 +427,22 @@ static void LoggerWriteMoreData(Logger *logger)
 		CFMutableDataRef sendFirstItem = NULL;
 		if (logger->sendBufferUsed == 0)
 		{
-			//LOGGERDBG(CFSTR("-> sendBufferUsed=0, trying to pull more messages from the queue"));
-			while (CFArrayGetCount(logger->logQueue))
+			// pull more data from the log queue
+			if (logger->bufferReadStream != NULL)
+			{
+				if (!CFReadStreamHasBytesAvailable(logger->bufferReadStream))
+				{
+					CFReadStreamClose(logger->bufferReadStream);
+					CFRelease(logger->bufferReadStream);
+					logger->bufferReadStream = NULL;
+					LoggerEmptyBufferFile(logger);
+				}
+				else
+				{
+					logger->sendBufferUsed = CFReadStreamRead(logger->bufferReadStream, logger->sendBuffer, logger->sendBufferSize);
+				}
+			}
+			else while (CFArrayGetCount(logger->logQueue))
 			{
 				CFDataRef d = (CFDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
 				CFIndex dsize = CFDataGetLength(d);
@@ -403,17 +463,15 @@ static void LoggerWriteMoreData(Logger *logger)
 				logger->sendBufferOffset = 0;
 			}
 		}
-		
+
 		// send data over the socket. We try hard to be failsafe and if we have to send
 		// data in fragments, we make sure that in case a disconnect occurs we restart
 		// sending the whole message(s)
 		if (logger->sendBufferUsed != 0)
 		{
-			//LOGGERDBG(CFSTR("-> trying to write %d bytes to stream"), logger->sendBufferUsed - logger->sendBufferOffset);
 			CFIndex written = CFWriteStreamWrite(logger->logStream,
 												 logger->sendBuffer + logger->sendBufferOffset,
 												 logger->sendBufferUsed - logger->sendBufferOffset);
-			//LOGGERDBG(CFSTR("-> written=%d"), written);
 			if (written < 0)
 			{
 				// We'll get an event if the stream closes on error. Don't discard the data,
@@ -437,7 +495,6 @@ static void LoggerWriteMoreData(Logger *logger)
 			CFIndex written = CFWriteStreamWrite(logger->logStream,
 												 CFDataGetBytePtr(sendFirstItem) + logger->sendBufferOffset,
 												 length);
-			//LOGGERDBG(CFSTR("-> first item, written=%d"), written);
 			if (written < 0)
 			{
 				// We'll get an event if the stream closes on error
@@ -462,6 +519,100 @@ static void LoggerWriteMoreData(Logger *logger)
 
 // -----------------------------------------------------------------------------
 #pragma mark -
+#pragma mark File buffering functions
+// -----------------------------------------------------------------------------
+static void LoggerCreateBufferWriteStream(Logger *logger)
+{
+	LOGGERDBG(CFSTR("LoggerCreateBufferWriteStream to file %@"), logger->bufferFile);
+	CFURLRef fileURL = CFURLCreateWithFileSystemPath(NULL, logger->bufferFile, kCFURLPOSIXPathStyle, false);
+	if (fileURL != NULL)
+	{
+		// Create write stream to file
+		logger->bufferWriteStream = CFWriteStreamCreateWithFile(NULL, fileURL);
+		CFRelease(fileURL);
+		if (logger->bufferWriteStream != NULL)
+		{
+			if (!CFWriteStreamOpen(logger->bufferWriteStream))
+			{
+				CFRelease(logger->bufferWriteStream);
+				logger->bufferWriteStream = NULL;
+			}
+			else
+			{
+				// Set flag to append new data to buffer file
+				CFWriteStreamSetProperty(logger->bufferWriteStream, kCFStreamPropertyAppendToFile, kCFBooleanTrue);
+				
+				// Write client info and flush the queue contents to buffer file
+				CFIndex totalWritten = 0;
+				LoggerPushClientInfoToFrontOfQueue(logger);
+				while (CFArrayGetCount(logger->logQueue))
+				{
+					CFDataRef data = CFArrayGetValueAtIndex(logger->logQueue, 0);
+					CFIndex dataLength = CFDataGetLength(data);
+					CFIndex written = CFWriteStreamWrite(logger->bufferWriteStream, CFDataGetBytePtr(data), dataLength);
+					totalWritten += written;
+					if (written != dataLength)
+					{
+						// couldn't write all data to file, maybe storage run out of space?
+						CFShow(CFSTR("NSLogger Error: failed flushing the whole queue to buffer file:"));
+						CFShow(logger->bufferFile);
+						break;
+					}
+					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+				}
+				LOGGERDBG(CFSTR("-> bytes written to file: %ld"), (long)totalWritten);
+			}
+		}
+	}
+	if (logger->bufferWriteStream == NULL)
+	{
+		CFShow(CFSTR("NSLogger Warning: failed opening buffer file for writing:"));
+		CFShow(logger->bufferFile);
+	}
+}
+
+static void LoggerCreateBufferReadStream(Logger *logger)
+{
+	LOGGERDBG(CFSTR("LoggerCreateBufferReadStream from file %@"), logger->bufferFile);
+	CFURLRef fileURL = CFURLCreateWithFileSystemPath(NULL, logger->bufferFile, kCFURLPOSIXPathStyle, false);
+	if (fileURL != NULL)
+	{
+		// Create read stream from file
+		logger->bufferReadStream = CFReadStreamCreateWithFile(NULL, fileURL);
+		CFRelease(fileURL);
+		if (logger->bufferReadStream != NULL)
+		{
+			if (!CFReadStreamOpen(logger->bufferReadStream))
+			{
+				CFRelease(logger->bufferReadStream);
+				logger->bufferReadStream = NULL;
+			}
+		}
+	}
+}
+
+static void LoggerEmptyBufferFile(Logger *logger)
+{
+	// completely remove the buffer file from storage
+	LOGGERDBG(CFSTR("LoggerEmptyBufferFile %@"), logger->bufferFile);
+	if (logger->bufferFile != NULL)
+	{
+		CFIndex bufferSize = 1 + CFStringGetLength(logger->bufferFile) * 3;
+		char *buffer = (char *)malloc(bufferSize);
+		if (buffer != NULL)
+		{
+			if (CFStringGetFileSystemRepresentation(logger->bufferFile, buffer, bufferSize))
+			{
+				// remove file
+				unlink(buffer);
+			}
+			free(buffer);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
 #pragma mark Internal message port callback
 // -----------------------------------------------------------------------------
 static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void* info)
@@ -471,8 +622,23 @@ static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, 
 	// if we want to reuse it past the scope of this callout
 	Logger *logger = (Logger *)info;
 	assert(logger != NULL);
+	
 	if (!logger->connected && !logger->bufferLogsUntilConnection)
 		return NULL;
+
+	if (!logger->connected && logger->bufferFile)
+	{
+		// we're buffering to a file. Create the file stream if needed
+		if (logger->bufferWriteStream == NULL)
+			LoggerCreateBufferWriteStream(logger);
+		if (logger->bufferWriteStream != NULL)
+		{
+			// write data to buffer file (note that we don't check for incomplete writes)
+			CFWriteStreamWrite(logger->bufferWriteStream, CFDataGetBytePtr(data), CFDataGetLength(data));
+			return NULL;
+		}
+	}
+
 	CFMutableDataRef d = CFDataCreateMutableCopy(NULL, CFDataGetLength(data), data);
 	CFArrayAppendValue(logger->logQueue, d);
 	CFRelease(d);
@@ -783,6 +949,18 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			LOGGERDBG(CFSTR("Logger CONNECTED"));
 			logger->connected = YES;
 			LoggerStopBonjourBrowsing(logger);
+			if (logger->bufferWriteStream != NULL)
+			{
+				// now that a connection is acquired, we can stop logging to a file
+				CFWriteStreamClose(logger->bufferWriteStream);
+				CFRelease(logger->bufferWriteStream);
+				logger->bufferWriteStream = NULL;
+			}
+			if (logger->bufferFile != NULL)
+			{
+				// if a buffer file was defined, try to read its contents
+				LoggerCreateBufferReadStream(logger);
+			}
 			LoggerPushClientInfoToFrontOfQueue(logger);
 			LoggerWriteMoreData(logger);
 			break;
@@ -807,6 +985,18 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			CFWriteStreamClose(logger->logStream);
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
+			logger->sendBufferUsed = 0;
+			if (logger->bufferReadStream != NULL)
+			{
+				// In the case the connection drops before we have flushed the
+				// whole contents of the file, we choose to keep it integrally
+				// and retransmit it when reconnecting to the viewer. The reason
+				// of this choice is that we may have transmitted only part of
+				// a message, and this may cause errors on the desktop side.
+				CFReadStreamClose(logger->bufferReadStream);
+				CFRelease(logger->bufferReadStream);
+				logger->bufferReadStream = NULL;
+			}
 			if (logger->host != NULL && logger->browseBonjour == NO)
 				LoggerStartReachabilityChecking(logger);
 			else

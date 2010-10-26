@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b2 2010-10-24
+ * version 1.0b3 2010-10-26
  *
  * Part of NSLogger (client side)
  *
@@ -37,7 +37,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
-#if !TARGET_OS_EMBEDDED
+#if !TARGET_OS_IPHONE
 #import <CoreServices/CoreServices.h>
 #endif
 
@@ -48,11 +48,14 @@
 // Set this to 0 if you absolutely NOT want any access to Cocoa (Objective-C, NS* calls)
 // We need a couple ones to reliably obtain the thread number and device information
 // Note that since we need NSAutoreleasePool when using Cocoa in the logger's worker thread,
-// we need to put Cocoa in multithreading mode.
+// we need to put Cocoa in multithreading mode. Also, ALLOW_COCOA_USE allows the client code
+// to use NSLog()-style message formatting (less verbose than CFShow()-style) through the
+// use of -[NSString stringWithFormat:arguments:]
 #define	ALLOW_COCOA_USE								1
 
 typedef struct
 {
+	CFStringRef bufferFile;							// If non-NULL, all buffering is done to the specified file instead of in-memory
 	CFStringRef host;								// Viewer host to connect to (instead of using Bonjour)
 	UInt32 port;									// port on the viewer host
 
@@ -66,6 +69,8 @@ typedef struct
 	CFMessagePortRef messagePort;					// A message port to communicate logs to send to the worker thread
 	
 	CFWriteStreamRef logStream;						// The connected stream we're writing to
+	CFWriteStreamRef bufferWriteStream;				// If bufferFile not NULL and we're not connected, points to a stream for writing log data
+	CFReadStreamRef bufferReadStream;				// If bufferFile not NULL, points to a read stream that will be emptied prior to sending the rest of in-memory messages
 	
 	SCNetworkReachabilityRef reachability;			// The reachability object we use to determine when the target host becomes reachable
 
@@ -98,19 +103,29 @@ extern void LoggerSetDefaultLogger(Logger *aLogger);
 extern Logger *LoggerGetDefaultLogger();
 
 // Initialize a new logger, set as default logger if this is the first one
-// Set default options:
-// logging to console = NO
-// buffer until connection = YES
-// browse Bonjour = YES
-// browse only locally on Bonjour = YES
+// Options default to:
+// - logging to console = NO
+// - buffer until connection = YES
+// - browse Bonjour = YES
+// - browse only locally on Bonjour = YES
 extern Logger* LoggerInit();
 
-// Set logger options if you don't want the default options
+// Set logger options if you don't want the default options (see above)
 extern void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntilConnection, BOOL browseBonjour, BOOL browseOnlyLocalDomains);
 
 // Directly set the viewer host (hostname or IP address) and port we want to connect to. If set, LoggerStart() will
 // try to connect there first before trying Bonjour
 extern void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port);
+
+
+// Configure the logger to use a local file for buffering, instead of memory.
+// - If you initially set a buffer file after logging started but while a logger connection
+//   has not been acquired, the contents of the log queue will be written to the buffer file
+//	 the next time a logging function is called, or when LoggerStop() is called.
+// - If you want to change the buffering file after logging started, you should first
+//   call LoggerStop() the call LoggerSetBufferFile(). Note that all logs stored in the previous
+//   buffer file WON'T be transferred to the new file in this case.
+extern void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath);
 
 // Activate the logger, try connecting
 extern void LoggerStart(Logger *logger);
