@@ -85,6 +85,8 @@
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, assign) int clientIDReceived;
 
+@property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
+
 - (id)initWithAddress:(NSData *)anAddress;
 - (void)shutdown;
 

@@ -40,6 +40,7 @@
 @synthesize messages;
 @synthesize connected, clientIDReceived;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
+@synthesize messageProcessingQueue;
 
 - (id)init
 {

@@ -15,10 +15,16 @@
 			<string>NSLogger Data</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSTypeIsPackage</key>
 			<false/>
 			<key>NSDocumentClass</key>
 			<string>LoggerDocument</string>
+			<key>NSExportableTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
 			<key>NSPersistentStoreTypeKey</key>
 			<string>Binary</string>
 		</dict>
@@ -31,12 +37,34 @@
 			<string>NSLogger Raw Data</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSTypeIsPackage</key>
 			<false/>
 			<key>NSDocumentClass</key>
 			<string>LoggerDocument</string>
+			<key>NSExportableTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
 			<key>NSPersistentStoreTypeKey</key>
 			<string>Binary</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Text File</string>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>LSHandlerRank</key>
+			<string>None</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>InMemory</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -54,7 +82,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.0b2</string>
+	<string>1.0b3</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

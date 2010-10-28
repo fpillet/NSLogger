@@ -32,6 +32,7 @@
 #import "LoggerWindowController.h"
 #import "LoggerTransport.h"
 #import "LoggerCommon.h"
+#import "LoggerConnection.h"
 #import "LoggerNativeMessage.h"
 #import "LoggerAppDelegate.h"
 
@@ -41,9 +42,7 @@
 
 + (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName
 {
-	if ([typeName isEqualToString:@"NSLogger Data"])
-		return YES;
-	return NO;
+	return YES;
 }
 
 - (id)initWithConnection:(LoggerConnection *)aConnection
@@ -82,6 +81,73 @@
 		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:attachedConnection];
 		if (data != nil)
 			return [data writeToURL:absoluteURL atomically:NO];
+	}
+	else if ([typeName isEqualToString:@"public.plain-text"])
+	{
+		// Export messages as text
+		// Make a copy of the array now so we're not bothered with the array
+		// changing while we're processing it
+		__block NSArray *allMessages = nil;
+		if (attachedConnection.messageProcessingQueue != NULL)
+		{
+			// live connections have a processing queue
+			dispatch_sync(attachedConnection.messageProcessingQueue , ^{
+				allMessages = [attachedConnection.messages copy];
+			});
+		}
+		else
+		{
+			// reloaded files don't have a queue
+			allMessages = [attachedConnection.messages copy];
+		}
+
+		BOOL (^flushData)(NSOutputStream*, NSMutableData*) = ^(NSOutputStream *stream, NSMutableData *data) 
+		{
+			NSUInteger length = [data length];
+			const uint8_t *bytes = [data bytes];
+			BOOL result = NO;
+			if (length && bytes != NULL)
+			{
+				NSInteger written = [stream write:bytes maxLength:length];
+				result = (written == length);
+			}
+			[data setLength:0];
+			return result;
+		};
+
+		BOOL result = NO;
+		NSOutputStream *stream = [[NSOutputStream alloc] initWithURL:absoluteURL append:NO];
+		if (stream != nil)
+		{
+			const NSUInteger bufferCapacity = 1024 * 1024;
+			NSMutableData *data = [[NSMutableData alloc] initWithCapacity:bufferCapacity];
+			uint8_t bom[3] = {0xEF, 0xBB, 0xBF};
+			[data appendBytes:bom length:3];
+			NSAutoreleasePool *pool = nil;
+			result = YES;
+			[stream open];
+			for (LoggerMessage *message in allMessages)
+			{
+				[data appendData:[[message textRepresentation] dataUsingEncoding:NSUTF8StringEncoding]];
+				if ([data length] >= bufferCapacity)
+				{
+					// periodic flush to reduce memory use while exporting
+					result = flushData(stream, data);
+					[pool release];
+					pool = [[NSAutoreleasePool alloc] init];
+					if (!result)
+						break;
+				}
+			}
+			if (result)
+				result = flushData(stream, data);
+			[stream close];
+			[pool release];
+			[data release];
+			[stream release];
+		}
+		[allMessages release];
+		return result;
 	}
 	return NO;
 }
@@ -148,6 +214,14 @@
     [sp setTitle:@"Save Logs"];
     [sp setExtensionHidden:NO];
     return YES;
+}
+
+- (NSArray *)writableTypesForSaveOperation:(NSSaveOperationType)saveOperation
+{
+	NSArray *array = [super writableTypesForSaveOperation:saveOperation];
+	if (saveOperation == NSSaveToOperation)
+		array = [array arrayByAddingObject:@"public.plain-text"];
+	return array;
 }
 
 - (LoggerWindowController *)mainWindowController
