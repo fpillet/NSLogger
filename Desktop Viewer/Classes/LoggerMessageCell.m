@@ -389,7 +389,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	// Draw cell background and separators
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.96f, 1.0f);
+		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);

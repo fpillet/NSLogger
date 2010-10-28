@@ -94,12 +94,13 @@
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
 	[tc setDataCell:cell];
 	[cell release];
-	[logTable setIntercellSpacing:NSMakeSize(0, 0)];
+	
+	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
 	[logTable setDoubleAction:@selector(openDetailsWindow:)];
 	
 	[filterTable setTarget:self];
-	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
+	[filterTable setIntercellSpacing:NSMakeSize(0,4)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
