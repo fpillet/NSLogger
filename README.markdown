@@ -4,12 +4,13 @@
 
 *NSLogger* feature summary:
 
-  * view logs using the Mac OS X desktop viewer
-  * supports both online (application running) and offline log viewing (saved logs)
-  * buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
-  * view logs from client applications on the local network, or remotely over the internet
-  * save viewer logs to share them and/or review them later
-  * open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
+  * View logs using the Mac OS X desktop viewer
+  * Online (application running and connected to _NSLogger_) and offline (saved logs) log viewing
+  * Buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
+  * View logs from client applications on the local network, or remotely over the internet
+  * Save viewer logs to share them and/or review them later
+  * Export logs to text files
+  * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
 
 You'll find instructions for use in the [NSLogger wiki](http://github.com/fpillet/NSLogger/wiki/).
 
@@ -50,10 +51,12 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 *NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
 
 # Work in progress - Current status #
-This tool comes from a personal need for a more powerful logger. NSLogger is already powerful, but there are more features in development. Quick list of features not yet implemented:
+This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
 
- * Support drag-and-drop from logs
- * Support export to other formats than the native .nsloggerdata file format
+ * Per-client application filter sets (with auto-detect)
+ * Drag-and-drop of log text from log messages list
+ * Log entry colorization
+ * Search and search term highlight in Details window
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
 
 
