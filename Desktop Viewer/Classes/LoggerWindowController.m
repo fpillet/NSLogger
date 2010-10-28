@@ -99,6 +99,7 @@
 	[logTable setDoubleAction:@selector(openDetailsWindow:)];
 	
 	[filterTable setTarget:self];
+	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
@@ -254,6 +255,26 @@
 	[self tileLogTable:NO];
 }
 
+- (void)applyFontChanges
+{
+	[self tileLogTable:YES];
+	[logTable reloadData];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Splitview delegate
+// -----------------------------------------------------------------------------
+- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+{
+	tableNeedsTiling = YES;
+}
+
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Window delegate
+// -----------------------------------------------------------------------------
 - (void)windowDidResize:(NSNotification *)notification
 {
 	if (![[self window] inLiveResize])
@@ -265,15 +286,21 @@
 	[self tileLogTable:YES];
 }
 
-- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+- (void)windowDidBecomeMain:(NSNotification *)notification
 {
-	tableNeedsTiling = YES;
+	[filterTable setBackgroundColor:[NSColor colorWithCalibratedRed:(218.0 / 255.0)
+															  green:(221.0 / 255.0)
+															   blue:(229.0 / 255.0)
+															  alpha:1.0f]];
 }
 
-- (void)applyFontChanges
+- (void)windowDidResignMain:(NSNotification *)notification
 {
-	[self tileLogTable:YES];
-	[logTable reloadData];
+	// constants by Brandon Walkin
+	[filterTable setBackgroundColor:[NSColor colorWithCalibratedRed:(234.0 / 255.0)
+															  green:(234.0 / 255.0)
+															   blue:(234.0 / 255.0)
+															  alpha:1.0f]];
 }
 
 // -----------------------------------------------------------------------------

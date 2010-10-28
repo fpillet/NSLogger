@@ -413,6 +413,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
 	
+	// If the window is not main, don't change the text color
+	if (highlighted && ![[controlView window] isMainWindow])
+		highlighted = NO;
+
 	// Draw timestamp and time delta column
 	NSRect r, tr;
 	r = NSMakeRect(NSMinX(cellFrame),

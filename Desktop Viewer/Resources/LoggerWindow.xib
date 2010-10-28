@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="493"/>
+			<integer value="471"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -146,13 +146,13 @@
 														<object class="NSTableView" id="150938961">
 															<reference key="NSNextResponder" ref="70922810"/>
 															<int key="NSvFlags">4352</int>
-															<string key="NSFrameSize">{215, 628}</string>
+															<string key="NSFrameSize">{219, 628}</string>
 															<reference key="NSSuperview" ref="70922810"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTableHeaderView" key="NSHeaderView" id="697792232">
 																<reference key="NSNextResponder" ref="710855198"/>
 																<int key="NSvFlags">256</int>
-																<string key="NSFrameSize">{215, 17}</string>
+																<string key="NSFrameSize">{219, 17}</string>
 																<reference key="NSSuperview" ref="710855198"/>
 																<reference key="NSTableView" ref="150938961"/>
 															</object>
@@ -165,7 +165,7 @@
 															<object class="NSMutableArray" key="NSTableColumns">
 																<bool key="EncodedWithXMLCoder">YES</bool>
 																<object class="NSTableColumn" id="34494719">
-																	<double key="NSWidth">212</double>
+																	<double key="NSWidth">216</double>
 																	<double key="NSMinWidth">40</double>
 																	<double key="NSMaxWidth">1000</double>
 																	<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -220,7 +220,15 @@
 															</object>
 															<double key="NSIntercellSpacingWidth">3</double>
 															<double key="NSIntercellSpacingHeight">2</double>
-															<reference key="NSBackgroundColor" ref="95618980"/>
+															<object class="NSColor" key="NSBackgroundColor">
+																<int key="NSColorSpace">6</int>
+																<string key="NSCatalogName">System</string>
+																<string key="NSColorName">_sourceListBackgroundColor</string>
+																<object class="NSColor" key="NSColor">
+																	<int key="NSColorSpace">1</int>
+																	<bytes key="NSRGB">MC44MzkyMTU2OTU5IDAuODY2NjY2Njc0NiAwLjg5ODAzOTIyMTgAA</bytes>
+																</object>
+															</object>
 															<object class="NSColor" key="NSGridColor">
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
@@ -238,7 +246,8 @@
 															<int key="NSDraggingSourceMaskForLocal">15</int>
 															<int key="NSDraggingSourceMaskForNonLocal">0</int>
 															<bool key="NSAllowsTypeSelect">YES</bool>
-															<int key="NSTableViewDraggingDestinationStyle">0</int>
+															<int key="NSTableViewSelectionHighlightStyle">1</int>
+															<int key="NSTableViewDraggingDestinationStyle">1</int>
 														</object>
 													</object>
 													<string key="NSFrame">{{0, 17}, {215, 628}}</string>
@@ -263,6 +272,7 @@
 													<int key="NSvFlags">-2147483392</int>
 													<string key="NSFrame">{{-100, -100}, {200, 15}}</string>
 													<reference key="NSSuperview" ref="624289750"/>
+													<bool key="NSEnabled">YES</bool>
 													<int key="NSsFlags">1</int>
 													<reference key="NSTarget" ref="624289750"/>
 													<string key="NSAction">_doScroller:</string>
@@ -287,7 +297,7 @@
 											<string key="NSFrame">{{0, 22}, {215, 645}}</string>
 											<reference key="NSSuperview" ref="797179158"/>
 											<reference key="NSNextKeyView" ref="70922810"/>
-											<int key="NSsFlags">528</int>
+											<int key="NSsFlags">656</int>
 											<reference key="NSVScroller" ref="940204013"/>
 											<reference key="NSHScroller" ref="682997029"/>
 											<reference key="NSContentView" ref="70922810"/>
@@ -647,7 +657,6 @@
 															</object>
 															<reference key="NSMenuFont" ref="4432246"/>
 														</object>
-														<int key="NSSelectedIndex">6</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3922,10 +3931,10 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{7, 448}, {885, 666}}</string>
+					<string>{{32, 437}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{7, 448}, {885, 666}}</string>
+					<string>{{32, 437}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
