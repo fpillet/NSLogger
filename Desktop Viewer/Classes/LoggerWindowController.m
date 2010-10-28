@@ -42,7 +42,7 @@
 @property (nonatomic, retain) NSString *filterTag;
 - (void)rebuildQuickFilterPopup;
 - (void)updateClientInfo;
-- (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate;
+- (void)updateFilterPredicate;
 - (void)refreshAllMessages;
 - (void)filterIncomingMessages:(NSArray *)messages withFilter:(NSPredicate *)aFilter;
 - (NSPredicate *)currentFilterPredicate;
@@ -105,7 +105,7 @@
 	buttonBar.splitViewDelegate = self;
 
 	[self rebuildQuickFilterPopup];
-	[self updateFilterPredicate:nil];
+	[self updateFilterPredicate];
 	loadComplete = YES;
 	[logTable sizeToFit];
 	if (attachedConnection != nil)
@@ -149,12 +149,9 @@
 	[clientDetailsWindowController showWindow:self];
 }
 
-- (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate
+- (void)updateFilterPredicate
 {
-	[filterPredicate autorelease];
-	if (currentFilterPredicate == nil)
-		currentFilterPredicate = [self currentFilterPredicate];
-	NSPredicate *p = currentFilterPredicate;
+	NSPredicate *p = [self currentFilterPredicate];
 	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:2];
 	if (logLevel)
 	{
@@ -191,21 +188,22 @@
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
+	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
 }
 
-- (void)refreshMessagesIfPredicateChanged:(NSPredicate *)currentFilterPredicate
+- (void)refreshMessagesIfPredicateChanged
 {
 	assert([NSThread isMainThread]);
-	NSPredicate *currentPredicate = [filterPredicate retain];
-	[self updateFilterPredicate:currentFilterPredicate];
+	NSPredicate *currentPredicate = [[filterPredicate retain] autorelease];
+	[self updateFilterPredicate];
 	if (![filterPredicate isEqual:currentPredicate])
 	{
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages) object:nil];
+		[self rebuildQuickFilterPopup];
 		[self performSelector:@selector(refreshAllMessages) withObject:nil afterDelay:0];
 	}
-	[currentPredicate release];	
 }
 
 - (void)tileLogTableRowsInRange:(NSRange)range
@@ -225,7 +223,6 @@
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
 	[indexSet release];
-	
 }
 
 - (void)tileLogTable:(BOOL)force
@@ -247,6 +244,7 @@
 					[self tileLogTableRowsInRange:range];
 			});
 		}
+		tableTiledSinceLastRefresh = YES;
 	}
 	tableNeedsTiling = NO;
 }
@@ -349,9 +347,7 @@
 	if (filterTag != [sender representedObject])
 	{
 		self.filterTag = [sender representedObject];
-		[self rebuildQuickFilterPopup];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
+		[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
 	}
 }
 
@@ -361,9 +357,7 @@
 	if (level != logLevel)
 	{
 		logLevel = level;
-		[self rebuildQuickFilterPopup];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
+		[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
 	}
 }
 
@@ -374,9 +368,7 @@
 	[filterTag release];
 	filterTag = nil;
 	logLevel = 0;
-	[self rebuildQuickFilterPopup];
-	[self updateFilterPredicate:nil];
-	[self refreshAllMessages];
+	[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
 }
 
 // -----------------------------------------------------------------------------
@@ -444,7 +436,25 @@
 			[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
 							  withFilter:filterPredicate];
 		}
+		if (tableTiledSinceLastRefresh)
+		{
+			// Here's the drill: if the table has been tiled since the last refresh,
+			// and we're now changing our view of filters, in most cases messages
+			// that were not on screen at the time the size changed have invalid cached
+			// size. We need to re-tile the table, but want to go through -tileLogTable
+			// which takes care of doing it first for visible items, giving a perception
+			// of speed. Therefore, we schedule a block on the filtering serial queue
+			// which will get executed AFTER all the messages have been refreshed, and
+			// will in turn schedule a table retiling. Pfew.
+			dispatch_async(messageFilteringQueue, ^{
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[self tileLogTable:YES];
+					tableTiledSinceLastRefresh = NO;
+				});
+			});
+		}
 	}
+	tableTiledSinceLastRefresh = NO;
 }
 
 - (void)filterIncomingMessages:(NSArray *)messages
@@ -497,7 +507,7 @@
 	{
 		[filterString autorelease];
 		filterString = [newString copy];
-		[self updateFilterPredicate:nil];
+		[self updateFilterPredicate];
 		[self refreshAllMessages];
 		self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 	}
@@ -555,7 +565,7 @@ didReceiveMessages:(NSArray *)theMessages
 	{
 		if ([keyPath isEqualToString:@"selectedObjects"] && [filterListController selectionIndex] != NSNotFound)
 		{
-			[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged:) withObject:nil waitUntilDone:NO];
+			[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
 		}
 	}
 }

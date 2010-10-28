@@ -68,6 +68,7 @@
 	BOOL hasQuickFilter;
 	BOOL loadComplete;
 	BOOL tableNeedsTiling;
+	BOOL tableTiledSinceLastRefresh;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
