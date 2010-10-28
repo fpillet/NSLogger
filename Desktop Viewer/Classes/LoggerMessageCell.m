@@ -74,9 +74,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 {
 	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
 	
-	NSFont *defaultFont = [[NSFont boldSystemFontOfSize:11] retain];
-	NSFont *defaultMonospacedFont = [[NSFont userFixedPitchFontOfSize:11] retain];
-	NSFont *defaultTagAndLevelFont = [[NSFont boldSystemFontOfSize:9] retain];
+	NSFont *defaultFont = [NSFont boldSystemFontOfSize:11];
+	NSFont *defaultMonospacedFont = [NSFont userFixedPitchFontOfSize:11];
+	NSFont *defaultTagAndLevelFont = [NSFont boldSystemFontOfSize:9];
 	
 	// Default text attributes
 	NSMutableDictionary *dict;
