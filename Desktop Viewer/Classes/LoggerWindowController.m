@@ -224,6 +224,7 @@
 	}
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
+	[indexSet release];
 	
 }
 
