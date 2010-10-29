@@ -73,9 +73,9 @@ static NSMutableArray *sTags = nil;
 	struct tm *t = localtime(&sec);
 	NSString *timestampStr;
 	if (timestamp.tv_usec == 0)
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d    ", t->tm_hour, t->tm_min, t->tm_sec];
+		timestampStr = [NSString stringWithFormat:@"%6lu: %02d:%02d:%02d    ", sequence, t->tm_hour, t->tm_min, t->tm_sec];
 	else
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000];
+		timestampStr = [NSString stringWithFormat:@"%6lu: %02d:%02d:%02d.%03d", sequence, t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000];
 	NSString *tagStr = @"";
 	if ([tag length])
 		tagStr = [NSString stringWithFormat:@" %@ |", tag];

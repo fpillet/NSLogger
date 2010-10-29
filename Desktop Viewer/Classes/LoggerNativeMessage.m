@@ -93,6 +93,9 @@
 				case PART_KEY_MESSAGE_TYPE:
 					type = (short)value32;
 					break;
+				case PART_KEY_MESSAGE_SEQ:			// unique message seq number
+					sequence = value32;
+					break;
 				case PART_KEY_TIMESTAMP_S:			// timestamp with seconds-level resolution
 					timestamp.tv_sec = (partType == PART_TYPE_INT64) ? (__darwin_time_t)value64 : (__darwin_time_t)value32;
 					break;

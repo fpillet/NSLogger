@@ -252,6 +252,7 @@
 													</object>
 													<string key="NSFrame">{{0, 17}, {215, 628}}</string>
 													<reference key="NSSuperview" ref="624289750"/>
+													<reference key="NSNextKeyView" ref="150938961"/>
 													<reference key="NSDocView" ref="150938961"/>
 													<reference key="NSBGColor" ref="95618980"/>
 													<int key="NScvFlags">4</int>
@@ -286,6 +287,7 @@
 													</object>
 													<string key="NSFrameSize">{215, 17}</string>
 													<reference key="NSSuperview" ref="624289750"/>
+													<reference key="NSNextKeyView" ref="697792232"/>
 													<reference key="NSDocView" ref="697792232"/>
 													<reference key="NSBGColor" ref="95618980"/>
 													<int key="NScvFlags">4</int>
@@ -294,6 +296,7 @@
 											</object>
 											<string key="NSFrame">{{0, 22}, {215, 645}}</string>
 											<reference key="NSSuperview" ref="797179158"/>
+											<reference key="NSNextKeyView" ref="70922810"/>
 											<int key="NSsFlags">656</int>
 											<reference key="NSVScroller" ref="940204013"/>
 											<reference key="NSHScroller" ref="682997029"/>
@@ -762,6 +765,7 @@
 													</object>
 													<string key="NSFrameSize">{645, 644}</string>
 													<reference key="NSSuperview" ref="1043255743"/>
+													<reference key="NSNextKeyView" ref="522308002"/>
 													<reference key="NSDocView" ref="522308002"/>
 													<reference key="NSBGColor" ref="246830643"/>
 													<int key="NScvFlags">6</int>
@@ -788,6 +792,7 @@
 											</object>
 											<string key="NSFrame">{{0, 23}, {660, 644}}</string>
 											<reference key="NSSuperview" ref="161733749"/>
+											<reference key="NSNextKeyView" ref="364781866"/>
 											<int key="NSsFlags">16</int>
 											<reference key="NSVScroller" ref="122654608"/>
 											<reference key="NSHScroller" ref="426073056"/>
@@ -4096,6 +4101,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">LoggerTableView</string>
+					<string key="superclassName">NSTableView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="601054964">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Classes/LoggerWindowController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">LoggerWindowController</string>
 					<string key="superclassName">NSWindowController</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -4260,10 +4273,7 @@
 							</object>
 						</object>
 					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Classes/LoggerWindowController.h</string>
-					</object>
+					<reference key="sourceIdentifier" ref="601054964"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">LoggerWindowController</string>
@@ -4901,7 +4911,7 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{10, 10}</string>
+				<string>{15, 15}</string>
 				<string>{8, 8}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>

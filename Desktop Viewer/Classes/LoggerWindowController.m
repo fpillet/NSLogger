@@ -119,7 +119,7 @@
 	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 
 	[filterTable setTarget:self];
-	[filterTable setIntercellSpacing:NSMakeSize(0,4)];
+	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
@@ -475,13 +475,15 @@
 	{
 		// Process logs by bunches of 500
 		NSUInteger numMessages = [attachedConnection.messages count];
-		for (int i = 0; i < numMessages; i += 500)
+		for (int i = 0; i < numMessages;)
 		{
 			NSUInteger length = MIN(500, numMessages - i);
-			if (!length)
-				break;
-			[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
-							  withFilter:filterPredicate];
+			if (length)
+			{
+				[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
+								  withFilter:filterPredicate];
+			}
+			i += length;
 		}
 		if (tableTiledSinceLastRefresh)
 		{
