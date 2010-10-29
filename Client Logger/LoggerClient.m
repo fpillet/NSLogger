@@ -340,13 +340,17 @@ static void *LoggerWorkerThread(Logger *logger)
 	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
 	
 	// Create the message port we use to transfer data from the application
-	// to the logger thread's queue
+	// to the logger thread's queue. Use a unique message port name.
 	CFMessagePortContext context = {0, (void*)logger, NULL, NULL, NULL};
+	CFUUIDRef uuid = CFUUIDCreate(NULL);
+	CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+	CFRelease(uuid);
 	logger->messagePort = CFMessagePortCreateLocal(NULL,
-												   CFSTR("LoggerMessagePort"),
+												   uuidString,
 												   (CFMessagePortCallBack)&LoggerMessagePortCallout,
 												   &context,
 												   NULL);
+	CFRelease(uuidString);
 	
 	CFRunLoopSourceRef messagePortSource = CFMessagePortCreateRunLoopSource(NULL, logger->messagePort, 0);
 	CFRunLoopAddSource(runLoop, messagePortSource, kCFRunLoopCommonModes);
