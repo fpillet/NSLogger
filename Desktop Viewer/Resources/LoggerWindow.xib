@@ -21,7 +21,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="457"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -54,7 +53,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{700, 500}</string>
 				<object class="NSView" key="NSWindowView" id="439893737">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -253,7 +252,6 @@
 													</object>
 													<string key="NSFrame">{{0, 17}, {215, 628}}</string>
 													<reference key="NSSuperview" ref="624289750"/>
-													<reference key="NSNextKeyView" ref="150938961"/>
 													<reference key="NSDocView" ref="150938961"/>
 													<reference key="NSBGColor" ref="95618980"/>
 													<int key="NScvFlags">4</int>
@@ -288,7 +286,6 @@
 													</object>
 													<string key="NSFrameSize">{215, 17}</string>
 													<reference key="NSSuperview" ref="624289750"/>
-													<reference key="NSNextKeyView" ref="697792232"/>
 													<reference key="NSDocView" ref="697792232"/>
 													<reference key="NSBGColor" ref="95618980"/>
 													<int key="NScvFlags">4</int>
@@ -297,7 +294,6 @@
 											</object>
 											<string key="NSFrame">{{0, 22}, {215, 645}}</string>
 											<reference key="NSSuperview" ref="797179158"/>
-											<reference key="NSNextKeyView" ref="70922810"/>
 											<int key="NSsFlags">656</int>
 											<reference key="NSVScroller" ref="940204013"/>
 											<reference key="NSHScroller" ref="682997029"/>
@@ -739,6 +735,7 @@
 																	</object>
 																	<int key="NSResizingMask">1</int>
 																	<bool key="NSIsResizeable">YES</bool>
+																	<bool key="NSIsEditable">YES</bool>
 																	<reference key="NSTableView" ref="522308002"/>
 																</object>
 															</object>
@@ -765,7 +762,6 @@
 													</object>
 													<string key="NSFrameSize">{645, 644}</string>
 													<reference key="NSSuperview" ref="1043255743"/>
-													<reference key="NSNextKeyView" ref="522308002"/>
 													<reference key="NSDocView" ref="522308002"/>
 													<reference key="NSBGColor" ref="246830643"/>
 													<int key="NScvFlags">6</int>
@@ -792,7 +788,6 @@
 											</object>
 											<string key="NSFrame">{{0, 23}, {660, 644}}</string>
 											<reference key="NSSuperview" ref="161733749"/>
-											<reference key="NSNextKeyView" ref="364781866"/>
 											<int key="NSsFlags">16</int>
 											<reference key="NSVScroller" ref="122654608"/>
 											<reference key="NSHScroller" ref="426073056"/>
@@ -870,7 +865,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{885, 666}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
 				<string key="NSMinSize">{700, 522}</string>
@@ -2692,22 +2686,6 @@
 					<int key="connectionID">557</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">dataSource</string>
-						<reference key="source" ref="522308002"/>
-						<reference key="destination" ref="1021"/>
-					</object>
-					<int key="connectionID">559</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">delegate</string>
-						<reference key="source" ref="522308002"/>
-						<reference key="destination" ref="1021"/>
-					</object>
-					<int key="connectionID">560</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">addFilter:</string>
 						<reference key="source" ref="1021"/>
@@ -3022,6 +3000,22 @@
 						<reference key="destination" ref="751047399"/>
 					</object>
 					<int key="connectionID">940</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="522308002"/>
+						<reference key="destination" ref="1021"/>
+					</object>
+					<int key="connectionID">941</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="522308002"/>
+						<reference key="destination" ref="1021"/>
+					</object>
+					<int key="connectionID">942</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3832,6 +3826,7 @@
 					<string>371.windowTemplate.maxSize</string>
 					<string>371.windowTemplate.minSize</string>
 					<string>372.IBPluginDependency</string>
+					<string>372.IBViewBoundsToFrameTransform</string>
 					<string>455.CustomClassName</string>
 					<string>455.IBPluginDependency</string>
 					<string>456.IBPluginDependency</string>
@@ -3849,6 +3844,7 @@
 					<string>477.IBViewBoundsToFrameTransform</string>
 					<string>478.IBPluginDependency</string>
 					<string>479.IBPluginDependency</string>
+					<string>480.CustomClassName</string>
 					<string>480.IBPluginDependency</string>
 					<string>482.IBPluginDependency</string>
 					<string>485.IBPluginDependency</string>
@@ -3935,16 +3931,17 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{32, 437}, {885, 666}}</string>
+					<string>{{23, 477}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{32, 437}, {885, 666}}</string>
+					<string>{{23, 477}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{700, 500}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform"/>
 					<string>LoggerSplitView</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -3966,6 +3963,7 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>LoggerTableView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4084,7 +4082,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">940</int>
+			<int key="maxID">942</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4208,8 +4206,8 @@
 							<string>NSWindow</string>
 							<string>NSArrayController</string>
 							<string>NSTextField</string>
-							<string>NSTableView</string>
-							<string>NSTableView</string>
+							<string>LoggerTableView</string>
+							<string>LoggerTableView</string>
 							<string>NSPopUpButton</string>
 						</object>
 					</object>
@@ -4250,11 +4248,11 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">filterTable</string>
-								<string key="candidateClassName">NSTableView</string>
+								<string key="candidateClassName">LoggerTableView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">logTable</string>
-								<string key="candidateClassName">NSTableView</string>
+								<string key="candidateClassName">LoggerTableView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">quickFilter</string>

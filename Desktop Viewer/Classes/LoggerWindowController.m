@@ -49,6 +49,20 @@
 - (void)tileLogTable:(BOOL)force;
 @end
 
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma Standard LoggerTableView
+// -----------------------------------------------------------------------------
+@implementation LoggerTableView
+- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
+{
+	// Don't understand why I have to override this method
+	return YES;
+}
+@end
+
+
 @implementation LoggerWindowController
 
 @synthesize info, filterString, filterTag;
@@ -92,13 +106,18 @@
 {
 	NSTableColumn *tc = [logTable tableColumnWithIdentifier:@"message"];
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
+	[cell setState:NSOnState];
 	[tc setDataCell:cell];
 	[cell release];
 	
 	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
 	[logTable setDoubleAction:@selector(openDetailsWindow:)];
-	
+
+	[logTable registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeString]];
+	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
+	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
+
 	[filterTable setTarget:self];
 	[filterTable setIntercellSpacing:NSMakeSize(0,4)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
@@ -675,6 +694,20 @@ didReceiveMessages:(NSArray *)theMessages
 	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
 		return [displayedMessages objectAtIndex:rowIndex];
 	return nil;
+}
+
+- (BOOL)tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard
+{
+	if (tv != logTable)
+		return NO;
+
+	NSArray *draggedMessages = [displayedMessages objectsAtIndexes:rowIndexes];
+	NSMutableString *string = [[NSMutableString alloc] initWithCapacity:[draggedMessages count] * 128];
+	for (LoggerMessage *msg in draggedMessages)
+		[string appendString:[msg textRepresentation]];
+	[pboard writeObjects:[NSArray arrayWithObject:string]];
+	[string release];
+    return YES;
 }
 
 // -----------------------------------------------------------------------------

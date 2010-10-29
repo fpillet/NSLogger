@@ -57,7 +57,6 @@ This tool comes from a personal need for a more powerful logger. There are more 
  * For multiple subsequent connections by the same client (multiple app runs), reuse the same window much like Instruments does
  * Log entry colorization
  * Search and search term highlight in Details window
- * Drag-and-drop of log text from log messages list
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
 
 

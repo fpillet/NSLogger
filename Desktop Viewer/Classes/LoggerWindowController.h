@@ -31,13 +31,13 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerMessageCell;
+@class LoggerMessageCell, LoggerTableView;
 @class LoggerDetailsWindowController, LoggerClientInfoWindowController;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
+@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
-	IBOutlet NSTableView *logTable;
-	IBOutlet NSTableView *filterTable;
+	IBOutlet LoggerTableView *logTable;
+	IBOutlet LoggerTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
@@ -89,3 +89,9 @@
 - (IBAction)deleteSelectedFilters:(id)sender;
 
 @end
+
+@interface LoggerTableView : NSTableView
+{
+}
+@end
+
