@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.0b3 2010-10-29
+ * version 1.0b4 2010-10-29
  *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
@@ -70,6 +70,7 @@
 #define	PART_KEY_MESSAGE		7
 #define PART_KEY_IMAGE_WIDTH	8			// messages containing an image should also contain a part with the image size
 #define PART_KEY_IMAGE_HEIGHT	9			// (this is mainly for the desktop viewer to compute the cell size without having to immediately decode the image)
+#define PART_KEY_MESSAGE_SEQ	10			// the sequential number of this message which indicates the order in which messages are generated
 
 // Constants for parts in LOGMSG_TYPE_CLIENTINFO
 #define PART_KEY_CLIENT_NAME	20

@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b3 2010-10-29
+ * version 1.0b4 2010-10-29
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -33,6 +33,7 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <libkern/OSAtomic.h>
 #import <sys/time.h>
 #import <fcntl.h>
 
@@ -371,7 +372,7 @@ static void *LoggerWorkerThread(Logger *logger)
 	// Run logging thread until LoggerStop() is called
 	while (!logger->quit)
 	{
-		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.25, true);
+		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, true);
 		if (result == kCFRunLoopRunFinished || result == kCFRunLoopRunStopped)
 			break;
 		
@@ -425,7 +426,7 @@ static void LoggerWriteMoreData(Logger *logger)
 	if (!logger->connected)
 		return;
 	
-	while (CFWriteStreamCanAcceptBytes(logger->logStream))
+	if (CFWriteStreamCanAcceptBytes(logger->logStream))
 	{
 		// prepare archived data with log queue contents, unblock the queue as soon as possible
 		CFMutableDataRef sendFirstItem = NULL;
@@ -460,7 +461,7 @@ static void LoggerWriteMoreData(Logger *logger)
 			{
 				// are we done yet?
 				if (CFArrayGetCount(logger->logQueue) == 0)
-					break;
+					return;
 				
 				// first item is too big to fit in a single packet, send it separately
 				sendFirstItem = (CFMutableDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
@@ -480,7 +481,7 @@ static void LoggerWriteMoreData(Logger *logger)
 			{
 				// We'll get an event if the stream closes on error. Don't discard the data,
 				// it will be sent as soon as a connection is re-acquired.
-				break;
+				return;
 			}
 			if ((logger->sendBufferOffset + written) < logger->sendBufferUsed)
 			{
@@ -502,7 +503,7 @@ static void LoggerWriteMoreData(Logger *logger)
 			if (written < 0)
 			{
 				// We'll get an event if the stream closes on error
-				break;
+				return;
 			}
 			if (written < length)
 			{
@@ -511,7 +512,7 @@ static void LoggerWriteMoreData(Logger *logger)
 				// care of at the next iteration. We take advantage of the fact that each item
 				// in the queue is actually a mutable data block
 				CFDataReplaceBytes((CFMutableDataRef)sendFirstItem, CFRangeMake(0, written), NULL, 0);
-				break;
+				return;
 			}
 			
 			// we are done sending the first item in the queue, remove it now
@@ -1207,13 +1208,37 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message)
 {
 	// Send the data to the port on the logger thread's runloop, this way we don't have to use
-	// locks to communicate message to the logger queue
+	// locks to communicate message to the logger queue.
+	// Issue: if the run loop is blocking on something for too long, it also blocks the sender's
+	// thread. In a future release, use a private queue and a runloop source to avoid this.
 	if (logger->messagePort != NULL)
-		CFMessagePortSendRequest(logger->messagePort, 0, message, 0, 0, NULL, NULL);
+	{
+		SInt32 err;
+		int loops = 0;
+		while ((err = CFMessagePortSendRequest(logger->messagePort, 0, message, 0.1, 0, NULL, NULL)) == kCFMessagePortSendTimeout)
+			loops++;
+		if (err != kCFMessagePortSuccess)
+		{
+			LOGGERDBG(CFSTR("-> CFMessagePortSendRequest returned %ld"), err);
+		}
+		else if (loops != 0)
+		{
+			LOGGERDBG(CFSTR("-> CFMessagePortSendRequest with 0.1 timeout looped %d times before sending succeeded"), loops);
+		}
+	}
 }
 
 static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, NSString *format, va_list args)
 {
+	if (logger == NULL)
+	{
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
+	}
+
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG(CFSTR("%ld LogMessage"), seq);
+
 #if ALLOW_COCOA_USE
 	// Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
 	CFStringRef msgString = (CFStringRef)[[NSString alloc] initWithFormat:format arguments:args];
@@ -1222,11 +1247,6 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 #endif
 	if (msgString != NULL)
 	{
-		if (logger == NULL)
-		{
-			logger = LoggerGetDefaultLogger();
-			LoggerStart(logger);
-		}
 		if (logger->logToConsole)
 		{
 			// Gracefully degrade to logging the message to console
@@ -1239,6 +1259,7 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 			{
 				EncodeTimestampAndThreadID(encoder);
 				EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+				EncodeLoggerInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
 				if (domain != nil && [domain length])
 					EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 				if (level)
@@ -1247,6 +1268,11 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 				PushMessageToLoggerQueue(logger, encoder);
 				CFRelease(encoder);
 			}
+			else
+			{
+				LOGGERDBG(CFSTR("-> failed creating encoder"));
+			}
+
 		}
 		CFRelease(msgString);
 	}
@@ -1259,6 +1285,9 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 		logger = LoggerGetDefaultLogger();
 		LoggerStart(logger);
 	}
+
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG(CFSTR("%ld LogImage"), seq);
 
 	if (logger->logToConsole)
 	{
@@ -1274,6 +1303,7 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 	{
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+		EncodeLoggerInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
 		if (domain != nil && [domain length])
 			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
@@ -1288,6 +1318,11 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 		PushMessageToLoggerQueue(logger, encoder);
 		CFRelease(encoder);
 	}
+	else
+	{
+		LOGGERDBG(CFSTR("-> failed creating encoder"));
+	}
+
 }
 
 static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSData *data)
@@ -1297,6 +1332,9 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 		logger = LoggerGetDefaultLogger();
 		LoggerStart(logger);
 	}
+
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG(CFSTR("%ld LogData"), seq);
 
 	if (logger->logToConsole)
 	{
@@ -1308,6 +1346,7 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 	{
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+		EncodeLoggerInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
 		if (domain != nil && [domain length])
 			EncodeLoggerString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
@@ -1316,7 +1355,11 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 		
 		PushMessageToLoggerQueue(logger, encoder);
 		CFRelease(encoder);
-	}	
+	}
+	else
+	{
+		LOGGERDBG(CFSTR("-> failed creating encoder"));
+	}
 }
 
 static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list args)
@@ -1326,7 +1369,10 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 		logger = LoggerGetDefaultLogger();
 		LoggerStart(logger);
 	}
-	
+
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG(CFSTR("%ld LogStartBlock"), seq);
+
 	if (logger->logToConsole)
 	{
 		if (format != nil)
@@ -1346,7 +1392,8 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 	{
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_BLOCKSTART, PART_KEY_MESSAGE_TYPE);
-		
+		EncodeLoggerInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+
 		CFStringRef msgString = NULL;
 		if (format != nil)
 		{
@@ -1456,14 +1503,23 @@ void LogEndBlockTo(Logger *logger)
 	if (logger->logToConsole)
 		return;
 	
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG(CFSTR("%ld LogEndBlock"), seq);
+
 	CFMutableDataRef encoder = CreateLoggerData();
 	if (encoder != NULL)
 	{
 		EncodeTimestampAndThreadID(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_BLOCKEND, PART_KEY_MESSAGE_TYPE);
+		EncodeLoggerInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
 		PushMessageToLoggerQueue(logger, encoder);
 		CFRelease(encoder);
 	}
+	else
+	{
+		LOGGERDBG(CFSTR("-> failed creating encoder"));
+	}
+
 }
 
 void LogEndBlock()

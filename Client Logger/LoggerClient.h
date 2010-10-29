@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b3 2010-10-29
+ * version 1.0b4 2010-10-29
  *
  * Part of NSLogger (client side)
  *
@@ -79,6 +79,8 @@ typedef struct
 	NSUInteger sendBufferUsed;						// number of bytes of the send buffer currently in use
 	NSUInteger sendBufferOffset;					// offset in sendBuffer to start sending at
 	
+	int32_t messageSeq;								// sequential message number (added to each message sent)
+
 	BOOL connected;									// Set to YES once the write stream declares the connection open
 	volatile BOOL quit;								// Set to YES to terminate the logger worker thread's runloop
 
