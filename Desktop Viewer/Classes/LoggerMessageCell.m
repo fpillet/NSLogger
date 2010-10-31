@@ -211,7 +211,6 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		
 		dataLen -= i;
 		offset += i;
-		q += i;
 	}
 	return [strings autorelease];
 }
@@ -240,10 +239,16 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz
 {
 	// return cached cell height if possible
+	CGFloat minimumHeight = [self minimumHeightForCell];
 	NSSize cellSize = aMessage.cachedCellSize;
 	if (cellSize.width == sz.width)
 		return cellSize.height;
+
 	cellSize.width = sz.width;
+
+	// new width is larger, but cell already at minimum height, don't recompute
+	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
+		return minimumHeight;
 
 	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8 + (aMessage.indent * INDENTATION_TAB_WIDTH);
 	sz.height -= 4;
@@ -280,7 +285,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 4, [self minimumHeightForCell]);
+	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }

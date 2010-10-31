@@ -113,7 +113,7 @@ static NSMutableArray *sTags = nil;
 		
 		b = strlen(buffer);
 		buffer[b++] = '\'';
-		for (i=0; i < 16 && i < dataLen; i++, q++)
+		for (i=0; i < 16 && i < dataLen; i++)
 		{
 			if (*q >= 32 && *q < 128)
 				buffer[b++] = *q;
