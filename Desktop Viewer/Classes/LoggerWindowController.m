@@ -129,8 +129,8 @@
 	[self updateFilterPredicate];
 	loadComplete = YES;
 	[logTable sizeToFit];
-	if (attachedConnection != nil)
-		[self refreshAllMessages];
+//	if (attachedConnection != nil)
+//		[self refreshAllMessages];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(applyFontChanges)
@@ -467,6 +467,7 @@
 // -----------------------------------------------------------------------------
 - (void)refreshAllMessages
 {
+	NSLog(@"refreshAllMesssages");
 	assert([NSThread isMainThread]);
 	lastMessageRow = 0;
 	[displayedMessages removeAllObjects];
