@@ -57,7 +57,9 @@
 @implementation LoggerTableView
 - (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
 {
-	// Don't understand why I have to override this method
+	// Don't understand why I have to override this method, but it's the only
+	// way I could get dragging from table to work. Tried various additional
+	// things with no luck...
 	return YES;
 }
 @end
@@ -129,8 +131,6 @@
 	[self updateFilterPredicate];
 	loadComplete = YES;
 	[logTable sizeToFit];
-//	if (attachedConnection != nil)
-//		[self refreshAllMessages];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(applyFontChanges)
@@ -235,7 +235,7 @@
 	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
 	{
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
-		msg.cachedCellSize = NSZeroSize;
+		//msg.cachedCellSize = NSZeroSize;
 		CGFloat cachedHeight = msg.cachedCellSize.height;
 		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
 		if (newHeight != cachedHeight)
@@ -422,6 +422,28 @@
 #pragma mark -
 #pragma mark Table management
 // -----------------------------------------------------------------------------
+- (void)messagesAppendedToTable
+{
+	assert([NSThread isMainThread]);
+	if (attachedConnection.connected)
+	{
+		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+		NSRange visibleRows = [logTable rowsInRect:r];
+		BOOL lastVisible = (visibleRows.location == NSNotFound ||
+							visibleRows.length == 0 ||
+							(visibleRows.location + visibleRows.length) >= lastMessageRow);
+		[logTable noteNumberOfRowsChanged];
+		if (lastVisible)
+			[logTable scrollRowToVisible:[displayedMessages count] - 1];
+		lastMessageRow = [displayedMessages count];
+	}
+	else
+	{
+		[logTable noteNumberOfRowsChanged];
+	}
+	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
+}
+
 - (void)appendMessagesToTable:(NSArray *)messages
 {
 	assert([NSThread isMainThread]);
@@ -429,23 +451,16 @@
 
 	// schedule a table reload. Do this asynchronously (and cancellable-y) so we can limit the
 	// number of reload requests in case of high load
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
-	[self performSelector:@selector(messagesAppendedToTable) withObject:nil afterDelay:0];
-}
-
-- (void)messagesAppendedToTable
-{
-	assert([NSThread isMainThread]);
-	NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
-	NSRange visibleRows = [logTable rowsInRect:r];
-	BOOL lastVisible = (visibleRows.location == NSNotFound ||
-						visibleRows.length == 0 ||
-						(visibleRows.location + visibleRows.length) >= lastMessageRow);
-	[logTable reloadData];
-	if (lastVisible)
-		[logTable scrollRowToVisible:[displayedMessages count] - 1];
-	lastMessageRow = [displayedMessages count];
-	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
+	if (attachedConnection.connected)
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
+		[self performSelector:@selector(messagesAppendedToTable) withObject:nil afterDelay:0];
+	}
+	else
+	{
+		[self messagesAppendedToTable];
+		[[self window] displayIfNeeded];
+	}
 }
 
 - (IBAction)openDetailsWindow:(id)sender
@@ -467,22 +482,33 @@
 // -----------------------------------------------------------------------------
 - (void)refreshAllMessages
 {
-	NSLog(@"refreshAllMesssages");
 	assert([NSThread isMainThread]);
 	lastMessageRow = 0;
 	[displayedMessages removeAllObjects];
 	[logTable reloadData];
 	@synchronized (attachedConnection.messages)
 	{
-		// Process logs by bunches of 500
+		// Process logs by chunks
 		NSUInteger numMessages = [attachedConnection.messages count];
 		for (int i = 0; i < numMessages;)
 		{
-			NSUInteger length = MIN(500, numMessages - i);
+			NSUInteger length = MIN(4096, numMessages - i);
 			if (length)
 			{
-				[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
-								  withFilter:filterPredicate];
+				if (attachedConnection.connected)
+				{
+					// do this synchronously
+					[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
+									  withFilter:filterPredicate];
+				}
+				else
+				{
+					// do this asynchronously (reloading)
+					dispatch_async(messageFilteringQueue, ^{
+						[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
+										  withFilter:filterPredicate];
+					});
+				}
 			}
 			i += length;
 		}
