@@ -85,22 +85,21 @@
 	else if ([typeName isEqualToString:@"public.plain-text"])
 	{
 		// Export messages as text
-		// Make a copy of the array now so we're not bothered with the array
+		// Make a copy of the array state now so we're not bothered with the array
 		// changing while we're processing it
 		__block NSArray *allMessages = nil;
 		if (attachedConnection.messageProcessingQueue != NULL)
 		{
 			// live connections have a processing queue
 			dispatch_sync(attachedConnection.messageProcessingQueue , ^{
-				allMessages = [attachedConnection.messages copy];
+				allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
 			});
 		}
 		else
 		{
 			// reloaded files don't have a queue
-			allMessages = [attachedConnection.messages copy];
+			allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
 		}
-
 		BOOL (^flushData)(NSOutputStream*, NSMutableData*) = ^(NSOutputStream *stream, NSMutableData *data) 
 		{
 			NSUInteger length = [data length];

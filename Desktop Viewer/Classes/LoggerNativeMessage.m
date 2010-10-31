@@ -93,7 +93,7 @@
 				case PART_KEY_MESSAGE_TYPE:
 					type = (short)value32;
 					break;
-				case PART_KEY_MESSAGE_SEQ:			// unique message seq number
+				case PART_KEY_MESSAGE_SEQ:			
 					sequence = value32;
 					break;
 				case PART_KEY_TIMESTAMP_S:			// timestamp with seconds-level resolution
