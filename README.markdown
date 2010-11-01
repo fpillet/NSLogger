@@ -29,18 +29,20 @@ Start the NSLogger application on Mac OS X. Your client app must run on a device
 You can create custom filters to quickly switch between different views of your logs.
 
 # Evolved logging facility #
-It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices.
+It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also enable remote logging to have logs sent directly from remote devices running at distant locations, or have logs be directed to a file that can later be sent to a remote server.
 
 # Powerful desktop viewer #
-The desktop viewer application provides powerful tools, like:
+The desktop viewer application provides tools like:
 
- * Filters (with regular expression matching) that let your perform data mining in your traces
+ * Filters (with regular expression matching) that let your perform data mining in your logs
  * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
  * Image and binary data display directly in the log window
- * Very fast navigation in your traces
+ * Fast navigation in your logs
+ * Display and export all your logs as text
  
  
-Your traces can be saved to a `.nsloggerdata` file, and reloaded later.
+Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When logging to a file, name your log file with extension `.rawnsloggerdata` so NSLogger can reopen and process it.
+
 Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 
 ![Filter Editor](http://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
