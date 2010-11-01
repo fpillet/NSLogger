@@ -384,9 +384,11 @@ static void *LoggerWorkerThread(Logger *logger)
 		{
 			if (logger->browseBonjour)
 				LoggerStartBonjourBrowsing(logger);
+			else if (logger->host != NULL && logger->reachability == NULL)
+				LoggerTryConnect(logger);
 		}
 	}
-	
+
 	// Cleanup
 	if (logger->browseBonjour)
 		LoggerStopBonjourBrowsing(logger);
@@ -839,7 +841,6 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 		if (logger->logStream == NULL && logger->host != NULL)
 		{
 			LOGGERDBG(CFSTR("-> host %@ became reachable, trying to connect."), logger->host);
-			CFArrayRemoveAllValues(logger->bonjourServices);
 			LoggerTryConnect(logger);
 		}
 	}
@@ -954,6 +955,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			LOGGERDBG(CFSTR("Logger CONNECTED"));
 			logger->connected = YES;
 			LoggerStopBonjourBrowsing(logger);
+			LoggerStopReachabilityChecking(logger);
 			if (logger->bufferWriteStream != NULL)
 			{
 				// now that a connection is acquired, we can stop logging to a file
@@ -991,6 +993,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
 			logger->sendBufferUsed = 0;
+			logger->sendBufferOffset = 0;
 			if (logger->bufferReadStream != NULL)
 			{
 				// In the case the connection drops before we have flushed the
