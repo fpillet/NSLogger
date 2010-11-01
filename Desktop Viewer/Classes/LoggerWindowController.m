@@ -499,6 +499,7 @@
 						lastMessageRow = 0;
 						[displayedMessages removeAllObjects];
 						[logTable reloadData];
+						self.info = NSLocalizedString(@"No message", @"");
 					});
 				});
 			}
