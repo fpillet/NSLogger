@@ -32,9 +32,11 @@
 #import "LoggerDetailsWindowController.h"
 #import "LoggerClientInfoWindowController.h"
 #import "LoggerMessageCell.h"
+#import "LoggerClientInfoCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
+#import "LoggerCommon.h"
 
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
@@ -90,7 +92,6 @@
 - (void)dealloc
 {
 	[detailsWindowController release];
-	[clientDetailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
@@ -101,16 +102,19 @@
 	[filterPredicate release];
 	[displayedMessages release];
 	[tags release];
+	[clientInfoCell release];
 	[super dealloc];
 }
 
 - (void)windowDidLoad
 {
-	NSTableColumn *tc = [logTable tableColumnWithIdentifier:@"message"];
-	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
-	[cell setState:NSOnState];
-	[tc setDataCell:cell];
-	[cell release];
+	messageCell = [[LoggerMessageCell alloc] init];
+	clientInfoCell = [[LoggerClientInfoCell alloc] init];
+
+//	NSTableColumn *tc = [logTable tableColumnWithIdentifier:@"message"];
+//	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
+//	[tc setDataCell:cell];
+//	[cell release];
 	
 	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
@@ -157,17 +161,6 @@
 	// Update the source label
 	assert([NSThread isMainThread]);
 	[self synchronizeWindowTitleWithDocumentName];
-}
-
-- (IBAction)showClientInfo:(id)sender
-{
-	if (clientDetailsWindowController == nil)
-	{
-		clientDetailsWindowController = [[LoggerClientInfoWindowController alloc] initWithWindowNibName:@"LoggerClientInfoWindow"];
-		clientDetailsWindowController.attachedConnection = attachedConnection;
-		[[self document] addWindowController:clientDetailsWindowController];
-	}
-	[clientDetailsWindowController showWindow:self];
 }
 
 - (void)updateFilterPredicate
@@ -656,6 +649,27 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark NSTableDelegate
 // -----------------------------------------------------------------------------
+- (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	if (tableView == logTable && row >= 0 && row < [displayedMessages count])
+	{
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		switch (msg.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				return messageCell;
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				return clientInfoCell;
+			default:
+				break;
+		}
+	}
+	return nil;
+}
+
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == logTable && rowIndex >= 0 && rowIndex < [displayedMessages count])
@@ -697,8 +711,20 @@ didReceiveMessages:(NSArray *)theMessages
 		NSSize cachedSize = message.cachedCellSize;
 		if (cachedSize.width != 0)
 			return cachedSize.height;
-		return [LoggerMessageCell heightForCellWithMessage:message
-												   maxSize:[tableView frame].size];
+		switch (message.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				return [LoggerMessageCell heightForCellWithMessage:message
+														   maxSize:[tableView frame].size];
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				return [LoggerClientInfoCell heightForCellWithMessage:message
+															  maxSize:[tableView frame].size];
+			default:
+				break;
+		}
 	}
 	return [tableView rowHeight];
 }

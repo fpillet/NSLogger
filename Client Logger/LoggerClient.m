@@ -1016,7 +1016,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 #pragma mark -
 #pragma mark Internal encoding functions
 // -----------------------------------------------------------------------------
-static void EncodeTimestampAndThreadID(CFMutableDataRef encoder)
+static void EncodeTimestamp(CFMutableDataRef encoder)
 {
 	struct timeval t;
 	if (gettimeofday(&t, NULL) == 0)
@@ -1040,7 +1040,12 @@ static void EncodeTimestampAndThreadID(CFMutableDataRef encoder)
 		else
 			EncodeLoggerInt32(encoder, ts, PART_KEY_TIMESTAMP_S);
 	}
-	
+}
+
+static void EncodeTimestampAndThreadID(CFMutableDataRef encoder)
+{
+	EncodeTimestamp(encoder);
+
 #if ALLOW_COCOA_USE
 	// Getting the thread number is tedious, to say the least. Since there is
 	// no direct way to get it, we have to do it sideways. Note that it can be dangerous
@@ -1183,6 +1188,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 	CFMutableDataRef encoder = CreateLoggerData();
 	if (encoder != NULL)
 	{
+		EncodeTimestamp(encoder);
 		EncodeLoggerInt32(encoder, LOGMSG_TYPE_CLIENTINFO, PART_KEY_MESSAGE_TYPE);
 
 		CFStringRef version = (CFStringRef)CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);

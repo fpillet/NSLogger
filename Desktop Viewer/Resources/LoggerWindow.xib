@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.InterfaceBuilderVersion">788</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,17 +15,18 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>804</string>
+				<string>788</string>
 				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="457"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.brandonwalkin.BWToolkit</string>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+			<string>com.brandonwalkin.BWToolkit</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<string key="NS.key.0">PluginDependencyRecalculationVersion</string>
@@ -50,10 +51,10 @@
 				<string key="NSWindowTitle">NSLogger</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{700, 500}</string>
 				<object class="NSView" key="NSWindowView" id="439893737">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -203,7 +204,7 @@
 																			<string key="NSColorName">controlBackgroundColor</string>
 																			<object class="NSColor" key="NSColor" id="362555436">
 																				<int key="NSColorSpace">3</int>
-																				<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+																				<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 																			</object>
 																		</object>
 																		<object class="NSColor" key="NSTextColor" id="474791504">
@@ -488,30 +489,9 @@
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="632247678"/>
 																</object>
-																<object class="NSMenuItem" id="811274530">
-																	<reference key="NSMenu" ref="927169185"/>
-																	<bool key="NSIsDisabled">YES</bool>
-																	<bool key="NSIsSeparator">YES</bool>
-																	<string key="NSTitle"/>
-																	<string key="NSKeyEquiv"/>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="220151771"/>
-																	<reference key="NSMixedImage" ref="327025952"/>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<reference key="NSTarget" ref="632247678"/>
-																</object>
-																<object class="NSMenuItem" id="1702">
-																	<reference key="NSMenu" ref="927169185"/>
-																	<string key="NSTitle">Client Info...</string>
-																	<string key="NSKeyEquiv"/>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="220151771"/>
-																	<reference key="NSMixedImage" ref="327025952"/>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<reference key="NSTarget" ref="632247678"/>
-																</object>
 															</object>
 														</object>
+														<int key="NSSelectedIndex">2</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -870,10 +850,11 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{885, 666}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
 				<string key="NSMinSize">{700, 522}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSArrayController" id="923242454">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
@@ -899,7 +880,7 @@
 				<string key="NSWindowTitle">Filter Editor</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{400, 200}</string>
 				<object class="NSView" key="NSWindowView" id="825133058">
 					<nil key="NSNextResponder"/>
@@ -2624,7 +2605,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
 				<string key="NSMinSize">{400, 222}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2943,14 +2924,6 @@
 					<int key="connectionID">926</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">showClientInfo:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="1702"/>
-					</object>
-					<int key="connectionID">928</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: hasQuickFilter</string>
 						<reference key="source" ref="498562684"/>
@@ -3156,8 +3129,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="737982522"/>
 							<reference ref="450398979"/>
-							<reference ref="1702"/>
-							<reference ref="811274530"/>
 							<reference ref="498562684"/>
 						</object>
 						<reference key="parent" ref="632247678"/>
@@ -3662,16 +3633,6 @@
 						<reference key="parent" ref="37608884"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">903</int>
-						<reference key="object" ref="1702"/>
-						<reference key="parent" ref="927169185"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">904</int>
-						<reference key="object" ref="811274530"/>
-						<reference key="parent" ref="927169185"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">894</int>
 						<reference key="object" ref="622971220"/>
 						<object class="NSMutableArray" key="children">
@@ -3918,8 +3879,6 @@
 					<string>896.IBEditorWindowLastContentRect</string>
 					<string>896.IBPluginDependency</string>
 					<string>900.IBPluginDependency</string>
-					<string>903.IBPluginDependency</string>
-					<string>904.IBPluginDependency</string>
 					<string>905.IBPluginDependency</string>
 					<string>905.IBViewBoundsToFrameTransform</string>
 					<string>906.IBPluginDependency</string>
@@ -3936,10 +3895,10 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{23, 477}, {885, 666}}</string>
+					<string>{{23, 90}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{23, 477}, {885, 666}}</string>
+					<string>{{23, 90}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -3989,7 +3948,7 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{220, 432}, {177, 81}}</string>
+					<string>{{236, 59}, {177, 54}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -4052,8 +4011,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{701, 322}, {160, 149}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -4911,7 +4868,7 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{15, 15}</string>
+				<string>{10, 10}</string>
 				<string>{8, 8}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>

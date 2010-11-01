@@ -29,6 +29,7 @@
  * 
  */
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #import "LoggerCommon.h"
 #import "LoggerNativeTransport.h"
@@ -345,6 +346,34 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 }
 #endif
 
+- (NSString *)clientInfoStringForMessage:(LoggerMessage *)message
+{
+	NSDictionary *parts = message.parts;
+	NSString *clientName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
+	NSString *clientVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+	NSString *clientAppInfo = @"";
+	if ([clientName length])
+		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"\nClient: %@ %@", @""),
+						 clientName,
+						 clientVersion ? clientVersion : @""];
+
+	NSString *osName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+	NSString *osVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+	NSString *osInfo = @"";
+	if ([osName length])
+		osInfo = [NSString stringWithFormat:NSLocalizedString(@"\nOS: %@ %@", @""),
+				  osName,
+				  osVersion ? osVersion : @""];
+
+	NSString *hardware = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+	NSString *hardwareInfo = @"";
+	if ([hardware length])
+		hardwareInfo = [NSString stringWithFormat:NSLocalizedString(@"\nHardware: %@", @""), hardware];
+	
+	return [NSString stringWithFormat:NSLocalizedString(@"Client connected%@%@%@", @""),
+			clientAppInfo, osInfo, hardwareInfo];
+}
+
 // -----------------------------------------------------------------------------
 // NSStream delegate
 // -----------------------------------------------------------------------------
@@ -371,12 +400,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				while ([cnx.readStream hasBytesAvailable] && (numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize]) > 0)
 				{
 					// append data to the data buffer
-					NSMutableArray *msgs = nil;
-#ifdef DEBUG
-//					[self dumpBytes:cnx.tmpBuf length:numBytes];
-#endif
+					NSMutableArray *msgs = [[NSMutableArray alloc] init];
 					[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
-
 					NSUInteger bufferLength = [cnx.buffer length];
 					while (bufferLength > 4)
 					{
@@ -386,7 +411,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 						length = ntohl(length);
 						if (bufferLength < (length + 4))
 							break;
-						
+
 						// get one message
 						CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
 																	   (unsigned char *)[cnx.buffer bytes] + 4,
@@ -396,20 +421,18 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 						{
 							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
 							if (message.type == LOGMSG_TYPE_CLIENTINFO)
-								[cnx clientInfoReceived:message];
-							else
 							{
-								if (msgs == nil)
-									msgs = [[NSMutableArray alloc] init];
-								[msgs addObject:message];
+								message.message = [self clientInfoStringForMessage:message];
+								[cnx clientInfoReceived:message];
 							}
+							[msgs addObject:message];
 							[message release];
 							CFRelease(subset);
 						}
 						[cnx.buffer replaceBytesInRange:NSMakeRange(0, length+4) withBytes:NULL length:0];
 						bufferLength = [cnx.buffer length];
 					}
-					
+
 					if ([msgs count])
 						[cnx messagesReceived:msgs];
 					[msgs release];
@@ -417,14 +440,24 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				break;
 				
 			case NSStreamEventErrorOccurred:
+				// @@@ TODO: add message with error description
 #ifdef DEBUG
 				NSLog(@"Stream error occurred");
 #endif
 				// fall through
-			case NSStreamEventEndEncountered:
+			case NSStreamEventEndEncountered: {
+				struct timeval t;
+				gettimeofday(&t, NULL);
+				LoggerMessage *msg = [[LoggerMessage alloc] init];
+				msg.timestamp = t;
+				msg.type = LOGMSG_TYPE_DISCONNECT;
+				msg.message = NSLocalizedString(@"Client disconnected", @"");
+				[cnx messagesReceived:[NSArray arrayWithObject:msg]];
+				[msg release];
 				cnx.connected = NO;
 				[cnx.buffer setLength:0];
 				break;
+			}
 				
 			case NSStreamEventOpenCompleted:
 				cnx.connected = YES;

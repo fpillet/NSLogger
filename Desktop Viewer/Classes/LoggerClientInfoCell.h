@@ -1,5 +1,5 @@
 /*
- * LoggerClientInfoWindowController.h
+ * LoggerClientInfoCell.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,23 +28,10 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "LoggerClientInfoWindowController.h"
-#import "LoggerWindowController.h"
-#import "LoggerDocument.h"
+#import "LoggerMessageCell.h"
 
-@implementation LoggerClientInfoWindowController
-
-@synthesize attachedConnection;
-
-- (void) dealloc
+@interface LoggerClientInfoCell : LoggerMessageCell
 {
-	[attachedConnection release];
-	[super dealloc];
-}
-
-- (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
-{
-	return [[[self document] mainWindowController] windowTitleForDocumentDisplayName:displayName];
 }
 
 @end

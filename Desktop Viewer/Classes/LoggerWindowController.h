@@ -31,13 +31,13 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerMessageCell, LoggerTableView;
-@class LoggerDetailsWindowController, LoggerClientInfoWindowController;
+@class LoggerMessageCell, LoggerClientInfoCell, LoggerTableView;
+@class LoggerDetailsWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
 	IBOutlet LoggerTableView *logTable;
-	IBOutlet LoggerTableView *filterTable;
+	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
@@ -49,7 +49,9 @@
 	
 	LoggerConnection *attachedConnection;
 	LoggerDetailsWindowController *detailsWindowController;
-	LoggerClientInfoWindowController *clientDetailsWindowController;
+
+	LoggerMessageCell *messageCell;
+	LoggerClientInfoCell *clientInfoCell;
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
@@ -76,7 +78,6 @@
 @property (nonatomic, assign) BOOL hasQuickFilter;
 
 - (IBAction)openDetailsWindow:(id)sender;
-- (IBAction)showClientInfo:(id)sender;
 
 - (IBAction)selectQuickFilterTag:(id)sender;
 - (IBAction)selectQuickFilterLevel:(id)sender;
