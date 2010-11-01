@@ -297,6 +297,54 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			[self class], self, listenerPort, (int)publishBonjourService];
 }
 
+#ifdef DEBUG
+- (void)dumpBytes:(uint8_t *)bytes length:(int)dataLen
+{
+	NSMutableString *s = [[NSMutableString alloc] init];
+	NSUInteger offset = 0;
+	NSString *str;
+	char buffer[1+6+16*3+1+16+1+1+1];
+	buffer[0] = '\0';
+	const unsigned char *q = bytes;
+	if (dataLen == 1)
+		[s appendString:NSLocalizedString(@"Raw data, 1 byte:\n", @"")];
+	else
+		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
+	while (dataLen)
+	{
+		int i, b = sprintf(buffer," %04x: ", offset);
+		for (i=0; i < 16 && i < dataLen; i++)
+			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
+		for (int j=i; j < 16; j++)
+			strcat(buffer, "   ");
+		
+		b = strlen(buffer);
+		buffer[b++] = '\'';
+		for (i=0; i < 16 && i < dataLen; i++, q++)
+		{
+			if (*q >= 32 && *q < 128)
+				buffer[b++] = *q;
+			else
+				buffer[b++] = ' ';
+		}
+		for (int j=i; j < 16; j++)
+			buffer[b++] = ' ';
+		buffer[b++] = '\'';
+		buffer[b++] = '\n';
+		buffer[b] = 0;
+		
+		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
+		[s appendString:str];
+		[str release];
+		
+		dataLen -= i;
+		offset += i;
+	}
+	NSLog(@"Received bytes:\n%@", s);
+	[s release];
+}
+#endif
+
 // -----------------------------------------------------------------------------
 // NSStream delegate
 // -----------------------------------------------------------------------------
@@ -324,7 +372,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				{
 					// append data to the data buffer
 					NSMutableArray *msgs = nil;
+#ifdef DEBUG
+//					[self dumpBytes:cnx.tmpBuf length:numBytes];
+#endif
 					[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
+
 					NSUInteger bufferLength = [cnx.buffer length];
 					while (bufferLength > 4)
 					{
@@ -337,7 +389,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 						
 						// get one message
 						CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-																	   (unsigned char *)[cnx.buffer mutableBytes] + 4,
+																	   (unsigned char *)[cnx.buffer bytes] + 4,
 																	   length,
 																	   kCFAllocatorNull);
 						if (subset != NULL)
@@ -458,7 +510,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	}
 	@catch (NSException * e)
 	{
+#ifdef DEBUG
 		NSLog(@"LoggerNativeTransport %p: exception catched in AcceptSocketCallback: %@", info, e);
+#endif
 	}
 	@finally
 	{

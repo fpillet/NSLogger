@@ -394,7 +394,8 @@
 	if (filterTag != [sender representedObject])
 	{
 		self.filterTag = [sender representedObject];
-		[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 	}
 }
 
@@ -404,7 +405,8 @@
 	if (level != logLevel)
 	{
 		logLevel = level;
-		[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 	}
 }
 
@@ -415,7 +417,8 @@
 	[filterTag release];
 	filterTag = nil;
 	logLevel = 0;
-	[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+	[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 }
 
 // -----------------------------------------------------------------------------
@@ -483,32 +486,29 @@
 - (void)refreshAllMessages
 {
 	assert([NSThread isMainThread]);
-	lastMessageRow = 0;
-	[displayedMessages removeAllObjects];
-	[logTable reloadData];
 	@synchronized (attachedConnection.messages)
 	{
 		// Process logs by chunks
 		NSUInteger numMessages = [attachedConnection.messages count];
 		for (int i = 0; i < numMessages;)
 		{
+			if (i == 0)
+			{
+				dispatch_async(messageFilteringQueue, ^{
+					dispatch_async(dispatch_get_main_queue(), ^{
+						lastMessageRow = 0;
+						[displayedMessages removeAllObjects];
+						[logTable reloadData];
+					});
+				});
+			}
 			NSUInteger length = MIN(4096, numMessages - i);
 			if (length)
 			{
-				if (attachedConnection.connected)
-				{
-					// do this synchronously
+				dispatch_async(messageFilteringQueue, ^{
 					[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
 									  withFilter:filterPredicate];
-				}
-				else
-				{
-					// do this asynchronously (reloading)
-					dispatch_async(messageFilteringQueue, ^{
-						[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
-										  withFilter:filterPredicate];
-					});
-				}
+				});
 			}
 			i += length;
 		}
@@ -569,8 +569,12 @@
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
-		[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
-		[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
+		if (!attachedConnection.connected)
+		{
+			[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
+			if (attachedConnection.restoredFromSave)
+				[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
+		}
 	}
 }
 
@@ -583,8 +587,8 @@
 	{
 		[filterString autorelease];
 		filterString = [newString copy];
-		[self updateFilterPredicate];
-		[self refreshAllMessages];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 		self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 	}
 }
@@ -641,7 +645,8 @@ didReceiveMessages:(NSArray *)theMessages
 	{
 		if ([keyPath isEqualToString:@"selectedObjects"] && [filterListController selectionIndex] != NSNotFound)
 		{
-			[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged) withObject:nil waitUntilDone:NO];
+			[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+			[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 		}
 	}
 }

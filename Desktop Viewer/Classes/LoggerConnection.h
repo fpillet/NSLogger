@@ -83,6 +83,7 @@
 
 @property (nonatomic, readonly) NSMutableArray *messages;
 @property (nonatomic, assign) BOOL connected;
+@property (nonatomic, readonly) BOOL restoredFromSave;
 @property (nonatomic, assign) int clientIDReceived;
 
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;

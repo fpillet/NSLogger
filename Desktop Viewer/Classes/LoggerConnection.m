@@ -38,7 +38,7 @@
 
 @synthesize delegate;
 @synthesize messages;
-@synthesize connected, clientIDReceived;
+@synthesize connected, clientIDReceived, restoredFromSave;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
 @synthesize messageProcessingQueue;
 
@@ -83,6 +83,8 @@
 - (void)messagesReceived:(NSArray *)msgs
 {
 	dispatch_async(messageProcessingQueue, ^{
+		/* Code not operational yet
+		 *
 		NSRange range = NSMakeRange([messages count], [msgs count]);
 		NSUInteger lastParent = NSNotFound;
 		if ([parentIndexesStack count])
@@ -119,8 +121,12 @@
 					break;
 			}
 		}
+		 *
+		 */
+		NSRange range;
 		@synchronized (messages)
 		{
+			range = NSMakeRange([messages count], [msgs count]);
 			[messages addObjectsFromArray:msgs];
 		}
 		[self.delegate connection:self didReceiveMessages:msgs range:range];
@@ -239,6 +245,7 @@
 		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
 		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
+		restoredFromSave = YES;
 	}
 	return self;
 }
