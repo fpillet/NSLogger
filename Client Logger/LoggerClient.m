@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b4 2010-10-29
+ * version 1.0b4 2010-11-01
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -1197,6 +1197,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			EncodeLoggerString(encoder, (CFStringRef)device.uniqueIdentifier, PART_KEY_UNIQUEID);
 			EncodeLoggerString(encoder, (CFStringRef)device.systemVersion, PART_KEY_OS_VERSION);
 			EncodeLoggerString(encoder, (CFStringRef)device.systemName, PART_KEY_OS_NAME);
+			EncodeLoggerString(encoder, (CFStringRef)device.model, PART_KEY_CLIENT_MODEL);
 			[pool release];
 		}
 #endif

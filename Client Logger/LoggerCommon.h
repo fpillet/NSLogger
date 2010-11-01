@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.0b4 2010-10-29
+ * version 1.0b4 2010-11-01
  *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
@@ -56,6 +56,7 @@
  *	- a PART_KEY_TAG (optional) a tag that helps categorizing and filtering logs from your application, and shows up in viewer logs
  *	- a PART_KEY_LEVEL (optional) a log level that helps filtering logs from your application (see as few or as much detail as you need)
  *	- a PART_KEY_MESSAGE which is the message text, binary data or image
+ *  - a PART_KEY_MESSAGE_SEQ which is the message sequence number (message# sent by client)
  *  - if logging an image, PART_KEY_IMAGE_WIDTH and PART_KEY_IMAGE_HEIGHT let the desktop know the image size without having to actually decode it
  */
 
