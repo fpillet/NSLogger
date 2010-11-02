@@ -482,7 +482,17 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)netService:(NSNetService *)sender didNotPublish:(NSDictionary *)errorDict
 {
 	[self shutdown];
-	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (error: %@).", @""), errorDict];
+	
+	NSString *errorString = [errorDict description];
+	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
+	if (errorCode == NSNetServicesCollisionError)
+		errorString = NSLocalizedString(@"Another logger may be publishing itself on your network with the same name", @"");
+	else if (errorCode == NSNetServicesBadArgumentError)
+		errorString = NSLocalizedString(@"Bonjour is improperly configured (bad argument) - please contact NSLogger developers", @"");
+	else if (errorCode == NSNetServicesInvalidError)
+		errorString = NSLocalizedString(@"Bonjour is improperly configured (invalid) - please contact NSLogger developers", @"");
+
+	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (%@).", @""), errorString];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:status];
 }
 
