@@ -81,7 +81,7 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* NSLogger_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSLogger_Prefix.pch; sourceTree = "<group>"; };
-		3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoggerPrefs.xib; sourceTree = "<group>"; };
+		3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerPrefs.xib; path = Resources/LoggerPrefs.xib; sourceTree = "<group>"; };
 		3D027B2D12663E3F00E6F241 /* LoggerPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerPrefsWindowController.h; path = Classes/LoggerPrefsWindowController.h; sourceTree = "<group>"; };
 		3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerPrefsWindowController.m; path = Classes/LoggerPrefsWindowController.m; sourceTree = "<group>"; };
 		3D18EF9F0F553B3800EC6DCC /* LoggerUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerUtils.h; path = Classes/LoggerUtils.h; sourceTree = "<group>"; };
@@ -320,6 +320,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLogger" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,
