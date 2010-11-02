@@ -77,7 +77,8 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	LoggerMessage *prevMsg = [[LoggerMessage alloc] init];
 	if (tv.tv_usec)
 		tv.tv_usec = 0;
-	else {
+	else
+	{
 		tv.tv_sec--;
 		tv.tv_usec = 500000;
 	}
@@ -88,8 +89,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	msg.tag = @"database";
 	msg.message = @"Example message text";
 	msg.threadID = @"Main thread";
-	msg.level = 1;
+	msg.level = 0;
 	msg.contentsType = kMessageString;
+	msg.cachedCellSize = sampleMessage.frame.size;
 
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
 	cell.message = msg;
@@ -110,6 +112,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	msg.threadID = @"Main thread";
 	msg.level = 1;
 	msg.contentsType = kMessageData;
+	msg.cachedCellSize = sampleDataMessage.frame.size;
 	cell.message = msg;
 	cell.previousMessage = prevMsg;
 	[sampleDataMessage setCell:cell];
