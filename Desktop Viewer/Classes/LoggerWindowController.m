@@ -93,6 +93,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 {
 	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
 	[attachedConnection release];
@@ -127,6 +128,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[filterTable setTarget:self];
 	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
+
+	[filterSetsListController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:NULL];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
 	buttonBar.splitViewDelegate = self;
@@ -283,7 +286,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	tableNeedsTiling = YES;
 }
 
-
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Window delegate
@@ -301,19 +303,23 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
-	[filterTable setBackgroundColor:[NSColor colorWithCalibratedRed:(218.0 / 255.0)
-															  green:(221.0 / 255.0)
-															   blue:(229.0 / 255.0)
-															  alpha:1.0f]];
+	NSColor *bgColor = [NSColor colorWithCalibratedRed:(218.0 / 255.0)
+												 green:(221.0 / 255.0)
+												  blue:(229.0 / 255.0)
+												 alpha:1.0f];
+	[filterSetsTable setBackgroundColor:bgColor];
+	[filterTable setBackgroundColor:bgColor];
 }
 
 - (void)windowDidResignMain:(NSNotification *)notification
 {
 	// constants by Brandon Walkin
-	[filterTable setBackgroundColor:[NSColor colorWithCalibratedRed:(234.0 / 255.0)
-															  green:(234.0 / 255.0)
-															   blue:(234.0 / 255.0)
-															  alpha:1.0f]];
+	NSColor *bgColor = [NSColor colorWithCalibratedRed:(234.0 / 255.0)
+												 green:(234.0 / 255.0)
+												  blue:(234.0 / 255.0)
+												 alpha:1.0f];
+	[filterSetsTable setBackgroundColor:bgColor];
+	[filterTable setBackgroundColor:bgColor];
 }
 
 // -----------------------------------------------------------------------------
@@ -643,6 +649,15 @@ didReceiveMessages:(NSArray *)theMessages
 			[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 		}
 	}
+	else if (object == filterSetsListController)
+	{
+		if ([keyPath isEqualToString:@"arrangedObjects"])
+		{
+			// we'll be called when arrangedObjects change, that is when a filter set is added,
+			// removed or renamed. Use this occasion to save the filters definition.
+			[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -841,6 +856,7 @@ didReceiveMessages:(NSArray *)theMessages
 				added = YES;
 			}
 		}
+		[filterSetsListController setSelectedObjects:[NSArray arrayWithObject:filterSet]];
 	}
 	else if (tv == filterTable)
 	{
@@ -875,6 +891,8 @@ didReceiveMessages:(NSArray *)theMessages
 						  [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
 						  nil];
 	[filterSetsListController addObject:dict];
+	NSUInteger index = [[filterSetsListController arrangedObjects] indexOfObject:dict];
+	[filterSetsTable editColumn:0 row:index withEvent:nil select:YES];
 }
 
 - (IBAction)deleteSelectedFilterSet:(id)sender

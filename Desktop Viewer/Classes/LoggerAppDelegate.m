@@ -49,8 +49,19 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	{
 		transports = [[NSMutableArray alloc] init];
 
-		// default filter ordering
-		self.filtersSortDescriptors = [NSArray arrayWithObject:[[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES] autorelease]];
+		// default filter ordering. The first sort descriptor ensures that the object with
+		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
+		// items are ordered by title.
+		self.filtersSortDescriptors = [NSArray arrayWithObjects:
+									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:^(id uid1, id uid2){
+			if ([uid1 integerValue] == 1)
+				return NSOrderedAscending;
+			if ([uid2 integerValue] == 1)
+				return NSOrderedDescending;
+			return NSOrderedSame;
+		}],
+									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
+									   nil];
 
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
