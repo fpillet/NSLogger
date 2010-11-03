@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">804</string>
+			<string key="NS.object.0">823</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -100,13 +100,13 @@
 											<object class="NSButton" id="376853042">
 												<reference key="NSNextResponder" ref="70106673"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{15, 217}, {234, 18}}</string>
+												<string key="NSFrame">{{15, 217}, {217, 18}}</string>
 												<reference key="NSSuperview" ref="70106673"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSButtonCell" key="NSCell" id="867114172">
 													<int key="NSCellFlags">-2080244224</int>
 													<int key="NSCellFlags2">0</int>
-													<string key="NSContents">Listen for loggers on TCP/IP port:</string>
+													<string key="NSContents">Listen for loggers on TCP port:</string>
 													<reference key="NSSupport" ref="817525701"/>
 													<reference key="NSControlView" ref="376853042"/>
 													<int key="NSButtonFlags">1211912703</int>
@@ -122,7 +122,7 @@
 											<object class="NSTextField" id="348255524">
 												<reference key="NSNextResponder" ref="70106673"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{255, 215}, {76, 22}}</string>
+												<string key="NSFrame">{{238, 215}, {76, 22}}</string>
 												<reference key="NSSuperview" ref="70106673"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSTextFieldCell" key="NSCell" id="822760524">
@@ -1336,6 +1336,7 @@
 					<string>119.IBViewBoundsToFrameTransform</string>
 					<string>120.IBPluginDependency</string>
 					<string>123.IBPluginDependency</string>
+					<string>123.IBViewBoundsToFrameTransform</string>
 					<string>124.IBPluginDependency</string>
 					<string>125.IBNumberFormatterBehaviorMetadataKey</string>
 					<string>125.IBNumberFormatterLocalizesFormatMetadataKey</string>
@@ -1429,6 +1430,9 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABDfwAAw2sAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1040"/>
 					<boolean value="NO"/>
@@ -2203,7 +2207,7 @@
 			<integer value="3000" key="NS.object.0"/>
 		</object>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
-		<string key="IBDocument.LastKnownRelativeProjectPath">NSLogger.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">../NSLogger.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="NS.key.0">NSSwitch</string>
