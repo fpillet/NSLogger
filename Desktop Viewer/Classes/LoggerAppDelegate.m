@@ -55,10 +55,10 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 		self.filtersSortDescriptors = [NSArray arrayWithObjects:
 									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:^(id uid1, id uid2){
 			if ([uid1 integerValue] == 1)
-				return NSOrderedAscending;
+				return (NSComparisonResult)NSOrderedAscending;
 			if ([uid2 integerValue] == 1)
-				return NSOrderedDescending;
-			return NSOrderedSame;
+				return (NSComparisonResult)NSOrderedDescending;
+			return (NSComparisonResult)NSOrderedSame;
 		}],
 									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
 									   nil];
