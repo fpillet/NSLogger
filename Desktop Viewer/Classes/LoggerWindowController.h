@@ -37,10 +37,12 @@
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
 	IBOutlet LoggerTableView *logTable;
+	IBOutlet NSTableView *filterSetsTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
+	IBOutlet NSArrayController *filterSetsListController;
 	IBOutlet NSArrayController *filterListController;
 
 	IBOutlet NSWindow *filterEditorWindow;
@@ -82,6 +84,9 @@
 - (IBAction)selectQuickFilterTag:(id)sender;
 - (IBAction)selectQuickFilterLevel:(id)sender;
 - (IBAction)resetQuickFilter:(id)sender;
+
+- (IBAction)addFilterSet:(id)sender;
+- (IBAction)deleteSelectedFilterSet:(id)sender;
 
 - (IBAction)addFilter:(id)sender;
 - (IBAction)startEditingFilter:(id)sender;

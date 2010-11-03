@@ -50,6 +50,7 @@
 - (void)tileLogTable:(BOOL)force;
 @end
 
+static NSString * const kNSLoggerFilterPasteboardType = @"NSLoggerFilter";
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -110,11 +111,6 @@
 	messageCell = [[LoggerMessageCell alloc] init];
 	clientInfoCell = [[LoggerClientInfoCell alloc] init];
 
-//	NSTableColumn *tc = [logTable tableColumnWithIdentifier:@"message"];
-//	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
-//	[tc setDataCell:cell];
-//	[cell release];
-	
 	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
 	[logTable setDoubleAction:@selector(openDetailsWindow:)];
@@ -123,6 +119,8 @@
 	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
 	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 
+	[filterSetsTable setIntercellSpacing:NSMakeSize(0,0)];
+	
 	[filterTable setTarget:self];
 	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
@@ -681,6 +679,19 @@ didReceiveMessages:(NSArray *)theMessages
 		else
 			cell.previousMessage = nil;
 	}
+	else if (aTableView == filterSetsTable)
+	{
+		NSArray *filterSetsList = [filterSetsListController arrangedObjects];
+		if (rowIndex >= 0 && rowIndex < [filterSetsList count])
+		{
+			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
+			NSDictionary *filterSet = [filterSetsList objectAtIndex:rowIndex];
+			if ([[filterSet objectForKey:@"uid"] integerValue] == 1)
+				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+			else
+				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+		}
+	}
 	else if (aTableView == filterTable)
 	{
 		// want the "All Logs" entry (immutable) in Bold
@@ -772,6 +783,26 @@ didReceiveMessages:(NSArray *)theMessages
 
 // -----------------------------------------------------------------------------
 #pragma mark -
+#pragma mark Filter sets management
+// -----------------------------------------------------------------------------
+- (IBAction)addFilterSet:(id)sender
+{
+	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
+						  NSLocalizedString(@"New Filter Set", @""), @"title",
+						  [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
+						  nil];
+	[filterSetsListController addObject:dict];
+}
+
+- (IBAction)deleteSelectedFilterSet:(id)sender
+{
+	// @@@ TODO: make this undoable
+	[filterSetsListController removeObjects:[filterSetsListController selectedObjects]];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
 #pragma mark Filter editor
 // -----------------------------------------------------------------------------
 - (NSPredicate *)currentFilterPredicate
@@ -787,8 +818,10 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (IBAction)addFilter:(id)sender
 {
+	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
+	assert(filterSet != nil);
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier], @"uid",
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
 						  NSLocalizedString(@"New filter", @""), @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
 						  nil];
@@ -811,7 +844,7 @@ didReceiveMessages:(NSArray *)theMessages
 	[NSApp beginSheet:filterEditorWindow
 	   modalForWindow:[self window]
 		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+	   didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:NULL];
 }
 
@@ -825,7 +858,7 @@ didReceiveMessages:(NSArray *)theMessages
 	[NSApp endSheet:filterEditorWindow returnCode:1];
 }
 
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode)
 	{

@@ -35,19 +35,20 @@
 @interface LoggerAppDelegate : NSObject
 {
 	NSMutableArray *transports;
-	NSMutableArray *filters;
+	NSMutableArray *filterSets;
 	NSArray *filtersSortDescriptors;
 	LoggerStatusWindowController *statusController;
 	LoggerPrefsWindowController *prefsController;
 }
 
 @property (nonatomic, readonly) NSMutableArray *transports;
-@property (nonatomic, readonly) NSMutableArray *filters;
+@property (nonatomic, readonly) NSMutableArray *filterSets;
 @property (nonatomic, retain) NSArray *filtersSortDescriptors;
 @property (nonatomic, readonly) LoggerStatusWindowController *statusController;
 
 - (void)newConnection:(LoggerConnection *)aConnection;
-- (NSNumber *)nextUniqueFilterIdentifier;
+- (NSMutableArray *)defaultFilters;
+- (NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters;
 - (void)saveFiltersDefinition;
 
 - (IBAction)showPreferences:(id)sender;
