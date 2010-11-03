@@ -50,7 +50,7 @@
 - (void)tileLogTable:(BOOL)force;
 @end
 
-static NSString * const kNSLoggerFilterPasteboardType = @"NSLoggerFilter";
+static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -119,8 +119,11 @@ static NSString * const kNSLoggerFilterPasteboardType = @"NSLoggerFilter";
 	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
 	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 
+	[filterSetsTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
 	[filterSetsTable setIntercellSpacing:NSMakeSize(0,0)];
-	
+
+	[filterTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
+	[filterTable setVerticalMotionCanBeginDrag:YES];
 	[filterTable setTarget:self];
 	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
@@ -769,16 +772,95 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (BOOL)tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard
 {
-	if (tv != logTable)
-		return NO;
+	if (tv == logTable)
+	{
+		NSArray *draggedMessages = [displayedMessages objectsAtIndexes:rowIndexes];
+		NSMutableString *string = [[NSMutableString alloc] initWithCapacity:[draggedMessages count] * 128];
+		for (LoggerMessage *msg in draggedMessages)
+			[string appendString:[msg textRepresentation]];
+		[pboard writeObjects:[NSArray arrayWithObject:string]];
+		[string release];
+		return YES;
+	}
+	if (tv == filterTable)
+	{
+		NSPasteboardItem *item = [[NSPasteboardItem alloc] init];
+		NSArray *filters = [[filterListController arrangedObjects] objectsAtIndexes:rowIndexes];
+		[item setData:[NSKeyedArchiver archivedDataWithRootObject:filters] forType:kNSLoggerFilterPasteboardType];
+		[pboard writeObjects:[NSArray arrayWithObject:item]];
+		[item release];
+		return YES;
+	}
+	return NO;
+}
 
-	NSArray *draggedMessages = [displayedMessages objectsAtIndexes:rowIndexes];
-	NSMutableString *string = [[NSMutableString alloc] initWithCapacity:[draggedMessages count] * 128];
-	for (LoggerMessage *msg in draggedMessages)
-		[string appendString:[msg textRepresentation]];
-	[pboard writeObjects:[NSArray arrayWithObject:string]];
-	[string release];
-    return YES;
+- (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)dragInfo proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)op
+{
+	if (tv == filterSetsTable)
+	{
+		NSArray *filterSets = [filterSetsListController arrangedObjects];
+		if (row >= 0 && row < [filterSets count] && row != [filterSetsListController selectionIndex])
+		{
+			if (op != NSTableViewDropOn)
+				[filterSetsTable setDropRow:row dropOperation:NSTableViewDropOn];
+			return NSDragOperationCopy;
+		}
+	}
+	else if (tv == filterTable && [dragInfo draggingSource] != filterTable)
+	{
+		NSArray *filters = [filterListController arrangedObjects];
+		if (row >= 0 && row < [filters count])
+		{
+			// highlight entire table
+			[filterTable setDropRow:-1 dropOperation:NSTableViewDropOn];
+			return NSDragOperationCopy;
+		}
+	}
+	return NSDragOperationNone;
+}
+
+- (BOOL)tableView:(NSTableView *)tv
+	   acceptDrop:(id <NSDraggingInfo>)dragInfo
+			  row:(NSInteger)row
+	dropOperation:(NSTableViewDropOperation)operation
+{
+	BOOL added = NO;
+	NSPasteboard* pboard = [dragInfo draggingPasteboard];
+	NSArray *newFilters = [NSKeyedUnarchiver unarchiveObjectWithData:[pboard dataForType:kNSLoggerFilterPasteboardType]];
+	if (tv == filterSetsTable)
+	{
+		// Only add those filters which don't exist yet
+		NSArray *filterSets = [filterSetsListController arrangedObjects];
+		NSMutableDictionary *filterSet = [filterSets objectAtIndex:row];
+		NSMutableArray *existingFilters = [filterSet mutableArrayValueForKey:@"filters"];
+		for (NSMutableDictionary *filter in newFilters)
+		{
+			if ([existingFilters indexOfObject:filter] == NSNotFound)
+			{
+				[existingFilters addObject:filter];
+				added = YES;
+			}
+		}
+	}
+	else if (tv == filterTable)
+	{
+		NSMutableArray *addedFilters = [[NSMutableArray alloc] init];
+		for (NSMutableDictionary *filter in newFilters)
+		{
+			if ([[filterListController arrangedObjects] indexOfObject:filter] == NSNotFound)
+			{
+				[filterListController addObject:filter];
+				[addedFilters addObject:filter];
+				added = YES;
+			}
+		}
+		if (added)
+			[filterListController setSelectedObjects:addedFilters];
+		[addedFilters release];
+	}
+	if (added)
+		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+	return added;
 }
 
 // -----------------------------------------------------------------------------
