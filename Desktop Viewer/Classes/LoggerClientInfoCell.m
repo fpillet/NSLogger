@@ -84,31 +84,55 @@
 	BOOL disconnected = (message.type == LOGMSG_TYPE_DISCONNECT);
 	BOOL highlighted = [self isHighlighted];
 
+	// background and separators colors (thank you, Xcode build window)
+	CGColorRef separatorColor, backgroundColor;
+	if (disconnected)
+	{
+		separatorColor = CGColorCreateGenericRGB(202.0f / 255.0f,
+												 31.0f / 255.0f,
+												 27.0f / 255.0f,
+												 1.0f);
+		backgroundColor = CGColorCreateGenericRGB(252.0f / 255.0f,
+												  224.0f / 255.0f,
+												  224.0f / 255.0f,
+												  1.0f);
+	}
+	else
+	{
+		separatorColor = CGColorCreateGenericRGB(28.0f / 255.0f,
+												 227.0f / 255.0f,
+												 0.0f,
+												 1.0f);
+		backgroundColor = CGColorCreateGenericRGB(224.0f / 255.0f,
+												  1.0f,
+												  224.0f / 255.0f,
+												  1.0f);
+	}
+
 	// Draw cell background and separators
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor;
-		if (disconnected)
-			cellBgColor = CGColorCreateGenericRGB(0.8f, 0.f, 0.f, 1.f);
-		else
-			cellBgColor = CGColorCreateGenericRGB(0.f, 0.8f, 0.f, 1.f);
-		CGContextSetFillColorWithColor(ctx, cellBgColor);
+		CGContextSetFillColorWithColor(ctx, backgroundColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
-		CGColorRelease(cellBgColor);
 	}
+
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
-	CGColorRef cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
-	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
-	CGColorRelease(cellSeparatorColor);
+	CGContextSetStrokeColorWithColor(ctx, separatorColor);
 	CGContextBeginPath(ctx);
-	CGContextSetShouldAntialias(ctx, true);
 
 	// horizontal bottom separator
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMinY(cellFrame)));
+	CGContextAddLineToPoint(ctx, floorf(NSMaxX(cellFrame)), floorf(NSMinY(cellFrame)));
 	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
 	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
+	CGContextStrokePath(ctx);
+	CGContextSetShouldAntialias(ctx, true);
 	
+	CGColorRelease(separatorColor);
+	CGColorRelease(backgroundColor);
+
 	// If the window is not main, don't change the text color
 	if (highlighted && ![[controlView window] isMainWindow])
 		highlighted = NO;
