@@ -228,6 +228,8 @@ static NSMutableArray *sTags = nil;
 {
 	// we're accumulating the various domains in a global list
 	// so as to reduce memory use
+	if (aTag == nil)
+		return;
 	NSUInteger pos = [sTags indexOfObject:aTag];
 	if (pos == NSNotFound || sTags == nil)
 	{
