@@ -217,9 +217,11 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 		case kDataFont:
 			[[attributes objectForKey:@"data"] setObject:newFont forKey:NSFontAttributeName];
 			break;
-		default:
+		default: {
 			[[attributes objectForKey:@"text"] setObject:newFont forKey:NSFontAttributeName];
+			[[attributes objectForKey:@"mark"] setObject:newFont forKey:NSFontAttributeName];
 			break;
+		}
 	}
 	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
 	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;

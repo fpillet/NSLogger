@@ -1,5 +1,5 @@
 /*
- * LoggerClientInfoCell.m
+ * LoggerMarkerCell.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,21 +28,19 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "LoggerClientInfoCell.h"
+#import "LoggerMarkerCell.h"
 #import "LoggerMessage.h"
-#import "LoggerCommon.h"
 
-@implementation LoggerClientInfoCell
+@implementation LoggerMarkerCell
 
-+ (NSDictionary *)clientInfoAttributes:(BOOL)highlighted
++ (NSDictionary *)markAttributes:(BOOL)highlighted
 {
-	NSMutableDictionary *attrs = [[[[self defaultAttributes] objectForKey:@"text"] mutableCopy] autorelease];
-	NSMutableParagraphStyle *style = [[attrs objectForKey:NSParagraphStyleAttributeName] mutableCopy];
-	[style setAlignment:NSCenterTextAlignment];
-	[attrs setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
+	NSMutableDictionary *attrs = [[self defaultAttributes] objectForKey:@"mark"];
 	if (highlighted)
+	{
+		attrs = [[attrs mutableCopy] autorelease];
 		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+	}
 	return attrs;
 }
 
@@ -62,12 +60,12 @@
 	
 	sz.width -= 8;
 	sz.height -= 4;
-
+	
 	NSRect lr = [aMessage.message boundingRectWithSize:sz
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-											attributes:[self clientInfoAttributes:NO]];
+											attributes:[self markAttributes:NO]];
 	sz.height = fminf(NSHeight(lr), sz.height);			
-
+	
 	// cache and return cell height
 	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
 	aMessage.cachedCellSize = cellSize;
@@ -76,49 +74,32 @@
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
+	cellFrame.size = message.cachedCellSize;
+
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-	BOOL disconnected = (message.type == LOGMSG_TYPE_DISCONNECT);
 	BOOL highlighted = [self isHighlighted];
+	
+	CGColorRef separatorColor = CGColorCreateGenericRGB(162.0f / 255.0f,
+														174.0f / 255.0f,
+														10.0f / 255.0f,
+														1.0f);
+	CGColorRef backgroundColor = CGColorCreateGenericRGB(1.0f,
+														 1.0f,
+														 197.0f / 255.0f,
+														 1.0f);
 
-	// background and separators colors (thank you, Xcode build window)
-	CGColorRef separatorColor, backgroundColor;
-	if (disconnected)
-	{
-		separatorColor = CGColorCreateGenericRGB(202.0f / 255.0f,
-												 31.0f / 255.0f,
-												 27.0f / 255.0f,
-												 1.0f);
-		backgroundColor = CGColorCreateGenericRGB(252.0f / 255.0f,
-												  224.0f / 255.0f,
-												  224.0f / 255.0f,
-												  1.0f);
-	}
-	else
-	{
-		separatorColor = CGColorCreateGenericRGB(28.0f / 255.0f,
-												 227.0f / 255.0f,
-												 0.0f,
-												 1.0f);
-		backgroundColor = CGColorCreateGenericRGB(224.0f / 255.0f,
-												  1.0f,
-												  224.0f / 255.0f,
-												  1.0f);
-	}
-
-	// Draw cell background and separators
 	if (!highlighted)
 	{
 		CGContextSetFillColorWithColor(ctx, backgroundColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 	}
-
+	
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
 	CGContextSetStrokeColorWithColor(ctx, separatorColor);
-	CGContextBeginPath(ctx);
 
-	// horizontal bottom separator
+	CGContextBeginPath(ctx);
 	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMinY(cellFrame)));
 	CGContextAddLineToPoint(ctx, floorf(NSMaxX(cellFrame)), floorf(NSMinY(cellFrame)));
 	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
@@ -128,18 +109,17 @@
 	
 	CGColorRelease(separatorColor);
 	CGColorRelease(backgroundColor);
-
+	
 	// If the window is not main, don't change the text color
 	if (highlighted && ![[controlView window] isMainWindow])
 		highlighted = NO;
-
-	// Draw client info
+	
 	NSRect r = NSMakeRect(NSMinX(cellFrame) + 3,
 						  NSMinY(cellFrame),
 						  NSWidth(cellFrame) - 6,
 						  NSHeight(cellFrame));
-
-	NSDictionary *attrs = [[self class] clientInfoAttributes:highlighted];
+	
+	NSDictionary *attrs = [[self class] markAttributes:highlighted];
 	NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
 														  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 													   attributes:attrs];

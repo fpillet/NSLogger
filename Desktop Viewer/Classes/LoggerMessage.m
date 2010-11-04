@@ -74,13 +74,16 @@ static NSMutableArray *sTags = nil;
 
 	if (contentsType == kMessageString)
 	{
+		if (type == LOGMSG_TYPE_MARK)
+			return [NSString stringWithFormat:@"%@\n", message];
+
 		// commmon case
-		return 	[NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | %@\n",
-				 sequence,
-				 t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
-				 (tag == NULL) ? @"-" : tag,
-				 threadID,
-				 message];
+		return [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | %@\n",
+				sequence,
+				t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
+				(tag == NULL) ? @"-" : tag,
+				threadID,
+				message];
 	}
 	
 	NSString *header = [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | ",

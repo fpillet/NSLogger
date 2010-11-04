@@ -28,10 +28,12 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <sys/time.h>
 #import "LoggerWindowController.h"
 #import "LoggerDetailsWindowController.h"
 #import "LoggerMessageCell.h"
 #import "LoggerClientInfoCell.h"
+#import "LoggerMarkerCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
@@ -103,7 +105,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[filterPredicate release];
 	[displayedMessages release];
 	[tags release];
+	[messageCell release];
 	[clientInfoCell release];
+	[markerCell release];
 	[super dealloc];
 }
 
@@ -111,6 +115,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 {
 	messageCell = [[LoggerMessageCell alloc] init];
 	clientInfoCell = [[LoggerClientInfoCell alloc] init];
+	markerCell = [[LoggerMarkerCell alloc] init];
 
 	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
@@ -166,6 +171,17 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[self synchronizeWindowTitleWithDocumentName];
 }
 
+- (NSPredicate *)marksPredicate
+{
+	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
+	return [NSComparisonPredicate predicateWithLeftExpression:lhs
+											  rightExpression:rhs
+													 modifier:NSDirectPredicateModifier
+														 type:NSEqualToPredicateOperatorType
+													  options:0];
+}
+
 - (void)updateFilterPredicate
 {
 	NSPredicate *p = [self currentFilterPredicate];
@@ -205,6 +221,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
+	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self marksPredicate], p, nil]];
 	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
@@ -233,7 +250,22 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
 		//msg.cachedCellSize = NSZeroSize;
 		CGFloat cachedHeight = msg.cachedCellSize.height;
-		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+		CGFloat newHeight = cachedHeight;
+		switch (msg.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+			case LOGMSG_TYPE_MARK:
+				newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+		}
 		if (newHeight != cachedHeight)
 			[indexSet addIndex:row+range.location];
 	}
@@ -628,7 +660,7 @@ didReceiveMessages:(NSArray *)theMessages
 
 // -----------------------------------------------------------------------------
 #pragma mark -
-#pragma mark KVO
+#pragma mark KVO / Bindings
 // -----------------------------------------------------------------------------
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
@@ -678,7 +710,10 @@ didReceiveMessages:(NSArray *)theMessages
 			case LOGMSG_TYPE_CLIENTINFO:
 			case LOGMSG_TYPE_DISCONNECT:
 				return clientInfoCell;
+			case LOGMSG_TYPE_MARK:
+				return markerCell;
 			default:
+				assert(false);
 				break;
 		}
 	}
@@ -750,6 +785,11 @@ didReceiveMessages:(NSArray *)theMessages
 			case LOGMSG_TYPE_DISCONNECT:
 				return [LoggerClientInfoCell heightForCellWithMessage:message
 															  maxSize:[tableView frame].size];
+
+			case LOGMSG_TYPE_MARK:
+				return [LoggerMarkerCell heightForCellWithMessage:message
+														  maxSize:[tableView frame].size];
+
 			default:
 				break;
 		}
@@ -983,6 +1023,77 @@ didReceiveMessages:(NSArray *)theMessages
 {
 	// @@@ TODO: make this undoable
 	[filterListController removeObjects:[filterListController selectedObjects]];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Markers
+// -----------------------------------------------------------------------------
+- (void)addMarkWithTitleString:(NSString *)title
+{
+	if (![title length])
+	{
+		title = [NSString stringWithFormat:NSLocalizedString(@"Mark - %@", @""),
+				 [NSDateFormatter localizedStringFromDate:[NSDate date]
+												dateStyle:NSDateFormatterShortStyle
+												timeStyle:NSDateFormatterMediumStyle]];
+	}
+	
+	LoggerMessage *mark = [[LoggerMessage alloc] init];
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	mark.type = LOGMSG_TYPE_MARK;
+	mark.timestamp = tv;
+	mark.message = title;
+	mark.threadID = @"";
+	mark.contentsType = kMessageString;
+	dispatch_async(attachedConnection.messageProcessingQueue, ^{
+		NSRange range;
+		@synchronized(attachedConnection.messages)
+		{
+			range = NSMakeRange([attachedConnection.messages count], 1);
+			[attachedConnection.messages addObject:mark];
+		}
+		[self connection:attachedConnection didReceiveMessages:[NSArray arrayWithObject:mark] range:range];
+	});
+	[mark release];
+}
+
+- (IBAction)addMark:(id)sender
+{
+	[self addMarkWithTitleString:nil];
+}
+
+- (IBAction)addMarkWithTitle:(id)sender
+{
+	NSString *s = [NSString stringWithFormat:NSLocalizedString(@"Mark - %@", @""),
+				   [NSDateFormatter localizedStringFromDate:[NSDate date]
+												  dateStyle:NSDateFormatterShortStyle
+												  timeStyle:NSDateFormatterMediumStyle]];
+	[markTitleField setStringValue:s];
+
+	[NSApp beginSheet:markTitleWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:NULL];	
+}
+
+- (IBAction)cancelAddMark:(id)sender
+{
+	[NSApp endSheet:markTitleWindow returnCode:0];
+}
+
+- (IBAction)validateAddMark:(id)sender
+{
+	[NSApp endSheet:markTitleWindow returnCode:1];
+}
+
+- (void)addMarkSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode)
+		[self addMarkWithTitleString:[markTitleField stringValue]];
+	[markTitleWindow orderOut:self];
 }
 
 @end

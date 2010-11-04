@@ -31,7 +31,7 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerMessageCell, LoggerClientInfoCell, LoggerTableView;
+@class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView;
 @class LoggerDetailsWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
@@ -49,11 +49,15 @@
 	IBOutlet NSPredicateEditor *filterEditor;
 	IBOutlet NSTextField *filterName;
 	
+	IBOutlet NSWindow *markTitleWindow;
+	IBOutlet NSTextField *markTitleField;
+
 	LoggerConnection *attachedConnection;
 	LoggerDetailsWindowController *detailsWindowController;
 
 	LoggerMessageCell *messageCell;
 	LoggerClientInfoCell *clientInfoCell;
+	LoggerMarkerCell *markerCell;
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
@@ -93,6 +97,11 @@
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
 - (IBAction)deleteSelectedFilters:(id)sender;
+
+- (IBAction)addMark:(id)sender;
+- (IBAction)addMarkWithTitle:(id)sender;
+- (IBAction)cancelAddMark:(id)sender;
+- (IBAction)validateAddMark:(id)sender;
 
 @end
 

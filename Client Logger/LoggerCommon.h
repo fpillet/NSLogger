@@ -95,6 +95,7 @@
 #define	LOGMSG_TYPE_BLOCKEND	2			// The end of the last started "block"
 #define LOGMSG_TYPE_CLIENTINFO	3			// Information about the client app
 #define LOGMSG_TYPE_DISCONNECT	4			// Pseudo-message on the desktop side to identify client disconnects
+#define LOGMSG_TYPE_MARK		5			// Pseudo-message that defines a "mark" that users can place in the log flow
 
 // Bonjour service identifiers
 #define LOGGER_SERVICE_TYPE		CFSTR("_nslogger._tcp")

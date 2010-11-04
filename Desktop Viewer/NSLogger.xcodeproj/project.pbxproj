@@ -28,6 +28,7 @@
 		3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B63DC126B79CA00659751 /* LoggerSplitView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
+		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
 		3DD61AB7127F7617009871F1 /* LoggerClientInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DD61AB6127F7617009871F1 /* LoggerClientInfoCell.m */; };
 		3DDAE1630F405CE5001B1408 /* LoggerIPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDAE1620F405CE5001B1408 /* LoggerIPConnection.m */; };
@@ -116,6 +117,8 @@
 		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
 		3DADCB9F125FC3B200807A7D /* ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ValueTransformers.m; path = Classes/ValueTransformers.m; sourceTree = "<group>"; };
+		3DBB562512829BCC004F729D /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMarkerCell.h; path = Classes/LoggerMarkerCell.h; sourceTree = "<group>"; };
+		3DBB562612829BCC004F729D /* LoggerMarkerCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMarkerCell.m; path = Classes/LoggerMarkerCell.m; sourceTree = "<group>"; };
 		3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMessageCell.h; path = Classes/LoggerMessageCell.h; sourceTree = "<group>"; };
 		3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMessageCell.m; path = Classes/LoggerMessageCell.m; sourceTree = "<group>"; };
 		3DD61AB5127F7617009871F1 /* LoggerClientInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClientInfoCell.h; path = Classes/LoggerClientInfoCell.h; sourceTree = "<group>"; };
@@ -242,12 +245,14 @@
 		3D0D601B0F4068A100EDB93B /* Views & Cells */ = {
 			isa = PBXGroup;
 			children = (
+				3D8B63DB126B79CA00659751 /* LoggerSplitView.h */,
+				3D8B63DC126B79CA00659751 /* LoggerSplitView.m */,
 				3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */,
 				3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */,
 				3DD61AB5127F7617009871F1 /* LoggerClientInfoCell.h */,
 				3DD61AB6127F7617009871F1 /* LoggerClientInfoCell.m */,
-				3D8B63DB126B79CA00659751 /* LoggerSplitView.h */,
-				3D8B63DC126B79CA00659751 /* LoggerSplitView.m */,
+				3DBB562512829BCC004F729D /* LoggerMarkerCell.h */,
+				3DBB562612829BCC004F729D /* LoggerMarkerCell.m */,
 			);
 			name = "Views & Cells";
 			sourceTree = "<group>";
@@ -398,6 +403,7 @@
 				3DE01E941268D32100A39E7E /* LoggerDetailsWindowController.m in Sources */,
 				3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */,
 				3DD61AB7127F7617009871F1 /* LoggerClientInfoCell.m in Sources */,
+				3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

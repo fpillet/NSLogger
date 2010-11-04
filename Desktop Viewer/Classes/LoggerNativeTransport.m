@@ -423,6 +423,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 							if (message.type == LOGMSG_TYPE_CLIENTINFO)
 							{
 								message.message = [self clientInfoStringForMessage:message];
+								message.threadID = @"";
 								[cnx clientInfoReceived:message];
 							}
 							[msgs addObject:message];

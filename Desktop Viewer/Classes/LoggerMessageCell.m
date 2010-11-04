@@ -74,10 +74,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 {
 	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
 	
-	NSFont *defaultFont = [NSFont boldSystemFontOfSize:11];
-	NSFont *defaultMonospacedFont = [NSFont userFixedPitchFontOfSize:11];
-	NSFont *defaultTagAndLevelFont = [NSFont boldSystemFontOfSize:9];
-	
+	NSFont *defaultFont = [NSFont fontWithName:@"Lucida Grande" size:11];
+	NSFont *defaultMonospacedFont = [NSFont fontWithName:@"Consolas" size:11];
+	NSFont *defaultTagAndLevelFont = [NSFont fontWithName:@"Lucida Grande Bold" size:9];
+
 	// Default text attributes
 	NSMutableDictionary *dict;
 	NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
@@ -113,6 +113,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	
 	// Text message attributes
 	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
 	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByWordWrapping];
 	[dict setObject:style forKey:NSParagraphStyleAttributeName];
@@ -126,6 +127,14 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[attrs setObject:dict forKey:@"data"];
 	[dict release];
 	
+	// Mark attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
+	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	[style setAlignment:NSCenterTextAlignment];
+	[dict setObject:style forKey:NSParagraphStyleAttributeName];
+	[style release];
+	[attrs setObject:dict forKey:@"mark"];
 	return attrs;
 }
 
@@ -139,6 +148,20 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
 		if (sDefaultAttributes == nil)
 			[self setDefaultAttributes:[self defaultAttributesDictionary]];
+
+		// upgrade from pre-1.0b5, adding attributes for markers
+		if ([sDefaultAttributes objectForKey:@"mark"] == nil)
+		{
+			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
+			NSMutableDictionary *dict = [[sDefaultAttributes objectForKey:@"text"] mutableCopy];
+			NSMutableParagraphStyle *style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+			[style setAlignment:NSCenterTextAlignment];
+			[dict setObject:style forKey:NSParagraphStyleAttributeName];
+			[style release];
+			[attrs setObject:dict forKey:@"mark"];
+			[self setDefaultAttributes:attrs];
+			[attrs release];
+		}
 	}
 	return sDefaultAttributes;
 }
