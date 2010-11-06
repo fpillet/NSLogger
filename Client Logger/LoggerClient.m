@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b4 2010-11-01
+ * version 1.0b5 2010-11-06
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -35,6 +35,10 @@
  */
 #import <libkern/OSAtomic.h>
 #import <sys/time.h>
+#if TARGET_OS_MAC
+#import <sys/types.h>
+#import <sys/sysctl.h>
+#endif
 #import <fcntl.h>
 
 #import "LoggerClient.h"
@@ -1209,6 +1213,31 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			EncodeLoggerString(encoder, (CFStringRef)device.model, PART_KEY_CLIENT_MODEL);
 			[pool release];
 		}
+#elif TARGET_OS_MAC
+		SInt32 versionMajor, versionMinor, versionFix;
+		Gestalt(gestaltSystemVersionMajor, &versionMajor);
+		Gestalt(gestaltSystemVersionMinor, &versionMinor);
+		Gestalt(gestaltSystemVersionBugFix, &versionFix);
+		CFStringRef osVersion = CFStringCreateWithFormat(NULL, NULL, CFSTR("%d.%d.%d"), versionMajor, versionMinor, versionFix);
+		EncodeLoggerString(encoder, osVersion, PART_KEY_OS_VERSION);
+		CFRelease(osVersion);
+		EncodeLoggerString(encoder, CFSTR("Mac OS X"), PART_KEY_OS_NAME);
+
+		char buf[64];
+		size_t len;
+		int ncpu = 0;
+		bzero(buf, sizeof(buf));
+		len = sizeof(buf)-1;
+		sysctlbyname("hw.model", buf, &len, NULL, 0);
+		len = sizeof(ncpu);
+		sysctlbyname("hw.ncpu", &ncpu, &len, NULL, 0);
+		sprintf(buf+strlen(buf), " - %d * ", ncpu);
+		len = sizeof(buf)-strlen(buf)-1;
+		sysctlbyname("hw.machine", buf+strlen(buf), &len, NULL, 0);
+		
+		CFStringRef s = CFStringCreateWithCString(NULL, buf, kCFStringEncodingASCII);
+		EncodeLoggerString(encoder, s, PART_KEY_CLIENT_MODEL);
+		CFRelease(s);
 #endif
 		CFArrayInsertValueAtIndex(logger->logQueue, 0, encoder);
 		CFRelease(encoder);
