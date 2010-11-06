@@ -36,6 +36,10 @@
 	IBOutlet UIButton *timerButton;
 	IBOutlet UILabel *messagesSentLabel;
 	IBOutlet UILabel *imagesSentLabel;
+	IBOutlet UITextField *viewerHostField;
+	IBOutlet UITextField *viewerPortField;
+	IBOutlet UISwitch *browseBonjour;
+	IBOutlet UISwitch *browseLocalDomainOnly;
 
 	NSTimer *sendTimer;
 	NSArray *tagsArray;
@@ -44,6 +48,8 @@
 }
 
 - (IBAction)startStopSendingMessages;
+- (IBAction)bonjourSettingChanged;
+- (IBAction)browseLocalDomainOnlySettingChanged;
 
 @end
 

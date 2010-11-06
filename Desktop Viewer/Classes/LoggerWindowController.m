@@ -28,13 +28,16 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <sys/time.h>
 #import "LoggerWindowController.h"
 #import "LoggerDetailsWindowController.h"
-#import "LoggerClientInfoWindowController.h"
 #import "LoggerMessageCell.h"
+#import "LoggerClientInfoCell.h"
+#import "LoggerMarkerCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
+#import "LoggerCommon.h"
 
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
@@ -42,12 +45,29 @@
 @property (nonatomic, retain) NSString *filterTag;
 - (void)rebuildQuickFilterPopup;
 - (void)updateClientInfo;
-- (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate;
+- (void)updateFilterPredicate;
 - (void)refreshAllMessages;
 - (void)filterIncomingMessages:(NSArray *)messages withFilter:(NSPredicate *)aFilter;
 - (NSPredicate *)currentFilterPredicate;
 - (void)tileLogTable:(BOOL)force;
 @end
+
+static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma Standard LoggerTableView
+// -----------------------------------------------------------------------------
+@implementation LoggerTableView
+- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
+{
+	// Don't understand why I have to override this method, but it's the only
+	// way I could get dragging from table to work. Tried various additional
+	// things with no luck...
+	return YES;
+}
+@end
+
 
 @implementation LoggerWindowController
 
@@ -74,8 +94,8 @@
 - (void)dealloc
 {
 	[detailsWindowController release];
-	[clientDetailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
 	[attachedConnection release];
@@ -85,31 +105,44 @@
 	[filterPredicate release];
 	[displayedMessages release];
 	[tags release];
+	[messageCell release];
+	[clientInfoCell release];
+	[markerCell release];
 	[super dealloc];
 }
 
 - (void)windowDidLoad
 {
-	NSTableColumn *tc = [logTable tableColumnWithIdentifier:@"message"];
-	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
-	[tc setDataCell:cell];
-	[cell release];
-	[logTable setIntercellSpacing:NSMakeSize(0, 0)];
+	messageCell = [[LoggerMessageCell alloc] init];
+	clientInfoCell = [[LoggerClientInfoCell alloc] init];
+	markerCell = [[LoggerMarkerCell alloc] init];
+
+	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
 	[logTable setDoubleAction:@selector(openDetailsWindow:)];
-	
+
+	[logTable registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeString]];
+	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
+	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
+
+	[filterSetsTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
+	[filterSetsTable setIntercellSpacing:NSMakeSize(0,0)];
+
+	[filterTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
+	[filterTable setVerticalMotionCanBeginDrag:YES];
 	[filterTable setTarget:self];
+	[filterTable setIntercellSpacing:NSMakeSize(0,0)];
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
+
+	[filterSetsListController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:NULL];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
 	buttonBar.splitViewDelegate = self;
 
 	[self rebuildQuickFilterPopup];
-	[self updateFilterPredicate:nil];
+	[self updateFilterPredicate];
 	loadComplete = YES;
 	[logTable sizeToFit];
-	if (attachedConnection != nil)
-		[self refreshAllMessages];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(applyFontChanges)
@@ -138,23 +171,20 @@
 	[self synchronizeWindowTitleWithDocumentName];
 }
 
-- (IBAction)showClientInfo:(id)sender
+- (NSPredicate *)marksPredicate
 {
-	if (clientDetailsWindowController == nil)
-	{
-		clientDetailsWindowController = [[LoggerClientInfoWindowController alloc] initWithWindowNibName:@"LoggerClientInfoWindow"];
-		clientDetailsWindowController.attachedConnection = attachedConnection;
-		[[self document] addWindowController:clientDetailsWindowController];
-	}
-	[clientDetailsWindowController showWindow:self];
+	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
+	return [NSComparisonPredicate predicateWithLeftExpression:lhs
+											  rightExpression:rhs
+													 modifier:NSDirectPredicateModifier
+														 type:NSEqualToPredicateOperatorType
+													  options:0];
 }
 
-- (void)updateFilterPredicate:(NSPredicate *)currentFilterPredicate
+- (void)updateFilterPredicate
 {
-	[filterPredicate autorelease];
-	if (currentFilterPredicate == nil)
-		currentFilterPredicate = [self currentFilterPredicate];
-	NSPredicate *p = currentFilterPredicate;
+	NSPredicate *p = [self currentFilterPredicate];
 	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:2];
 	if (logLevel)
 	{
@@ -191,21 +221,23 @@
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
+	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self marksPredicate], p, nil]];
+	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
 }
 
-- (void)refreshMessagesIfPredicateChanged:(NSPredicate *)currentFilterPredicate
+- (void)refreshMessagesIfPredicateChanged
 {
 	assert([NSThread isMainThread]);
-	NSPredicate *currentPredicate = [filterPredicate retain];
-	[self updateFilterPredicate:currentFilterPredicate];
+	NSPredicate *currentPredicate = [[filterPredicate retain] autorelease];
+	[self updateFilterPredicate];
 	if (![filterPredicate isEqual:currentPredicate])
 	{
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages) object:nil];
+		[self rebuildQuickFilterPopup];
 		[self performSelector:@selector(refreshAllMessages) withObject:nil afterDelay:0];
 	}
-	[currentPredicate release];	
 }
 
 - (void)tileLogTableRowsInRange:(NSRange)range
@@ -216,15 +248,30 @@
 	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
 	{
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
-		msg.cachedCellSize = NSZeroSize;
+		//msg.cachedCellSize = NSZeroSize;
 		CGFloat cachedHeight = msg.cachedCellSize.height;
-		CGFloat newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+		CGFloat newHeight = cachedHeight;
+		switch (msg.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+			case LOGMSG_TYPE_MARK:
+				newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
+				break;
+		}
 		if (newHeight != cachedHeight)
 			[indexSet addIndex:row+range.location];
 	}
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
-	
+	[indexSet release];
 }
 
 - (void)tileLogTable:(BOOL)force
@@ -246,6 +293,7 @@
 					[self tileLogTableRowsInRange:range];
 			});
 		}
+		tableTiledSinceLastRefresh = YES;
 	}
 	tableNeedsTiling = NO;
 }
@@ -255,6 +303,25 @@
 	[self tileLogTable:NO];
 }
 
+- (void)applyFontChanges
+{
+	[self tileLogTable:YES];
+	[logTable reloadData];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Splitview delegate
+// -----------------------------------------------------------------------------
+- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+{
+	tableNeedsTiling = YES;
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Window delegate
+// -----------------------------------------------------------------------------
 - (void)windowDidResize:(NSNotification *)notification
 {
 	if (![[self window] inLiveResize])
@@ -266,15 +333,25 @@
 	[self tileLogTable:YES];
 }
 
-- (void)splitViewDidResizeSubviews:(NSNotification *)notification
+- (void)windowDidBecomeMain:(NSNotification *)notification
 {
-	tableNeedsTiling = YES;
+	NSColor *bgColor = [NSColor colorWithCalibratedRed:(218.0 / 255.0)
+												 green:(221.0 / 255.0)
+												  blue:(229.0 / 255.0)
+												 alpha:1.0f];
+	[filterSetsTable setBackgroundColor:bgColor];
+	[filterTable setBackgroundColor:bgColor];
 }
 
-- (void)applyFontChanges
+- (void)windowDidResignMain:(NSNotification *)notification
 {
-	[self tileLogTable:YES];
-	[logTable reloadData];
+	// constants by Brandon Walkin
+	NSColor *bgColor = [NSColor colorWithCalibratedRed:(234.0 / 255.0)
+												 green:(234.0 / 255.0)
+												  blue:(234.0 / 255.0)
+												 alpha:1.0f];
+	[filterSetsTable setBackgroundColor:bgColor];
+	[filterTable setBackgroundColor:bgColor];
 }
 
 // -----------------------------------------------------------------------------
@@ -286,14 +363,15 @@
 	NSMenu *menu = [quickFilter menu];
 	
 	// remove all tags
-	while (![[menu itemAtIndex:0] isSeparatorItem])
-		[menu removeItemAtIndex:0];
-	[menu insertItemWithTitle:@"" action:NULL keyEquivalent:@"" atIndex:0];	// title
+	while ([[menu itemAtIndex:[menu numberOfItems]-1] tag] != -1)
+		[menu removeItemAtIndex:[menu numberOfItems]-1];
 
 	// set selected level checkmark
 	NSString *levelTitle = nil;
 	for (NSMenuItem *menuItem in [menu itemArray])
 	{
+		if ([menuItem isSeparatorItem])
+			continue;
 		if ([menuItem tag] == logLevel)
 		{
 			[menuItem setState:NSOnState];
@@ -303,34 +381,31 @@
 			[menuItem setState:NSOffState];
 	}
 
-	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"All Tags", @"")
-												  action:@selector(selectQuickFilterTag:)
-										   keyEquivalent:@""];
-	[item setTarget:self];
-	[item setTag:-1];
 	NSString *tagTitle;
+	NSMenuItem *item = [[menu itemArray] lastObject];
 	if (filterTag == nil)
 	{
 		[item setState:NSOnState];
 		tagTitle = [item title];
 	}
 	else
+	{
+		[item setState:NSOffState];
 		tagTitle = [NSString stringWithFormat:NSLocalizedString(@"Tag: %@", @""), filterTag];
-	[menu insertItem:item atIndex:1];
-	[item release];
+	}
 
-	int i = 1;
 	for (NSString *tag in [[tags allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)])
 	{
 		item = [[NSMenuItem alloc] initWithTitle:tag action:@selector(selectQuickFilterTag:) keyEquivalent:@""];
 		[item setRepresentedObject:tag];
+		[item setIndentationLevel:1];
 		if ([filterTag isEqualToString:tag])
 			[item setState:NSOnState];
-		[menu insertItem:item atIndex:++i];
+		[menu addItem:item];
 		[item release];
 	}
 
-	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", tagTitle, levelTitle]];
+	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", levelTitle, tagTitle]];
 	
 	self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 }
@@ -345,14 +420,13 @@
 		[self rebuildQuickFilterPopup];
 }
 
-- (void)selectQuickFilterTag:(id)sender
+- (IBAction)selectQuickFilterTag:(id)sender
 {
 	if (filterTag != [sender representedObject])
 	{
 		self.filterTag = [sender representedObject];
-		[self rebuildQuickFilterPopup];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 	}
 }
 
@@ -362,9 +436,8 @@
 	if (level != logLevel)
 	{
 		logLevel = level;
-		[self rebuildQuickFilterPopup];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 	}
 }
 
@@ -375,15 +448,36 @@
 	[filterTag release];
 	filterTag = nil;
 	logLevel = 0;
-	[self rebuildQuickFilterPopup];
-	[self updateFilterPredicate:nil];
-	[self refreshAllMessages];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+	[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 }
 
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Table management
 // -----------------------------------------------------------------------------
+- (void)messagesAppendedToTable
+{
+	assert([NSThread isMainThread]);
+	if (attachedConnection.connected)
+	{
+		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+		NSRange visibleRows = [logTable rowsInRect:r];
+		BOOL lastVisible = (visibleRows.location == NSNotFound ||
+							visibleRows.length == 0 ||
+							(visibleRows.location + visibleRows.length) >= lastMessageRow);
+		[logTable noteNumberOfRowsChanged];
+		if (lastVisible)
+			[logTable scrollRowToVisible:[displayedMessages count] - 1];
+		lastMessageRow = [displayedMessages count];
+	}
+	else
+	{
+		[logTable noteNumberOfRowsChanged];
+	}
+	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
+}
+
 - (void)appendMessagesToTable:(NSArray *)messages
 {
 	assert([NSThread isMainThread]);
@@ -391,23 +485,16 @@
 
 	// schedule a table reload. Do this asynchronously (and cancellable-y) so we can limit the
 	// number of reload requests in case of high load
-	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
-	[self performSelector:@selector(messagesAppendedToTable) withObject:nil afterDelay:0];
-}
-
-- (void)messagesAppendedToTable
-{
-	assert([NSThread isMainThread]);
-	NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
-	NSRange visibleRows = [logTable rowsInRect:r];
-	BOOL lastVisible = (visibleRows.location == NSNotFound ||
-						visibleRows.length == 0 ||
-						(visibleRows.location + visibleRows.length) >= lastMessageRow);
-	[logTable reloadData];
-	if (lastVisible)
-		[logTable scrollRowToVisible:[displayedMessages count] - 1];
-	lastMessageRow = [displayedMessages count];
-	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
+	if (attachedConnection.connected)
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
+		[self performSelector:@selector(messagesAppendedToTable) withObject:nil afterDelay:0];
+	}
+	else
+	{
+		[self messagesAppendedToTable];
+		[[self window] displayIfNeeded];
+	}
 }
 
 - (IBAction)openDetailsWindow:(id)sender
@@ -430,22 +517,52 @@
 - (void)refreshAllMessages
 {
 	assert([NSThread isMainThread]);
-	lastMessageRow = 0;
-	[displayedMessages removeAllObjects];
-	[logTable reloadData];
 	@synchronized (attachedConnection.messages)
 	{
-		// Process logs by bunches of 500
+		// Process logs by chunks
 		NSUInteger numMessages = [attachedConnection.messages count];
-		for (int i = 0; i < numMessages; i += 500)
+		for (int i = 0; i < numMessages;)
 		{
-			NSUInteger length = MIN(500, numMessages - i);
-			if (!length)
-				break;
-			[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
-							  withFilter:filterPredicate];
+			if (i == 0)
+			{
+				dispatch_async(messageFilteringQueue, ^{
+					dispatch_async(dispatch_get_main_queue(), ^{
+						lastMessageRow = 0;
+						[displayedMessages removeAllObjects];
+						[logTable reloadData];
+						self.info = NSLocalizedString(@"No message", @"");
+					});
+				});
+			}
+			NSUInteger length = MIN(4096, numMessages - i);
+			if (length)
+			{
+				dispatch_async(messageFilteringQueue, ^{
+					[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
+									  withFilter:filterPredicate];
+				});
+			}
+			i += length;
+		}
+		if (tableTiledSinceLastRefresh)
+		{
+			// Here's the drill: if the table has been tiled since the last refresh,
+			// and we're now changing our view of filters, in most cases messages
+			// that were not on screen at the time the size changed have invalid cached
+			// size. We need to re-tile the table, but want to go through -tileLogTable
+			// which takes care of doing it first for visible items, giving a perception
+			// of speed. Therefore, we schedule a block on the filtering serial queue
+			// which will get executed AFTER all the messages have been refreshed, and
+			// will in turn schedule a table retiling. Pfew.
+			dispatch_async(messageFilteringQueue, ^{
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[self tileLogTable:YES];
+					tableTiledSinceLastRefresh = NO;
+				});
+			});
 		}
 	}
+	tableTiledSinceLastRefresh = NO;
 }
 
 - (void)filterIncomingMessages:(NSArray *)messages
@@ -484,8 +601,12 @@
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
-		[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
-		[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
+		if (!attachedConnection.connected)
+		{
+			[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
+			if (attachedConnection.restoredFromSave)
+				[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
+		}
 	}
 }
 
@@ -498,8 +619,8 @@
 	{
 		[filterString autorelease];
 		filterString = [newString copy];
-		[self updateFilterPredicate:nil];
-		[self refreshAllMessages];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 		self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
 	}
 }
@@ -539,7 +660,7 @@ didReceiveMessages:(NSArray *)theMessages
 
 // -----------------------------------------------------------------------------
 #pragma mark -
-#pragma mark KVO
+#pragma mark KVO / Bindings
 // -----------------------------------------------------------------------------
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
@@ -556,7 +677,17 @@ didReceiveMessages:(NSArray *)theMessages
 	{
 		if ([keyPath isEqualToString:@"selectedObjects"] && [filterListController selectionIndex] != NSNotFound)
 		{
-			[self performSelectorOnMainThread:@selector(refreshMessagesIfPredicateChanged:) withObject:nil waitUntilDone:NO];
+			[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+			[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
+		}
+	}
+	else if (object == filterSetsListController)
+	{
+		if ([keyPath isEqualToString:@"arrangedObjects"])
+		{
+			// we'll be called when arrangedObjects change, that is when a filter set is added,
+			// removed or renamed. Use this occasion to save the filters definition.
+			[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
 		}
 	}
 }
@@ -565,6 +696,30 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark NSTableDelegate
 // -----------------------------------------------------------------------------
+- (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	if (tableView == logTable && row >= 0 && row < [displayedMessages count])
+	{
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		switch (msg.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				return messageCell;
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				return clientInfoCell;
+			case LOGMSG_TYPE_MARK:
+				return markerCell;
+			default:
+				assert(false);
+				break;
+		}
+	}
+	return nil;
+}
+
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == logTable && rowIndex >= 0 && rowIndex < [displayedMessages count])
@@ -576,6 +731,33 @@ didReceiveMessages:(NSArray *)theMessages
 			cell.previousMessage = [displayedMessages objectAtIndex:rowIndex-1];
 		else
 			cell.previousMessage = nil;
+	}
+	else if (aTableView == filterSetsTable)
+	{
+		NSArray *filterSetsList = [filterSetsListController arrangedObjects];
+		if (rowIndex >= 0 && rowIndex < [filterSetsList count])
+		{
+			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
+			NSDictionary *filterSet = [filterSetsList objectAtIndex:rowIndex];
+			if ([[filterSet objectForKey:@"uid"] integerValue] == 1)
+				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+			else
+				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+		}
+	}
+	else if (aTableView == filterTable)
+	{
+		// want the "All Logs" entry (immutable) in Bold
+		NSArray *filterList = [filterListController arrangedObjects];
+		if (rowIndex >= 0 && rowIndex < [filterList count])
+		{
+			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
+			NSDictionary *filter = [filterList objectAtIndex:rowIndex];
+			if ([[filter objectForKey:@"uid"] integerValue] == 1)
+				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+			else
+				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+		}
 	}
 }
 
@@ -592,8 +774,25 @@ didReceiveMessages:(NSArray *)theMessages
 		NSSize cachedSize = message.cachedCellSize;
 		if (cachedSize.width != 0)
 			return cachedSize.height;
-		return [LoggerMessageCell heightForCellWithMessage:message
-												   maxSize:[tableView frame].size];
+		switch (message.type)
+		{
+			case LOGMSG_TYPE_LOG:
+			case LOGMSG_TYPE_BLOCKSTART:
+			case LOGMSG_TYPE_BLOCKEND:
+				return [LoggerMessageCell heightForCellWithMessage:message
+														   maxSize:[tableView frame].size];
+			case LOGMSG_TYPE_CLIENTINFO:
+			case LOGMSG_TYPE_DISCONNECT:
+				return [LoggerClientInfoCell heightForCellWithMessage:message
+															  maxSize:[tableView frame].size];
+
+			case LOGMSG_TYPE_MARK:
+				return [LoggerMarkerCell heightForCellWithMessage:message
+														  maxSize:[tableView frame].size];
+
+			default:
+				break;
+		}
 	}
 	return [tableView rowHeight];
 }
@@ -626,6 +825,122 @@ didReceiveMessages:(NSArray *)theMessages
 	return nil;
 }
 
+- (BOOL)tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard
+{
+	if (tv == logTable)
+	{
+		NSArray *draggedMessages = [displayedMessages objectsAtIndexes:rowIndexes];
+		NSMutableString *string = [[NSMutableString alloc] initWithCapacity:[draggedMessages count] * 128];
+		for (LoggerMessage *msg in draggedMessages)
+			[string appendString:[msg textRepresentation]];
+		[pboard writeObjects:[NSArray arrayWithObject:string]];
+		[string release];
+		return YES;
+	}
+	if (tv == filterTable)
+	{
+		NSPasteboardItem *item = [[NSPasteboardItem alloc] init];
+		NSArray *filters = [[filterListController arrangedObjects] objectsAtIndexes:rowIndexes];
+		[item setData:[NSKeyedArchiver archivedDataWithRootObject:filters] forType:kNSLoggerFilterPasteboardType];
+		[pboard writeObjects:[NSArray arrayWithObject:item]];
+		[item release];
+		return YES;
+	}
+	return NO;
+}
+
+- (NSDragOperation)tableView:(NSTableView*)tv validateDrop:(id <NSDraggingInfo>)dragInfo proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)op
+{
+	if (tv == filterSetsTable)
+	{
+		NSArray *filterSets = [filterSetsListController arrangedObjects];
+		if (row >= 0 && row < [filterSets count] && row != [filterSetsListController selectionIndex])
+		{
+			if (op != NSTableViewDropOn)
+				[filterSetsTable setDropRow:row dropOperation:NSTableViewDropOn];
+			return NSDragOperationCopy;
+		}
+	}
+	else if (tv == filterTable && [dragInfo draggingSource] != filterTable)
+	{
+		NSArray *filters = [filterListController arrangedObjects];
+		if (row >= 0 && row < [filters count])
+		{
+			// highlight entire table
+			[filterTable setDropRow:-1 dropOperation:NSTableViewDropOn];
+			return NSDragOperationCopy;
+		}
+	}
+	return NSDragOperationNone;
+}
+
+- (BOOL)tableView:(NSTableView *)tv
+	   acceptDrop:(id <NSDraggingInfo>)dragInfo
+			  row:(NSInteger)row
+	dropOperation:(NSTableViewDropOperation)operation
+{
+	BOOL added = NO;
+	NSPasteboard* pboard = [dragInfo draggingPasteboard];
+	NSArray *newFilters = [NSKeyedUnarchiver unarchiveObjectWithData:[pboard dataForType:kNSLoggerFilterPasteboardType]];
+	if (tv == filterSetsTable)
+	{
+		// Only add those filters which don't exist yet
+		NSArray *filterSets = [filterSetsListController arrangedObjects];
+		NSMutableDictionary *filterSet = [filterSets objectAtIndex:row];
+		NSMutableArray *existingFilters = [filterSet mutableArrayValueForKey:@"filters"];
+		for (NSMutableDictionary *filter in newFilters)
+		{
+			if ([existingFilters indexOfObject:filter] == NSNotFound)
+			{
+				[existingFilters addObject:filter];
+				added = YES;
+			}
+		}
+		[filterSetsListController setSelectedObjects:[NSArray arrayWithObject:filterSet]];
+	}
+	else if (tv == filterTable)
+	{
+		NSMutableArray *addedFilters = [[NSMutableArray alloc] init];
+		for (NSMutableDictionary *filter in newFilters)
+		{
+			if ([[filterListController arrangedObjects] indexOfObject:filter] == NSNotFound)
+			{
+				[filterListController addObject:filter];
+				[addedFilters addObject:filter];
+				added = YES;
+			}
+		}
+		if (added)
+			[filterListController setSelectedObjects:addedFilters];
+		[addedFilters release];
+	}
+	if (added)
+		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+	return added;
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Filter sets management
+// -----------------------------------------------------------------------------
+- (IBAction)addFilterSet:(id)sender
+{
+	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
+						  NSLocalizedString(@"New Filter Set", @""), @"title",
+						  [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
+						  nil];
+	[filterSetsListController addObject:dict];
+	NSUInteger index = [[filterSetsListController arrangedObjects] indexOfObject:dict];
+	[filterSetsTable editColumn:0 row:index withEvent:nil select:YES];
+}
+
+- (IBAction)deleteSelectedFilterSet:(id)sender
+{
+	// @@@ TODO: make this undoable
+	[filterSetsListController removeObjects:[filterSetsListController selectedObjects]];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Filter editor
@@ -643,8 +958,10 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (IBAction)addFilter:(id)sender
 {
+	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
+	assert(filterSet != nil);
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier], @"uid",
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
 						  NSLocalizedString(@"New filter", @""), @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
 						  nil];
@@ -655,7 +972,11 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (IBAction)startEditingFilter:(id)sender
 {
+	// start editing filter, unless no selection (happens when double-clicking the header)
+	// or when trying to edit the "All Logs" entry which is immutable
 	NSDictionary *dict = [[filterListController selectedObjects] lastObject];
+	if (dict == nil || [[dict objectForKey:@"uid"] integerValue] == 1)
+		return;
 	[filterName setStringValue:[dict objectForKey:@"title"]];
 	NSPredicate *predicate = [dict objectForKey:@"predicate"];
 	[filterEditor setObjectValue:[[predicate copy] autorelease]];
@@ -663,7 +984,7 @@ didReceiveMessages:(NSArray *)theMessages
 	[NSApp beginSheet:filterEditorWindow
 	   modalForWindow:[self window]
 		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+	   didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:NULL];
 }
 
@@ -677,7 +998,7 @@ didReceiveMessages:(NSArray *)theMessages
 	[NSApp endSheet:filterEditorWindow returnCode:1];
 }
 
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode)
 	{
@@ -688,7 +1009,7 @@ didReceiveMessages:(NSArray *)theMessages
 		if (predicate == nil)
 			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
 		[dict setObject:predicate forKey:@"predicate"];
-		NSString *title = [filterName stringValue];
+		NSString *title = [[filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 		if ([title length])
 			[dict setObject:title forKey:@"title"];
 		[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
@@ -702,6 +1023,77 @@ didReceiveMessages:(NSArray *)theMessages
 {
 	// @@@ TODO: make this undoable
 	[filterListController removeObjects:[filterListController selectedObjects]];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Markers
+// -----------------------------------------------------------------------------
+- (void)addMarkWithTitleString:(NSString *)title
+{
+	if (![title length])
+	{
+		title = [NSString stringWithFormat:NSLocalizedString(@"Mark - %@", @""),
+				 [NSDateFormatter localizedStringFromDate:[NSDate date]
+												dateStyle:NSDateFormatterShortStyle
+												timeStyle:NSDateFormatterMediumStyle]];
+	}
+	
+	LoggerMessage *mark = [[LoggerMessage alloc] init];
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	mark.type = LOGMSG_TYPE_MARK;
+	mark.timestamp = tv;
+	mark.message = title;
+	mark.threadID = @"";
+	mark.contentsType = kMessageString;
+	dispatch_async(attachedConnection.messageProcessingQueue, ^{
+		NSRange range;
+		@synchronized(attachedConnection.messages)
+		{
+			range = NSMakeRange([attachedConnection.messages count], 1);
+			[attachedConnection.messages addObject:mark];
+		}
+		[self connection:attachedConnection didReceiveMessages:[NSArray arrayWithObject:mark] range:range];
+	});
+	[mark release];
+}
+
+- (IBAction)addMark:(id)sender
+{
+	[self addMarkWithTitleString:nil];
+}
+
+- (IBAction)addMarkWithTitle:(id)sender
+{
+	NSString *s = [NSString stringWithFormat:NSLocalizedString(@"Mark - %@", @""),
+				   [NSDateFormatter localizedStringFromDate:[NSDate date]
+												  dateStyle:NSDateFormatterShortStyle
+												  timeStyle:NSDateFormatterMediumStyle]];
+	[markTitleField setStringValue:s];
+
+	[NSApp beginSheet:markTitleWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:NULL];	
+}
+
+- (IBAction)cancelAddMark:(id)sender
+{
+	[NSApp endSheet:markTitleWindow returnCode:0];
+}
+
+- (IBAction)validateAddMark:(id)sender
+{
+	[NSApp endSheet:markTitleWindow returnCode:1];
+}
+
+- (void)addMarkSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode)
+		[self addMarkWithTitleString:[markTitleField stringValue]];
+	[markTitleWindow orderOut:self];
 }
 
 @end

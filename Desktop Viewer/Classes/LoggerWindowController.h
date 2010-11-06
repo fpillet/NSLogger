@@ -31,25 +31,33 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework/BWToolkitFramework.h"
 
-@class LoggerMessageCell;
-@class LoggerDetailsWindowController, LoggerClientInfoWindowController;
+@class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView;
+@class LoggerDetailsWindowController;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate>
+@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
 {
-	IBOutlet NSTableView *logTable;
+	IBOutlet LoggerTableView *logTable;
+	IBOutlet NSTableView *filterSetsTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
+	IBOutlet NSArrayController *filterSetsListController;
 	IBOutlet NSArrayController *filterListController;
 
 	IBOutlet NSWindow *filterEditorWindow;
 	IBOutlet NSPredicateEditor *filterEditor;
 	IBOutlet NSTextField *filterName;
 	
+	IBOutlet NSWindow *markTitleWindow;
+	IBOutlet NSTextField *markTitleField;
+
 	LoggerConnection *attachedConnection;
 	LoggerDetailsWindowController *detailsWindowController;
-	LoggerClientInfoWindowController *clientDetailsWindowController;
+
+	LoggerMessageCell *messageCell;
+	LoggerClientInfoCell *clientInfoCell;
+	LoggerMarkerCell *markerCell;
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
@@ -68,6 +76,7 @@
 	BOOL hasQuickFilter;
 	BOOL loadComplete;
 	BOOL tableNeedsTiling;
+	BOOL tableTiledSinceLastRefresh;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
@@ -75,10 +84,13 @@
 @property (nonatomic, assign) BOOL hasQuickFilter;
 
 - (IBAction)openDetailsWindow:(id)sender;
-- (IBAction)showClientInfo:(id)sender;
 
+- (IBAction)selectQuickFilterTag:(id)sender;
 - (IBAction)selectQuickFilterLevel:(id)sender;
 - (IBAction)resetQuickFilter:(id)sender;
+
+- (IBAction)addFilterSet:(id)sender;
+- (IBAction)deleteSelectedFilterSet:(id)sender;
 
 - (IBAction)addFilter:(id)sender;
 - (IBAction)startEditingFilter:(id)sender;
@@ -86,4 +98,15 @@
 - (IBAction)validateFilterEdition:(id)sender;
 - (IBAction)deleteSelectedFilters:(id)sender;
 
+- (IBAction)addMark:(id)sender;
+- (IBAction)addMarkWithTitle:(id)sender;
+- (IBAction)cancelAddMark:(id)sender;
+- (IBAction)validateAddMark:(id)sender;
+
 @end
+
+@interface LoggerTableView : NSTableView
+{
+}
+@end
+

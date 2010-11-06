@@ -29,6 +29,7 @@
  * 
  */
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #import "LoggerCommon.h"
 #import "LoggerNativeTransport.h"
@@ -297,6 +298,86 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			[self class], self, listenerPort, (int)publishBonjourService];
 }
 
+#ifdef DEBUG
+- (void)dumpBytes:(uint8_t *)bytes length:(int)dataLen
+{
+	NSMutableString *s = [[NSMutableString alloc] init];
+	NSUInteger offset = 0;
+	NSString *str;
+	char buffer[1+6+16*3+1+16+1+1+1];
+	buffer[0] = '\0';
+	const unsigned char *q = bytes;
+	if (dataLen == 1)
+		[s appendString:NSLocalizedString(@"Raw data, 1 byte:\n", @"")];
+	else
+		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
+	while (dataLen)
+	{
+		int i, b = sprintf(buffer," %04x: ", offset);
+		for (i=0; i < 16 && i < dataLen; i++)
+			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
+		for (int j=i; j < 16; j++)
+			strcat(buffer, "   ");
+		
+		b = strlen(buffer);
+		buffer[b++] = '\'';
+		for (i=0; i < 16 && i < dataLen; i++, q++)
+		{
+			if (*q >= 32 && *q < 128)
+				buffer[b++] = *q;
+			else
+				buffer[b++] = ' ';
+		}
+		for (int j=i; j < 16; j++)
+			buffer[b++] = ' ';
+		buffer[b++] = '\'';
+		buffer[b++] = '\n';
+		buffer[b] = 0;
+		
+		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
+		[s appendString:str];
+		[str release];
+		
+		dataLen -= i;
+		offset += i;
+	}
+	NSLog(@"Received bytes:\n%@", s);
+	[s release];
+}
+#endif
+
+- (NSString *)clientInfoStringForMessage:(LoggerMessage *)message
+{
+	NSDictionary *parts = message.parts;
+	NSString *clientName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
+	NSString *clientVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+	NSString *clientAppInfo = @"";
+	if ([clientName length])
+		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"\nClient: %@ %@", @""),
+						 clientName,
+						 clientVersion ? clientVersion : @""];
+
+	NSString *osName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+	NSString *osVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+	NSString *osInfo = @"";
+	if ([osName length])
+		osInfo = [NSString stringWithFormat:NSLocalizedString(@"\nOS: %@ %@", @""),
+				  osName,
+				  osVersion ? osVersion : @""];
+
+	NSString *hardware = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+	NSString *hardwareInfo = @"";
+	if ([hardware length])
+		hardwareInfo = [NSString stringWithFormat:NSLocalizedString(@"\nHardware: %@", @""), hardware];
+	
+	NSString *uniqueID = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+	NSString *uniqueIDString = @"";
+	if ([uniqueID length])
+		uniqueIDString = [NSString stringWithFormat:NSLocalizedString(@"\nUDID: %@", @""), uniqueID];
+	return [NSString stringWithFormat:NSLocalizedString(@"Client connected%@%@%@%@", @""),
+			clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
+}
+
 // -----------------------------------------------------------------------------
 // NSStream delegate
 // -----------------------------------------------------------------------------
@@ -323,7 +404,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				while ([cnx.readStream hasBytesAvailable] && (numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize]) > 0)
 				{
 					// append data to the data buffer
-					NSMutableArray *msgs = nil;
+					NSMutableArray *msgs = [[NSMutableArray alloc] init];
 					[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
 					NSUInteger bufferLength = [cnx.buffer length];
 					while (bufferLength > 4)
@@ -334,30 +415,29 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 						length = ntohl(length);
 						if (bufferLength < (length + 4))
 							break;
-						
+
 						// get one message
 						CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-																	   (unsigned char *)[cnx.buffer mutableBytes] + 4,
+																	   (unsigned char *)[cnx.buffer bytes] + 4,
 																	   length,
 																	   kCFAllocatorNull);
 						if (subset != NULL)
 						{
 							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
 							if (message.type == LOGMSG_TYPE_CLIENTINFO)
-								[cnx clientInfoReceived:message];
-							else
 							{
-								if (msgs == nil)
-									msgs = [[NSMutableArray alloc] init];
-								[msgs addObject:message];
+								message.message = [self clientInfoStringForMessage:message];
+								message.threadID = @"";
+								[cnx clientInfoReceived:message];
 							}
+							[msgs addObject:message];
 							[message release];
 							CFRelease(subset);
 						}
 						[cnx.buffer replaceBytesInRange:NSMakeRange(0, length+4) withBytes:NULL length:0];
 						bufferLength = [cnx.buffer length];
 					}
-					
+
 					if ([msgs count])
 						[cnx messagesReceived:msgs];
 					[msgs release];
@@ -365,14 +445,24 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				break;
 				
 			case NSStreamEventErrorOccurred:
+				// @@@ TODO: add message with error description
 #ifdef DEBUG
 				NSLog(@"Stream error occurred");
 #endif
 				// fall through
-			case NSStreamEventEndEncountered:
+			case NSStreamEventEndEncountered: {
+				struct timeval t;
+				gettimeofday(&t, NULL);
+				LoggerMessage *msg = [[LoggerMessage alloc] init];
+				msg.timestamp = t;
+				msg.type = LOGMSG_TYPE_DISCONNECT;
+				msg.message = NSLocalizedString(@"Client disconnected", @"");
+				[cnx messagesReceived:[NSArray arrayWithObject:msg]];
+				[msg release];
 				cnx.connected = NO;
 				[cnx.buffer setLength:0];
 				break;
+			}
 				
 			case NSStreamEventOpenCompleted:
 				cnx.connected = YES;
@@ -397,7 +487,17 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)netService:(NSNetService *)sender didNotPublish:(NSDictionary *)errorDict
 {
 	[self shutdown];
-	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (error: %@).", @""), errorDict];
+	
+	NSString *errorString = [errorDict description];
+	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
+	if (errorCode == NSNetServicesCollisionError)
+		errorString = NSLocalizedString(@"Another logger may be publishing itself on your network with the same name", @"");
+	else if (errorCode == NSNetServicesBadArgumentError)
+		errorString = NSLocalizedString(@"Bonjour is improperly configured (bad argument) - please contact NSLogger developers", @"");
+	else if (errorCode == NSNetServicesInvalidError)
+		errorString = NSLocalizedString(@"Bonjour is improperly configured (invalid) - please contact NSLogger developers", @"");
+
+	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (%@).", @""), errorString];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:status];
 }
 
@@ -458,7 +558,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	}
 	@catch (NSException * e)
 	{
+#ifdef DEBUG
 		NSLog(@"LoggerNativeTransport %p: exception catched in AcceptSocketCallback: %@", info, e);
+#endif
 	}
 	@finally
 	{

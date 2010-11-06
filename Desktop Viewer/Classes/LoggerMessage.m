@@ -71,24 +71,28 @@ static NSMutableArray *sTags = nil;
 	// Prepare a text representation of the message, suitable for export of text field display
 	time_t sec = timestamp.tv_sec;
 	struct tm *t = localtime(&sec);
-	NSString *timestampStr;
-	if (timestamp.tv_usec == 0)
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d    ", t->tm_hour, t->tm_min, t->tm_sec];
-	else
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000];
-	NSString *tagStr = @"";
-	if ([tag length])
-		tagStr = [NSString stringWithFormat:@" %@ |", tag];
-	NSString *threadIDStr = @"";
-	if ([threadID length])
-		threadIDStr = [NSString stringWithFormat:@" %@ |", threadID];
 
-	NSString *header = [NSString stringWithFormat:@"%@ |%@%@ ", timestampStr, tagStr, threadIDStr];
-	
 	if (contentsType == kMessageString)
-		return [NSString stringWithFormat:@"%@%@\n", header, message];
+	{
+		if (type == LOGMSG_TYPE_MARK)
+			return [NSString stringWithFormat:@"%@\n", message];
+
+		// commmon case
+		return [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | %@\n",
+				sequence,
+				t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
+				(tag == NULL) ? @"-" : tag,
+				threadID,
+				message];
+	}
+	
+	NSString *header = [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | ",
+						sequence, t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
+						(tag == NULL) ? @"-" : tag,
+						threadID];
+
 	if (contentsType == kMessageImage)
-		return [NSString stringWithFormat:@"%@<image %dx%d>\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
+		return [NSString stringWithFormat:@"IMAGE size=%dx%d px\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
 
 	assert([message isKindOfClass:[NSData class]]);
 	NSMutableString *s = [[NSMutableString alloc] init];
@@ -112,7 +116,7 @@ static NSMutableArray *sTags = nil;
 		
 		b = strlen(buffer);
 		buffer[b++] = '\'';
-		for (i=0; i < 16 && i < dataLen; i++, q++)
+		for (i=0; i < 16 && i < dataLen; i++)
 		{
 			if (*q >= 32 && *q < 128)
 				buffer[b++] = *q;
@@ -224,6 +228,8 @@ static NSMutableArray *sTags = nil;
 {
 	// we're accumulating the various domains in a global list
 	// so as to reduce memory use
+	if (aTag == nil)
+		return;
 	NSUInteger pos = [sTags indexOfObject:aTag];
 	if (pos == NSNotFound || sTags == nil)
 	{

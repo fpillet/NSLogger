@@ -30,6 +30,8 @@
  */
 #import "LoggerClientViewController.h"
 
+#define TEST_FILE_BUFFERING 0
+
 @implementation LoggerClientViewController
 
 - (void)awakeFromNib
@@ -37,10 +39,61 @@
 	tagsArray = [[NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil] retain];
 }
 
+- (void)viewDidLoad
+{
+	[super viewDidLoad];
+	
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+	viewerHostField.text = [ud stringForKey:@"host"];
+	viewerPortField.text = [ud stringForKey:@"port"];
+	browseBonjour.on = [ud boolForKey:@"browseBonjour"];
+	browseLocalDomainOnly.on = [ud boolForKey:@"localDomain"];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(textFieldDidChange:)
+												 name:UITextFieldTextDidChangeNotification
+											   object:nil];
+
+#if TEST_FILE_BUFFERING
+	NSString *bufferPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLoggerTempData_iOS.rawnsloggerdata"];
+	LoggerSetBufferFile(NULL, (CFStringRef)bufferPath);
+#endif
+}
+
+- (IBAction)bonjourSettingChanged
+{
+	browseLocalDomainOnly.enabled = browseBonjour.on;
+	[[NSUserDefaults standardUserDefaults] setBool:browseBonjour.on forKey:@"browseBonjour"];
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (IBAction)browseLocalDomainOnlySettingChanged
+{
+	[[NSUserDefaults standardUserDefaults] setBool:browseLocalDomainOnly.on forKey:@"localDomain"];
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 - (IBAction)startStopSendingMessages
 {
 	if (sendTimer == nil)
 	{
+		// Configure the logger
+		NSString *host = [viewerHostField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		int port = [viewerPortField.text integerValue];
+		port = MAX(0, MIN(port, 65535));
+		viewerPortField.text = [NSString stringWithFormat:@"%d", port];
+
+		if ([host length] && port != 0)
+			LoggerSetViewerHost(NULL, (CFStringRef)host, (UInt32)port);
+		else
+			LoggerSetViewerHost(NULL, NULL, 0);
+		LoggerSetOptions(NULL,						// configure the default logger
+						 NO,						// don't log to Console
+						 YES,						// buffer logs locally until connection is acquired
+						 browseBonjour.on,				// look for NSLogger viewer on Bonjour ?
+						 browseLocalDomainOnly.on);	// Only look on Bonjour local. domain? (if no, may look on your MobileMe domain too)
+
+		// Start logging random messages
 		counter = 0;
 		imagesCounter = 0;
 		sendTimer = [[NSTimer scheduledTimerWithTimeInterval:0.20f
@@ -59,10 +112,54 @@
 	}
 }
 
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+	if (textField == viewerHostField)
+		[viewerPortField becomeFirstResponder];
+	else
+		[textField resignFirstResponder];
+	return NO;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+	// we use the numbers & punct keyboard to get the Done key,
+	// in exchange we need to validate input to exclude non-number chars
+	if (textField != viewerPortField)
+		return YES;
+	NSMutableString *s = [string mutableCopy];
+	NSUInteger length = [string length];
+	for (NSUInteger i = 0; i < length; i++)
+	{
+		unichar c = [string characterAtIndex:i];
+		if (c < '0' || c > '9')
+		{
+			[s replaceCharactersInRange:NSMakeRange(i, 1) withString:@""];
+			length--;
+		}
+	}
+	NSMutableString *ts = [textField.text mutableCopy];
+	[ts replaceCharactersInRange:range withString:s];
+	textField.text = ts;
+	[ts release];
+	[s release];
+	return NO;
+}
+
+- (void)textFieldDidChange:(NSNotification *)note
+{
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+	[ud setObject:viewerHostField.text forKey:@"host"];
+	[ud setObject:viewerPortField.text forKey:@"port"];
+	[ud synchronize];
+}
+
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[sendTimer invalidate];
 	[sendTimer release];
+	[tagsArray release];
     [super dealloc];
 }
 

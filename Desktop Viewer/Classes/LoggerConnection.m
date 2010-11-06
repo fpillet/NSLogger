@@ -38,8 +38,20 @@
 
 @synthesize delegate;
 @synthesize messages;
-@synthesize connected, clientIDReceived;
+@synthesize connected, clientIDReceived, restoredFromSave;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
+@synthesize messageProcessingQueue;
+
+- (id)init
+{
+	if (self = [super init])
+	{
+		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
+		messages = [[NSMutableArray alloc] initWithCapacity:1024];
+		parentIndexesStack = [[NSMutableArray alloc] init];		
+	}
+	return self;
+}
 
 - (id)initWithAddress:(NSData *)anAddress
 {
@@ -55,7 +67,7 @@
 
 - (void)dealloc
 {
-	if (messageProcessingQueue != nil)
+	if (messageProcessingQueue != NULL)
 		dispatch_release(messageProcessingQueue);
 	[messages release];
 	[parentIndexesStack release];
@@ -71,6 +83,8 @@
 - (void)messagesReceived:(NSArray *)msgs
 {
 	dispatch_async(messageProcessingQueue, ^{
+		/* Code not operational yet
+		 *
 		NSRange range = NSMakeRange([messages count], [msgs count]);
 		NSUInteger lastParent = NSNotFound;
 		if ([parentIndexesStack count])
@@ -107,8 +121,12 @@
 					break;
 			}
 		}
+		 *
+		 */
+		NSRange range;
 		@synchronized (messages)
 		{
+			range = NSMakeRange([messages count], [msgs count]);
 			[messages addObjectsFromArray:msgs];
 		}
 		[self.delegate connection:self didReceiveMessages:msgs range:range];
@@ -227,6 +245,7 @@
 		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
 		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
+		restoredFromSave = YES;
 	}
 	return self;
 }

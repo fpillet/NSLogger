@@ -67,14 +67,19 @@
 			{
 				if (partType == PART_TYPE_STRING)
 				{
-					part = [[[NSString alloc] initWithBytes:p
-													 length:partSize
-												   encoding:NSUTF8StringEncoding] autorelease];
-					part = [part stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+					// trim whitespace and newline at both ends of the string
+					uint8_t *q = p;
+					uint32_t l = partSize;
+					while (l && (*q == ' ' || *q == '\t' || *q == '\n' || *q == '\r'))
+						q++, l--;
+					uint8_t *r = q + l - 1;
+					while (l && (*r == ' ' || *r == '\t' || *r == '\n' || *r == '\r'))
+						r--, l--;
+					part = [[NSString alloc] initWithBytes:q length:l encoding:NSUTF8StringEncoding];
 				}
 				else if (partType == PART_TYPE_BINARY || partType == PART_TYPE_IMAGE)
 				{
-					part = [NSData dataWithBytes:p length:partSize];
+					part = [[NSData alloc] initWithBytes:p length:partSize];
 				}
 				else if (partType == PART_TYPE_INT32)
 				{
@@ -92,6 +97,9 @@
 			{
 				case PART_KEY_MESSAGE_TYPE:
 					type = (short)value32;
+					break;
+				case PART_KEY_MESSAGE_SEQ:			
+					sequence = value32;
 					break;
 				case PART_KEY_TIMESTAMP_S:			// timestamp with seconds-level resolution
 					timestamp.tv_sec = (partType == PART_TYPE_INT64) ? (__darwin_time_t)value64 : (__darwin_time_t)value32;
@@ -145,15 +153,16 @@
 						parts = [[NSMutableDictionary alloc] init];
 					NSNumber *partKeyNumber = [[NSNumber alloc] initWithUnsignedInteger:partKey];
 					if (partType == PART_TYPE_INT32)
-						part = [NSNumber numberWithInteger:value32];
+						part = [[NSNumber alloc] initWithInteger:value32];
 					else if (partType == PART_TYPE_INT64)
-						part = [NSNumber numberWithUnsignedLongLong:value64];
+						part = [[NSNumber alloc] initWithUnsignedLongLong:value64];
 					if (part != nil)
 						[parts setObject:part forKey:partKeyNumber];
 					[partKeyNumber release];
 					break;
 				}
 			}
+			[part release];
 		}
 	}
 	return self;

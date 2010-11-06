@@ -41,7 +41,7 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 @implementation LoggerAppDelegate
 
-@synthesize transports, filters, filtersSortDescriptors, statusController;
+@synthesize transports, filterSets, filtersSortDescriptors, statusController;
 
 - (id) init
 {
@@ -49,46 +49,58 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	{
 		transports = [[NSMutableArray alloc] init];
 
-		// default filter ordering
-		self.filtersSortDescriptors = [NSArray arrayWithObject:[[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES] autorelease]];
+		// default filter ordering. The first sort descriptor ensures that the object with
+		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
+		// items are ordered by title.
+		self.filtersSortDescriptors = [NSArray arrayWithObjects:
+									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:^(id uid1, id uid2){
+			if ([uid1 integerValue] == 1)
+				return (NSComparisonResult)NSOrderedAscending;
+			if ([uid2 integerValue] == 1)
+				return (NSComparisonResult)NSOrderedDescending;
+			return (NSComparisonResult)NSOrderedSame;
+		}],
+									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
+									   nil];
 
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-		NSData *filterData = [defaults objectForKey:@"filters"];
-		if (filterData != nil)
+		NSData *filterSetsData = [defaults objectForKey:@"filterSets"];
+		if (filterSetsData != nil)
 		{
-			filters = [[NSKeyedUnarchiver unarchiveObjectWithData:filterData] retain];
-			if (![filters isKindOfClass:[NSMutableArray class]])
+			filterSets = [[NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData] retain];
+			if (![filterSets isKindOfClass:[NSMutableArray class]])
 			{
-				[filters release];
-				filters = nil;
+				[filterSets release];
+				filterSets = nil;
 			}
 		}
-		if (filters == nil)
-			filters = [[NSMutableArray alloc] init];
-		if (![filters count])
+		if (filterSets == nil)
+			filterSets = [[NSMutableArray alloc] init];
+		if (![filterSets count])
 		{
-			// Create a few default filters
-			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInteger:1], @"uid",
-								NSLocalizedString(@"All logs", @""), @"title",
-								[NSPredicate predicateWithValue:YES], @"predicate",
-								nil]];
-			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInteger:2], @"uid",
-								NSLocalizedString(@"Text messages", @""), @"title",
-								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
-								nil]];
-			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInteger:3], @"uid",
-								NSLocalizedString(@"Images", @""), @"title",
-								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
-								nil]];
-			[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-								[NSNumber numberWithInteger:4], @"uid",
-								NSLocalizedString(@"Data blocks", @""), @"title",
-								[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
-								nil]];
+			NSMutableArray *filters = nil;
+
+			// Try to reload pre-1.0b4 filters (will remove this code soon)
+			NSData *filterData = [defaults objectForKey:@"filters"];
+			if (filterData != nil)
+			{
+				filters = [NSKeyedUnarchiver unarchiveObjectWithData:filterData];
+				if (![filters isKindOfClass:[NSMutableArray class]])
+					filters = nil;
+			}
+			if (filters == nil)
+			{
+				// Create a default set
+				filters = [self defaultFilters];
+			}
+			NSMutableDictionary *defaultSet = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+											   NSLocalizedString(@"Default Set", @""), @"title",
+											   [NSNumber numberWithInteger:1], @"uid",
+											   filters, @"filters",
+											   nil];
+			[filterSets addObject:defaultSet];
+			[defaultSet release];
 		}
 	}
 	return self;
@@ -104,9 +116,13 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 {
 	@try
 	{
-		NSData *filtersData = [NSKeyedArchiver archivedDataWithRootObject:filters];
-		if (filtersData != nil)
-			[[NSUserDefaults standardUserDefaults] setObject:filtersData forKey:@"filters"];
+		NSData *filterSetsData = [NSKeyedArchiver archivedDataWithRootObject:filterSets];
+		if (filterSetsData != nil)
+		{
+			[[NSUserDefaults standardUserDefaults] setObject:filterSetsData forKey:@"filterSets"];
+			// remove pre-1.0b4 filters
+			[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"filters"];
+		}
 	}
 	@catch (NSException * e)
 	{
@@ -210,7 +226,33 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[doc release];
 }
 
-- (NSNumber *)nextUniqueFilterIdentifier
+- (NSMutableArray *)defaultFilters
+{
+	NSMutableArray *filters = [NSMutableArray arrayWithCapacity:4];
+	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						[NSNumber numberWithInteger:1], @"uid",
+						NSLocalizedString(@"All logs", @""), @"title",
+						[NSPredicate predicateWithValue:YES], @"predicate",
+						nil]];
+	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						[NSNumber numberWithInteger:2], @"uid",
+						NSLocalizedString(@"Text messages", @""), @"title",
+						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
+						nil]];
+	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						[NSNumber numberWithInteger:3], @"uid",
+						NSLocalizedString(@"Images", @""), @"title",
+						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
+						nil]];
+	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+						[NSNumber numberWithInteger:4], @"uid",
+						NSLocalizedString(@"Data blocks", @""), @"title",
+						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
+						nil]];
+	return filters;
+}
+
+- (NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters
 {
 	// since we're using basic NSDictionary to store filters, we add a filter
 	// identifier number so that no two filters are strictly identical -- makes

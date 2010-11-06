@@ -1,6 +1,8 @@
 /*
  * LoggerCommon.h
  *
+ * version 1.0b5 2010-11-06
+ *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
@@ -54,6 +56,7 @@
  *	- a PART_KEY_TAG (optional) a tag that helps categorizing and filtering logs from your application, and shows up in viewer logs
  *	- a PART_KEY_LEVEL (optional) a log level that helps filtering logs from your application (see as few or as much detail as you need)
  *	- a PART_KEY_MESSAGE which is the message text, binary data or image
+ *  - a PART_KEY_MESSAGE_SEQ which is the message sequence number (message# sent by client)
  *  - if logging an image, PART_KEY_IMAGE_WIDTH and PART_KEY_IMAGE_HEIGHT let the desktop know the image size without having to actually decode it
  */
 
@@ -68,6 +71,7 @@
 #define	PART_KEY_MESSAGE		7
 #define PART_KEY_IMAGE_WIDTH	8			// messages containing an image should also contain a part with the image size
 #define PART_KEY_IMAGE_HEIGHT	9			// (this is mainly for the desktop viewer to compute the cell size without having to immediately decode the image)
+#define PART_KEY_MESSAGE_SEQ	10			// the sequential number of this message which indicates the order in which messages are generated
 
 // Constants for parts in LOGMSG_TYPE_CLIENTINFO
 #define PART_KEY_CLIENT_NAME	20
@@ -90,6 +94,8 @@
 #define	LOGMSG_TYPE_BLOCKSTART	1			// The start of a "block" (a group of log entries)
 #define	LOGMSG_TYPE_BLOCKEND	2			// The end of the last started "block"
 #define LOGMSG_TYPE_CLIENTINFO	3			// Information about the client app
+#define LOGMSG_TYPE_DISCONNECT	4			// Pseudo-message on the desktop side to identify client disconnects
+#define LOGMSG_TYPE_MARK		5			// Pseudo-message that defines a "mark" that users can place in the log flow
 
 // Bonjour service identifiers
 #define LOGGER_SERVICE_TYPE		CFSTR("_nslogger._tcp")

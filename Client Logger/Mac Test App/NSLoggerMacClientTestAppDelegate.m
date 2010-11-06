@@ -31,6 +31,8 @@
 #import "NSLoggerMacClientTestAppDelegate.h"
 #import "LoggerClient.h"
 
+#define TEST_FILE_BUFFERING 0
+
 @implementation NSLoggerMacClientTestAppDelegate
 
 @synthesize window;
@@ -38,6 +40,10 @@
 - (void)awakeFromNib
 {
 	tagsArray = [[NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil] retain];
+
+#if TEST_FILE_BUFFERING
+	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData_MacOSX.rawnsloggerdata"));
+#endif
 }
 
 - (void)windowWillClose:(NSNotification *)notification

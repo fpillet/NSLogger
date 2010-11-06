@@ -48,6 +48,7 @@
 + (NSDictionary *)defaultAttributes;
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes;
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz;
++ (CGFloat)minimumHeightForCell;
 
 @end
 

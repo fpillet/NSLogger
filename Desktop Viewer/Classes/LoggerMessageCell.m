@@ -74,10 +74,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 {
 	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
 	
-	NSFont *defaultFont = [[NSFont boldSystemFontOfSize:11] retain];
-	NSFont *defaultMonospacedFont = [[NSFont userFixedPitchFontOfSize:11] retain];
-	NSFont *defaultTagAndLevelFont = [[NSFont boldSystemFontOfSize:9] retain];
-	
+	NSFont *defaultFont = [NSFont fontWithName:@"Lucida Grande" size:11];
+	NSFont *defaultMonospacedFont = [NSFont fontWithName:@"Consolas" size:11];
+	NSFont *defaultTagAndLevelFont = [NSFont fontWithName:@"Lucida Grande Bold" size:9];
+
 	// Default text attributes
 	NSMutableDictionary *dict;
 	NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
@@ -113,6 +113,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	
 	// Text message attributes
 	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
 	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByWordWrapping];
 	[dict setObject:style forKey:NSParagraphStyleAttributeName];
@@ -126,6 +127,14 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[attrs setObject:dict forKey:@"data"];
 	[dict release];
 	
+	// Mark attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
+	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	[style setAlignment:NSCenterTextAlignment];
+	[dict setObject:style forKey:NSParagraphStyleAttributeName];
+	[style release];
+	[attrs setObject:dict forKey:@"mark"];
 	return attrs;
 }
 
@@ -139,6 +148,20 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
 		if (sDefaultAttributes == nil)
 			[self setDefaultAttributes:[self defaultAttributesDictionary]];
+
+		// upgrade from pre-1.0b5, adding attributes for markers
+		if ([sDefaultAttributes objectForKey:@"mark"] == nil)
+		{
+			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
+			NSMutableDictionary *dict = [[sDefaultAttributes objectForKey:@"text"] mutableCopy];
+			NSMutableParagraphStyle *style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+			[style setAlignment:NSCenterTextAlignment];
+			[dict setObject:style forKey:NSParagraphStyleAttributeName];
+			[style release];
+			[attrs setObject:dict forKey:@"mark"];
+			[self setDefaultAttributes:attrs];
+			[attrs release];
+		}
 	}
 	return sDefaultAttributes;
 }
@@ -211,7 +234,6 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		
 		dataLen -= i;
 		offset += i;
-		q += i;
 	}
 	return [strings autorelease];
 }
@@ -240,10 +262,16 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz
 {
 	// return cached cell height if possible
+	CGFloat minimumHeight = [self minimumHeightForCell];
 	NSSize cellSize = aMessage.cachedCellSize;
 	if (cellSize.width == sz.width)
 		return cellSize.height;
+
 	cellSize.width = sz.width;
+
+	// new width is larger, but cell already at minimum height, don't recompute
+	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
+		return minimumHeight;
 
 	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8 + (aMessage.indent * INDENTATION_TAB_WIDTH);
 	sz.height -= 4;
@@ -280,7 +308,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 4, [self minimumHeightForCell]);
+	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -389,7 +417,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	// Draw cell background and separators
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.96f, 1.0f);
+		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);
@@ -413,6 +441,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
 	
+	// If the window is not main, don't change the text color
+	if (highlighted && ![[controlView window] isMainWindow])
+		highlighted = NO;
+
 	// Draw timestamp and time delta column
 	NSRect r, tr;
 	r = NSMakeRect(NSMinX(cellFrame),

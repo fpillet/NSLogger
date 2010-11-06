@@ -17,6 +17,7 @@
 		28D7ACF80DDB3853001CB0EB /* LoggerClientViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D7ACF70DDB3853001CB0EB /* LoggerClientViewController.m */; };
 		3D62642B125223CA00359022 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D62642A125223CA00359022 /* CFNetwork.framework */; };
 		3DA99CB50F10BC160077756A /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA99CB40F10BC160077756A /* LoggerClient.m */; };
+		3DB964331274C5E60054F72D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DB964321274C5E50054F72D /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		3D62642A125223CA00359022 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		3DA99CB30F10BC160077756A /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = ../../LoggerClient.h; sourceTree = "<group>"; };
 		3DA99CB40F10BC160077756A /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../../LoggerClient.m; sourceTree = "<group>"; };
+		3DB964321274C5E50054F72D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -48,6 +50,7 @@
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
 				3D62642B125223CA00359022 /* CFNetwork.framework in Frameworks */,
+				3DB964331274C5E60054F72D /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +115,7 @@
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
 				3D62642A125223CA00359022 /* CFNetwork.framework */,
+				3DB964321274C5E50054F72D /* SystemConfiguration.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -206,6 +210,7 @@
 				GCC_PREFIX_HEADER = NSLoggerTestApp_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				PRODUCT_NAME = NSLoggerClient;
 			};
 			name = Debug;
@@ -219,6 +224,7 @@
 				GCC_PREFIX_HEADER = NSLoggerTestApp_Prefix.pch;
 				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				PRODUCT_NAME = NSLoggerClient;
 			};
 			name = Release;
@@ -234,7 +240,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 			};
 			name = Debug;
 		};
@@ -248,7 +254,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.1;
+				SDKROOT = iphoneos;
 			};
 			name = Release;
 		};

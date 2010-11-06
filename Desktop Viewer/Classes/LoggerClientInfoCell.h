@@ -1,5 +1,5 @@
 /*
- * LoggerClientInfoWindowController.h
+ * LoggerClientInfoCell.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,15 +28,10 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
+#import "LoggerMessageCell.h"
 
-@class LoggerConnection;
-
-@interface LoggerClientInfoWindowController : NSWindowController
+@interface LoggerClientInfoCell : LoggerMessageCell
 {
-	LoggerConnection *attachedConnection;
 }
-
-@property (nonatomic, retain) LoggerConnection *attachedConnection;
 
 @end

@@ -52,6 +52,8 @@
 	// we can speed up by caching some data
 	short indent;				// horizontal indent (count of nested blockstarts)
 	int distanceFromParent;		// distance from last blockStart (thisMsgIndex - parentMsgIndex)
+	
+	// other cached data
 	NSSize imageSize;
 	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
 }

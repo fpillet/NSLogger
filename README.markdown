@@ -2,6 +2,16 @@
 
 *NSLogger* is a high perfomance logging utility which displays traces emitted by client applications running on **Mac OS X** or **iOS (iPhone OS)**. It replaces your usual *NSLog()*-based traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
 
+*NSLogger* feature summary:
+
+  * View logs using the Mac OS X desktop viewer
+  * Online (application running and connected to _NSLogger_) and offline (saved logs) log viewing
+  * Buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
+  * View logs from client applications on the local network, or remotely over the internet
+  * Save viewer logs to share them and/or review them later
+  * Export logs to text files
+  * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
+
 You'll find instructions for use in the [NSLogger wiki](http://github.com/fpillet/NSLogger/wiki/).
 
 Your application emits traces using the *NSLogger* [trace APIs](http://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
@@ -11,7 +21,7 @@ Clients automatically find the logger application running on Mac OS X via Bonjou
 ![Desktop Viewer (main window)](http://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
 # One-step setup #
-All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
+All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
 
 # Using the desktop logger #
 Start the NSLogger application on Mac OS X. Your client app must run on a device that is on the same network as your Mac. When it starts logging traces, it will automatically look for the desktop NSLogger using Bonjour. As soon as traces start coming, a new window will open on your Mac.
@@ -19,18 +29,20 @@ Start the NSLogger application on Mac OS X. Your client app must run on a device
 You can create custom filters to quickly switch between different views of your logs.
 
 # Evolved logging facility #
-It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also instantiate multiple loggers. For example, you could log your debug messages using macros that only log in DEBUG mode. And you can additionally instrument your application with a second logger that connects to a remote URL / IP address, and sends live traces over the network directly from a client device. It can be very effective to diagnose problems remotely on client devices. (*direct connection to a specific address/port is not yet implemented*).
+It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also enable remote logging to have logs sent directly from remote devices running at distant locations, or have logs be directed to a file that can later be sent to a remote server.
 
 # Powerful desktop viewer #
-The desktop viewer application provides powerful tools, like:
+The desktop viewer application provides tools like:
 
- * Filters (with regular expression matching) that let your perform data mining in your traces
+ * Filters (with regular expression matching) that let your perform data mining in your logs
  * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
  * Image and binary data display directly in the log window
- * Very fast navigation in your traces
+ * Fast navigation in your logs
+ * Display and export all your logs as text
  
  
-Your traces can be saved to a `.nsloggerdata` file, and reloaded later.
+Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When logging to a file, name your log file with extension `.rawnsloggerdata` so NSLogger can reopen and process it.
+
 Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 
 ![Filter Editor](http://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
@@ -41,15 +53,18 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 *NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
 
 # Work in progress - Current status #
-This tool comes from a personal need for a more powerful logger. Not all the initial functionalities I wanted have been implemented yet. Here is what's not implemented, and some of the planned features, by current priority order:
+This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
 
- * Support for connecting to a specific IP address / port (client side)
- * Support drag-and-drop from logs
- * Support export to other formats than the native .nsloggerdata file format
- * Support for storing logs in a file (client side) and push them later to the viewer
+ * Remember last filter set used per application name / identifier
+ * Turn SSL on for remote logging
+ * For multiple subsequent connections by the same client (multiple app runs), reuse the same window much like Instruments does
+ * Log entry colorization
+ * Search and search term highlight in Details window
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
 
 
-You'll find preliminary docs in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
+You'll find documentation in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
+
+NSLogger is Copyright (c) 2010 Florent Pillet, All Rights Reserved. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
