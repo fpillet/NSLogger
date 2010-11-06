@@ -370,8 +370,12 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	if ([hardware length])
 		hardwareInfo = [NSString stringWithFormat:NSLocalizedString(@"\nHardware: %@", @""), hardware];
 	
-	return [NSString stringWithFormat:NSLocalizedString(@"Client connected%@%@%@", @""),
-			clientAppInfo, osInfo, hardwareInfo];
+	NSString *uniqueID = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+	NSString *uniqueIDString = @"";
+	if ([uniqueID length])
+		uniqueIDString = [NSString stringWithFormat:NSLocalizedString(@"\nUDID: %@", @""), uniqueID];
+	return [NSString stringWithFormat:NSLocalizedString(@"Client connected%@%@%@%@", @""),
+			clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
 }
 
 // -----------------------------------------------------------------------------
