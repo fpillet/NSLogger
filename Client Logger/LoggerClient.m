@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b5 2010-11-06
+ * version 1.0b5 2010-11-08
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -33,7 +33,6 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <libkern/OSAtomic.h>
 #import <sys/time.h>
 #if TARGET_OS_MAC
 #import <sys/types.h>
@@ -103,6 +102,8 @@ static void LoggerDbg(CFStringRef format, ...);
 
 /* Local prototypes */
 static void* LoggerWorkerThread(Logger *logger);
+static void LoggerWriteMoreData(Logger *logger);
+static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message);
 
 // Bonjour management
 static void LoggerStartBonjourBrowsing(Logger *logger);
@@ -123,10 +124,6 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 static void LoggerCreateBufferWriteStream(Logger *logger);
 static void LoggerCreateBufferReadStream(Logger *logger);
 static void LoggerEmptyBufferFile(Logger *logger);
-
-// IPC
-static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void* info);
-static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message);
 
 // Encoding functions
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger);
@@ -185,7 +182,9 @@ Logger *LoggerInit()
 	Logger *logger = (Logger *)malloc(sizeof(Logger));
 	bzero(logger, sizeof(Logger));
 
-	logger->logQueue = CFArrayCreateMutable(NULL, 16, &kCFTypeArrayCallBacks);
+	logger->logQueue = CFArrayCreateMutable(NULL, 32, &kCFTypeArrayCallBacks);
+	pthread_mutex_init(&logger->logQueueMutex, NULL);
+
 	logger->bonjourServiceBrowsers = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
 	logger->bonjourServices = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
 	
@@ -343,24 +342,24 @@ static void *LoggerWorkerThread(Logger *logger)
 	LOGGERDBG(CFSTR("Start LoggerWorkerThread"));
 	
 	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
-	
-	// Create the message port we use to transfer data from the application
-	// to the logger thread's queue. Use a unique message port name.
-	CFMessagePortContext context = {0, (void*)logger, NULL, NULL, NULL};
-	CFUUIDRef uuid = CFUUIDCreate(NULL);
-	CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
-	CFRelease(uuid);
-	logger->messagePort = CFMessagePortCreateLocal(NULL,
-												   uuidString,
-												   (CFMessagePortCallBack)&LoggerMessagePortCallout,
-												   &context,
-												   NULL);
-	CFRelease(uuidString);
-	
-	CFRunLoopSourceRef messagePortSource = CFMessagePortCreateRunLoopSource(NULL, logger->messagePort, 0);
-	CFRunLoopAddSource(runLoop, messagePortSource, kCFRunLoopCommonModes);
-	CFRelease(messagePortSource);
-	
+
+	// Create the run loop source that signals when messages have been added to the runloop
+	// this will directly trigger a WriteMoreData() call, which will or won't write depending
+	// on whether we're connected and there's space available in the stream
+	CFRunLoopSourceContext context;
+	bzero(&context, sizeof(context));
+	context.info = logger;
+	context.perform = (void *)(void *)&LoggerWriteMoreData;
+	logger->messagePushedSource = CFRunLoopSourceCreate(NULL, 0, &context);
+	if (logger->messagePushedSource == NULL)
+	{
+		LOGGERDBG(CFSTR("-> failed creating the messagePushed runLoopSource"));
+	}
+	else
+	{
+		CFRunLoopAddSource(runLoop, logger->messagePushedSource, kCFRunLoopDefaultMode);
+	}
+
 	// Start Bonjour browsing, wait for remote logging service to be found
 	if (logger->browseBonjour && logger->host == NULL)
 	{
@@ -405,12 +404,16 @@ static void *LoggerWorkerThread(Logger *logger)
 	}
 	LoggerStopReachabilityChecking(logger);
 
-	if (logger->bufferWriteStream == NULL && logger->bufferFile != NULL && CFArrayGetCount(logger->logQueue))
+	if (logger->bufferWriteStream == NULL && logger->bufferFile != NULL)
 	{
 		// If there are messages in the queue and LoggerStop() was called and
 		// a buffer file was set just before LoggerStop() was called, flush
 		// the log queue to the buffer file
-		LoggerCreateBufferWriteStream(logger);
+		pthread_mutex_lock(&logger->logQueue);
+		CFIndex outstandingMessages = CFArrayGetCount(logger->logQueue);
+		pthread_mutex_unlock(&logger->logQueue);
+		if (outstandingMessages)
+			LoggerCreateBufferWriteStream(logger);
 	}
 
 	if (logger->bufferWriteStream != NULL)
@@ -420,9 +423,9 @@ static void *LoggerWorkerThread(Logger *logger)
 		logger->bufferWriteStream = NULL;
 	}
 
-	CFMessagePortInvalidate(logger->messagePort);
-	CFRelease(logger->messagePort);
-	logger->messagePort = NULL;
+	CFRunLoopSourceInvalidate(logger->messagePushedSource);
+	CFRelease(logger->messagePushedSource);
+	logger->messagePushedSource = NULL;
 	
 	return NULL;
 }
@@ -453,24 +456,36 @@ static void LoggerWriteMoreData(Logger *logger)
 					logger->sendBufferUsed = CFReadStreamRead(logger->bufferReadStream, logger->sendBuffer, logger->sendBufferSize);
 				}
 			}
-			else while (CFArrayGetCount(logger->logQueue))
+			else
 			{
-				CFDataRef d = (CFDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
-				CFIndex dsize = CFDataGetLength(d);
-				if ((logger->sendBufferUsed + dsize) > logger->sendBufferSize)
-					break;
-				memcpy(logger->sendBuffer + logger->sendBufferUsed, CFDataGetBytePtr(d), dsize);
-				logger->sendBufferUsed += dsize;
-				CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+				pthread_mutex_lock(&logger->logQueueMutex);
+				while (CFArrayGetCount(logger->logQueue))
+				{
+					CFDataRef d = (CFDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
+					CFIndex dsize = CFDataGetLength(d);
+					if ((logger->sendBufferUsed + dsize) > logger->sendBufferSize)
+						break;
+					memcpy(logger->sendBuffer + logger->sendBufferUsed, CFDataGetBytePtr(d), dsize);
+					logger->sendBufferUsed += dsize;
+					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+					logger->incompleteSendOfFirstItem = NO;
+				}
+				pthread_mutex_unlock(&logger->logQueueMutex);
 			}
 			if (logger->sendBufferUsed == 0) 
 			{
 				// are we done yet?
+				pthread_mutex_lock(&logger->logQueueMutex);
 				if (CFArrayGetCount(logger->logQueue) == 0)
+				{
+					pthread_mutex_unlock(&logger->logQueueMutex);
 					return;
+				}
 				
 				// first item is too big to fit in a single packet, send it separately
 				sendFirstItem = (CFMutableDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
+				logger->incompleteSendOfFirstItem = YES;
+				pthread_mutex_unlock(&logger->logQueueMutex);
 				logger->sendBufferOffset = 0;
 			}
 		}
@@ -517,12 +532,17 @@ static void LoggerWriteMoreData(Logger *logger)
 				// We need to reduce the remaining data on the first item so it can be taken
 				// care of at the next iteration. We take advantage of the fact that each item
 				// in the queue is actually a mutable data block
+				// @@@ NOTE: IF WE GET DISCONNECTED WHILE DOING THIS, THINGS WILL GO WRONG
+				// NEED TO UPDATE THIS LOGIC
 				CFDataReplaceBytes((CFMutableDataRef)sendFirstItem, CFRangeMake(0, written), NULL, 0);
 				return;
 			}
 			
 			// we are done sending the first item in the queue, remove it now
+			pthread_mutex_lock(&logger->logQueueMutex);
 			CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+			logger->incompleteSendOfFirstItem = NO;
+			pthread_mutex_unlock(&logger->logQueueMutex);
 			logger->sendBufferOffset = 0;
 		}
 	}
@@ -556,6 +576,8 @@ static void LoggerCreateBufferWriteStream(Logger *logger)
 				// Write client info and flush the queue contents to buffer file
 				CFIndex totalWritten = 0;
 				LoggerPushClientInfoToFrontOfQueue(logger);
+				pthread_mutex_lock(&logger->logQueueMutex);
+				logger->incompleteSendOfFirstItem = NO;
 				while (CFArrayGetCount(logger->logQueue))
 				{
 					CFDataRef data = CFArrayGetValueAtIndex(logger->logQueue, 0);
@@ -571,6 +593,7 @@ static void LoggerCreateBufferWriteStream(Logger *logger)
 					}
 					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 				}
+				pthread_mutex_unlock(&logger->logQueueMutex);
 				LOGGERDBG(CFSTR("-> bytes written to file: %ld"), (long)totalWritten);
 			}
 		}
@@ -620,41 +643,6 @@ static void LoggerEmptyBufferFile(Logger *logger)
 			free(buffer);
 		}
 	}
-}
-
-// -----------------------------------------------------------------------------
-#pragma mark -
-#pragma mark Internal message port callback
-// -----------------------------------------------------------------------------
-static CFDataRef LoggerMessagePortCallout(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void* info)
-{
-	// We got message data on the message port, add it to the logger queue and immediately
-	// try to write it. Note that calling conventions require that we make a copy of the data
-	// if we want to reuse it past the scope of this callout
-	Logger *logger = (Logger *)info;
-	assert(logger != NULL);
-	
-	if (!logger->connected && !logger->bufferLogsUntilConnection)
-		return NULL;
-
-	if (!logger->connected && logger->bufferFile)
-	{
-		// we're buffering to a file. Create the file stream if needed
-		if (logger->bufferWriteStream == NULL)
-			LoggerCreateBufferWriteStream(logger);
-		if (logger->bufferWriteStream != NULL)
-		{
-			// write data to buffer file (note that we don't check for incomplete writes)
-			CFWriteStreamWrite(logger->bufferWriteStream, CFDataGetBytePtr(data), CFDataGetLength(data));
-			return NULL;
-		}
-	}
-
-	CFMutableDataRef d = CFDataCreateMutableCopy(NULL, CFDataGetLength(data), data);
-	CFArrayAppendValue(logger->logQueue, d);
-	CFRelease(d);
-	LoggerWriteMoreData(logger);
-	return NULL;
 }
 
 // -----------------------------------------------------------------------------
@@ -1239,31 +1227,25 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		EncodeLoggerString(encoder, s, PART_KEY_CLIENT_MODEL);
 		CFRelease(s);
 #endif
-		CFArrayInsertValueAtIndex(logger->logQueue, 0, encoder);
+		pthread_mutex_lock(&logger->logQueueMutex);
+		CFArrayInsertValueAtIndex(logger->logQueue, logger->incompleteSendOfFirstItem ? 1 : 0, encoder);
+		pthread_mutex_unlock(&logger->logQueueMutex);
+
 		CFRelease(encoder);
 	}
 }
 
 static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message)
 {
-	// Send the data to the port on the logger thread's runloop, this way we don't have to use
-	// locks to communicate message to the logger queue.
-	// Issue: if the run loop is blocking on something for too long, it also blocks the sender's
-	// thread. In a future release, use a private queue and a runloop source to avoid this.
-	if (logger->messagePort != NULL)
+	// Add the message to the log queue and signal the runLoop source that will trigger
+	// a send on the worker thread
+	if (logger->messagePushedSource != NULL)
 	{
-		SInt32 err;
-		int loops = 0;
-		while ((err = CFMessagePortSendRequest(logger->messagePort, 0, message, 0.1, 0, NULL, NULL)) == kCFMessagePortSendTimeout)
-			loops++;
-		if (err != kCFMessagePortSuccess)
-		{
-			LOGGERDBG(CFSTR("-> CFMessagePortSendRequest returned %ld"), err);
-		}
-		else if (loops != 0)
-		{
-			LOGGERDBG(CFSTR("-> CFMessagePortSendRequest with 0.1 timeout looped %d times before sending succeeded"), loops);
-		}
+		pthread_mutex_lock(&logger->logQueueMutex);
+		CFArrayAppendValue(logger->logQueue, message);
+		pthread_mutex_unlock(&logger->logQueueMutex);
+
+		CFRunLoopSourceSignal(logger->messagePushedSource);
 	}
 }
 

@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b5 2010-11-06
+ * version 1.0b5 2010-11-08
  *
  * Part of NSLogger (client side)
  *
@@ -34,6 +34,7 @@
  */
 #import <unistd.h>
 #import <pthread.h>
+#import <libkern/OSAtomic.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
@@ -64,9 +65,10 @@ typedef struct
 	CFNetServiceBrowserRef bonjourDomainBrowser;	// Domain browser
 	
 	CFMutableArrayRef logQueue;						// Message queue
+	pthread_mutex_t logQueueMutex;
 	
 	pthread_t workerThread;							// The worker thread responsible for Bonjour resolution, connection and logs transmission
-	CFMessagePortRef messagePort;					// A message port to communicate logs to send to the worker thread
+	CFRunLoopSourceRef messagePushedSource;			// A message source that fires on the worker thread when messages are available for send
 	
 	CFWriteStreamRef logStream;						// The connected stream we're writing to
 	CFWriteStreamRef bufferWriteStream;				// If bufferFile not NULL and we're not connected, points to a stream for writing log data
@@ -81,13 +83,16 @@ typedef struct
 	
 	int32_t messageSeq;								// sequential message number (added to each message sent)
 
-	BOOL connected;									// Set to YES once the write stream declares the connection open
-	volatile BOOL quit;								// Set to YES to terminate the logger worker thread's runloop
-
+	// settings
 	BOOL logToConsole;
 	BOOL bufferLogsUntilConnection;					// if set to YES, all logs are buffered to memory until we can connect to a logging service
 	BOOL browseBonjour;
 	BOOL browseOnlyLocalDomain;						// if set to YES, Bonjour only checks "local." domain to look for logger
+
+	// internal state
+	BOOL connected;									// Set to YES once the write stream declares the connection open
+	volatile BOOL quit;								// Set to YES to terminate the logger worker thread's runloop
+	BOOL incompleteSendOfFirstItem;					// set to YES if we are sending the first item in the queue and it's bigger than what the buffer can hold
 } Logger;
 
 
