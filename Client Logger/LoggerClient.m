@@ -409,9 +409,9 @@ static void *LoggerWorkerThread(Logger *logger)
 		// If there are messages in the queue and LoggerStop() was called and
 		// a buffer file was set just before LoggerStop() was called, flush
 		// the log queue to the buffer file
-		pthread_mutex_lock(&logger->logQueue);
+		pthread_mutex_lock(&logger->logQueueMutex);
 		CFIndex outstandingMessages = CFArrayGetCount(logger->logQueue);
-		pthread_mutex_unlock(&logger->logQueue);
+		pthread_mutex_unlock(&logger->logQueueMutex);
 		if (outstandingMessages)
 			LoggerCreateBufferWriteStream(logger);
 	}
