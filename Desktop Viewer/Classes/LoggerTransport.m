@@ -55,7 +55,7 @@
 - (void)addConnection:(LoggerConnection *)aConnection
 {
 	[connections addObject:aConnection];
-	dispatch_async(dispatch_get_main_queue(), ^{
+	dispatch_sync(dispatch_get_main_queue(), ^{
 		[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection];
 	});
 }
