@@ -58,3 +58,22 @@
 }
 
 @end
+
+@implementation FilterColumnHeaderValueTransformer
+
++ (void)load
+{
+	[NSValueTransformer setValueTransformer:[[self alloc] init]
+									forName:@"FilterColumnHeader"];
+}
+
++ (Class)transformedValueClass
+{
+	return [NSString class];
+}
+
+- (id)transformedValue:(id)value
+{
+	return [NSString stringWithFormat:NSLocalizedString(@"Filters for “%@”", @""), value];
+}
+@end

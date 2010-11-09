@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1092"/>
+			<integer value="471"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -118,7 +118,7 @@
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
 																						<int key="NSCellFlags">75628096</int>
 																						<int key="NSCellFlags2">2048</int>
-																						<string key="NSContents">Filter Sets</string>
+																						<string key="NSContents">Application Sets</string>
 																						<object class="NSFont" key="NSSupport" id="26">
 																							<string key="NSName">LucidaGrande</string>
 																							<double key="NSSize">11</double>
@@ -340,7 +340,7 @@
 																		<object class="NSTableView" id="150938961">
 																			<reference key="NSNextResponder" ref="70922810"/>
 																			<int key="NSvFlags">4352</int>
-																			<string key="NSFrameSize">{219, 302}</string>
+																			<string key="NSFrameSize">{219, 299}</string>
 																			<reference key="NSSuperview" ref="70922810"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
 																			<bool key="NSEnabled">YES</bool>
@@ -413,7 +413,7 @@
 																			<int key="NSTableViewDraggingDestinationStyle">1</int>
 																		</object>
 																	</object>
-																	<string key="NSFrame">{{0, 17}, {216, 302}}</string>
+																	<string key="NSFrame">{{0, 17}, {216, 299}}</string>
 																	<reference key="NSSuperview" ref="624289750"/>
 																	<reference key="NSNextKeyView" ref="150938961"/>
 																	<reference key="NSDocView" ref="150938961"/>
@@ -456,7 +456,7 @@
 																</object>
 																<reference ref="1044448804"/>
 															</object>
-															<string key="NSFrameSize">{216, 319}</string>
+															<string key="NSFrame">{{0, 3}, {216, 316}}</string>
 															<reference key="NSSuperview" ref="624715448"/>
 															<reference key="NSNextKeyView" ref="70922810"/>
 															<int key="NSsFlags">656</int>
@@ -487,8 +487,8 @@
 												</object>
 												<object class="NSMutableArray" key="dict.values">
 													<bool key="EncodedWithXMLCoder">YES</bool>
-													<integer value="200"/>
-													<integer value="200"/>
+													<integer value="30"/>
+													<integer value="30"/>
 												</object>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxValues">
@@ -509,8 +509,8 @@
 												</object>
 												<object class="NSMutableArray" key="dict.values">
 													<bool key="EncodedWithXMLCoder">YES</bool>
-													<integer value="0"/>
-													<integer value="0"/>
+													<integer value="1"/>
+													<integer value="1"/>
 												</object>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxUnits">
@@ -526,7 +526,7 @@
 													<integer value="0"/>
 												</object>
 											</object>
-											<int key="BWSVCollapsiblePopupSelection">1</int>
+											<int key="BWSVCollapsiblePopupSelection">0</int>
 											<bool key="BWSVDividerCanCollapse">NO</bool>
 										</object>
 										<object class="BWAnchoredButtonBar" id="1007791563">
@@ -964,7 +964,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">5</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3666,6 +3665,37 @@
 					</object>
 					<int key="connectionID">1183</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">headerTitle: selection.title</string>
+						<reference key="source" ref="34494719"/>
+						<reference key="destination" ref="78795738"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="34494719"/>
+							<reference key="NSDestination" ref="78795738"/>
+							<string key="NSLabel">headerTitle: selection.title</string>
+							<string key="NSBinding">headerTitle</string>
+							<string key="NSKeyPath">selection.title</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNullPlaceholder</string>
+									<string>NSValueTransformerName</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>No Selection</string>
+									<string>No Selection</string>
+									<string>FilterColumnHeader</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1191</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -4861,10 +4891,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{7, 436}, {885, 666}}</string>
+					<string>{{22, 473}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{7, 436}, {885, 666}}</string>
+					<string>{{22, 473}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -5022,7 +5052,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1183</int>
+			<int key="maxID">1191</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
