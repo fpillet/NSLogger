@@ -265,8 +265,8 @@ static NSMutableArray *sTags = nil;
 	else
 		desc = (NSString *)message;
 	
-	return [NSString stringWithFormat:@"<%@ %p type=%@ thread=%@ tag=%@ level=%d indent=%d message=%@>",
-			[self class], self, typeString, threadID, tag, (int)level, (int)indent, desc];
+	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d indent=%d message=%@>",
+			[self class], self, sequence, typeString, threadID, tag, (int)level, (int)indent, desc];
 }
 #endif
 
