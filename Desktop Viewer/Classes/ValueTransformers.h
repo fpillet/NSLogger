@@ -33,3 +33,6 @@
 // (to enable the Delete button in the filters list)
 @interface CanFilterSelectionBeDeletedValueTransformer : NSValueTransformer
 @end
+
+@interface FilterColumnHeaderValueTransformer : NSValueTransformer
+@end

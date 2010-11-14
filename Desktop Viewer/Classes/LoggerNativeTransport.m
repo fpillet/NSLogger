@@ -117,7 +117,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 {
 	if (listenerThread != nil && [NSThread currentThread] != listenerThread)
 	{
-		[self performSelector:_cmd onThread:listenerThread withObject:aConnection waitUntilDone:YES];
+		[self performSelector:_cmd onThread:listenerThread withObject:aConnection waitUntilDone:NO];
 		return;
 	}
 	[super removeConnection:aConnection];

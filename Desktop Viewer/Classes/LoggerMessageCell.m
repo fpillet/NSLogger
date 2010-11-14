@@ -73,11 +73,16 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 + (NSDictionary *)defaultAttributesDictionary
 {
 	NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
-	
-	NSFont *defaultFont = [NSFont fontWithName:@"Lucida Grande" size:11];
-	NSFont *defaultMonospacedFont = [NSFont fontWithName:@"Consolas" size:11];
-	NSFont *defaultTagAndLevelFont = [NSFont fontWithName:@"Lucida Grande Bold" size:9];
 
+	// Preferrably use Consolas, but revert to other fonts if not installed (fix by Steven Woolgar)
+	NSFont *defaultFont = [NSFont fontWithName:@"Lucida Grande" size:11];
+	NSFont *defaultTagAndLevelFont = [NSFont fontWithName:@"Lucida Grande Bold" size:9];
+	NSFont *defaultMonospacedFont = [NSFont fontWithName:@"Consolas" size:11];
+	if (defaultMonospacedFont == nil)
+		defaultMonospacedFont = [NSFont fontWithName:@"Menlo" size:11];
+	if (defaultMonospacedFont == nil)
+		defaultMonospacedFont = [NSFont fontWithName:@"Courier" size:11];
+	
 	// Default text attributes
 	NSMutableDictionary *dict;
 	NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
