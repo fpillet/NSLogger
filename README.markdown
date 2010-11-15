@@ -34,10 +34,10 @@ It's very easy to log binary data or images using *NSLogger*. Use the *LogData()
 # Powerful desktop viewer #
 The desktop viewer application provides tools like:
 
- * Filters (with ![regular expression matching](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks)) that let your perform data mining in your logs
+ * Filters (with [regular expression matching](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks)) that let your perform data mining in your logs
  * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
  * Image and binary data display directly in the log window
- * ![Markers](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
+ * [Markers](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
  * Fast navigation in your logs
  * Display and export all your logs as text
  
