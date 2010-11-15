@@ -33,6 +33,10 @@
 
 #define TEST_FILE_BUFFERING 0
 
+#define TEST_DIRECT_CONNECTION 1
+#define LOGGING_HOST CFSTR("127.0.0.1")
+#define LOGGING_PORT 50007
+
 @implementation NSLoggerMacClientTestAppDelegate
 
 @synthesize window;
@@ -43,6 +47,9 @@
 
 #if TEST_FILE_BUFFERING
 	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData_MacOSX.rawnsloggerdata"));
+#endif
+#if TEST_DIRECT_CONNECTION
+	LoggerSetViewerHost(NULL, LOGGING_HOST, LOGGING_PORT);
 #endif
 }
 

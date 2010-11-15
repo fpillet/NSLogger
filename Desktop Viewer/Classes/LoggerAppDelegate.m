@@ -28,6 +28,7 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <Security/SecItem.h>
 #import "LoggerAppDelegate.h"
 #import "LoggerNativeTransport.h"
 #import "LoggerWindowController.h"
@@ -39,9 +40,13 @@ NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
 NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
-@implementation LoggerAppDelegate
+@interface LoggerAppDelegate ()
+- (void)loadServerCerts;
+@end
 
+@implementation LoggerAppDelegate
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;
+@synthesize serverCerts;
 
 - (id) init
 {
@@ -108,6 +113,8 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 - (void)dealloc
 {
+	if (serverCerts != NULL)
+		CFRelease(serverCerts);
 	[transports release];
 	[super dealloc];
 }
@@ -192,6 +199,9 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[statusController showWindow:self];
 	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
+	// Retrieve server certs for SSL encryption
+	[self loadServerCerts];
+	
 	// initialize all supported transports
 	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
 	t.publishBonjourService = YES;
@@ -267,5 +277,84 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[prefsController showWindow:sender];
 }
 
-@end
+- (void)loadServerCerts
+{
+	// NSLoggerCert.pem was generated with:
+	// openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout NSLoggerCert.pem -out NSLoggerCert.pem
 
+	// Open or create our private keychain, and unlock it
+	OSStatus status = SecKeychainOpen("/tmp/NSLogger.keychain", &serverKeychain);
+	if (status != noErr)
+	{
+		status = SecKeychainCreate("/tmp/NSLogger.keychain",
+								   8, "NSLogger",
+								   false,
+								   NULL,
+								   &serverKeychain);
+		if (status != noErr)
+		{
+			// we can't assert security
+			return;
+		}
+	}
+	status = SecKeychainUnlock(serverKeychain, 8, "NSLogger", true);
+	if (status != noErr)
+	{
+		// we can't assert security
+		return;
+	}
+
+	SecCertificateRef certRef = NULL;
+	SecIdentityRef identityRef = NULL;
+
+	// Find the certificate if we have already loaded it, or instantiate and find again
+	for (int i = 0; i < 2 && status == noErr; i++)
+	{
+		// Search for the server certificate in the NSLogger keychain
+		SecKeychainSearchRef keychainSearchRef = NULL;
+		status = SecKeychainSearchCreateFromAttributes(serverKeychain, kSecCertificateItemClass, NULL, &keychainSearchRef);
+		if (status == noErr)
+			status = SecKeychainSearchCopyNext(keychainSearchRef, (SecKeychainItemRef *)&certRef);
+		CFRelease(keychainSearchRef);
+		
+		// Did we find the certificate?
+		if (status == noErr)
+			break;
+
+		// Load the NSLogger self-signed certificate
+		NSData *certData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"NSLoggerCert" ofType:@"pem"]];
+		
+		SecKeyImportExportParameters kp;
+		bzero(&kp, sizeof(kp));
+		kp.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
+		//	kp.flags = kSecKeyImportOnlyOne;
+		//	kp.keyUsage = CSSM_KEYUSE_ENCRYPT | CSSM_KEYUSE_DECRYPT;
+		//	kp.keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_PERMANENT;
+		SecExternalFormat inputFormat = kSecFormatPEMSequence;
+		SecExternalItemType itemType = kSecItemTypeAggregate;
+
+		status = SecKeychainItemImport((CFDataRef)certData,
+									   CFSTR("NSLoggerCert.pem"),
+									   &inputFormat,
+									   &itemType,
+									   0,				// flags are unused
+									   &kp,				// import-export parameters
+									   serverKeychain,
+									   NULL);
+	}
+
+	status = SecIdentityCreateWithCertificate(serverKeychain, certRef, &identityRef);
+	if (status == noErr)
+	{
+		CFTypeRef values[] = {
+			identityRef, certRef
+		};
+		serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
+	}
+	if (certRef != NULL)
+		CFRelease(certRef);
+	if (identityRef != NULL)
+		CFRelease(identityRef);
+}
+
+@end

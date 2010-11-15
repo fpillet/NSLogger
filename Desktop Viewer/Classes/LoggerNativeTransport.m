@@ -36,6 +36,7 @@
 #import "LoggerNativeConnection.h"
 #import "LoggerNativeMessage.h"
 #import "LoggerStatusWindowController.h"
+#import "LoggerAppDelegate.h"
 
 /* Local prototypes */
 static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CFDataRef address, const void *data, void *info);
@@ -405,6 +406,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				{
 					// append data to the data buffer
 					NSMutableArray *msgs = [[NSMutableArray alloc] init];
+					//[self dumpBytes:cnx.tmpBuf length:numBytes];
 					[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
 					NSUInteger bufferLength = [cnx.buffer length];
 					while (bufferLength > 4)
@@ -447,10 +449,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			case NSStreamEventErrorOccurred:
 				// @@@ TODO: add message with error description
 #ifdef DEBUG
-				NSLog(@"Stream error occurred");
+				NSLog(@"Stream error occurred: %@", [theStream streamError]);
 #endif
 				// fall through
 			case NSStreamEventEndEncountered: {
+				// Append a disconnect message for only one of the two streams
 				struct timeval t;
 				gettimeofday(&t, NULL);
 				LoggerMessage *msg = [[LoggerMessage alloc] init];
@@ -531,21 +534,50 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			
 			if (CFDataGetLength(address) == addrSize)
 			{
-				// create the input stream (that's all we need)
+				// create the input and output streams. We don't need an output stream,
+				// except for SSL negotiation.
 				CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
 				CFReadStreamRef readStream = NULL;
 				CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
-				if (readStream != NULL) 
+				if (readStream != NULL)
 				{
+					// although this is implied, just want to make sure
 					CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
+					CFReadStreamSetProperty(readStream, kCFStreamPropertySocketSecurityLevel, kCFStreamSocketSecurityLevelSSLv3);
+					
+					CFArrayRef serverCerts = ((LoggerAppDelegate *)[[NSApplication sharedApplication] delegate]).serverCerts;
+					if (serverCerts != NULL)
+					{
+						// setup stream for SSL
+						const void *SSLKeys[] = {
+							kCFStreamSSLLevel,
+							kCFStreamSSLValidatesCertificateChain,
+							kCFStreamSSLIsServer,
+							kCFStreamSSLCertificates
+						};
+						const void *SSLValues[] = {
+							kCFStreamSocketSecurityLevelNegotiatedSSL,
+							kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
+							kCFBooleanTrue,				// we are server
+							serverCerts,
+						};
+						CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+						CFReadStreamSetProperty(readStream, kCFStreamPropertySSLSettings, SSLDict);
+						CFRelease(SSLDict);
+					}
 
-					LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithStream:(NSInputStream *)readStream
-																				   clientAddress:(NSData *)address];
+					// Create the connection instance
+					LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
+																						clientAddress:(NSData *)address];
 					[myself addConnection:cnx];
+
+					// Schedule & open stream
 					[(NSInputStream *)readStream setDelegate:myself];
 					[(NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+
 					[(NSInputStream *)readStream open];
 					[(NSInputStream *)readStream release];
+					
 					[cnx release];
 				}
 				else
