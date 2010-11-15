@@ -33,6 +33,8 @@
  * 
  */
 
+#define LOGGER_USES_SSL		1			// Set to 0 if you don't want SSL connections
+
 /* NSLogger native binary message format:
  * Each message is a dictionary encoded in a compact format. All values are stored
  * in network order (big endian). A message is made of several "parts", which are

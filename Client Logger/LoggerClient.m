@@ -87,7 +87,7 @@
  */
 
 // Set this to 1 to activate console logs when running the logger itself
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 1
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -119,6 +119,9 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
 static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType event, void* info);
+#if LOGGER_DEBUG
+static void LoggerReadStreamCallback(CFReadStreamRef ws, CFStreamEventType event, void* info);
+#endif
 
 // File buffering
 static void LoggerCreateBufferWriteStream(Logger *logger);
@@ -395,14 +398,15 @@ static void *LoggerWorkerThread(Logger *logger)
 	// Cleanup
 	if (logger->browseBonjour)
 		LoggerStopBonjourBrowsing(logger);
+	LoggerStopReachabilityChecking(logger);
 
 	if (logger->logStream != NULL)
 	{
+		CFWriteStreamSetClient(logger->logStream, 0, NULL, NULL);
 		CFWriteStreamClose(logger->logStream);
 		CFRelease(logger->logStream);
 		logger->logStream = NULL;
 	}
-	LoggerStopReachabilityChecking(logger);
 
 	if (logger->bufferWriteStream == NULL && logger->bufferFile != NULL)
 	{
@@ -852,17 +856,40 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 								kCFStreamEventCanAcceptBytes |
 								kCFStreamEventErrorOccurred |
 								kCFStreamEventEndEncountered),
-							   &LoggerWriteStreamCallback, &context))
+							   &LoggerWriteStreamCallback,
+							   &context))
 	{
+		
+		const void *SSLKeys[] = {
+			kCFStreamSSLLevel,
+			kCFStreamSSLValidatesCertificateChain,
+			kCFStreamSSLIsServer,
+			kCFStreamSSLPeerName
+		};
+		const void *SSLValues[] = {
+			kCFStreamSocketSecurityLevelNegotiatedSSL,
+			kCFBooleanFalse,			// no certificate chain validation
+			kCFBooleanFalse,			// not a server
+			kCFNull
+		};
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
+		CFRelease(SSLDict);
+
 		CFWriteStreamScheduleWithRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+		
 		if (CFWriteStreamOpen(logger->logStream))
 		{
 			LOGGERDBG(CFSTR("-> stream open attempt, waiting for open completion"));
 			return YES;
 		}
+
 		LOGGERDBG(CFSTR("-> stream open failed."));
+		
+		CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, NULL);
+		if (CFWriteStreamGetStatus(logger->logStream) == kCFStreamStatusOpen)
+			CFWriteStreamClose(logger->logStream);
 		CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, &context);
 	}
 	else
 	{
@@ -915,6 +942,11 @@ static void LoggerTryConnect(Logger *logger)
 		{
 			// Create stream failed
 			LOGGERDBG(CFSTR("-> failed."));
+			if (logger->logStream != NULL)
+			{
+				CFRelease(logger->logStream);
+				logger->logStream = NULL;
+			}
 		}
 		else if (LoggerConfigureAndOpenStream(logger))
 		{
@@ -981,9 +1013,13 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 				LOGGERDBG(CFSTR("Logger DISCONNECTED"));
 				logger->connected = NO;
 			}
+			CFWriteStreamSetClient(logger->logStream, 0, NULL, NULL);
+			CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
 			CFWriteStreamClose(logger->logStream);
+			
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
+
 			logger->sendBufferUsed = 0;
 			logger->sendBufferOffset = 0;
 			if (logger->bufferReadStream != NULL)
@@ -1004,6 +1040,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			break;
 	}
 }
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Internal encoding functions

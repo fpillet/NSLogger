@@ -35,11 +35,11 @@
 
 @synthesize readStream, buffer, tmpBuf, tmpBufSize;
 
-- (id)initWithStream:(NSInputStream *)aStream clientAddress:(NSData *)anAddress
+- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
 {
 	if ((self = [super initWithAddress:anAddress]) != nil)
 	{
-		readStream = [aStream retain];
+		readStream = [anInputStream retain];
 
 		tmpBufSize = TMP_BUF_SIZE;
 		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
