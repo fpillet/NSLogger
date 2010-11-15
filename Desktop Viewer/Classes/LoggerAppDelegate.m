@@ -333,12 +333,11 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 		status = SecKeychainOpen(keychainPath, &serverKeychain);
 	if (status != noErr)
 	{
-		// Create a trust to prevent confirmation dialog when we access our own keychain
 		SecAccessRef accessRef = NULL;
 		status = SecAccessCreate(CFSTR("NSLogger SSL encryption access"),
 								 NULL,
 								 &accessRef);
-
+		
 		status = SecKeychainCreate(keychainPath,
 								   8, "NSLogger",	// fixed password (useless, really)
 								   false,
@@ -402,22 +401,34 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 			// Make a couple tweaks:
 			// - Set the name of the private key to "NSLogger SSL key"
 			// - Set the name of the certificate to "NSLogger SSL certificate"
+			// - Set the certificate's access rights for our application so user is not bothered with confirmation dialogs
 			const char *keyLabel = "NSLogger SSL key";
 			const char *certLabel = "NSLogger SSL certificate";
 			for (int i = 0; i < CFArrayGetCount(importedItems); i++)
 			{
-				SecKeyRef keyRef = (SecKeyRef)CFArrayGetValueAtIndex(importedItems, i);
-				const char *label = (SecKeyGetTypeID() == CFGetTypeID(keyRef)) ? keyLabel : certLabel;
-				SecKeychainAttribute labelAttr = {
-					.tag = kSecLabelItemAttr,
-					.length = strlen(label),
-					.data = (void *)label
+				SecKeychainItemRef itemRef = (SecKeychainItemRef)CFArrayGetValueAtIndex(importedItems, i);
+				const char *label = (SecKeyGetTypeID() == CFGetTypeID(itemRef)) ? keyLabel : certLabel;
+				SecKeychainAttribute attrs[2] = {
+					{	.tag = kSecLabelItemAttr, .length = strlen(label), .data = (void *)label },
+					{	.tag = kSecDescriptionItemAttr, .length = strlen(label), .data = (void *)label }
 				};
 				SecKeychainAttributeList attrList = {
-					.count = 1,
-					.attr = &labelAttr
+					.count = 2,
+					.attr = attrs
 				};
-				SecKeychainItemModifyContent((SecKeychainItemRef)keyRef, &attrList, 0, NULL);
+				SecKeychainItemModifyContent(itemRef, &attrList, 0, NULL);
+				if (SecKeyGetTypeID() != CFGetTypeID(itemRef))
+				{
+					SecAccessRef accessRef = NULL;
+					status = SecAccessCreate(CFSTR("NSLogger SSL encryption access"),
+											 NULL,
+											 &accessRef);
+					if (status != noErr)
+					{
+						SecKeychainItemSetAccess(itemRef, accessRef);
+						CFRelease(accessRef);
+					}
+				}
 			}
 			CFRelease(importedItems);
 		}
