@@ -379,6 +379,32 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
 }
 
+- (void)setupSSLForStream:(NSInputStream *)readStream
+{
+	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
+	[appDelegate unlockAppKeychain];
+	CFArrayRef serverCerts = appDelegate.serverCerts;
+	if (serverCerts != NULL)
+	{
+		// setup stream for SSL
+		const void *SSLKeys[] = {
+			kCFStreamSSLLevel,
+			kCFStreamSSLValidatesCertificateChain,
+			kCFStreamSSLIsServer,
+			kCFStreamSSLCertificates
+		};
+		const void *SSLValues[] = {
+			kCFStreamSocketSecurityLevelNegotiatedSSL,
+			kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
+			kCFBooleanTrue,				// we are server
+			serverCerts,
+		};
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFReadStreamSetProperty((CFReadStreamRef)readStream, kCFStreamPropertySSLSettings, SSLDict);
+		CFRelease(SSLDict);
+	}
+}
+
 // -----------------------------------------------------------------------------
 // NSStream delegate
 // -----------------------------------------------------------------------------
@@ -402,8 +428,13 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		switch(streamEvent)
 		{
 			case NSStreamEventHasBytesAvailable:
-				while ([cnx.readStream hasBytesAvailable] && (numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize]) > 0)
+				while ([cnx.readStream hasBytesAvailable])
 				{
+					// read bytes
+					numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize];
+					if (numBytes <= 0)
+						break;
+
 					// append data to the data buffer
 					NSMutableArray *msgs = [[NSMutableArray alloc] init];
 					//[self dumpBytes:cnx.tmpBuf length:numBytes];
@@ -543,29 +574,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				{
 					// although this is implied, just want to make sure
 					CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
-					CFReadStreamSetProperty(readStream, kCFStreamPropertySocketSecurityLevel, kCFStreamSocketSecurityLevelSSLv3);
-					
-					CFArrayRef serverCerts = ((LoggerAppDelegate *)[[NSApplication sharedApplication] delegate]).serverCerts;
-					if (serverCerts != NULL)
-					{
-						// setup stream for SSL
-						const void *SSLKeys[] = {
-							kCFStreamSSLLevel,
-							kCFStreamSSLValidatesCertificateChain,
-							kCFStreamSSLIsServer,
-							kCFStreamSSLCertificates
-						};
-						const void *SSLValues[] = {
-							kCFStreamSocketSecurityLevelNegotiatedSSL,
-							kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
-							kCFBooleanTrue,				// we are server
-							serverCerts,
-						};
-						CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-						CFReadStreamSetProperty(readStream, kCFStreamPropertySSLSettings, SSLDict);
-						CFRelease(SSLDict);
-					}
-
+#if LOGGER_USES_SSL
+					[myself setupSSLForStream:(NSInputStream *)readStream];
+#endif
 					// Create the connection instance
 					LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
 																						clientAddress:(NSData *)address];
