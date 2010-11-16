@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b5 2010-11-08
+ * version 1.0b6 2010-16-08
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -349,16 +349,18 @@ static void *LoggerWorkerThread(Logger *logger)
 	CFRunLoopSourceContext context;
 	bzero(&context, sizeof(context));
 	context.info = logger;
+	// Failing to create the runloop source for pushing messages is a major failure.
 	context.perform = (void *)(void *)&LoggerWriteMoreData;
 	logger->messagePushedSource = CFRunLoopSourceCreate(NULL, 0, &context);
 	if (logger->messagePushedSource == NULL)
 	{
-		LOGGERDBG(CFSTR("-> failed creating the messagePushed runLoopSource"));
+		// This NSLog is intentional. We WANT console output in this case
+		NSLog(@"*** NSLogger: Worker thread failed creating runLoop source, switching to console logging.");
+		logger->logToConsole = YES;
+		logger->workerThread = NULL;
+		return NULL;
 	}
-	else
-	{
-		CFRunLoopAddSource(runLoop, logger->messagePushedSource, kCFRunLoopDefaultMode);
-	}
+	CFRunLoopAddSource(runLoop, logger->messagePushedSource, kCFRunLoopDefaultMode);
 
 	// Start Bonjour browsing, wait for remote logging service to be found
 	if (logger->browseBonjour && logger->host == NULL)
@@ -427,6 +429,10 @@ static void *LoggerWorkerThread(Logger *logger)
 	CFRelease(logger->messagePushedSource);
 	logger->messagePushedSource = NULL;
 	
+	// if the client ever tries to log again against us, make sure that logs at least
+	// go to console
+	logger->logToConsole = YES;
+	logger->workerThread = NULL;
 	return NULL;
 }
 
@@ -481,7 +487,7 @@ static void LoggerWriteMoreData(Logger *logger)
 					pthread_mutex_unlock(&logger->logQueueMutex);
 					return;
 				}
-				
+
 				// first item is too big to fit in a single packet, send it separately
 				sendFirstItem = (CFMutableDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
 				logger->incompleteSendOfFirstItem = YES;
@@ -1239,12 +1245,16 @@ static void PushMessageToLoggerQueue(Logger *logger, CFDataRef message)
 {
 	// Add the message to the log queue and signal the runLoop source that will trigger
 	// a send on the worker thread
+	pthread_mutex_lock(&logger->logQueueMutex);
+	CFArrayAppendValue(logger->logQueue, message);
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	
 	if (logger->messagePushedSource != NULL)
 	{
-		pthread_mutex_lock(&logger->logQueueMutex);
-		CFArrayAppendValue(logger->logQueue, message);
-		pthread_mutex_unlock(&logger->logQueueMutex);
-
+		// One case where the pushed source may be NULL is if the client code
+		// immediately starts logging without initializing the logger first.
+		// In this case, the worker thread has not completed startup, so we don't need
+		// to fire the runLoop source
 		CFRunLoopSourceSignal(logger->messagePushedSource);
 	}
 }
