@@ -256,12 +256,17 @@ static NSMutableArray *sTags = nil;
 -(NSString *)description
 {
 	NSString *typeString = ((type == LOGMSG_TYPE_LOG) ? @"Log" :
-							(type == LOGMSG_TYPE_BLOCKSTART) ? @"BlockStart" : @"BlockEnd");
+							(type == LOGMSG_TYPE_CLIENTINFO) ? @"ClientInfo" :
+							(type == LOGMSG_TYPE_DISCONNECT) ? @"Disconnect" :
+							(type == LOGMSG_TYPE_BLOCKSTART) ? @"BlockStart" :
+							(type == LOGMSG_TYPE_BLOCKEND) ? @"BlockEnd" :
+							(type == LOGMSG_TYPE_MARK) ? @"Mark" :
+							@"Unknown");
 	NSString *desc;
 	if (contentsType == kMessageData)
 		desc = [NSString stringWithFormat:@"{data %u bytes}", [message length]];
 	else if (contentsType == kMessageImage)
-		desc = [NSString stringWithFormat:@"{image %dx%d}", [self imageSize].width, [self imageSize].height];
+		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", [self imageSize].width, [self imageSize].height];
 	else
 		desc = (NSString *)message;
 	
