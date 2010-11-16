@@ -87,7 +87,7 @@
  */
 
 // Set this to 1 to activate console logs when running the logger itself
-#define LOGGER_DEBUG 1
+#define LOGGER_DEBUG 0
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -865,7 +865,8 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 							   &LoggerWriteStreamCallback,
 							   &context))
 	{
-		
+#if LOGGER_USES_SSL
+		// Configure stream to require a SSL connection
 		const void *SSLKeys[] = {
 			kCFStreamSSLLevel,
 			kCFStreamSSLValidatesCertificateChain,
@@ -874,13 +875,14 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 		};
 		const void *SSLValues[] = {
 			kCFStreamSocketSecurityLevelNegotiatedSSL,
-			kCFBooleanFalse,			// no certificate chain validation
+			kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
 			kCFBooleanFalse,			// not a server
 			kCFNull
 		};
-		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
 		CFRelease(SSLDict);
+#endif
 
 		CFWriteStreamScheduleWithRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 		
