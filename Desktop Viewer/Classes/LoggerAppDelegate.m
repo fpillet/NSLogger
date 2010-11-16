@@ -118,6 +118,8 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 {
 	if (serverCerts != NULL)
 		CFRelease(serverCerts);
+	if (serverKeychain != NULL)
+		CFRelease(serverKeychain);
 	[transports release];
 	[super dealloc];
 }
@@ -230,6 +232,14 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	return NO;
 }
 
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+	if (serverKeychain != NULL)
+	{
+		SecKeychainDelete(serverKeychain);
+	}
+}
+
 - (void)newConnection:(LoggerConnection *)aConnection
 {
 	LoggerDocument *doc = [[LoggerDocument alloc] initWithConnection:aConnection];
@@ -280,6 +290,11 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[prefsController showWindow:sender];
 }
 
+- (BOOL)unlockAppKeychain
+{
+	return (SecKeychainUnlock(serverKeychain, 0, "", true) == noErr);
+}
+
 - (void)loadServerCerts
 {
 	// Load the certificate we need to support encrypted incoming connections via SSL
@@ -288,79 +303,40 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	// on using CFStreams which want certificates in a special form (linked to a keychain)
 	// and we want to make this fully transparent to the user.
 	//
-	// To this end we will:
-	// - create our own keychain (first time only)
-	// - setup access control to the keychain so that no dialog ever comes up (first time only)
-	// - import the self-signed certificate and private key into our keychain (first time only)
+	// To this end, we will (at each startup):
+	// - create our own private keychain
+	// - setup access control to the keychain so that no dialog ever comes up
+	// - import the self-signed certificate and private key into our keychain
 	// - retrieve the certificate from our keychain
 	// - create the required SecIdentityRef for the certificate to be recognized by the CFStream
 	// - keep this in the running app and use for incoming connections
-	
+
 	// NSLoggerCert.pem was generated from the command line with:
 	// $ openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout NSLoggerCert.pem -out NSLoggerCert.pem
 
 	// Path to our private keychain
-	BOOL isDirectory;
+	NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLogger.keychain"];
 	NSFileManager *fm = [NSFileManager defaultManager];
-	NSString *path = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject];
-	if ([path length])
-	{
-		path = [path stringByAppendingPathComponent:[[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey]];
-		if (![fm fileExistsAtPath:path isDirectory:&isDirectory] || !isDirectory)
-		{
-			[fm removeItemAtPath:path error:NULL];
-			if (![fm createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil])
-				path = NSTemporaryDirectory();
-		}
-	}
-	else
-	{
-		path = NSTemporaryDirectory();
-	}
-
-	path = [path stringByAppendingPathComponent:@"NSLogger.keychain"];
-	BOOL keychainFileExists = ([fm fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory);
-	if (keychainFileExists && isDirectory)
-	{
-		[fm removeItemAtPath:path error:nil];
-		keychainFileExists = NO;
-	}
-
+	[fm removeItemAtPath:path error:nil];
+	
 	// Open or create our private keychain, and unlock it
 	OSStatus status = -1;
 	const char *keychainPath = [path fileSystemRepresentation];
-	if (keychainFileExists)
-		status = SecKeychainOpen(keychainPath, &serverKeychain);
-	if (status != noErr)
-	{
-		SecAccessRef accessRef = NULL;
-		status = SecAccessCreate(CFSTR("NSLogger SSL encryption access"),
-								 NULL,
-								 &accessRef);
-		
-		status = SecKeychainCreate(keychainPath,
-								   8, "NSLogger",	// fixed password (useless, really)
-								   false,
-								   accessRef,
-								   &serverKeychain);
-		if (accessRef != NULL)
-			CFRelease(accessRef);
 
-		if (status != noErr)
-		{
-			// we can't support SSL without a proper keychain
-			return;
-		}
-	}
-	status = SecKeychainUnlock(serverKeychain, 8, "NSLogger", true);
+	status = SecKeychainCreate(keychainPath,
+							   0, "",	// fixed password (useless, really)
+							   false,
+							   NULL,
+							   &serverKeychain);
 	if (status != noErr)
 	{
-		// we can't assert security
+		// we can't support SSL without a proper keychain
+		// @@@ TODO: raise alert to let user know
 		return;
 	}
+	[self unlockAppKeychain];
 
 	SecCertificateRef certRef = NULL;
-	SecIdentityRef identityRef = NULL;
 
 	// Find the certificate if we have already loaded it, or instantiate and find again
 	for (int i = 0; i < 2 && status == noErr; i++)
@@ -385,7 +361,6 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 		kp.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
 		SecExternalFormat inputFormat = kSecFormatPEMSequence;
 		SecExternalItemType itemType = kSecItemTypeAggregate;
-		CFArrayRef importedItems = NULL;
 
 		status = SecKeychainItemImport((CFDataRef)certData,
 									   CFSTR("NSLoggerCert.pem"),
@@ -394,59 +369,25 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 									   0,				// flags are unused
 									   &kp,				// import-export parameters
 									   serverKeychain,
-									   &importedItems);
-
-		if (importedItems != NULL)
-		{
-			// Make a couple tweaks:
-			// - Set the name of the private key to "NSLogger SSL key"
-			// - Set the name of the certificate to "NSLogger SSL certificate"
-			// - Set the certificate's access rights for our application so user is not bothered with confirmation dialogs
-			const char *keyLabel = "NSLogger SSL key";
-			const char *certLabel = "NSLogger SSL certificate";
-			for (int i = 0; i < CFArrayGetCount(importedItems); i++)
-			{
-				SecKeychainItemRef itemRef = (SecKeychainItemRef)CFArrayGetValueAtIndex(importedItems, i);
-				const char *label = (SecKeyGetTypeID() == CFGetTypeID(itemRef)) ? keyLabel : certLabel;
-				SecKeychainAttribute attrs[2] = {
-					{	.tag = kSecLabelItemAttr, .length = strlen(label), .data = (void *)label },
-					{	.tag = kSecDescriptionItemAttr, .length = strlen(label), .data = (void *)label }
-				};
-				SecKeychainAttributeList attrList = {
-					.count = 2,
-					.attr = attrs
-				};
-				SecKeychainItemModifyContent(itemRef, &attrList, 0, NULL);
-				if (SecKeyGetTypeID() != CFGetTypeID(itemRef))
-				{
-					SecAccessRef accessRef = NULL;
-					status = SecAccessCreate(CFSTR("NSLogger SSL encryption access"),
-											 NULL,
-											 &accessRef);
-					if (status != noErr)
-					{
-						SecKeychainItemSetAccess(itemRef, accessRef);
-						CFRelease(accessRef);
-					}
-				}
-			}
-			CFRelease(importedItems);
-		}
+									   NULL);
 	}
 
-	status = SecIdentityCreateWithCertificate(serverKeychain, certRef, &identityRef);
 	if (status == noErr)
 	{
-		CFTypeRef values[] = {
-			identityRef, certRef
-		};
-		serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
+		SecIdentityRef identityRef = NULL;
+		status = SecIdentityCreateWithCertificate(serverKeychain, certRef, &identityRef);
+		if (status == noErr)
+		{
+			CFTypeRef values[] = {
+				identityRef, certRef
+			};
+			serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
+			CFRelease(identityRef);
+		}
 	}
 
 	if (certRef != NULL)
 		CFRelease(certRef);
-	if (identityRef != NULL)
-		CFRelease(identityRef);
 }
 
 @end

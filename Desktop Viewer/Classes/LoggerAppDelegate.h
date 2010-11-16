@@ -57,6 +57,8 @@
 
 - (IBAction)showPreferences:(id)sender;
 
+- (BOOL)unlockAppKeychain;
+
 @end
 
 extern NSString * const kPrefPublishesBonjourService;
