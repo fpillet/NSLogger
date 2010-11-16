@@ -196,7 +196,7 @@
 		UIColor *fillColor = [UIColor colorWithRed:r green:g blue:b alpha:1.0f];
 		CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
 		CGContextFillRect(ctx, CGRectMake(0, 0, 100, 100));
-		CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
+		CGContextSetTextMatrix(ctx, CGAffineTransformConcat(CGAffineTransformMakeTranslation(0, 100), CGAffineTransformMakeScale(1.0f, -1.0f)));
 		CGContextSelectFont(ctx, "Helvetica", 14.0, kCGEncodingMacRoman);
 		CGContextSetShadowWithColor(ctx, CGSizeMake(1, 1), 1.0f, [UIColor whiteColor].CGColor);
 		CGContextSetTextDrawingMode(ctx, kCGTextFill);

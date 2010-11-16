@@ -101,7 +101,7 @@
 		// nearly same code as iPhone example, could certainly be made shorter
 		imagesCounter++;
 		NSImage *img = [[NSImage alloc] initWithSize:NSMakeSize(100,100)];
-		[img lockFocusFlipped:YES];
+		[img lockFocusFlipped:NO];
 		CGContextRef ctx = (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 		CGFloat r = (CGFloat)(arc4random() % 256) / 255.0f;
 		CGFloat g = (CGFloat)(arc4random() % 256) / 255.0f;
