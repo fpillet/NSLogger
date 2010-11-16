@@ -33,7 +33,7 @@
  * 
  */
 
-#define LOGGER_USES_SSL		0			// Set to 0 if you don't want SSL connections
+#define LOGGER_USES_SSL		1			// Set to 0 if you don't want SSL connections
 
 /* NSLogger native binary message format:
  * Each message is a dictionary encoded in a compact format. All values are stored
