@@ -523,6 +523,25 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	assert([NSThread isMainThread]);
 	@synchronized (attachedConnection.messages)
 	{
+		// Remember the currently selected message
+		NSSet *selectedMessages = nil;
+		NSIndexSet *selectedRows = [logTable selectedRowIndexes];
+		if ([selectedRows count])
+			selectedMessages = [NSSet setWithArray:[displayedMessages objectsAtIndexes:selectedRows]];
+
+		// Remember where in the message flow we were. We'll try to restore it once filtering is complete.
+		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+		NSRange visibleRows = [logTable rowsInRect:r];
+		id messageToMakeVisible = nil;
+		if (visibleRows.length != 0)
+		{
+			NSIndexSet *selectedVisible = [selectedRows indexesInRange:visibleRows options:0 passingTest:^(NSUInteger idx, BOOL *stop){return YES;}];
+			if ([selectedVisible count])
+				messageToMakeVisible = [displayedMessages objectAtIndex:[selectedVisible firstIndex]];
+			else
+				messageToMakeVisible = [displayedMessages objectAtIndex:visibleRows.location];
+		}
+
 		// Process logs by chunks
 		NSUInteger numMessages = [attachedConnection.messages count];
 		for (int i = 0; i < numMessages;)
@@ -548,23 +567,65 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			}
 			i += length;
 		}
-		if (tableTiledSinceLastRefresh)
-		{
-			// Here's the drill: if the table has been tiled since the last refresh,
-			// and we're now changing our view of filters, in most cases messages
-			// that were not on screen at the time the size changed have invalid cached
-			// size. We need to re-tile the table, but want to go through -tileLogTable
-			// which takes care of doing it first for visible items, giving a perception
-			// of speed. Therefore, we schedule a block on the filtering serial queue
-			// which will get executed AFTER all the messages have been refreshed, and
-			// will in turn schedule a table retiling. Pfew.
-			dispatch_async(messageFilteringQueue, ^{
-				dispatch_async(dispatch_get_main_queue(), ^{
+
+		// Stuff we want to do only when filtering is complete. To do this, we enqueue
+		// one more operation to the message filtering queue, with the only goal of
+		// being executed only at the end of the filtering process
+		dispatch_async(messageFilteringQueue, ^{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if (tableTiledSinceLastRefresh)
+				{
+					// Here's the drill: if the table has been tiled since the last refresh,
+					// and we're now changing our view of filters, in most cases messages
+					// that were not on screen at the time the size changed have invalid cached
+					// size. We need to re-tile the table, but want to go through -tileLogTable
+					// which takes care of doing it first for visible items, giving a perception
+					// of speed. Therefore, we schedule a block on the filtering serial queue
+					// which will get executed AFTER all the messages have been refreshed, and
+					// will in turn schedule a table retiling. Pfew.
+					
 					[self tileLogTable:YES];
 					tableTiledSinceLastRefresh = NO;
-				});
+				}
+				if ([selectedMessages count])
+				{
+					// If there were selected rows, try to reselect them
+					NSMutableIndexSet *newSelectionIndexes = [[NSMutableIndexSet alloc] init];
+					for (id msg in selectedMessages)
+					{
+						NSInteger msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg];
+						if (msgIndex != NSNotFound)
+							[newSelectionIndexes addIndex:(NSUInteger)msgIndex];
+					}
+					if ([newSelectionIndexes count])
+					{
+						[logTable selectRowIndexes:newSelectionIndexes byExtendingSelection:NO];
+						[[self window] makeFirstResponder:logTable];
+					}
+					[newSelectionIndexes release];
+				}
+				if (messageToMakeVisible != nil)
+				{
+					// Restore the logical location in the message flow, to keep the user
+					// in-context
+					NSUInteger msgIndex;
+					id msg = messageToMakeVisible;
+					@synchronized(attachedConnection.messages)
+					{
+						while ((msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg]) == NSNotFound)
+						{
+							NSUInteger where = [attachedConnection.messages indexOfObjectIdenticalTo:msg];
+							if (where == 0)
+								msgIndex = 0;
+							else
+								msg = [attachedConnection.messages objectAtIndex:where-1];
+						}
+						if (msgIndex != NSNotFound)
+							[logTable scrollRowToVisible:msgIndex];
+					}
+				}
 			});
-		}
+		});
 	}
 	tableTiledSinceLastRefresh = NO;
 }
