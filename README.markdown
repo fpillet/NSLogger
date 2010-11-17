@@ -12,13 +12,13 @@
   * Export logs to text files
   * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
 
-You'll find instructions for use in the [NSLogger wiki](http://github.com/fpillet/NSLogger/wiki/).
+You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki/).
 
-Your application emits traces using the *NSLogger* [trace APIs](http://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
+Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
 
 Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host / port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
 
-![Desktop Viewer (main window)](http://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
+![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
 # One-step setup #
 All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
@@ -34,10 +34,10 @@ It's very easy to log binary data or images using *NSLogger*. Use the *LogData()
 # Powerful desktop viewer #
 The desktop viewer application provides tools like:
 
- * Filters (with [regular expression matching](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks)) that let your perform data mining in your logs
+ * Filters (with [regular expression matching](https://github.com/fpillet/NSLogger/wiki/Tips-and-tricks)) that let your perform data mining in your logs
  * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
  * Image and binary data display directly in the log window
- * [Markers](http://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
+ * [Markers](https://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
  * Fast navigation in your logs
  * Display and export all your logs as text
  
@@ -46,7 +46,7 @@ Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When loggi
 
 Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 
-![Filter Editor](http://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
+![Filter Editor](https://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
 
 # High performance, low overhead #
 *NSLogger* runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
@@ -65,7 +65,7 @@ This tool comes from a personal need for a more powerful logger. There are more 
  * Pause (buffer logs) and resume sending logs to the logger, in order to eliminate NSLogger's network load from the equation when testing networking code
 
 
-You'll find documentation in the [NSLogger Wiki](http://github.com/fpillet/NSLogger/wiki/)
+You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLogger/wiki/)
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
 
