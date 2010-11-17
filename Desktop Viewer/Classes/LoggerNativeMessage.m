@@ -165,6 +165,32 @@
 			[part release];
 		}
 	}
+#if 1
+	// Debug tool to log the original image (until we have DnD)
+	if (type == LOGMSG_TYPE_LOG && contentsType == kMessageImage)
+	{
+		// detect the image type to set the proper extension
+		NSString *ext = @"png";
+		CGImageSourceRef imageSource = CGImageSourceCreateWithData((CFDataRef)message, NULL);
+		if (imageSource != NULL)
+		{
+			CFStringRef imageType = CGImageSourceGetType(imageSource);
+			if (imageType != NULL)
+			{
+				NSDictionary *typeDef = (NSDictionary *)UTTypeCopyDeclaration(imageType);
+				NSDictionary *spec = [typeDef objectForKey:(id)kUTTypeTagSpecificationKey];
+				NSArray *exts = [spec objectForKey:@"public.filename-extension"];
+				if (exts != nil && [exts isKindOfClass:[NSArray class]] && [exts count] && [[exts lastObject] length])
+					ext = [[[exts lastObject] retain] autorelease];
+				[typeDef release];
+			}
+			CFRelease(imageSource);
+		}
+		NSString *fn = [NSString stringWithFormat:@"%d.%@", sequence, ext];
+		NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:fn];
+		[(NSData *)message writeToFile:path atomically:NO];
+	}
+#endif
 	return self;
 }
 

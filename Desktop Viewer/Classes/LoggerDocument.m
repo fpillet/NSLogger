@@ -210,7 +210,7 @@
 - (BOOL)prepareSavePanel:(NSSavePanel *)sp
 {
     // assign defaults for the save panel
-    [sp setTitle:@"Save Logs"];
+    [sp setTitle:NSLocalizedString(@"Save Logs", @"")];
     [sp setExtensionHidden:NO];
     return YES;
 }
@@ -251,11 +251,6 @@ didReceiveMessages:(NSArray *)theMessages
 			[self updateChangeCount:NSChangeDone];
 		});
 	}
-}
-
-- (void)remoteConnected:(LoggerConnection *)theConnection
-{
-	[[self mainWindowController] remoteConnected:theConnection];
 }
 
 - (void)remoteDisconnected:(LoggerConnection *)theConnection

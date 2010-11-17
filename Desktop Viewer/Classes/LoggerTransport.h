@@ -44,5 +44,6 @@
 - (void)shutdown;
 - (void)addConnection:(LoggerConnection *)aConnection;
 - (void)removeConnection:(LoggerConnection *)aConnection;
+- (void)attachConnectionToWindow:(LoggerConnection *)aConnection;
 
 @end

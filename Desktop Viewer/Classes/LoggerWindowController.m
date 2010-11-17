@@ -171,15 +171,19 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[self synchronizeWindowTitleWithDocumentName];
 }
 
-- (NSPredicate *)marksPredicate
+- (NSPredicate *)alwaysVisibleEntriesPredicate
 {
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
-	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
-	return [NSComparisonPredicate predicateWithLeftExpression:lhs
-											  rightExpression:rhs
-													 modifier:NSDirectPredicateModifier
-														 type:NSEqualToPredicateOperatorType
-													  options:0];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSSet setWithObjects:
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_MARK],
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_CLIENTINFO],
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_DISCONNECT],
+																  nil]];
+						 return [NSComparisonPredicate predicateWithLeftExpression:lhs
+																   rightExpression:rhs
+																		  modifier:NSDirectPredicateModifier
+																			  type:NSInPredicateOperatorType
+																		   options:0];
 }
 
 - (void)updateFilterPredicate
@@ -221,7 +225,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
-	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self marksPredicate], p, nil]];
+	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
 	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
@@ -597,16 +601,20 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 // -----------------------------------------------------------------------------
 - (void)setAttachedConnection:(LoggerConnection *)aConnection
 {
-	[attachedConnection release];
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
-		if (!attachedConnection.connected)
-		{
-			[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
-			if (attachedConnection.restoredFromSave)
-				[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
-		}
+		attachedConnection.attachedToWindow = YES;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self updateClientInfo];
+			[self refreshAllMessages];
+		});
+	}
+	else if (attachedConnection != nil)
+	{
+		attachedConnection.attachedToWindow = NO;
+		[attachedConnection release];
+		attachedConnection = nil;
 	}
 }
 
@@ -642,20 +650,10 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 }
 
-- (void)remoteConnected:(LoggerConnection *)theConnection
-{
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[attachedConnection addObserver:self forKeyPath:@"clientIDReceived" options:0 context:NULL];
-		[self updateClientInfo];
-	});
-}
-
 - (void)remoteDisconnected:(LoggerConnection *)theConnection
 {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[attachedConnection removeObserver:self forKeyPath:@"clientIDReceived"];
-		[self updateClientInfo];
-	});
+	// we always get called on the main thread
+	[self updateClientInfo];
 }
 
 // -----------------------------------------------------------------------------

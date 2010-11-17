@@ -386,6 +386,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	@try
 	{
+		// Locate the connection to which this stream is attached
 		LoggerNativeConnection *cnx = nil;
 		for (cnx in connections)
 		{
@@ -423,16 +424,23 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 																	   kCFAllocatorNull);
 						if (subset != NULL)
 						{
+							// we receive a ClientInfo message only when the client connects. Once we get this message,
+							// the connection is considered being "live" (we need to wait a bit to let SSL negotiation to
+							// take place, and not open a window if it fails).
 							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
+							CFRelease(subset);
 							if (message.type == LOGMSG_TYPE_CLIENTINFO)
 							{
 								message.message = [self clientInfoStringForMessage:message];
 								message.threadID = @"";
 								[cnx clientInfoReceived:message];
+								[self attachConnectionToWindow:cnx];
 							}
-							[msgs addObject:message];
+							else
+							{
+								[msgs addObject:message];
+							}
 							[message release];
-							CFRelease(subset);
 						}
 						[cnx.buffer replaceBytesInRange:NSMakeRange(0, length+4) withBytes:NULL length:0];
 						bufferLength = [cnx.buffer length];

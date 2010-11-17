@@ -55,8 +55,15 @@
 - (void)addConnection:(LoggerConnection *)aConnection
 {
 	[connections addObject:aConnection];
+}
+
+- (void)attachConnectionToWindow:(LoggerConnection *)aConnection
+{
+	// make a new document for a connection (it is considered live once we have received
+	// the ClientInfo message)
 	dispatch_sync(dispatch_get_main_queue(), ^{
-		[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection];
+		if (!aConnection.attachedToWindow)
+			[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection];
 	});
 }
 
