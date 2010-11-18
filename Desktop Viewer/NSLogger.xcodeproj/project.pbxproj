@@ -34,6 +34,7 @@
 		3DDAE1630F405CE5001B1408 /* LoggerIPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDAE1620F405CE5001B1408 /* LoggerIPConnection.m */; };
 		3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */; };
 		3DE01E941268D32100A39E7E /* LoggerDetailsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */; };
+		43050A361295573400DB26EB /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 43050A351295573400DB26EB /* Icon.icns */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -128,6 +129,7 @@
 		3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerDetailsWindow.xib; path = Resources/LoggerDetailsWindow.xib; sourceTree = "<group>"; };
 		3DE01E921268D32100A39E7E /* LoggerDetailsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerDetailsWindowController.h; path = Classes/LoggerDetailsWindowController.h; sourceTree = "<group>"; };
 		3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDetailsWindowController.m; path = Classes/LoggerDetailsWindowController.m; sourceTree = "<group>"; };
+		43050A351295573400DB26EB /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Icon.icns; path = Resources/Icon/Icon.icns; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -229,6 +231,7 @@
 				3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */,
 				3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */,
 				3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */,
+				43050A351295573400DB26EB /* Icon.icns */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -374,6 +377,7 @@
 				3D6A37C9126399D700D0EC3A /* LoggerStatus.xib in Resources */,
 				3D027B2C12663E1200E6F241 /* LoggerPrefs.xib in Resources */,
 				3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */,
+				43050A361295573400DB26EB /* Icon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
