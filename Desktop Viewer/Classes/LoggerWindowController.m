@@ -796,10 +796,19 @@ didReceiveMessages:(NSArray *)theMessages
 		// setup the message to be displayed
 		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
 		cell.message = [displayedMessages objectAtIndex:rowIndex];
-		if (rowIndex)
-			cell.previousMessage = [displayedMessages objectAtIndex:rowIndex-1];
-		else
-			cell.previousMessage = nil;
+
+		// if previous message is a Mark, go back a bit more to get the real previous message
+		// if previous message is ClientInfo, don't use it.
+		NSInteger idx = rowIndex - 1;
+		LoggerMessage *prev = nil;
+		while (prev == nil && idx >= 0)
+		{
+			prev = [displayedMessages objectAtIndex:idx--];
+			if (prev.type == LOGMSG_TYPE_CLIENTINFO || prev.type == LOGMSG_TYPE_MARK)
+				prev = nil;
+		} 
+		
+		cell.previousMessage = prev;
 	}
 	else if (aTableView == filterSetsTable)
 	{
