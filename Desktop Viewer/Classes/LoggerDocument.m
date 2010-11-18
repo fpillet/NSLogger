@@ -88,18 +88,18 @@
 		// Make a copy of the array state now so we're not bothered with the array
 		// changing while we're processing it
 		__block NSArray *allMessages = nil;
-		if (attachedConnection.messageProcessingQueue != NULL)
-		{
+//		if (attachedConnection.messageProcessingQueue != NULL)
+//		{
 			// live connections have a processing queue
 			dispatch_sync(attachedConnection.messageProcessingQueue , ^{
 				allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
 			});
-		}
-		else
-		{
-			// reloaded files don't have a queue
-			allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
-		}
+//		}
+//		else
+//		{
+//			// reloaded files don't have a queue
+//			allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
+//		}
 		BOOL (^flushData)(NSOutputStream*, NSMutableData*) = ^(NSOutputStream *stream, NSMutableData *data) 
 		{
 			NSUInteger length = [data length];

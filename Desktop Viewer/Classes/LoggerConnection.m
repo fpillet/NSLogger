@@ -67,8 +67,7 @@
 
 - (void)dealloc
 {
-	if (messageProcessingQueue != NULL)
-		dispatch_release(messageProcessingQueue);
+	dispatch_release(messageProcessingQueue);
 	[messages release];
 	[parentIndexesStack release];
 	[clientName release];
@@ -256,6 +255,10 @@
 		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
 		restoredFromSave = YES;
+		
+		// we need a messageProcessingQueue just for the ability to add/insert marks
+		// when user does post-mortem investigation
+		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 	}
 	return self;
 }
