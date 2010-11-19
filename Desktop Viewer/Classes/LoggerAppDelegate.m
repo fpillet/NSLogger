@@ -86,7 +86,7 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 			if (filterData != nil)
 			{
 				filters = [NSKeyedUnarchiver unarchiveObjectWithData:filterData];
-				if (![filters isKindOfClass:[NSMutableArray class]])
+				if (![filters isMemberOfClass:[NSMutableArray class]])
 					filters = nil;
 			}
 			if (filters == nil)
@@ -101,6 +101,21 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 											   nil];
 			[filterSets addObject:defaultSet];
 			[defaultSet release];
+		}
+		
+		// fix for issue found by Stefan Neumärker: default filters in versions 1.0b7 were immutable,
+		// leading to a crash if the user tried to edit them
+		for (NSDictionary *dict in filterSets)
+		{
+			NSMutableArray *filters = [dict objectForKey:@"filters"];
+			for (NSUInteger i = 0; i < [filters count]; i++)
+			{
+				if (![[filters objectAtIndex:i] isMemberOfClass:[NSMutableDictionary class]])
+				{
+					[filters replaceObjectAtIndex:i
+									   withObject:[[[filters objectAtIndex:i] mutableCopy] autorelease]];
+				}
+			}
 		}
 	}
 	return self;
@@ -234,17 +249,17 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 						NSLocalizedString(@"All logs", @""), @"title",
 						[NSPredicate predicateWithValue:YES], @"predicate",
 						nil]];
-	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:2], @"uid",
 						NSLocalizedString(@"Text messages", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
 						nil]];
-	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:3], @"uid",
 						NSLocalizedString(@"Images", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
 						nil]];
-	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:4], @"uid",
 						NSLocalizedString(@"Data blocks", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
