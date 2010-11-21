@@ -41,7 +41,7 @@ NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 @interface LoggerAppDelegate ()
-- (void)loadServerCerts;
+- (BOOL)loadEncryptionCertificate:(NSError **)outError;
 @end
 
 @implementation LoggerAppDelegate
@@ -204,9 +204,6 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[statusController showWindow:self];
 	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
-	// Retrieve server certs for SSL encryption
-	[self loadServerCerts];
-	
 	// initialize all supported transports
 	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
 	t.publishBonjourService = YES;
@@ -217,6 +214,15 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
 	[transports addObject:t];
 	[t release];
+
+	// Retrieve server certs for SSL encryption
+	NSError *certError;
+	if (![self loadEncryptionCertificate:&certError])
+	{
+		[[NSApplication sharedApplication] performSelector:@selector(presentError:)
+												withObject:certError
+												afterDelay:0];
+	}
 	
 	// start transports
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
@@ -292,10 +298,12 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 - (BOOL)unlockAppKeychain
 {
-	return (SecKeychainUnlock(serverKeychain, 0, "", true) == noErr);
+	if (serverKeychain != NULL)
+		return (SecKeychainUnlock(serverKeychain, 0, "", true) == noErr);
+	return NO;
 }
 
-- (void)loadServerCerts
+- (BOOL)loadEncryptionCertificate:(NSError **)outError
 {
 	// Load the certificate we need to support encrypted incoming connections via SSL
 	//
@@ -310,9 +318,18 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	// - retrieve the certificate from our keychain
 	// - create the required SecIdentityRef for the certificate to be recognized by the CFStream
 	// - keep this in the running app and use for incoming connections
+	//
+	// Ideally, we would create the keychain once and open it at each startup. The drawback is that
+	// the first time a connection comes in after app launch, a dialog would come up to ask for access
+	// to our private keychain. I want to avoid this and make it fully transparent, hence the keychain
+	// creation at each startup.
+	//
+	// May change this in the future.
 
 	// NSLoggerCert.pem was generated from the command line with:
 	// $ openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout NSLoggerCert.pem -out NSLoggerCert.pem
+
+	*outError = nil;
 
 	// Path to our private keychain
 	NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLogger.keychain"];
@@ -331,8 +348,14 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	if (status != noErr)
 	{
 		// we can't support SSL without a proper keychain
-		// @@@ TODO: raise alert to let user know
-		return;
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+										code:status
+									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"The private NSLogger keychain could not be opened or created.", @""), NSLocalizedFailureReasonErrorKey,
+											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  nil]];
+		return NO;
 	}
 	[self unlockAppKeychain];
 
@@ -388,6 +411,19 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 	if (certRef != NULL)
 		CFRelease(certRef);
+
+	if (status != noErr)
+	{
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+										code:status
+									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"Our private encryption certificate could not be loaded", @""), NSLocalizedFailureReasonErrorKey,
+											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  nil]];
+		return NO;
+	}
+	return YES;
 }
 
 @end
