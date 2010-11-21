@@ -382,10 +382,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)setupSSLForStream:(NSInputStream *)readStream
 {
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
-	[appDelegate unlockAppKeychain];
 	CFArrayRef serverCerts = appDelegate.serverCerts;
 	if (serverCerts != NULL)
 	{
+		[appDelegate unlockAppKeychain];
+
 		// setup stream for SSL
 		const void *SSLKeys[] = {
 			kCFStreamSSLLevel,
