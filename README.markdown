@@ -4,10 +4,10 @@
 
 *NSLogger* feature summary:
 
-  * View logs using the Mac OS X desktop viewer
+  * View logs using the Mac OS X desktop viewer, accept connections from local network clients (using Bonjour) or remote clients connecting directly over the internet
   * Online (application running and connected to _NSLogger_) and offline (saved logs) log viewing
   * Buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
-  * View logs from client applications on the local network, or remotely over the internet
+  * Secure logging (connections use SSL by default)
   * Save viewer logs to share them and/or review them later
   * Export logs to text files
   * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
@@ -57,7 +57,6 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
 
  * Remember last filter set used per application name / identifier
- * Turn SSL on for remote logging (currently being worked on, checkout the `ssl` branch to test it)
  * For multiple subsequent connections by the same client (multiple app runs), reuse the same window much like Instruments does
  * Log entry colorization
  * Search and search term highlight in Details window
