@@ -145,7 +145,7 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 
 - (void)prefsChangeNotification:(NSNotification *)note
 {
-	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
+	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0.2];
 }
 
 - (void)startStopTransports
