@@ -33,6 +33,8 @@
  * 
  */
 
+#define LOGGER_USES_SSL		1			// Set to 0 if you don't want SSL connections
+
 /* NSLogger native binary message format:
  * Each message is a dictionary encoded in a compact format. All values are stored
  * in network order (big endian). A message is made of several "parts", which are
@@ -97,6 +99,6 @@
 #define LOGMSG_TYPE_DISCONNECT	4			// Pseudo-message on the desktop side to identify client disconnects
 #define LOGMSG_TYPE_MARK		5			// Pseudo-message that defines a "mark" that users can place in the log flow
 
-// Bonjour service identifiers
+// Default Bonjour service identifiers
+#define LOGGER_SERVICE_TYPE_SSL	CFSTR("_nslogger-ssl._tcp")
 #define LOGGER_SERVICE_TYPE		CFSTR("_nslogger._tcp")
-#define LOGGER_SERVICE_NAME		CFSTR("NSLogger")

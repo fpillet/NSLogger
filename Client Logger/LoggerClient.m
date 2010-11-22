@@ -119,6 +119,9 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
 static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType event, void* info);
+#if LOGGER_DEBUG
+static void LoggerReadStreamCallback(CFReadStreamRef ws, CFStreamEventType event, void* info);
+#endif
 
 // File buffering
 static void LoggerCreateBufferWriteStream(Logger *logger);
@@ -397,14 +400,15 @@ static void *LoggerWorkerThread(Logger *logger)
 	// Cleanup
 	if (logger->browseBonjour)
 		LoggerStopBonjourBrowsing(logger);
+	LoggerStopReachabilityChecking(logger);
 
 	if (logger->logStream != NULL)
 	{
+		CFWriteStreamSetClient(logger->logStream, 0, NULL, NULL);
 		CFWriteStreamClose(logger->logStream);
 		CFRelease(logger->logStream);
 		logger->logStream = NULL;
 	}
-	LoggerStopReachabilityChecking(logger);
 
 	if (logger->bufferWriteStream == NULL && logger->bufferFile != NULL)
 	{
@@ -724,7 +728,13 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	CFNetServiceBrowserRef browser = CFNetServiceBrowserCreate(NULL, (CFNetServiceBrowserClientCallBack)&LoggerServiceBrowserCallBack, &context);
 	CFNetServiceBrowserScheduleWithRunLoop(browser, runLoop, kCFRunLoopCommonModes);
 	CFStreamError error;
-	if (!CFNetServiceBrowserSearchForServices(browser, domainName, LOGGER_SERVICE_TYPE, &error))
+	CFStringRef serviceType;
+#if LOGGER_USES_SSL
+	serviceType = LOGGER_SERVICE_TYPE_SSL;
+#else
+	serviceType = LOGGER_SERVICE_TYPE;
+#endif
+	if (!CFNetServiceBrowserSearchForServices(browser, domainName, serviceType, &error))
 	{
 		LOGGERDBG(CFSTR("Logger can't start search on domain: %@ (error %d)"), domainName, error.error);
 		CFNetServiceBrowserUnscheduleFromRunLoop(browser, runLoop, kCFRunLoopCommonModes);
@@ -780,6 +790,9 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 		else
 		{
 			// a service has been found, try resolving it
+			// @@@ TODO soon: let the use specify a specific name to connect to,
+			// which will ease things in a teamwork environment where multiple Macs run the NSLogger
+			// view at the same time
 			LOGGERDBG(CFSTR("Logger found service: %@"), domainOrService);
 			CFNetServiceRef service = (CFNetServiceRef)domainOrService;
 			if (service != NULL)
@@ -858,17 +871,42 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 								kCFStreamEventCanAcceptBytes |
 								kCFStreamEventErrorOccurred |
 								kCFStreamEventEndEncountered),
-							   &LoggerWriteStreamCallback, &context))
+							   &LoggerWriteStreamCallback,
+							   &context))
 	{
+#if LOGGER_USES_SSL
+		// Configure stream to require a SSL connection
+		const void *SSLKeys[] = {
+			kCFStreamSSLLevel,
+			kCFStreamSSLValidatesCertificateChain,
+			kCFStreamSSLIsServer,
+			kCFStreamSSLPeerName
+		};
+		const void *SSLValues[] = {
+			kCFStreamSocketSecurityLevelNegotiatedSSL,
+			kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
+			kCFBooleanFalse,			// not a server
+			kCFNull
+		};
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
+		CFRelease(SSLDict);
+#endif
+
 		CFWriteStreamScheduleWithRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+		
 		if (CFWriteStreamOpen(logger->logStream))
 		{
 			LOGGERDBG(CFSTR("-> stream open attempt, waiting for open completion"));
 			return YES;
 		}
+
 		LOGGERDBG(CFSTR("-> stream open failed."));
+		
+		CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, NULL);
+		if (CFWriteStreamGetStatus(logger->logStream) == kCFStreamStatusOpen)
+			CFWriteStreamClose(logger->logStream);
 		CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		CFWriteStreamSetClient(logger->logStream, kCFStreamEventNone, NULL, &context);
 	}
 	else
 	{
@@ -921,6 +959,11 @@ static void LoggerTryConnect(Logger *logger)
 		{
 			// Create stream failed
 			LOGGERDBG(CFSTR("-> failed."));
+			if (logger->logStream != NULL)
+			{
+				CFRelease(logger->logStream);
+				logger->logStream = NULL;
+			}
 		}
 		else if (LoggerConfigureAndOpenStream(logger))
 		{
@@ -987,9 +1030,13 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 				LOGGERDBG(CFSTR("Logger DISCONNECTED"));
 				logger->connected = NO;
 			}
+			CFWriteStreamSetClient(logger->logStream, 0, NULL, NULL);
+			CFWriteStreamUnscheduleFromRunLoop(logger->logStream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
 			CFWriteStreamClose(logger->logStream);
+			
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
+
 			logger->sendBufferUsed = 0;
 			logger->sendBufferOffset = 0;
 			if (logger->bufferReadStream != NULL)
@@ -1010,6 +1057,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			break;
 	}
 }
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Internal encoding functions

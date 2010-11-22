@@ -44,6 +44,6 @@
 @property (nonatomic, readonly) uint8_t *tmpBuf;
 @property (nonatomic, readonly) NSUInteger tmpBufSize;
 
-- (id)initWithStream:(NSInputStream *)aStream clientAddress:(NSData *)anAddress;
+- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
 
 @end

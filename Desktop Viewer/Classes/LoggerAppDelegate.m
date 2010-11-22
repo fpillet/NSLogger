@@ -28,6 +28,7 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <Security/SecItem.h>
 #import "LoggerAppDelegate.h"
 #import "LoggerNativeTransport.h"
 #import "LoggerWindowController.h"
@@ -38,10 +39,15 @@
 NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
 NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
+NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
+
+@interface LoggerAppDelegate ()
+- (BOOL)loadEncryptionCertificate:(NSError **)outError;
+@end
 
 @implementation LoggerAppDelegate
-
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;
+@synthesize serverCerts;
 
 - (id) init
 {
@@ -53,7 +59,10 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
 		// items are ordered by title.
 		self.filtersSortDescriptors = [NSArray arrayWithObjects:
-									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:^(id uid1, id uid2){
+									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES
+																	comparator:
+										^(id uid1, id uid2)
+		{
 			if ([uid1 integerValue] == 1)
 				return (NSComparisonResult)NSOrderedAscending;
 			if ([uid2 integerValue] == 1)
@@ -62,7 +71,7 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 		}],
 									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
 									   nil];
-
+		
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSData *filterSetsData = [defaults objectForKey:@"filterSets"];
@@ -123,6 +132,10 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 - (void)dealloc
 {
+	if (serverCerts != NULL)
+		CFRelease(serverCerts);
+	if (serverKeychain != NULL)
+		CFRelease(serverKeychain);
 	[transports release];
 	[super dealloc];
 }
@@ -147,7 +160,7 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 
 - (void)prefsChangeNotification:(NSNotification *)note
 {
-	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
+	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0.2];
 }
 
 - (void)startStopTransports
@@ -163,22 +176,14 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 			if (t.publishBonjourService)
 			{
 				if ([[udcv valueForKey:kPrefPublishesBonjourService] boolValue])
-					[t startup];
-				else
+					[t restart];
+				else if (t.active)
 					[t shutdown];
 			}
 			else
 			{
 				if ([[udcv valueForKey:kPrefHasDirectTCPIPResponder] boolValue])
-				{
-					int port = [[udcv valueForKey:kPrefDirectTCPIPResponderPort] integerValue];
-					if (t.listenerPort != port)
-					{
-						[t shutdown];
-						t.listenerPort = port;
-					}
-					[t startup];
-				}
+					[t restart];
 				else
 					[t shutdown];
 			}
@@ -207,17 +212,40 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[statusController showWindow:self];
 	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
-	// initialize all supported transports
+	// Retrieve server certs for SSL encryption
+	NSError *certError;
+	if (![self loadEncryptionCertificate:&certError])
+	{
+		[[NSApplication sharedApplication] performSelector:@selector(presentError:)
+												withObject:certError
+												afterDelay:0];
+	}
+	
+	/* initialize all supported transports */
+	
+	// unencrypted Bonjour service (for backwards compatibility)
 	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
 	t.publishBonjourService = YES;
+	t.secure = NO;
 	[transports addObject:t];
 	[t release];
-	
+
+	// SSL Bonjour service
+	t = [[LoggerNativeTransport alloc] init];
+	t.publishBonjourService = YES;
+	t.secure = YES;
+	[transports addObject:t];
+	[t release];
+
+	// Direct TCP/IP service (SSL mandatory)
 	t = [[LoggerNativeTransport alloc] init];
 	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
+#if LOGGER_USES_SSL
+	t.supportSSL = YES;
+#endif
 	[transports addObject:t];
 	[t release];
-	
+
 	// start transports
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
 }
@@ -230,6 +258,14 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
 	return NO;
+}
+
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+	if (serverKeychain != NULL)
+	{
+		SecKeychainDelete(serverKeychain);
+	}
 }
 
 - (void)newConnection:(LoggerConnection *)aConnection
@@ -282,5 +318,139 @@ NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 	[prefsController showWindow:sender];
 }
 
-@end
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark SSL support
+// -----------------------------------------------------------------------------
 
+- (BOOL)unlockAppKeychain
+{
+	if (serverKeychain != NULL)
+		return (SecKeychainUnlock(serverKeychain, 0, "", true) == noErr);
+	return NO;
+}
+
+- (BOOL)loadEncryptionCertificate:(NSError **)outError
+{
+	// Load the certificate we need to support encrypted incoming connections via SSL
+	//
+	// This is a tad more complicated than simply using the SSL API, because we insist
+	// on using CFStreams which want certificates in a special form (linked to a keychain)
+	// and we want to make this fully transparent to the user.
+	//
+	// To this end, we will (at each startup):
+	// - create our own private keychain
+	// - setup access control to the keychain so that no dialog ever comes up
+	// - import the self-signed certificate and private key into our keychain
+	// - retrieve the certificate from our keychain
+	// - create the required SecIdentityRef for the certificate to be recognized by the CFStream
+	// - keep this in the running app and use for incoming connections
+	//
+	// Ideally, we would create the keychain once and open it at each startup. The drawback is that
+	// the first time a connection comes in after app launch, a dialog would come up to ask for access
+	// to our private keychain. I want to avoid this and make it fully transparent, hence the keychain
+	// creation at each startup.
+	//
+	// May change this in the future.
+
+	// NSLoggerCert.pem was generated from the command line with:
+	// $ openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout NSLoggerCert.pem -out NSLoggerCert.pem
+
+	*outError = nil;
+
+	// Path to our private keychain
+	NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLogger.keychain"];
+	NSFileManager *fm = [NSFileManager defaultManager];
+	[fm removeItemAtPath:path error:nil];
+	
+	// Open or create our private keychain, and unlock it
+	OSStatus status = -1;
+	const char *keychainPath = [path fileSystemRepresentation];
+
+	status = SecKeychainCreate(keychainPath,
+							   0, "",	// fixed password (useless, really)
+							   false,
+							   NULL,
+							   &serverKeychain);
+	if (status != noErr)
+	{
+		// we can't support SSL without a proper keychain
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+										code:status
+									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"The private NSLogger keychain could not be opened or created.", @""), NSLocalizedFailureReasonErrorKey,
+											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  nil]];
+		return NO;
+	}
+	[self unlockAppKeychain];
+
+	SecCertificateRef certRef = NULL;
+
+	// Find the certificate if we have already loaded it, or instantiate and find again
+	for (int i = 0; i < 2 && status == noErr; i++)
+	{
+		// Search for the server certificate in the NSLogger keychain
+		SecKeychainSearchRef keychainSearchRef = NULL;
+		status = SecKeychainSearchCreateFromAttributes(serverKeychain, kSecCertificateItemClass, NULL, &keychainSearchRef);
+		if (status == noErr)
+			status = SecKeychainSearchCopyNext(keychainSearchRef, (SecKeychainItemRef *)&certRef);
+		CFRelease(keychainSearchRef);
+		
+		// Did we find the certificate?
+		if (status == noErr)
+			break;
+
+		// Load the NSLogger self-signed certificate
+		NSData *certData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"NSLoggerCert" ofType:@"pem"]];
+
+		// Import certificate and private key into our private keychain
+		SecKeyImportExportParameters kp;
+		bzero(&kp, sizeof(kp));
+		kp.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
+		SecExternalFormat inputFormat = kSecFormatPEMSequence;
+		SecExternalItemType itemType = kSecItemTypeAggregate;
+
+		status = SecKeychainItemImport((CFDataRef)certData,
+									   CFSTR("NSLoggerCert.pem"),
+									   &inputFormat,
+									   &itemType,
+									   0,				// flags are unused
+									   &kp,				// import-export parameters
+									   serverKeychain,
+									   NULL);
+	}
+
+	if (status == noErr)
+	{
+		SecIdentityRef identityRef = NULL;
+		status = SecIdentityCreateWithCertificate(serverKeychain, certRef, &identityRef);
+		if (status == noErr)
+		{
+			CFTypeRef values[] = {
+				identityRef, certRef
+			};
+			serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
+			CFRelease(identityRef);
+		}
+	}
+
+	if (certRef != NULL)
+		CFRelease(certRef);
+
+	if (status != noErr)
+	{
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+										code:status
+									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"Our private encryption certificate could not be loaded", @""), NSLocalizedFailureReasonErrorKey,
+											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  nil]];
+		return NO;
+	}
+	return YES;
+}
+
+@end

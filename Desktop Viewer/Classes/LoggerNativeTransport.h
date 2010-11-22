@@ -41,12 +41,15 @@
 	NSNetService *bonjourService;
 	CFSocketRef listenerSocket_ipv4;
 	CFSocketRef listenerSocket_ipv6;
+	NSString *bonjourServiceName;
 	int listenerPort;
 	BOOL publishBonjourService;
+	BOOL secure;
 }
 
 @property (nonatomic, assign) int listenerPort;
 @property (nonatomic, assign) BOOL publishBonjourService;
+@property (nonatomic, assign) BOOL secure;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv6;
 
