@@ -728,7 +728,13 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	CFNetServiceBrowserRef browser = CFNetServiceBrowserCreate(NULL, (CFNetServiceBrowserClientCallBack)&LoggerServiceBrowserCallBack, &context);
 	CFNetServiceBrowserScheduleWithRunLoop(browser, runLoop, kCFRunLoopCommonModes);
 	CFStreamError error;
-	if (!CFNetServiceBrowserSearchForServices(browser, domainName, LOGGER_SERVICE_TYPE, &error))
+	CFStringRef serviceType;
+#if LOGGER_USES_SSL
+	serviceType = LOGGER_SERVICE_TYPE_SSL;
+#else
+	serviceType = LOGGER_SERVICE_TYPE;
+#endif
+	if (!CFNetServiceBrowserSearchForServices(browser, domainName, serviceType, &error))
 	{
 		LOGGERDBG(CFSTR("Logger can't start search on domain: %@ (error %d)"), domainName, error.error);
 		CFNetServiceBrowserUnscheduleFromRunLoop(browser, runLoop, kCFRunLoopCommonModes);
@@ -784,6 +790,9 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 		else
 		{
 			// a service has been found, try resolving it
+			// @@@ TODO soon: let the use specify a specific name to connect to,
+			// which will ease things in a teamwork environment where multiple Macs run the NSLogger
+			// view at the same time
 			LOGGERDBG(CFSTR("Logger found service: %@"), domainOrService);
 			CFNetServiceRef service = (CFNetServiceRef)domainOrService;
 			if (service != NULL)
