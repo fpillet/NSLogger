@@ -161,22 +161,14 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 			if (t.publishBonjourService)
 			{
 				if ([[udcv valueForKey:kPrefPublishesBonjourService] boolValue])
-					[t startup];
-				else
+					[t restart];
+				else if (t.active)
 					[t shutdown];
 			}
 			else
 			{
 				if ([[udcv valueForKey:kPrefHasDirectTCPIPResponder] boolValue])
-				{
-					int port = [[udcv valueForKey:kPrefDirectTCPIPResponderPort] integerValue];
-					if (t.listenerPort != port)
-					{
-						[t shutdown];
-						t.listenerPort = port;
-					}
-					[t startup];
-				}
+					[t restart];
 				else
 					[t shutdown];
 			}
@@ -205,17 +197,6 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	[statusController showWindow:self];
 	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
-	// initialize all supported transports
-	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
-	t.publishBonjourService = YES;
-	[transports addObject:t];
-	[t release];
-	
-	t = [[LoggerNativeTransport alloc] init];
-	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
-	[transports addObject:t];
-	[t release];
-
 	// Retrieve server certs for SSL encryption
 	NSError *certError;
 	if (![self loadEncryptionCertificate:&certError])
@@ -225,6 +206,31 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 												afterDelay:0];
 	}
 	
+	/* initialize all supported transports */
+	
+	// unencrypted Bonjour service (for backwards compatibility)
+	LoggerNativeTransport *t = [[LoggerNativeTransport alloc] init];
+	t.publishBonjourService = YES;
+	t.secure = NO;
+	[transports addObject:t];
+	[t release];
+
+	// SSL Bonjour service
+	t = [[LoggerNativeTransport alloc] init];
+	t.publishBonjourService = YES;
+	t.secure = YES;
+	[transports addObject:t];
+	[t release];
+
+	// Direct TCP/IP service (SSL mandatory)
+	t = [[LoggerNativeTransport alloc] init];
+	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
+#if LOGGER_USES_SSL
+	t.supportSSL = YES;
+#endif
+	[transports addObject:t];
+	[t release];
+
 	// start transports
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
 }
@@ -296,6 +302,11 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 		prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
 	[prefsController showWindow:sender];
 }
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark SSL support
+// -----------------------------------------------------------------------------
 
 - (BOOL)unlockAppKeychain
 {

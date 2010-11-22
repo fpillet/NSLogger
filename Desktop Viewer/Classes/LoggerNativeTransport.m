@@ -43,13 +43,67 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 @implementation LoggerNativeTransport
 
-@synthesize listenerPort, listenerSocket_ipv4, listenerSocket_ipv6, publishBonjourService;
+@synthesize listenerPort, listenerSocket_ipv4, listenerSocket_ipv6;
+@synthesize secure, publishBonjourService;
+
+- (void)dealloc
+{
+	[listenerThread cancel];
+	[bonjourService release];
+	[bonjourServiceName release];
+	[super dealloc];
+}
+
+- (void)restart
+{
+	if (active)
+	{
+		// Check whether we need to actually restart the service if the settings have changed
+		BOOL shouldRestart = NO;
+		if (publishBonjourService)
+		{
+			// Check whether the bonjour service name changed
+			NSString *newBonjourServiceName = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefBonjourServiceName];
+			shouldRestart = (([newBonjourServiceName length] != [bonjourServiceName length]) ||
+							 (bonjourServiceName != nil && [newBonjourServiceName compare:bonjourServiceName options:NSCaseInsensitiveSearch] != NSOrderedSame));
+		}
+		else
+		{
+			int oldPort = listenerPort;
+			int port = [[[NSUserDefaults standardUserDefaults] objectForKey:kPrefDirectTCPIPResponderPort] integerValue];
+			shouldRestart = (oldPort != port);
+			
+		}
+		if (shouldRestart)
+		{
+			[self shutdown];
+			[self performSelector:@selector(completeRestart) withObject:nil afterDelay:0.1];
+		}
+	}
+	else
+	{
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(completeRestart) object:nil];
+		[self startup];
+	}
+}
+
+- (void)completeRestart
+{
+	if (active)
+	{
+		// wait for the service to be completely shut down, then restart it
+		[self performSelector:_cmd withObject:nil afterDelay:0.1];
+		return;
+	}
+	[self startup];
+}
 
 - (void)startup
 {
 	if (!active)
 	{
 		active = YES;
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(completeRestart) object:nil];
 		[NSThread detachNewThreadSelector:@selector(listenerThread) toTarget:self withObject:nil];		
 	}
 }
@@ -68,9 +122,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	// post status update
 	NSString *status;
 	if (publishBonjourService)
-		status = NSLocalizedString(@"Bonjour service closing.", @"");
+		status = [NSString stringWithFormat:NSLocalizedString(@"Bonjour%s service closing.", @""), secure ? " SSL" : ""];
 	else
-		status = [NSString stringWithFormat:NSLocalizedString(@"TCP/IP responder for port %d closing.", @""), listenerPort];
+		status = [NSString stringWithFormat:NSLocalizedString(@"TCP/IP%s responder for port %d closing.", @""), secure ? " SSL" : "", listenerPort];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
 														object:status];
 
@@ -105,13 +159,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	// another startup with a different port can take place.
 	listenerThread = nil;
 	active = NO;
-}
-
-- (void)dealloc
-{
-	[listenerThread cancel];
-	[bonjourService release];
-	[super dealloc];
 }
 
 - (void)removeConnection:(LoggerConnection *)aConnection
@@ -210,22 +257,36 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		CFRunLoopAddSource(rl, source6, kCFRunLoopCommonModes);
 		CFRelease(source6);
 
-		// register Bonjour services
+		// register Bonjour service
 		NSString *status;
 		if (publishBonjourService)
 		{
+			// The service type is nslogger-ssl (now the default), or nslogger for backwards
+			// compatibility with pre-1.0.
+			NSString *serviceType = (NSString *)(secure ? LOGGER_SERVICE_TYPE_SSL : LOGGER_SERVICE_TYPE);
+
+			// The service name is either the one defined in the prefs, of by default
+			// the local computer name (as defined in the sharing prefs panel
+			// (see Technical Q&A QA1228 http://developer.apple.com/library/mac/#qa/qa2001/qa1228.html )
+			NSString *serviceName = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefBonjourServiceName];
+			if (serviceName == nil || ![serviceName isKindOfClass:[NSString class]])
+				serviceName = @"";
+
+			[bonjourServiceName release];
+			bonjourServiceName = [serviceName retain];
+
 			bonjourService = [[NSNetService alloc] initWithDomain:@""
-															 type:(NSString *)LOGGER_SERVICE_TYPE
-															 name:(NSString *)LOGGER_SERVICE_NAME
+															 type:(NSString *)serviceType
+															 name:(NSString *)serviceName
 															 port:listenerPort];
 			[bonjourService setDelegate:self];
 			[bonjourService publish];
 
-			status = NSLocalizedString(@"Bonjour service starting up...", @"");
+			status = [NSString stringWithFormat:NSLocalizedString(@"Bonjour%s service starting up...", @""), secure ? " SSL" : ""];
 		}
 		else
 		{
-			status = [NSString stringWithFormat:@"TCP/IP responder ready (local port %d)", listenerPort];
+			status = [NSString stringWithFormat:@"TCP/IP%s responder ready (local port %d)", secure ? " SSL" : "", listenerPort];
 		}
 
 		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
@@ -235,9 +296,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	{
 		NSString *status;
 		if (publishBonjourService)
-			status = NSLocalizedString(@"Failed creating sockets for Bonjour service.", @"");
+			status = [NSString stringWithFormat:NSLocalizedString(@"Failed creating sockets for Bonjour%s service.", @""), secure ? " SSL" : ""];
 		else
-			status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting TCP/IP responder on port %d",@""), listenerPort];
+			status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting TCP/IP%s responder on port %d",@""), secure ? " SSL" : "", listenerPort];
 		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
 															object:status];
 		if (listenerSocket_ipv4 != NULL)
@@ -295,8 +356,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"<%@ %p listenerPort=%d publishBonjourService=%d>", 
-			[self class], self, listenerPort, (int)publishBonjourService];
+	return [NSString stringWithFormat:@"<%@ %p listenerPort=%d publishBonjourService=%d secure=%d>", 
+			[self class], self, listenerPort, (int)publishBonjourService, (int)secure];
 }
 
 #ifdef DEBUG
@@ -526,7 +587,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSString *errorString = [errorDict description];
 	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
 	if (errorCode == NSNetServicesCollisionError)
-		errorString = NSLocalizedString(@"Another logger may be publishing itself on your network with the same name", @"");
+		errorString = NSLocalizedString(@"Another logger may be publishing itself on your network with the same service name", @"");
 	else if (errorCode == NSNetServicesBadArgumentError)
 		errorString = NSLocalizedString(@"Bonjour is improperly configured (bad argument) - please contact NSLogger developers", @"");
 	else if (errorCode == NSNetServicesInvalidError)
@@ -538,7 +599,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (void)netServiceDidPublish:(NSNetService *)sender
 {
-	NSString *status = [NSString stringWithFormat:@"Bonjour service ready (%@ local port %d)", [sender domain], listenerPort];
+	NSString *status = [NSString stringWithFormat:@"Bonjour%s service ready (%@ local port %d)", secure ? " SSL" :"", [sender domain], listenerPort];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
 														object:status];
 }
@@ -575,9 +636,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				{
 					// although this is implied, just want to make sure
 					CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
-#if LOGGER_USES_SSL
-					[myself setupSSLForStream:(NSInputStream *)readStream];
-#endif
+					if (myself.secure)
+						[myself setupSSLForStream:(NSInputStream *)readStream];
+
 					// Create the connection instance
 					LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
 																						clientAddress:(NSData *)address];
