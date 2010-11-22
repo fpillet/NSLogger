@@ -36,3 +36,6 @@
 
 @interface FilterColumnHeaderValueTransformer : NSValueTransformer
 @end
+
+@interface BonjourServiceNameValueTransformer : NSValueTransformer
+@end

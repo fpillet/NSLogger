@@ -64,4 +64,4 @@
 extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;
 extern NSString * const kPrefDirectTCPIPResponderPort;
-extern NSString * const kPrefRequireSSL;
+extern NSString * const kPrefBonjourServiceName;

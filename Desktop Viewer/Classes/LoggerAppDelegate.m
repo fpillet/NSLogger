@@ -39,6 +39,7 @@
 NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
 NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
+NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 
 @interface LoggerAppDelegate ()
 - (BOOL)loadEncryptionCertificate:(NSError **)outError;

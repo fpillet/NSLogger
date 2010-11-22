@@ -77,3 +77,28 @@
 	return [NSString stringWithFormat:NSLocalizedString(@"Filters for “%@”", @""), value];
 }
 @end
+
+@implementation BonjourServiceNameValueTransformer
+
++ (void)load
+{
+	[NSValueTransformer setValueTransformer:[[self alloc] init]
+									forName:@"TrimmedBonjourServiceName"];
+}
+
++ (Class)transformedValueClass
+{
+	return [NSString class];
+}
+
++ (BOOL)allowsReverseTransformation
+{
+	return YES;
+}
+
+- (id)transformedValue:(id)value
+{
+	return [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+}
+
+@end
