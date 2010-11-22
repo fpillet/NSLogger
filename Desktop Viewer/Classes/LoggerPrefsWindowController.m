@@ -153,6 +153,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 {
 	[[LoggerMessageCell class] setDefaultAttributes:attributes];
 
+	// Steal first responder status from any text field to force saving its value to the prefs (bindings)
+	[[self window] becomeFirstResponder];
+
 	// note: save is deferred to the next pass of the runloop. When we send out the notification,
 	// we also take this into account and deferr the update-from-prefs until the next runloop pass.
 	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
