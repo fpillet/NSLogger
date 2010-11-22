@@ -888,7 +888,7 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			kCFBooleanFalse,			// not a server
 			kCFNull
 		};
-		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
 		CFRelease(SSLDict);
 #endif
