@@ -79,6 +79,11 @@
 	// subclasses should implement this
 }
 
+- (void)restart
+{
+	// subclasses should implement this
+}
+
 - (NSString *)status
 {
 	// subclasses should implement this, LoggerStatusWindowController uses it
