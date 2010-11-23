@@ -87,11 +87,12 @@
 			LoggerSetViewerHost(NULL, (CFStringRef)host, (UInt32)port);
 		else
 			LoggerSetViewerHost(NULL, NULL, 0);
+
 		LoggerSetOptions(NULL,						// configure the default logger
-						 NO,						// don't log to Console
-						 YES,						// buffer logs locally until connection is acquired
-						 browseBonjour.on,				// look for NSLogger viewer on Bonjour ?
-						 browseLocalDomainOnly.on);	// Only look on Bonjour local. domain? (if no, may look on your MobileMe domain too)
+						 kLoggerOption_BufferLogsUntilConnection |
+						 kLoggerOption_UseSSL |
+						 (browseBonjour.on ? kLoggerOption_BrowseBonjour : 0) |
+						 (browseLocalDomainOnly.on ? kLoggerOption_BrowseOnlyLocalDomain : 0));
 
 		// Start logging random messages
 		counter = 0;
