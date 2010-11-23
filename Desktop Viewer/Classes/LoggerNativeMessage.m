@@ -112,9 +112,9 @@
 					break;
 				case PART_KEY_THREAD_ID:
 					if (partType == PART_TYPE_INT32)
-						threadID = [[NSString alloc] initWithFormat:@"0x%x", value32];
+						threadID = [[NSString alloc] initWithFormat:@"Thread 0x%x", value32];
 					else if (partType == PART_TYPE_INT64)
-						threadID = [[NSString alloc] initWithFormat:@"0x%qx", value64];
+						threadID = [[NSString alloc] initWithFormat:@"Thread 0x%qx", value64];
 					else if (partType == PART_TYPE_STRING)
 						threadID = [part retain];
 					else
