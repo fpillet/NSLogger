@@ -165,7 +165,7 @@
 			[part release];
 		}
 	}
-#if 1
+#if 0
 	// Debug tool to log the original image (until we have DnD)
 	if (type == LOGMSG_TYPE_LOG && contentsType == kMessageImage)
 	{
