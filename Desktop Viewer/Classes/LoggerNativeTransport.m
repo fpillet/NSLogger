@@ -443,6 +443,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)setupSSLForStream:(NSInputStream *)readStream
 {
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
+#ifdef DEBUG
+	NSLog(@"setupSSLForStream, stream=%@ self=%@ serverCerts=%@", readStream, self, appDelegate.serverCerts);
+#endif
 	CFArrayRef serverCerts = appDelegate.serverCerts;
 	if (serverCerts != NULL)
 	{
@@ -550,7 +553,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			case NSStreamEventErrorOccurred:
 				// @@@ TODO: add message with error description
 #ifdef DEBUG
-				NSLog(@"Stream error occurred: %@", [theStream streamError]);
+				NSLog(@"Stream error occurred: stream=%@ self=%@ error=%@", theStream, self, [theStream streamError]);
 #endif
 				// fall through
 			case NSStreamEventEndEncountered: {
