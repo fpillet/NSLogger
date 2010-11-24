@@ -339,6 +339,7 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	// and we want to make this fully transparent to the user.
 	//
 	// To this end, we will (at each startup):
+	// - generate a self-signed certificate and private key
 	// - create our own private keychain
 	// - setup access control to the keychain so that no dialog ever comes up
 	// - import the self-signed certificate and private key into our keychain
@@ -353,14 +354,41 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	//
 	// May change this in the future.
 
-	// NSLoggerCert.pem was generated from the command line with:
-	// $ openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout NSLoggerCert.pem -out NSLoggerCert.pem
-
 	*outError = nil;
+	
+	// Path to our self-signed certificate
+	NSString *tempDir = NSTemporaryDirectory();
+	NSString *pemFileName = @"NSLoggerCert.pem";
+	NSString *pemFilePath = [tempDir stringByAppendingPathComponent:pemFileName];
+	NSFileManager *fm = [NSFileManager defaultManager];
+	[fm removeItemAtPath:pemFilePath error:nil];
+
+	// Generate a private certificate
+	NSArray *args = [NSArray arrayWithObjects:
+					 @"req",
+					 @"-x509",
+					 @"-nodes",
+					 @"-days", @"3650",
+					 @"-config", [[NSBundle mainBundle] pathForResource:@"NSLoggerCertReq" ofType:@"conf"],
+					 @"-newkey", @"rsa:1024",
+					 @"-keyout", pemFileName,
+					 @"-out", pemFileName,
+					 @"-batch",
+					 nil];
+
+	NSTask *certTask = [[[NSTask alloc] init] autorelease];
+	[certTask setLaunchPath:@"/usr/bin/openssl"];
+	[certTask setCurrentDirectoryPath:tempDir];
+	[certTask setArguments:args];
+    [certTask launch];
+	do
+	{
+		[NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+	}
+	while([certTask isRunning]);
 
 	// Path to our private keychain
-	NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"NSLogger.keychain"];
-	NSFileManager *fm = [NSFileManager defaultManager];
+	NSString *path = [tempDir stringByAppendingPathComponent:@"NSLogger.keychain"];
 	[fm removeItemAtPath:path error:nil];
 	
 	// Open or create our private keychain, and unlock it
@@ -403,7 +431,7 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 			break;
 
 		// Load the NSLogger self-signed certificate
-		NSData *certData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"NSLoggerCert" ofType:@"pem"]];
+		NSData *certData = [NSData dataWithContentsOfFile:pemFilePath];
 
 		// Import certificate and private key into our private keychain
 		SecKeyImportExportParameters kp;
@@ -413,7 +441,7 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 		SecExternalItemType itemType = kSecItemTypeAggregate;
 
 		status = SecKeychainItemImport((CFDataRef)certData,
-									   CFSTR("NSLoggerCert.pem"),
+									   (CFStringRef)pemFileName,
 									   &inputFormat,
 									   &itemType,
 									   0,				// flags are unused
@@ -438,6 +466,9 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 
 	if (certRef != NULL)
 		CFRelease(certRef);
+
+	// destroy the PEM file we just created, it's now in our keychain
+	[fm removeItemAtPath:pemFilePath error:nil];
 
 	if (status != noErr)
 	{
