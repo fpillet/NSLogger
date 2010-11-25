@@ -510,7 +510,7 @@ static void LoggerLogToConsole(CFDataRef data)
 
 	struct timeval timestamp;
 	bzero(&timestamp, sizeof(timestamp));
-	int type = LOGMSG_TYPE_LOG, contentsType;
+	int type = LOGMSG_TYPE_LOG, contentsType = PART_TYPE_STRING;
 	int imgWidth=0, imgHeight=0;
 	CFStringRef message = NULL;
 	CFStringRef thread = NULL;
@@ -590,12 +590,15 @@ static void LoggerLogToConsole(CFDataRef data)
 				timestamp.tv_usec = (partType == PART_TYPE_INT64) ? (__darwin_suseconds_t)value64 : (__darwin_suseconds_t)value32;
 				break;
 			case PART_KEY_THREAD_ID:
-				if (partType == PART_TYPE_INT32)
-					thread = CFStringCreateWithFormat(NULL, NULL, CFSTR("thread 0x%08x"), value32);
-				else if (partType == PART_TYPE_INT64)
-					thread = CFStringCreateWithFormat(NULL, NULL, CFSTR("thread 0x%qx"), value64);
-				else if (partType == PART_TYPE_STRING)
-					thread = CFRetain(part);
+				if (thread == NULL)				// useless test, we know what we're doing but clang analyzer doesn't...
+				{
+					if (partType == PART_TYPE_INT32)
+						thread = CFStringCreateWithFormat(NULL, NULL, CFSTR("thread 0x%08x"), value32);
+					else if (partType == PART_TYPE_INT64)
+						thread = CFStringCreateWithFormat(NULL, NULL, CFSTR("thread 0x%qx"), value64);
+					else if (partType == PART_TYPE_STRING && part != NULL)
+						thread = CFRetain(part);
+				}
 				break;
 			case PART_KEY_MESSAGE:
 				if (part != NULL)
