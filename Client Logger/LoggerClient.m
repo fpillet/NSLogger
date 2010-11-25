@@ -37,6 +37,7 @@
 #if TARGET_OS_MAC
 #import <sys/types.h>
 #import <sys/sysctl.h>
+#import <dlfcn.h>
 #endif
 #import <fcntl.h>
 
@@ -349,7 +350,7 @@ static void LoggerDbg(CFStringRef format, ...)
 			CFShow(s);
 			CFRelease(s);
 		}
-		[pool release];
+		[pool drain];
 	}
 }
 
@@ -361,6 +362,13 @@ static void *LoggerWorkerThread(Logger *logger)
 {
 	LOGGERDBG(CFSTR("Start LoggerWorkerThread"));
 	
+	// Register thread with Garbage Collector on Mac OS X if we're running an OS version that has GC
+    void (*registerThreadWithCollector_fn)(void);
+    registerThreadWithCollector_fn = (void(*)(void)) dlsym(RTLD_NEXT, "objc_registerThreadWithCollector");
+    if (registerThreadWithCollector_fn)
+        (*registerThreadWithCollector_fn)();
+
+	// Create and get the runLoop for this thread
 	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
 
 	// Create the run loop source that signals when messages have been added to the runloop
@@ -1374,7 +1382,7 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 			LoggerMessageAddString(encoder, (CFStringRef)name, PART_KEY_THREAD_ID);
 			hasThreadName = YES;
 		}
-		[pool release];
+		[pool drain];
 	}
 #endif
 	if (!hasThreadName)
@@ -1601,7 +1609,11 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 		{
 			LOGGERDBG(CFSTR("-> failed creating encoder"));
 		}
+#if ALLOW_COCOA_USE
+		[(id)msgString release];		// compatible with garbage-collected environments
+#else
 		CFRelease(msgString);
+#endif
 	}
 }
 
