@@ -188,6 +188,7 @@ Logger *LoggerInit()
 
 	logger->logQueue = CFArrayCreateMutable(NULL, 32, &kCFTypeArrayCallBacks);
 	pthread_mutex_init(&logger->logQueueMutex, NULL);
+	pthread_cond_init(&logger->logQueueEmpty, NULL);
 
 	logger->bonjourServiceBrowsers = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
 	logger->bonjourServices = CFArrayCreateMutable(NULL, 4, &kCFTypeArrayCallBacks);
@@ -331,6 +332,21 @@ void LoggerStop(Logger *logger)
 		memset(logger, 0x55, sizeof(logger));
 
 		free(logger);
+	}
+}
+
+void LoggerFlush(Logger *logger, BOOL waitForConnection)
+{
+	if (logger == NULL)
+		logger = LoggerGetDefaultLogger();
+	if (logger != NULL &&
+		pthread_self() != logger->workerThread &&
+		(logger->connected || logger->bufferFile != NULL || waitForConnection))
+	{
+		pthread_mutex_lock(&logger->logQueueMutex);
+		if (CFArrayGetCount(logger->logQueue) > 0)
+			pthread_cond_wait(&logger->logQueueEmpty, &logger->logQueueMutex);
+		pthread_mutex_unlock(&logger->logQueueMutex);
 	}
 }
 
@@ -682,6 +698,7 @@ static void LoggerWriteMoreData(Logger *logger)
 				CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 			}
 			pthread_mutex_unlock(&logger->logQueueMutex);
+			pthread_cond_broadcast(&logger->logQueueEmpty);
 		}
 		return;
 	}
@@ -730,6 +747,7 @@ static void LoggerWriteMoreData(Logger *logger)
 				if (CFArrayGetCount(logger->logQueue) == 0)
 				{
 					pthread_mutex_unlock(&logger->logQueueMutex);
+					pthread_cond_broadcast(&logger->logQueueEmpty);
 					return;
 				}
 

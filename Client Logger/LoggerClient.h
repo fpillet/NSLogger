@@ -87,6 +87,7 @@ typedef struct
 	
 	CFMutableArrayRef logQueue;						// Message queue
 	pthread_mutex_t logQueueMutex;
+	pthread_cond_t logQueueEmpty;
 	
 	pthread_t workerThread;							// The worker thread responsible for Bonjour resolution, connection and logs transmission
 	CFRunLoopSourceRef messagePushedSource;			// A message source that fires on the worker thread when messages are available for send
@@ -166,6 +167,11 @@ extern void LoggerStart(Logger *logger);
 // Deactivate and free the logger.
 extern void LoggerStop(Logger *logger);
 
+// Pause the current thread until all messages from the logger have been transmitted
+// this is useful to use before an assert() aborts your program. If waitForConnection is YES,
+// LoggerFlush() will block even if the client is not currently connected to the desktop
+// viewer. You should be using NO most of the time, but in some cases it can be useful.
+extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
 
 /* Logging functions. Each function exists in two versions, one without a Logger instance
  * as argument (uses the default logger), and the other which can direct traces to
