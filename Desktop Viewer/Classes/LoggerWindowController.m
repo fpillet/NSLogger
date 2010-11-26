@@ -253,26 +253,29 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
 	{
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
-		//msg.cachedCellSize = NSZeroSize;
-		CGFloat cachedHeight = msg.cachedCellSize.height;
-		CGFloat newHeight = cachedHeight;
-		switch (msg.type)
+		NSSize cachedSize = msg.cachedCellSize;
+		if (cachedSize.width != sz.width)
 		{
-			case LOGMSG_TYPE_LOG:
-			case LOGMSG_TYPE_BLOCKSTART:
-			case LOGMSG_TYPE_BLOCKEND:
-				newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
-				break;
-			case LOGMSG_TYPE_CLIENTINFO:
-			case LOGMSG_TYPE_DISCONNECT:
-				newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
-				break;
-			case LOGMSG_TYPE_MARK:
-				newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
-				break;
+			CGFloat cachedHeight = cachedSize.height;
+			CGFloat newHeight = cachedHeight;
+			switch (msg.type)
+			{
+				case LOGMSG_TYPE_LOG:
+				case LOGMSG_TYPE_BLOCKSTART:
+				case LOGMSG_TYPE_BLOCKEND:
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+				case LOGMSG_TYPE_CLIENTINFO:
+				case LOGMSG_TYPE_DISCONNECT:
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+				case LOGMSG_TYPE_MARK:
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+			}
+			if (newHeight != cachedHeight)
+				[indexSet addIndex:row+range.location];
 		}
-		if (newHeight != cachedHeight)
-			[indexSet addIndex:row+range.location];
 	}
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
@@ -849,28 +852,41 @@ didReceiveMessages:(NSArray *)theMessages
 		// first time and when tileLogTable is called. Due to the large number
 		// of entries we can have in the table, this is a requirement.
 		LoggerMessage *message = [displayedMessages objectAtIndex:row];
+		NSSize sz = [tableView frame].size;
 		NSSize cachedSize = message.cachedCellSize;
-		if (cachedSize.width != 0)
+		if (cachedSize.width == sz.width)
 			return cachedSize.height;
+		CGFloat newHeight = cachedSize.height;
+
+		// don't recompute immediately while in live resize
+		if (newHeight != 0 && [[self window] inLiveResize])
+			return newHeight;
+		
 		switch (message.type)
 		{
 			case LOGMSG_TYPE_LOG:
 			case LOGMSG_TYPE_BLOCKSTART:
 			case LOGMSG_TYPE_BLOCKEND:
-				return [LoggerMessageCell heightForCellWithMessage:message
-														   maxSize:[tableView frame].size];
+				newHeight = [LoggerMessageCell heightForCellWithMessage:message
+																maxSize:sz];
+				break;
 			case LOGMSG_TYPE_CLIENTINFO:
 			case LOGMSG_TYPE_DISCONNECT:
-				return [LoggerClientInfoCell heightForCellWithMessage:message
-															  maxSize:[tableView frame].size];
-
+				newHeight = [LoggerClientInfoCell heightForCellWithMessage:message
+																   maxSize:sz];
+				break;
+				
 			case LOGMSG_TYPE_MARK:
-				return [LoggerMarkerCell heightForCellWithMessage:message
-														  maxSize:[tableView frame].size];
+				newHeight = [LoggerMarkerCell heightForCellWithMessage:message
+															   maxSize:sz];
+				break;
 
 			default:
 				break;
 		}
+		if (cachedSize.height != newHeight)
+			[tableView performSelector:@selector(noteHeightOfRowsWithIndexesChanged:) withObject:[NSIndexSet indexSetWithIndex:row] afterDelay:0];
+		return newHeight;
 	}
 	return [tableView rowHeight];
 }
