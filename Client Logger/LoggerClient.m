@@ -337,6 +337,9 @@ void LoggerStop(Logger *logger)
 
 void LoggerFlush(Logger *logger, BOOL waitForConnection)
 {
+	// Special case: if nothing has ever been logged, don't bother
+	if (logger == NULL && sDefaultLogger == NULL)
+		return;
 	if (logger == NULL)
 		logger = LoggerGetDefaultLogger();
 	if (logger != NULL &&
