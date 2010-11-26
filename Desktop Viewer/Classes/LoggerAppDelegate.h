@@ -65,3 +65,11 @@ extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;
 extern NSString * const kPrefDirectTCPIPResponderPort;
 extern NSString * const kPrefBonjourServiceName;
+
+// Menu item identifiers
+#define TOOLS_MENU_ITEM_TAG				1
+#define TOOLS_MENU_ADD_MARK_TAG					1
+#define TOOLS_MENU_ADD_MARK_WITH_TITLE_TAG		2
+#define TOOLS_MENU_INSERT_MARK_TAG				3
+#define TOOLS_MENU_DELETE_MARK_TAG				4
+#define TOOLS_MENU_JUMP_TO_MARK_TAG				5

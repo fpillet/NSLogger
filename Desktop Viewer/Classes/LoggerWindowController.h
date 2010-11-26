@@ -51,7 +51,6 @@
 	
 	IBOutlet NSWindow *markTitleWindow;
 	IBOutlet NSTextField *markTitleField;
-	IBOutlet NSMenuItem *marksSubmenu;
 
 	LoggerConnection *attachedConnection;
 	LoggerDetailsWindowController *detailsWindowController;
@@ -104,6 +103,7 @@
 - (IBAction)insertMarkWithTitle:(id)sender;
 - (IBAction)cancelAddMark:(id)sender;
 - (IBAction)validateAddMark:(id)sender;
+- (IBAction)deleteMark:(id)sender;
 
 @end
 

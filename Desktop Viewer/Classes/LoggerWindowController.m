@@ -1125,6 +1125,7 @@ didReceiveMessages:(NSArray *)theMessages
 // -----------------------------------------------------------------------------
 - (void)rebuildMarksSubmenu
 {
+	NSMenuItem *marksSubmenu = [[[[NSApp mainMenu] itemWithTag:TOOLS_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_JUMP_TO_MARK_TAG];
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
 	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
 	NSPredicate *predicate = [NSComparisonPredicate predicateWithLeftExpression:lhs
@@ -1217,7 +1218,6 @@ didReceiveMessages:(NSArray *)theMessages
 		});
 	});
 
-
 	[mark release];
 }
 
@@ -1253,6 +1253,31 @@ didReceiveMessages:(NSArray *)theMessages
 		[self addMarkWithTitleBeforeMessage:[displayedMessages objectAtIndex:rowIndex]];
 }
 
+- (IBAction)deleteMark:(id)sender
+{
+	NSUInteger rowIndex = [logTable selectedRow];
+	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+	{
+		LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+		assert(markMessage.type == LOGMSG_TYPE_MARK);
+		[displayedMessages removeObjectAtIndex:rowIndex];
+		[logTable reloadData];
+		[self rebuildMarksSubmenu];
+		dispatch_async(messageFilteringQueue, ^{
+			// then we serialize all operations modifying the messages list in the connection's
+			// message processing queue
+			dispatch_async(attachedConnection.messageProcessingQueue, ^{
+				@synchronized(attachedConnection.messages) {
+					[attachedConnection.messages removeObjectIdenticalTo:markMessage];
+				}
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[[self document] updateChangeCount:NSChangeDone];
+				});
+			});
+		});
+	}
+}
+
 - (IBAction)cancelAddMark:(id)sender
 {
 	[NSApp endSheet:markTitleWindow returnCode:0];
@@ -1270,6 +1295,26 @@ didReceiveMessages:(NSArray *)theMessages
 	if (contextInfo != NULL)
 		[(id)contextInfo release];
 	[markTitleWindow orderOut:self];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark User Interface Items Validation
+// -----------------------------------------------------------------------------
+- (BOOL)validateUserInterfaceItem:(id)anItem
+{
+	SEL action = [anItem action];
+	if (action == @selector(deleteMark:))
+	{
+		NSUInteger rowIndex = [logTable selectedRow];
+		if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+		{
+			LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+			return (markMessage.type == LOGMSG_TYPE_MARK);
+		}
+		return NO;
+	}
+	return YES;
 }
 
 @end
