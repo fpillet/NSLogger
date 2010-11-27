@@ -42,7 +42,9 @@
 
 - (void)startup;
 - (void)shutdown;
+- (void)restart;
 - (void)addConnection:(LoggerConnection *)aConnection;
 - (void)removeConnection:(LoggerConnection *)aConnection;
+- (void)attachConnectionToWindow:(LoggerConnection *)aConnection;
 
 @end

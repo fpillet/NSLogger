@@ -304,8 +304,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		}
 			
 		case kMessageImage: {
+			// approximate, compute ratio then refine height
 			NSSize imgSize = aMessage.imageSize;
-			sz.height = fminf(fminf(sz.width, sz.height/2), imgSize.height + 1); 
+			CGFloat ratio = fmaxf(1.0f, fmaxf(imgSize.width / sz.width, imgSize.height / (sz.height / 2.0f)));
+			sz.height = ceilf(imgSize.height / ratio);
 			break;
 		}
 		default:
@@ -654,27 +656,20 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 	else if (message.contentsType == kMessageImage)
 	{
-		// Make the image fit in the cell
+		// Scale the image to fit in the cell. Since we're flipped, we also must vertically flip
+		// the image
 		r = NSInsetRect(r, 0, 1);
 		NSSize srcSize = message.imageSize;
-		NSSize imgSize = srcSize;
-		if (imgSize.width > NSWidth(r))
-		{
-			CGFloat factor = imgSize.width / NSWidth(r);
-			imgSize.height = floorf(imgSize.height / factor);
-			imgSize.width = NSWidth(r);
-		}
-		if (imgSize.height > NSHeight(r))
-		{
-			CGFloat factor = imgSize.height / NSHeight(r);
-			imgSize.width = floorf(imgSize.width / factor);
-			imgSize.height = NSHeight(r);
-		}
-		
-		[message.image drawInRect:NSMakeRect(NSMinX(r), NSMinY(r), imgSize.width, imgSize.height)
+		CGFloat ratio = fmaxf(1.0f, fmaxf(srcSize.width / NSWidth(r), srcSize.height / NSHeight(r)));
+		CGSize newSize = CGSizeMake(floorf(srcSize.width / ratio), floorf(srcSize.height / ratio));
+		CGContextSaveGState(ctx);
+		CGContextTranslateCTM(ctx, NSMinX(r), NSMinY(r) + NSHeight(r));
+		CGContextScaleCTM(ctx, 1.0f, -1.0f);
+		[message.image drawInRect:NSMakeRect(0, 0, newSize.width, newSize.height)
 						 fromRect:NSMakeRect(0, 0, srcSize.width, srcSize.height)
 						operation:NSCompositeCopy
 						 fraction:1.0f];
+		CGContextRestoreGState(ctx);
 	}
 }
 

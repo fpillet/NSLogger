@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.0b5 2010-11-08
+ * version 1.0b7 2010-11-23
  *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
@@ -32,6 +32,8 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+
+#define LOGGER_USES_SSL		1			// Set to 0 if you don't want SSL connections for direct TCP/IP
 
 /* NSLogger native binary message format:
  * Each message is a dictionary encoded in a compact format. All values are stored
@@ -97,6 +99,6 @@
 #define LOGMSG_TYPE_DISCONNECT	4			// Pseudo-message on the desktop side to identify client disconnects
 #define LOGMSG_TYPE_MARK		5			// Pseudo-message that defines a "mark" that users can place in the log flow
 
-// Bonjour service identifiers
+// Default Bonjour service identifiers
+#define LOGGER_SERVICE_TYPE_SSL	CFSTR("_nslogger-ssl._tcp")
 #define LOGGER_SERVICE_TYPE		CFSTR("_nslogger._tcp")
-#define LOGGER_SERVICE_NAME		CFSTR("NSLogger")

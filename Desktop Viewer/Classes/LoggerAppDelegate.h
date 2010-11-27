@@ -34,6 +34,9 @@
 
 @interface LoggerAppDelegate : NSObject
 {
+	CFArrayRef serverCerts;
+	SecKeychainRef serverKeychain;
+
 	NSMutableArray *transports;
 	NSMutableArray *filterSets;
 	NSArray *filtersSortDescriptors;
@@ -41,6 +44,7 @@
 	LoggerPrefsWindowController *prefsController;
 }
 
+@property (nonatomic, readonly) CFArrayRef serverCerts;
 @property (nonatomic, readonly) NSMutableArray *transports;
 @property (nonatomic, readonly) NSMutableArray *filterSets;
 @property (nonatomic, retain) NSArray *filtersSortDescriptors;
@@ -53,8 +57,19 @@
 
 - (IBAction)showPreferences:(id)sender;
 
+- (BOOL)unlockAppKeychain;
+
 @end
 
 extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;
 extern NSString * const kPrefDirectTCPIPResponderPort;
+extern NSString * const kPrefBonjourServiceName;
+
+// Menu item identifiers
+#define TOOLS_MENU_ITEM_TAG				1
+#define TOOLS_MENU_ADD_MARK_TAG					1
+#define TOOLS_MENU_ADD_MARK_WITH_TITLE_TAG		2
+#define TOOLS_MENU_INSERT_MARK_TAG				3
+#define TOOLS_MENU_DELETE_MARK_TAG				4
+#define TOOLS_MENU_JUMP_TO_MARK_TAG				5

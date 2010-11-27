@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10F569</string>
+		<string key="IBDocument.SystemVersion">10H574</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="471"/>
+			<integer value="457"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -928,42 +928,9 @@
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="672475580"/>
 																</object>
-																<object class="NSMenuItem" id="28095071">
-																	<reference key="NSMenu" ref="14458767"/>
-																	<bool key="NSIsDisabled">YES</bool>
-																	<bool key="NSIsSeparator">YES</bool>
-																	<string key="NSTitle"/>
-																	<string key="NSKeyEquiv"/>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="549527355"/>
-																	<reference key="NSMixedImage" ref="27333996"/>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<reference key="NSTarget" ref="672475580"/>
-																</object>
-																<object class="NSMenuItem" id="92763206">
-																	<reference key="NSMenu" ref="14458767"/>
-																	<string key="NSTitle">Add Mark</string>
-																	<string key="NSKeyEquiv">m</string>
-																	<int key="NSKeyEquivModMask">1048576</int>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="549527355"/>
-																	<reference key="NSMixedImage" ref="27333996"/>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<reference key="NSTarget" ref="672475580"/>
-																</object>
-																<object class="NSMenuItem" id="1059144636">
-																	<reference key="NSMenu" ref="14458767"/>
-																	<string key="NSTitle">Add Mark With Title…</string>
-																	<string key="NSKeyEquiv">M</string>
-																	<int key="NSKeyEquivModMask">1048576</int>
-																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="549527355"/>
-																	<reference key="NSMixedImage" ref="27333996"/>
-																	<string key="NSAction">_popUpItemAction:</string>
-																	<reference key="NSTarget" ref="672475580"/>
-																</object>
 															</object>
 														</object>
+														<int key="NSSelectedIndex">2</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3610,62 +3577,6 @@
 					<int key="connectionID">1163</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">addMark:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="92763206"/>
-					</object>
-					<int key="connectionID">1164</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">addMarkWithTitle:</string>
-						<reference key="source" ref="1021"/>
-						<reference key="destination" ref="1059144636"/>
-					</object>
-					<int key="connectionID">1165</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: attachedConnection.restoredFromSave</string>
-						<reference key="source" ref="92763206"/>
-						<reference key="destination" ref="1021"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="92763206"/>
-							<reference key="NSDestination" ref="1021"/>
-							<string key="NSLabel">enabled: attachedConnection.restoredFromSave</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">attachedConnection.restoredFromSave</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">1180</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: attachedConnection.restoredFromSave</string>
-						<reference key="source" ref="1059144636"/>
-						<reference key="destination" ref="1021"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="1059144636"/>
-							<reference key="NSDestination" ref="1021"/>
-							<string key="NSLabel">enabled: attachedConnection.restoredFromSave</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">attachedConnection.restoredFromSave</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">1183</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">headerTitle: selection.title</string>
 						<reference key="source" ref="34494719"/>
@@ -4581,9 +4492,6 @@
 							<reference ref="895409037"/>
 							<reference ref="634578148"/>
 							<reference ref="1071402364"/>
-							<reference ref="92763206"/>
-							<reference ref="28095071"/>
-							<reference ref="1059144636"/>
 						</object>
 						<reference key="parent" ref="672475580"/>
 					</object>
@@ -4600,21 +4508,6 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">1093</int>
 						<reference key="object" ref="1071402364"/>
-						<reference key="parent" ref="14458767"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1101</int>
-						<reference key="object" ref="28095071"/>
-						<reference key="parent" ref="14458767"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1102</int>
-						<reference key="object" ref="92763206"/>
-						<reference key="parent" ref="14458767"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1103</int>
-						<reference key="object" ref="1059144636"/>
 						<reference key="parent" ref="14458767"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -4703,15 +4596,13 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>-3.IBPluginDependency</string>
 					<string>1090.IBPluginDependency</string>
+					<string>1090.IBViewBoundsToFrameTransform</string>
 					<string>1091.IBPluginDependency</string>
 					<string>1092.IBEditorWindowLastContentRect</string>
 					<string>1092.IBPluginDependency</string>
 					<string>1093.IBPluginDependency</string>
 					<string>1094.IBPluginDependency</string>
 					<string>1095.IBPluginDependency</string>
-					<string>1101.IBPluginDependency</string>
-					<string>1102.IBPluginDependency</string>
-					<string>1103.IBPluginDependency</string>
 					<string>1104.IBEditorWindowLastContentRect</string>
 					<string>1104.IBPluginDependency</string>
 					<string>1104.IBWindowTemplateEditedContentRect</string>
@@ -4855,15 +4746,15 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{220, 362}, {197, 98}}</string>
+					<string>{{233, 304}, {251, 54}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{25, 380}, {480, 111}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{25, 380}, {480, 111}}</string>
@@ -4891,10 +4782,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{22, 473}, {885, 666}}</string>
+					<string>{{20, 334}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{22, 473}, {885, 666}}</string>
+					<string>{{20, 334}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -5052,7 +4943,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1191</int>
+			<int key="maxID">1205</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5086,8 +4977,10 @@
 							<string>addMarkWithTitle:</string>
 							<string>cancelAddMark:</string>
 							<string>cancelFilterEdition:</string>
+							<string>deleteMark:</string>
 							<string>deleteSelectedFilterSet:</string>
 							<string>deleteSelectedFilters:</string>
+							<string>insertMarkWithTitle:</string>
 							<string>openDetailsWindow:</string>
 							<string>resetQuickFilter:</string>
 							<string>selectQuickFilterLevel:</string>
@@ -5098,6 +4991,8 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5125,8 +5020,10 @@
 							<string>addMarkWithTitle:</string>
 							<string>cancelAddMark:</string>
 							<string>cancelFilterEdition:</string>
+							<string>deleteMark:</string>
 							<string>deleteSelectedFilterSet:</string>
 							<string>deleteSelectedFilters:</string>
+							<string>insertMarkWithTitle:</string>
 							<string>openDetailsWindow:</string>
 							<string>resetQuickFilter:</string>
 							<string>selectQuickFilterLevel:</string>
@@ -5162,11 +5059,19 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">deleteMark:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">deleteSelectedFilterSet:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">deleteSelectedFilters:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">insertMarkWithTitle:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

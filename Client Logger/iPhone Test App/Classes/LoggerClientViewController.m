@@ -87,11 +87,12 @@
 			LoggerSetViewerHost(NULL, (CFStringRef)host, (UInt32)port);
 		else
 			LoggerSetViewerHost(NULL, NULL, 0);
+
 		LoggerSetOptions(NULL,						// configure the default logger
-						 NO,						// don't log to Console
-						 YES,						// buffer logs locally until connection is acquired
-						 browseBonjour.on,				// look for NSLogger viewer on Bonjour ?
-						 browseLocalDomainOnly.on);	// Only look on Bonjour local. domain? (if no, may look on your MobileMe domain too)
+						 kLoggerOption_BufferLogsUntilConnection |
+						 kLoggerOption_UseSSL |
+						 (browseBonjour.on ? kLoggerOption_BrowseBonjour : 0) |
+						 (browseLocalDomainOnly.on ? kLoggerOption_BrowseOnlyLocalDomain : 0));
 
 		// Start logging random messages
 		counter = 0;
@@ -196,7 +197,7 @@
 		UIColor *fillColor = [UIColor colorWithRed:r green:g blue:b alpha:1.0f];
 		CGContextSetFillColorWithColor(ctx, fillColor.CGColor);
 		CGContextFillRect(ctx, CGRectMake(0, 0, 100, 100));
-		CGContextSetTextMatrix(ctx, CGAffineTransformIdentity);
+		CGContextSetTextMatrix(ctx, CGAffineTransformConcat(CGAffineTransformMakeTranslation(0, 100), CGAffineTransformMakeScale(1.0f, -1.0f)));
 		CGContextSelectFont(ctx, "Helvetica", 14.0, kCGEncodingMacRoman);
 		CGContextSetShadowWithColor(ctx, CGSizeMake(1, 1), 1.0f, [UIColor whiteColor].CGColor);
 		CGContextSetTextDrawingMode(ctx, kCGTextFill);

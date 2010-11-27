@@ -31,7 +31,12 @@
 #import "NSLoggerMacClientTestAppDelegate.h"
 #import "LoggerClient.h"
 
-#define TEST_FILE_BUFFERING 0
+#define TEST_BONJOUR_SETUP		0
+#define TEST_CONSOLE_LOGGING	0
+#define TEST_FILE_BUFFERING		0
+#define TEST_DIRECT_CONNECTION	0
+#define LOGGING_HOST			CFSTR("127.0.0.1")
+#define LOGGING_PORT			50007
 
 @implementation NSLoggerMacClientTestAppDelegate
 
@@ -41,8 +46,19 @@
 {
 	tagsArray = [[NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil] retain];
 
-#if TEST_FILE_BUFFERING
+#if TEST_CONSOLE_LOGGING
+	LoggerSetOptions(NULL, kLoggerOption_LogToConsole);
+#else
+ #if TEST_FILE_BUFFERING
 	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData_MacOSX.rawnsloggerdata"));
+ #endif
+ #if TEST_DIRECT_CONNECTION
+	LoggerSetViewerHost(NULL, LOGGING_HOST, LOGGING_PORT);
+ #endif
+#endif
+#if TEST_BONJOUR_SETUP
+	// test restricting bonjour lookup for a specific machine
+	LoggerSetupBonjour(NULL, NULL, CFSTR("MyOwnComputerOny"));
 #endif
 }
 
@@ -101,7 +117,7 @@
 		// nearly same code as iPhone example, could certainly be made shorter
 		imagesCounter++;
 		NSImage *img = [[NSImage alloc] initWithSize:NSMakeSize(100,100)];
-		[img lockFocusFlipped:YES];
+		[img lockFocusFlipped:NO];
 		CGContextRef ctx = (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 		CGFloat r = (CGFloat)(arc4random() % 256) / 255.0f;
 		CGFloat g = (CGFloat)(arc4random() % 256) / 255.0f;

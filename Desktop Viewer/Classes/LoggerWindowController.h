@@ -100,8 +100,10 @@
 
 - (IBAction)addMark:(id)sender;
 - (IBAction)addMarkWithTitle:(id)sender;
+- (IBAction)insertMarkWithTitle:(id)sender;
 - (IBAction)cancelAddMark:(id)sender;
 - (IBAction)validateAddMark:(id)sender;
+- (IBAction)deleteMark:(id)sender;
 
 @end
 

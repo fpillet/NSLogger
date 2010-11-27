@@ -42,9 +42,6 @@
 
 @interface NSObject (LoggerConnectionDelegateOptional)
 // method always called on main thread
-- (void)remoteConnected:(LoggerConnection *)theConnection;
-
-// method always called on main thread
 - (void)remoteDisconnected:(LoggerConnection *)theConnection;
 @end
 
@@ -68,9 +65,9 @@
 	NSMutableArray *parentIndexesStack;	// during messages receive, use this to quickly locate parent indexes in groups
 	dispatch_queue_t messageProcessingQueue;
 
-	int clientIDReceived;				// observable property
 	BOOL connected;
 	BOOL restoredFromSave;
+	BOOL attachedToWindow;
 }
 
 @property (retain) id <LoggerConnectionDelegate> delegate;
@@ -84,7 +81,7 @@
 @property (nonatomic, readonly) NSMutableArray *messages;
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
-@property (nonatomic, assign) int clientIDReceived;
+@property (nonatomic, assign) BOOL attachedToWindow;
 
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
 

@@ -46,10 +46,11 @@
 - (void)rebuildQuickFilterPopup;
 - (void)updateClientInfo;
 - (void)updateFilterPredicate;
-- (void)refreshAllMessages;
+- (void)refreshAllMessages:(NSArray *)selectMessages;
 - (void)filterIncomingMessages:(NSArray *)messages withFilter:(NSPredicate *)aFilter;
 - (NSPredicate *)currentFilterPredicate;
 - (void)tileLogTable:(BOOL)force;
+- (void)rebuildMarksSubmenu;
 @end
 
 static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
@@ -171,14 +172,18 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[self synchronizeWindowTitleWithDocumentName];
 }
 
-- (NSPredicate *)marksPredicate
+- (NSPredicate *)alwaysVisibleEntriesPredicate
 {
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
-	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSSet setWithObjects:
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_MARK],
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_CLIENTINFO],
+																  [NSNumber numberWithInteger:LOGMSG_TYPE_DISCONNECT],
+																  nil]];
 	return [NSComparisonPredicate predicateWithLeftExpression:lhs
 											  rightExpression:rhs
 													 modifier:NSDirectPredicateModifier
-														 type:NSEqualToPredicateOperatorType
+														 type:NSInPredicateOperatorType
 													  options:0];
 }
 
@@ -221,7 +226,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
-	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self marksPredicate], p, nil]];
+	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
 	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
@@ -234,9 +239,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[self updateFilterPredicate];
 	if (![filterPredicate isEqual:currentPredicate])
 	{
-		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages) object:nil];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages:) object:nil];
 		[self rebuildQuickFilterPopup];
-		[self performSelector:@selector(refreshAllMessages) withObject:nil afterDelay:0];
+		[self performSelector:@selector(refreshAllMessages:) withObject:nil afterDelay:0];
 	}
 }
 
@@ -248,26 +253,29 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
 	{
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
-		//msg.cachedCellSize = NSZeroSize;
-		CGFloat cachedHeight = msg.cachedCellSize.height;
-		CGFloat newHeight = cachedHeight;
-		switch (msg.type)
+		NSSize cachedSize = msg.cachedCellSize;
+		if (cachedSize.width != sz.width)
 		{
-			case LOGMSG_TYPE_LOG:
-			case LOGMSG_TYPE_BLOCKSTART:
-			case LOGMSG_TYPE_BLOCKEND:
-				newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
-				break;
-			case LOGMSG_TYPE_CLIENTINFO:
-			case LOGMSG_TYPE_DISCONNECT:
-				newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
-				break;
-			case LOGMSG_TYPE_MARK:
-				newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
-				break;
+			CGFloat cachedHeight = cachedSize.height;
+			CGFloat newHeight = cachedHeight;
+			switch (msg.type)
+			{
+				case LOGMSG_TYPE_LOG:
+				case LOGMSG_TYPE_BLOCKSTART:
+				case LOGMSG_TYPE_BLOCKEND:
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+				case LOGMSG_TYPE_CLIENTINFO:
+				case LOGMSG_TYPE_DISCONNECT:
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+				case LOGMSG_TYPE_MARK:
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
+					break;
+			}
+			if (newHeight != cachedHeight)
+				[indexSet addIndex:row+range.location];
 		}
-		if (newHeight != cachedHeight)
-			[indexSet addIndex:row+range.location];
 	}
 	if ([indexSet count])
 		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
@@ -485,16 +493,16 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 	// schedule a table reload. Do this asynchronously (and cancellable-y) so we can limit the
 	// number of reload requests in case of high load
-	if (attachedConnection.connected)
-	{
+//	if (attachedConnection.connected)
+//	{
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
 		[self performSelector:@selector(messagesAppendedToTable) withObject:nil afterDelay:0];
-	}
-	else
-	{
-		[self messagesAppendedToTable];
-		[[self window] displayIfNeeded];
-	}
+//	}
+//	else
+//	{
+//		[self messagesAppendedToTable];
+//		[[self window] displayIfNeeded];
+//	}
 }
 
 - (IBAction)openDetailsWindow:(id)sender
@@ -514,12 +522,34 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 #pragma mark -
 #pragma mark Filtering
 // -----------------------------------------------------------------------------
-- (void)refreshAllMessages
+- (void)refreshAllMessages:(NSArray *)selectedMessages
 {
 	assert([NSThread isMainThread]);
 	@synchronized (attachedConnection.messages)
 	{
-		// Process logs by chunks
+		id messageToMakeVisible = [selectedMessages objectAtIndex:0];
+		if (messageToMakeVisible == nil)
+		{
+			// Remember the currently selected messages
+			NSIndexSet *selectedRows = [logTable selectedRowIndexes];
+			if ([selectedRows count])
+				selectedMessages = [displayedMessages objectsAtIndexes:selectedRows];
+
+			NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+			NSRange visibleRows = [logTable rowsInRect:r];
+			if (visibleRows.length != 0)
+			{
+				NSIndexSet *selectedVisible = [selectedRows indexesInRange:visibleRows options:0 passingTest:^(NSUInteger idx, BOOL *stop){return YES;}];
+				if ([selectedVisible count])
+					messageToMakeVisible = [displayedMessages objectAtIndex:[selectedVisible firstIndex]];
+				else
+					messageToMakeVisible = [displayedMessages objectAtIndex:visibleRows.location];
+			}
+		}
+
+		// Process logs by chunks (@@@ TODO: due to the serial scheduling of events, I'm not sure splitting
+		// in chunks brings any value -- may simplify this code and process everything at once, filtering
+		// is in any case much faster than display)
 		NSUInteger numMessages = [attachedConnection.messages count];
 		for (int i = 0; i < numMessages;)
 		{
@@ -544,23 +574,71 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			}
 			i += length;
 		}
-		if (tableTiledSinceLastRefresh)
-		{
-			// Here's the drill: if the table has been tiled since the last refresh,
-			// and we're now changing our view of filters, in most cases messages
-			// that were not on screen at the time the size changed have invalid cached
-			// size. We need to re-tile the table, but want to go through -tileLogTable
-			// which takes care of doing it first for visible items, giving a perception
-			// of speed. Therefore, we schedule a block on the filtering serial queue
-			// which will get executed AFTER all the messages have been refreshed, and
-			// will in turn schedule a table retiling. Pfew.
-			dispatch_async(messageFilteringQueue, ^{
-				dispatch_async(dispatch_get_main_queue(), ^{
+
+		// Stuff we want to do only when filtering is complete. To do this, we enqueue
+		// one more operation to the message filtering queue, with the only goal of
+		// being executed only at the end of the filtering process
+		dispatch_async(messageFilteringQueue, ^{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if (tableTiledSinceLastRefresh)
+				{
+					// Here's the drill: if the table has been tiled since the last refresh,
+					// and we're now changing our view of filters, in most cases messages
+					// that were not on screen at the time the size changed have invalid cached
+					// size. We need to re-tile the table, but want to go through -tileLogTable
+					// which takes care of doing it first for visible items, giving a perception
+					// of speed. Therefore, we schedule a block on the filtering serial queue
+					// which will get executed AFTER all the messages have been refreshed, and
+					// will in turn schedule a table retiling. Pfew.
+					
 					[self tileLogTable:YES];
 					tableTiledSinceLastRefresh = NO;
-				});
+				}
+				
+				// perform table updates now, so we can properly reselect afterwards
+				[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
+				[self messagesAppendedToTable];
+
+				if ([selectedMessages count])
+				{
+					// If there were selected rows, try to reselect them
+					NSMutableIndexSet *newSelectionIndexes = [[NSMutableIndexSet alloc] init];
+					for (id msg in selectedMessages)
+					{
+						NSInteger msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg];
+						if (msgIndex != NSNotFound)
+							[newSelectionIndexes addIndex:(NSUInteger)msgIndex];
+					}
+					if ([newSelectionIndexes count])
+					{
+						[logTable selectRowIndexes:newSelectionIndexes byExtendingSelection:NO];
+						[[self window] makeFirstResponder:logTable];
+					}
+					[newSelectionIndexes release];
+				}
+				if (messageToMakeVisible != nil)
+				{
+					// Restore the logical location in the message flow, to keep the user
+					// in-context
+					NSUInteger msgIndex;
+					id msg = messageToMakeVisible;
+					@synchronized(attachedConnection.messages)
+					{
+						while ((msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg]) == NSNotFound)
+						{
+							NSUInteger where = [attachedConnection.messages indexOfObjectIdenticalTo:msg];
+							if (where == 0)
+								msgIndex = 0;
+							else
+								msg = [attachedConnection.messages objectAtIndex:where-1];
+						}
+						if (msgIndex != NSNotFound)
+							[logTable scrollRowToVisible:msgIndex];
+					}
+				}
+				[self rebuildMarksSubmenu];
 			});
-		}
+		});
 	}
 	tableTiledSinceLastRefresh = NO;
 }
@@ -597,16 +675,20 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 // -----------------------------------------------------------------------------
 - (void)setAttachedConnection:(LoggerConnection *)aConnection
 {
-	[attachedConnection release];
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
-		if (!attachedConnection.connected)
-		{
-			[self performSelectorOnMainThread:@selector(updateClientInfo) withObject:nil waitUntilDone:NO];
-			if (attachedConnection.restoredFromSave)
-				[self performSelectorOnMainThread:@selector(refreshAllMessages) withObject:nil waitUntilDone:NO];
-		}
+		attachedConnection.attachedToWindow = YES;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self updateClientInfo];
+			[self refreshAllMessages:nil];
+		});
+	}
+	else if (attachedConnection != nil)
+	{
+		attachedConnection.attachedToWindow = NO;
+		[attachedConnection release];
+		attachedConnection = nil;
 	}
 }
 
@@ -642,20 +724,10 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 }
 
-- (void)remoteConnected:(LoggerConnection *)theConnection
-{
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[attachedConnection addObserver:self forKeyPath:@"clientIDReceived" options:0 context:NULL];
-		[self updateClientInfo];
-	});
-}
-
 - (void)remoteDisconnected:(LoggerConnection *)theConnection
 {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[attachedConnection removeObserver:self forKeyPath:@"clientIDReceived"];
-		[self updateClientInfo];
-	});
+	// we always get called on the main thread
+	[self updateClientInfo];
 }
 
 // -----------------------------------------------------------------------------
@@ -727,10 +799,19 @@ didReceiveMessages:(NSArray *)theMessages
 		// setup the message to be displayed
 		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
 		cell.message = [displayedMessages objectAtIndex:rowIndex];
-		if (rowIndex)
-			cell.previousMessage = [displayedMessages objectAtIndex:rowIndex-1];
-		else
-			cell.previousMessage = nil;
+
+		// if previous message is a Mark, go back a bit more to get the real previous message
+		// if previous message is ClientInfo, don't use it.
+		NSInteger idx = rowIndex - 1;
+		LoggerMessage *prev = nil;
+		while (prev == nil && idx >= 0)
+		{
+			prev = [displayedMessages objectAtIndex:idx--];
+			if (prev.type == LOGMSG_TYPE_CLIENTINFO || prev.type == LOGMSG_TYPE_MARK)
+				prev = nil;
+		} 
+		
+		cell.previousMessage = prev;
 	}
 	else if (aTableView == filterSetsTable)
 	{
@@ -771,28 +852,41 @@ didReceiveMessages:(NSArray *)theMessages
 		// first time and when tileLogTable is called. Due to the large number
 		// of entries we can have in the table, this is a requirement.
 		LoggerMessage *message = [displayedMessages objectAtIndex:row];
+		NSSize sz = [tableView frame].size;
 		NSSize cachedSize = message.cachedCellSize;
-		if (cachedSize.width != 0)
+		if (cachedSize.width == sz.width)
 			return cachedSize.height;
+		CGFloat newHeight = cachedSize.height;
+
+		// don't recompute immediately while in live resize
+		if (newHeight != 0 && [[self window] inLiveResize])
+			return newHeight;
+		
 		switch (message.type)
 		{
 			case LOGMSG_TYPE_LOG:
 			case LOGMSG_TYPE_BLOCKSTART:
 			case LOGMSG_TYPE_BLOCKEND:
-				return [LoggerMessageCell heightForCellWithMessage:message
-														   maxSize:[tableView frame].size];
+				newHeight = [LoggerMessageCell heightForCellWithMessage:message
+																maxSize:sz];
+				break;
 			case LOGMSG_TYPE_CLIENTINFO:
 			case LOGMSG_TYPE_DISCONNECT:
-				return [LoggerClientInfoCell heightForCellWithMessage:message
-															  maxSize:[tableView frame].size];
-
+				newHeight = [LoggerClientInfoCell heightForCellWithMessage:message
+																   maxSize:sz];
+				break;
+				
 			case LOGMSG_TYPE_MARK:
-				return [LoggerMarkerCell heightForCellWithMessage:message
-														  maxSize:[tableView frame].size];
+				newHeight = [LoggerMarkerCell heightForCellWithMessage:message
+															   maxSize:sz];
+				break;
 
 			default:
 				break;
 		}
+		if (cachedSize.height != newHeight)
+			[tableView performSelector:@selector(noteHeightOfRowsWithIndexesChanged:) withObject:[NSIndexSet indexSetWithIndex:row] afterDelay:0];
+		return newHeight;
 	}
 	return [tableView rowHeight];
 }
@@ -1029,7 +1123,57 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark Markers
 // -----------------------------------------------------------------------------
-- (void)addMarkWithTitleString:(NSString *)title
+- (void)rebuildMarksSubmenu
+{
+	NSMenuItem *marksSubmenu = [[[[NSApp mainMenu] itemWithTag:TOOLS_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_JUMP_TO_MARK_TAG];
+	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
+	NSPredicate *predicate = [NSComparisonPredicate predicateWithLeftExpression:lhs
+																rightExpression:rhs
+																	   modifier:NSDirectPredicateModifier
+																		   type:NSEqualToPredicateOperatorType
+																		options:0];
+	NSArray *marks = [displayedMessages filteredArrayUsingPredicate:predicate];
+	NSMenu *menu = [marksSubmenu submenu];
+	[menu removeAllItems];
+	if (![marks count])
+	{
+		NSMenuItem *noMarkItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Mark", @"")
+															action:nil
+													 keyEquivalent:@""];
+		[noMarkItem setEnabled:NO];
+		[menu addItem:noMarkItem];
+		[noMarkItem release];
+	}
+	else for (LoggerMessage *mark in marks)
+	{
+		NSMenuItem *markItem = [[NSMenuItem alloc] initWithTitle:mark.message
+														  action:@selector(jumpToMark:)
+												   keyEquivalent:@""];
+		[markItem setRepresentedObject:mark];
+		[markItem setTarget:self];
+		[menu addItem:markItem];
+		[markItem release];
+	}
+}
+
+- (void)jumpToMark:(NSMenuItem *)markMenuItem
+{
+	LoggerMessage *mark = [markMenuItem representedObject];
+	NSUInteger idx = [displayedMessages indexOfObjectIdenticalTo:mark];
+	if (idx == NSNotFound)
+	{
+		// actually, shouldn't happen
+		NSBeep();
+	}
+	else
+	{
+		[logTable scrollRowToVisible:idx];
+		[logTable selectRowIndexes:[NSIndexSet indexSetWithIndex:idx] byExtendingSelection:NO];
+	}
+}
+
+- (void)addMarkWithTitleString:(NSString *)title beforeMessage:(LoggerMessage *)beforeMessage
 {
 	if (![title length])
 	{
@@ -1047,36 +1191,91 @@ didReceiveMessages:(NSArray *)theMessages
 	mark.message = title;
 	mark.threadID = @"";
 	mark.contentsType = kMessageString;
-	dispatch_async(attachedConnection.messageProcessingQueue, ^{
-		NSRange range;
-		@synchronized(attachedConnection.messages)
-		{
-			range = NSMakeRange([attachedConnection.messages count], 1);
-			[attachedConnection.messages addObject:mark];
-		}
-		[self connection:attachedConnection didReceiveMessages:[NSArray arrayWithObject:mark] range:range];
+	
+	// we want to process the mark after all current scheduled filtering operations
+	// (including refresh All) are done
+	dispatch_async(messageFilteringQueue, ^{
+		// then we serialize all operations modifying the messages list in the connection's
+		// message processing queue
+		dispatch_async(attachedConnection.messageProcessingQueue, ^{
+			NSRange range;
+			@synchronized(attachedConnection.messages)
+			{
+				range.location = [attachedConnection.messages count];
+				range.length = 1;
+				if (beforeMessage != nil)
+				{
+					NSUInteger pos = [attachedConnection.messages indexOfObjectIdenticalTo:beforeMessage];
+					if (pos != NSNotFound)
+						range.location = pos;
+				}
+				[attachedConnection.messages insertObject:mark atIndex:range.location];
+			}
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[[self document] updateChangeCount:NSChangeDone];
+				[self refreshAllMessages:[NSArray arrayWithObjects:mark, beforeMessage, nil]];
+			});
+		});
 	});
+
 	[mark release];
 }
 
-- (IBAction)addMark:(id)sender
-{
-	[self addMarkWithTitleString:nil];
-}
-
-- (IBAction)addMarkWithTitle:(id)sender
+- (void)addMarkWithTitleBeforeMessage:(LoggerMessage *)aMessage
 {
 	NSString *s = [NSString stringWithFormat:NSLocalizedString(@"Mark - %@", @""),
 				   [NSDateFormatter localizedStringFromDate:[NSDate date]
 												  dateStyle:NSDateFormatterShortStyle
 												  timeStyle:NSDateFormatterMediumStyle]];
 	[markTitleField setStringValue:s];
-
+	
 	[NSApp beginSheet:markTitleWindow
 	   modalForWindow:[self window]
 		modalDelegate:self
 	   didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:NULL];	
+		  contextInfo:[aMessage retain]];
+}
+
+- (IBAction)addMark:(id)sender
+{
+	[self addMarkWithTitleString:nil beforeMessage:nil];
+}
+
+- (IBAction)addMarkWithTitle:(id)sender
+{
+	[self addMarkWithTitleBeforeMessage:nil];
+}
+
+- (IBAction)insertMarkWithTitle:(id)sender
+{
+	NSUInteger rowIndex = [logTable selectedRow];
+	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+		[self addMarkWithTitleBeforeMessage:[displayedMessages objectAtIndex:rowIndex]];
+}
+
+- (IBAction)deleteMark:(id)sender
+{
+	NSUInteger rowIndex = [logTable selectedRow];
+	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+	{
+		LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+		assert(markMessage.type == LOGMSG_TYPE_MARK);
+		[displayedMessages removeObjectAtIndex:rowIndex];
+		[logTable reloadData];
+		[self rebuildMarksSubmenu];
+		dispatch_async(messageFilteringQueue, ^{
+			// then we serialize all operations modifying the messages list in the connection's
+			// message processing queue
+			dispatch_async(attachedConnection.messageProcessingQueue, ^{
+				@synchronized(attachedConnection.messages) {
+					[attachedConnection.messages removeObjectIdenticalTo:markMessage];
+				}
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[[self document] updateChangeCount:NSChangeDone];
+				});
+			});
+		});
+	}
 }
 
 - (IBAction)cancelAddMark:(id)sender
@@ -1092,8 +1291,30 @@ didReceiveMessages:(NSArray *)theMessages
 - (void)addMarkSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode)
-		[self addMarkWithTitleString:[markTitleField stringValue]];
+		[self addMarkWithTitleString:[markTitleField stringValue] beforeMessage:(LoggerMessage *)contextInfo];
+	if (contextInfo != NULL)
+		[(id)contextInfo release];
 	[markTitleWindow orderOut:self];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark User Interface Items Validation
+// -----------------------------------------------------------------------------
+- (BOOL)validateUserInterfaceItem:(id)anItem
+{
+	SEL action = [anItem action];
+	if (action == @selector(deleteMark:))
+	{
+		NSUInteger rowIndex = [logTable selectedRow];
+		if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+		{
+			LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+			return (markMessage.type == LOGMSG_TYPE_MARK);
+		}
+		return NO;
+	}
+	return YES;
 }
 
 @end

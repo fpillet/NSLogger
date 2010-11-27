@@ -38,7 +38,7 @@
 
 @synthesize delegate;
 @synthesize messages;
-@synthesize connected, clientIDReceived, restoredFromSave;
+@synthesize connected, restoredFromSave, attachedToWindow;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
 @synthesize messageProcessingQueue;
 
@@ -67,8 +67,7 @@
 
 - (void)dealloc
 {
-	if (messageProcessingQueue != NULL)
-		dispatch_release(messageProcessingQueue);
+	dispatch_release(messageProcessingQueue);
 	[messages release];
 	[parentIndexesStack release];
 	[clientName release];
@@ -83,7 +82,7 @@
 - (void)messagesReceived:(NSArray *)msgs
 {
 	dispatch_async(messageProcessingQueue, ^{
-		/* Code not operational yet
+		/* Code not functional yet
 		 *
 		NSRange range = NSMakeRange([messages count], [msgs count]);
 		NSUInteger lastParent = NSNotFound;
@@ -129,12 +128,26 @@
 			range = NSMakeRange([messages count], [msgs count]);
 			[messages addObjectsFromArray:msgs];
 		}
-		[self.delegate connection:self didReceiveMessages:msgs range:range];
+		
+		if (attachedToWindow)
+			[self.delegate connection:self didReceiveMessages:msgs range:range];
 	});
 }
 
 - (void)clientInfoReceived:(LoggerMessage *)message
 {
+	// Insert message at first position in the message list. In the unlikely event there is
+	// an existing ClientInfo message at this position, just replace it. Also, don't fire
+	// a "didReceiveMessages". The rationale behind this is that if the connection just came in,
+	// we are not yet attached to a window and when attaching, the window will refresh all messages.
+	dispatch_async(messageProcessingQueue, ^{
+		@synchronized (messages)
+		{
+			if ([messages count] == 0 || ((LoggerMessage *)[messages objectAtIndex:0]).type != LOGMSG_TYPE_CLIENTINFO)
+				[messages insertObject:message atIndex:0];
+		}
+	});
+
 	// all this stuff occurs on the main thread to avoid touching values
 	// while the UI reads them
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -154,8 +167,6 @@
 		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
 		if (value != nil)
 			self.clientDevice = value;
-
-		self.clientIDReceived = (self.clientIDReceived + 1);
 	});
 }
 
@@ -215,13 +226,11 @@
 	{
 		connected = newConnected;
 		
-		if (connected && [(id)delegate respondsToSelector:@selector(remoteConnected:)])
-			[(id)delegate performSelectorOnMainThread:@selector(remoteConnected:) withObject:self waitUntilDone:NO];
-
 		if (!connected && [(id)delegate respondsToSelector:@selector(remoteDisconnected:)])
 			[(id)delegate performSelectorOnMainThread:@selector(remoteDisconnected:) withObject:self waitUntilDone:NO];
 
-		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+															object:self];
 	}
 }
 
@@ -246,6 +255,10 @@
 		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
 		restoredFromSave = YES;
+		
+		// we need a messageProcessingQueue just for the ability to add/insert marks
+		// when user does post-mortem investigation
+		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 	}
 	return self;
 }

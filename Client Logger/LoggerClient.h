@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b5 2010-11-08
+ * version 1.0b7 2010-11-23
  *
  * Part of NSLogger (client side)
  *
@@ -44,7 +44,7 @@
 
 // This define is here so that user application can test whether NSLogger Client is
 // being included in the project, and potentially configure their macros accordingly
-#define NSLOGGER_WAS_HERE							1
+#define NSLOGGER_WAS_HERE		1
 
 // Set this to 0 if you absolutely NOT want any access to Cocoa (Objective-C, NS* calls)
 // We need a couple ones to reliably obtain the thread number and device information
@@ -52,8 +52,29 @@
 // we need to put Cocoa in multithreading mode. Also, ALLOW_COCOA_USE allows the client code
 // to use NSLog()-style message formatting (less verbose than CFShow()-style) through the
 // use of -[NSString stringWithFormat:arguments:]
-#define	ALLOW_COCOA_USE								1
+#define	ALLOW_COCOA_USE			1
 
+/* -----------------------------------------------------------------
+ * Logger option flags & default options
+ * -----------------------------------------------------------------
+ */
+enum {
+	kLoggerOption_LogToConsole						= 0x01,
+	kLoggerOption_BufferLogsUntilConnection			= 0x02,
+	kLoggerOption_BrowseBonjour						= 0x04,
+	kLoggerOption_BrowseOnlyLocalDomain				= 0x08,
+	kLoggerOption_UseSSL							= 0x10
+};
+
+#define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
+								 kLoggerOption_BrowseBonjour |				\
+								 kLoggerOption_BrowseOnlyLocalDomain |		\
+								 kLoggerOption_UseSSL)
+
+/* -----------------------------------------------------------------
+ * Structure defining a Logger
+ * -----------------------------------------------------------------
+ */
 typedef struct
 {
 	CFStringRef bufferFile;							// If non-NULL, all buffering is done to the specified file instead of in-memory
@@ -66,6 +87,7 @@ typedef struct
 	
 	CFMutableArrayRef logQueue;						// Message queue
 	pthread_mutex_t logQueueMutex;
+	pthread_cond_t logQueueEmpty;
 	
 	pthread_t workerThread;							// The worker thread responsible for Bonjour resolution, connection and logs transmission
 	CFRunLoopSourceRef messagePushedSource;			// A message source that fires on the worker thread when messages are available for send
@@ -84,10 +106,9 @@ typedef struct
 	int32_t messageSeq;								// sequential message number (added to each message sent)
 
 	// settings
-	BOOL logToConsole;
-	BOOL bufferLogsUntilConnection;					// if set to YES, all logs are buffered to memory until we can connect to a logging service
-	BOOL browseBonjour;
-	BOOL browseOnlyLocalDomain;						// if set to YES, Bonjour only checks "local." domain to look for logger
+	uint32_t options;								// Flags, see enum above
+	CFStringRef bonjourServiceType;					// leave NULL to use the default
+	CFStringRef bonjourServiceName;					// leave NULL to use the first one available
 
 	// internal state
 	BOOL connected;									// Set to YES once the write stream declares the connection open
@@ -118,7 +139,11 @@ extern Logger *LoggerGetDefaultLogger();
 extern Logger* LoggerInit();
 
 // Set logger options if you don't want the default options (see above)
-extern void LoggerSetOptions(Logger *logger, BOOL logToConsole, BOOL bufferLocallyUntilConnection, BOOL browseBonjour, BOOL browseOnlyLocalDomains);
+extern void LoggerSetOptions(Logger *logger, uint32_t options);
+
+// Set Bonjour logging names, so you can force the logger to use a specific service type
+// or direct logs to the machine on your network which publishes a specific name
+extern void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFStringRef bonjourServiceName);
 
 // Directly set the viewer host (hostname or IP address) and port we want to connect to. If set, LoggerStart() will
 // try to connect there first before trying Bonjour
@@ -142,6 +167,11 @@ extern void LoggerStart(Logger *logger);
 // Deactivate and free the logger.
 extern void LoggerStop(Logger *logger);
 
+// Pause the current thread until all messages from the logger have been transmitted
+// this is useful to use before an assert() aborts your program. If waitForConnection is YES,
+// LoggerFlush() will block even if the client is not currently connected to the desktop
+// viewer. You should be using NO most of the time, but in some cases it can be useful.
+extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
 
 /* Logging functions. Each function exists in two versions, one without a Logger instance
  * as argument (uses the default logger), and the other which can direct traces to
