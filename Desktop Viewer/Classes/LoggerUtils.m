@@ -40,17 +40,13 @@ NSString *StringWithTimeDelta(struct timeval *td)
 		s = td->tv_sec % 60;
 		ms = td->tv_usec / 1000;
 		if (hrs != 0)
-			return [NSString stringWithFormat:@"+%dh %dmn %d.%ds", hrs, mn, s, ms];
+			return [NSString stringWithFormat:@"+%dh %dmn %d.%03ds", hrs, mn, s, ms];
 		if (mn != 0)
-			return [NSString stringWithFormat:@"+%dmn %d.%ds", mn, s, ms];
+			return [NSString stringWithFormat:@"+%dmn %d.%03ds", mn, s, ms];
 		if (s != 0)
 		{
-			if (ms == 0)
-			{
-				if (td->tv_usec == 0)
-					return [NSString stringWithFormat:@"+%ds", s];
-				return [NSString stringWithFormat:@"+%d.%ds", s, (int)td->tv_usec];
-			}
+			if (ms != 0)
+				return [NSString stringWithFormat:@"+%d.%03ds", s, ms];
 			return [NSString stringWithFormat:@"+%ds", s];
 		}
 	}
@@ -62,7 +58,7 @@ NSString *StringWithTimeDelta(struct timeval *td)
 		return [NSString stringWithFormat:@"+%dms", td->tv_usec / 1000];
 
 	// microsecond resolution
-	return [NSString stringWithFormat:@"+%d.%dms", td->tv_usec / 1000, td->tv_usec % 1000];
+	return [NSString stringWithFormat:@"+%d.%03dms", td->tv_usec / 1000, td->tv_usec % 1000];
 }
 
 CGColorRef CreateCGColorFromNSColor(NSColor * color)
