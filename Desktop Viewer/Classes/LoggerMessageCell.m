@@ -44,6 +44,7 @@
 static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
+static CGFloat sDefaultFileLineFunctionHeight = 0;
 
 NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
 
@@ -108,7 +109,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
 	[attrs setObject:dict forKey:@"threadID"];
 	[dict release];
-	
+
 	// Tag and Level attributes
 	dict = [textAttrs mutableCopy];
 	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
@@ -140,6 +141,18 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[dict setObject:style forKey:NSParagraphStyleAttributeName];
 	[style release];
 	[attrs setObject:dict forKey:@"mark"];
+
+	// File / Line / Function name attributes
+	dict = [textAttrs mutableCopy];
+	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
+	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+	NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
+												   green:(233.0f / 255.0f)
+													blue:(252.0f / 255.0f)
+												   alpha:1.0f];
+	[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
+	[attrs setObject:dict forKey:@"fileLineFunction"];
+
 	return attrs;
 }
 
@@ -164,6 +177,23 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			[dict setObject:style forKey:NSParagraphStyleAttributeName];
 			[style release];
 			[attrs setObject:dict forKey:@"mark"];
+			[dict release];
+			[self setDefaultAttributes:attrs];
+			[attrs release];
+		}
+		
+		// update from pre-1.0b7, adding attributes for file / line / function
+		if ([sDefaultAttributes objectForKey:@"fileLineFunction"] == nil)
+		{
+			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
+			NSMutableDictionary *dict = [[attrs objectForKey:@"tag"] mutableCopy];
+			NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
+														   green:(233.0f / 255.0f)
+															blue:(252.0f / 255.0f)
+														   alpha:1.0f];
+			[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
+			[attrs setObject:dict forKey:@"fileLineFunction"];
+			[dict release];
 			[self setDefaultAttributes:attrs];
 			[attrs release];
 		}
@@ -176,6 +206,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[sDefaultAttributes release];
 	sDefaultAttributes = [newAttributes copy];
 	sMinimumHeightForCell = 0;
+	sDefaultFileLineFunctionHeight = 0;
 	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:@"Message Attributes"];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
 }
@@ -264,6 +295,18 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	return sMinimumHeightForCell;
 }
 
++ (CGFloat)heightForFileLineFunction
+{
+	if (sDefaultFileLineFunctionHeight == 0)
+	{
+		NSRect r = [@"file:100 funcQyTg" boundingRectWithSize:NSMakeSize(1024, 1024)
+													  options:NSStringDrawingUsesLineFragmentOrigin
+												   attributes:[[self defaultAttributes] objectForKey:@"fileLineFunction"]];
+		sDefaultFileLineFunctionHeight = NSHeight(r) + 6;
+	}
+	return sDefaultFileLineFunctionHeight;
+}
+
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz
 {
 	// return cached cell height if possible
@@ -314,8 +357,12 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			break;
 	}
 
+	// If there is file / line / function information, add its height
+	if (aMessage.filename != nil || aMessage.functionName != nil)
+		sz.height += [self heightForFileLineFunction];
+	
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
+	cellSize.height = fmaxf(sz.height + 6, minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -387,6 +434,13 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	if (messageAttributes == nil)
 		return [[[self class] defaultAttributes] objectForKey:@"data"];
 	return [messageAttributes objectForKey:@"data"];
+}
+
+- (NSMutableDictionary *)fileLineFunctionAttributes
+{
+	if (messageAttributes == nil)
+		return [[[self class] defaultAttributes] objectForKey:@"fileLineFunction"];
+	return [messageAttributes objectForKey:@"fileLineFunction"];
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
@@ -599,6 +653,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
 				   NSHeight(cellFrame));
 
+	CGFloat fileLineFunctionHeight = (message.filename != nil || message.functionName != nil) ? [[self class] heightForFileLineFunction] : 0;
+	r.size.height -= fileLineFunctionHeight;
+	//r.origin.y += fileLineFunctionHeight;
+
 	if (message.contentsType == kMessageString)
 	{
 		attrs = [self messageTextAttributes];
@@ -611,7 +669,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 															  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 														   attributes:attrs];
 		r.size.height = lr.size.height;
-		CGFloat offset = floorf((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f);
+		CGFloat offset = floorf((NSHeight(cellFrame) - fileLineFunctionHeight - NSHeight(lr)) / 2.0f);
 		if (offset > 0)
 			r.origin.y += offset;
 		[(NSString *)message.message drawWithRect:r
@@ -670,6 +728,46 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 						operation:NSCompositeCopy
 						 fraction:1.0f];
 		CGContextRestoreGState(ctx);
+	}
+	
+	// Draw File / Line / Function
+	if (fileLineFunctionHeight)
+	{
+		attrs = [self fileLineFunctionAttributes];
+		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 1,
+					   /*NSMinY(cellFrame), */NSMaxY(cellFrame) - fileLineFunctionHeight - 1,
+					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH),
+					   fileLineFunctionHeight);
+		if (!highlighted)
+		{
+			NSColor *fillColor = [attrs objectForKey:NSBackgroundColorAttributeName];
+			if (fillColor != nil)
+			{
+				[fillColor set];
+				NSRectFill(r);
+			}
+		}
+		NSMutableString *s = [[NSMutableString alloc] init];
+		if (message.filename)
+		{
+			if (message.lineNumber)
+				[s appendFormat:@"%@:%d ", [message.filename lastPathComponent], message.lineNumber];
+			else
+				[s appendFormat:@"%@ ", [message.filename lastPathComponent]];
+		}
+		if (message.functionName)
+			[s appendString:message.functionName];
+		if ([s length])
+		{
+			if (highlighted)
+			{
+				attrs = [[attrs mutableCopy] autorelease];
+				[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+			}
+			[s drawWithRect:NSInsetRect(r, 4, 2)
+					options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+				 attributes:attrs];
+		}
 	}
 }
 

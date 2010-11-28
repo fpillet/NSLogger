@@ -31,11 +31,15 @@
 #include <time.h>
 #import <Cocoa/Cocoa.h>
 
+@class LoggerConnection;
+
 @interface LoggerMessage : NSObject <NSCoding, NSCopying>
 {
 	struct timeval timestamp;	// seconds and microseconds
 
 	NSString *tag;				// non-retained (we use a global pool for domains)
+	NSString *filename;			// non-retained (we use a connection-attached pool for filenames)
+	NSString *functionName;		// non-retained (we use a connection-attached pool for function names)
 	NSMutableDictionary *parts;	// for non-standard parts transmitted by the clients, store the data in this dictionary
 	id message;					// NSString, NSData or image data
 	NSImage *image;				// if the message is an image, the image gets decoded once it's being accessed
@@ -43,6 +47,8 @@
 	NSUInteger sequence;		// message's number if order of reception
 
 	NSString *threadID;
+
+	int lineNumber;				// line number in the file, if filename != nil
 
 	short level;
 	short type;
@@ -52,7 +58,7 @@
 	// we can speed up by caching some data
 	short indent;				// horizontal indent (count of nested blockstarts)
 	int distanceFromParent;		// distance from last blockStart (thisMsgIndex - parentMsgIndex)
-	
+
 	// other cached data
 	NSSize imageSize;
 	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
@@ -71,9 +77,15 @@
 @property (nonatomic, readonly) NSSize imageSize;
 @property (nonatomic, assign) NSSize cachedCellSize;
 @property (nonatomic, retain) NSImage *image;
+@property (nonatomic, readonly, assign) NSString *filename;
+@property (nonatomic, readonly, assign) NSString *functionName;
+@property (nonatomic, assign) int lineNumber;
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage;
 - (NSString *)textRepresentation;
+
+- (void)setFilename:(NSString *)aFilename connection:(LoggerConnection *)aConnection;
+- (void)setFunctionName:(NSString *)aFunctionName connection:(LoggerConnection *)aConnection;
 
 @end
 

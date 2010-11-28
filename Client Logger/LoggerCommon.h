@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.0b7 2010-11-23
+ * version 1.0b7 2010-11-28
  *
  * Definitions common to NSLogger and NSLoggerClient for the binary messages format
  *
@@ -59,6 +59,9 @@
  *	- a PART_KEY_LEVEL (optional) a log level that helps filtering logs from your application (see as few or as much detail as you need)
  *	- a PART_KEY_MESSAGE which is the message text, binary data or image
  *  - a PART_KEY_MESSAGE_SEQ which is the message sequence number (message# sent by client)
+ *	- a PART_KEY_FILENAME (optional) with the filename from which the log was generated
+ *	- a PART_KEY_LINENUMBER (optional) the linenumber in the filename at which the log was generated
+ *	- a PART_KEY_FUNCTIONNAME (optional) the function / method / selector from which the log was generated
  *  - if logging an image, PART_KEY_IMAGE_WIDTH and PART_KEY_IMAGE_HEIGHT let the desktop know the image size without having to actually decode it
  */
 
@@ -74,6 +77,9 @@
 #define PART_KEY_IMAGE_WIDTH	8			// messages containing an image should also contain a part with the image size
 #define PART_KEY_IMAGE_HEIGHT	9			// (this is mainly for the desktop viewer to compute the cell size without having to immediately decode the image)
 #define PART_KEY_MESSAGE_SEQ	10			// the sequential number of this message which indicates the order in which messages are generated
+#define PART_KEY_FILENAME		11			// when logging, message can contain a file name
+#define PART_KEY_LINENUMBER		12			// as well as a line number
+#define PART_KEY_FUNCTIONNAME	13			// and a function or method name
 
 // Constants for parts in LOGMSG_TYPE_CLIENTINFO
 #define PART_KEY_CLIENT_NAME	20
@@ -82,6 +88,9 @@
 #define PART_KEY_OS_VERSION		23
 #define PART_KEY_CLIENT_MODEL	24			// For iPhone, device model (i.e 'iPhone', 'iPad', etc)
 #define PART_KEY_UNIQUEID		25			// for remote device identification, part of LOGMSG_TYPE_CLIENTINFO
+
+// Area starting at which you may define your own constants
+#define PART_KEY_USER_DEFINED	100
 
 // Constants for the "partType" field
 #define	PART_TYPE_STRING		0			// Strings are stored as UTF-8 data

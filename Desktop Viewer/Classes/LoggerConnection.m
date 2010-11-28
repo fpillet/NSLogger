@@ -28,11 +28,14 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <objc/runtime.h>
 #import "LoggerConnection.h"
 #import "LoggerMessage.h"
 #import "LoggerCommon.h"
 #import "LoggerAppDelegate.h"
 #import "LoggerStatusWindowController.h"
+
+char sConnectionAssociatedObjectKey = 1;
 
 @implementation LoggerConnection
 
@@ -41,6 +44,7 @@
 @synthesize connected, restoredFromSave, attachedToWindow;
 @synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
 @synthesize messageProcessingQueue;
+@synthesize filenames, functionNames;
 
 - (id)init
 {
@@ -48,7 +52,9 @@
 	{
 		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 		messages = [[NSMutableArray alloc] initWithCapacity:1024];
-		parentIndexesStack = [[NSMutableArray alloc] init];		
+		parentIndexesStack = [[NSMutableArray alloc] init];
+		filenames = [[NSMutableSet alloc] init];
+		functionNames = [[NSMutableSet alloc] init];
 	}
 	return self;
 }
@@ -61,6 +67,8 @@
 		messages = [[NSMutableArray alloc] initWithCapacity:1024];
 		parentIndexesStack = [[NSMutableArray alloc] init];
 		clientAddress = [anAddress copy];
+		filenames = [[NSMutableSet alloc] init];
+		functionNames = [[NSMutableSet alloc] init];
 	}
 	return self;
 }
@@ -76,6 +84,8 @@
 	[clientOSVersion release];
 	[clientDevice release];
 	[clientAddress release];
+	[filenames release];
+	[functionNames release];
 	[super dealloc];
 }
 
@@ -252,8 +262,15 @@
 		clientOSName = [[aDecoder decodeObjectForKey:@"clientOSName"] retain];
 		clientOSVersion = [[aDecoder decodeObjectForKey:@"clientOSVersion"] retain];
 		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
-		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
+		filenames = [[aDecoder decodeObjectForKey:@"filenames"] retain];
+		if (filenames == nil)
+			filenames = [[NSMutableSet alloc] init];
+		functionNames = [[aDecoder decodeObjectForKey:@"functionNames"] retain];
+		if (functionNames == nil)
+			functionNames = [[NSMutableSet alloc] init];
+		objc_setAssociatedObject(aDecoder, &sConnectionAssociatedObjectKey, self, OBJC_ASSOCIATION_ASSIGN);
+		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
 		restoredFromSave = YES;
 		
 		// we need a messageProcessingQueue just for the ability to add/insert marks
@@ -275,6 +292,8 @@
 		[aCoder encodeObject:clientOSVersion forKey:@"clientOSVersion"];
 	if (clientDevice != nil)
 		[aCoder encodeObject:clientDevice forKey:@"clientDevice"];
+	[aCoder encodeObject:filenames forKey:@"filenames"];
+	[aCoder encodeObject:functionNames forKey:@"functionNames"];
 	@synchronized (messages)
 	{
 		[aCoder encodeObject:messages forKey:@"messages"];

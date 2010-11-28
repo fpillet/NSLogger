@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b7 2010-11-23
+ * version 1.0b7 2010-11-28
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -1462,6 +1462,40 @@ static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key)
 	LoggerMessageUpdateDataHeader(data);
 }
 
+static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, int key)
+{
+	if (aString == NULL || *aString == 0)
+		return;
+	
+	// convert to UTF-8
+	int len = strlen(aString);
+	uint8_t *buf = malloc(2 * len);
+	if (buf != NULL)
+	{
+		int n = 0;
+		for (int i = 0; i < len; i++)
+		{
+			uint8_t c = (uint8_t)(*aString++);
+			if (c < 0x80)
+				buf[n++] = c;
+			else {
+				buf[n++] = 0xC0 | (c >> 6);
+				buf[n++] = (c & 0x6F) | 0x80;
+			}
+		}
+		if (n)
+		{
+			uint32_t partSize = htonl(n);
+			uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_STRING};
+			CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
+			CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
+			CFDataAppendBytes(data, buf, n);
+			LoggerMessageUpdateDataHeader(data);
+		}
+		free(buf);
+	}
+}
+
 static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, int key)
 {
 	if (aString == NULL)
@@ -1593,7 +1627,14 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 	}
 }
 
-static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, NSString *format, va_list args)
+static void LogMessageTo_internal(Logger *logger,
+								  const char *filename,
+								  int lineNumber,
+								  const char *functionName,
+								  NSString *domain,
+								  int level,
+								  NSString *format,
+								  va_list args)
 {
 	if (logger == NULL)
 	{
@@ -1622,6 +1663,12 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 				LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 			if (level)
 				LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
+			if (filename != NULL)
+				LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
+			if (lineNumber)
+				LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
+			if (functionName != NULL)
+				LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
 			LoggerMessageAddString(encoder, msgString, PART_KEY_MESSAGE);
 			LoggerPushMessageToQueue(logger, encoder);
 			CFRelease(encoder);
@@ -1638,7 +1685,15 @@ static void LogMessageTo_internal(Logger *logger, NSString *domain, int level, N
 	}
 }
 
-static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int width, int height, NSData *data)
+static void LogImageTo_internal(Logger *logger,
+								const char *filename,
+								int lineNumber,
+								const char *functionName,
+								NSString *domain,
+								int level,
+								int width,
+								int height,
+								NSData *data)
 {
 	if (logger == NULL)
 	{
@@ -1664,6 +1719,12 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 			LoggerMessageAddInt32(encoder, width, PART_KEY_IMAGE_WIDTH);
 			LoggerMessageAddInt32(encoder, height, PART_KEY_IMAGE_HEIGHT);
 		}
+		if (filename != NULL)
+			LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
+		if (lineNumber)
+			LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
+		if (functionName != NULL)
+			LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
 		LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
 
 		LoggerPushMessageToQueue(logger, encoder);
@@ -1675,7 +1736,12 @@ static void LogImageTo_internal(Logger *logger, NSString *domain, int level, int
 	}
 }
 
-static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSData *data)
+static void LogDataTo_internal(Logger *logger,
+							   const char *filename,
+							   int lineNumber,
+							   const char *functionName,
+							   NSString *domain,
+							   int level, NSData *data)
 {
 	if (logger == NULL)
 	{
@@ -1696,6 +1762,12 @@ static void LogDataTo_internal(Logger *logger, NSString *domain, int level, NSDa
 			LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 		if (level)
 			LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
+		if (filename != NULL)
+			LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
+		if (lineNumber)
+			LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
+		if (functionName != NULL)
+			LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
 		LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
 		
 		LoggerPushMessageToQueue(logger, encoder);
@@ -1745,19 +1817,11 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 #pragma mark -
 #pragma mark Public logging functions
 // -----------------------------------------------------------------------------
-void LogMessageCompatTo(Logger *logger, NSString *format, ...)
-{
-	va_list args;
-	va_start(args, format);
-	LogMessageTo_internal(logger, nil, 0, format, args);
-	va_end(args);
-}
-
 void LogMessageCompat(NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	LogMessageTo_internal(NULL, nil, 0, format, args);
+	LogMessageTo_internal(NULL, NULL, 0, NULL, nil, 0, format, args);
 	va_end(args);
 }
 
@@ -1765,46 +1829,92 @@ void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format,
 {
 	va_list args;
 	va_start(args, format);
-	LogMessageTo_internal(logger, domain, level, format, args);
+	LogMessageTo_internal(logger, NULL, 0, NULL, domain, level, format, args);
+	va_end(args);
+}
+
+void LogMessageToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	LogMessageTo_internal(logger, filename, lineNumber, functionName, domain, level, format, args);
 	va_end(args);
 }
 
 void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args)
 {
-	LogMessageTo_internal(logger, domain, level, format, args);
+	LogMessageTo_internal(logger, NULL, 0, NULL, domain, level, format, args);
+}
+
+void LogMessageToF_va(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args)
+{
+	LogMessageTo_internal(logger, filename, lineNumber, functionName, domain, level, format, args);
 }
 
 void LogMessage(NSString *domain, int level, NSString *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	LogMessageTo_internal(NULL, domain, level, format, args);
+	LogMessageTo_internal(NULL, NULL, 0, NULL, domain, level, format, args);
+	va_end(args);
+}
+
+void LogMessageF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	LogMessageTo_internal(NULL, filename, lineNumber, functionName, domain, level, format, args);
 	va_end(args);
 }
 
 void LogMessage_va(NSString *domain, int level, NSString *format, va_list args)
 {
-	LogMessageTo_internal(NULL, domain, level, format, args);
+	LogMessageTo_internal(NULL, NULL, 0, NULL, domain, level, format, args);
+}
+
+void LogMessageF_va(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args)
+{
+	LogMessageTo_internal(NULL, filename, lineNumber, functionName, domain, level, format, args);
 }
 
 void LogData(NSString *domain, int level, NSData *data)
 {
-	LogDataTo_internal(NULL, domain, level, data);
+	LogDataTo_internal(NULL, NULL, 0, NULL, domain, level, data);
+}
+
+void LogDataF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSData *data)
+{
+	LogDataTo_internal(NULL, filename, lineNumber, functionName, domain, level, data);
 }
 
 void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data)
 {
-	LogDataTo_internal(logger, domain, level, data);
+	LogDataTo_internal(logger, NULL, 0, NULL, domain, level, data);
+}
+
+void LogDataToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSData *data)
+{
+	LogDataTo_internal(logger, filename, lineNumber, functionName, domain, level, data);
 }
 
 void LogImageData(NSString *domain, int level, int width, int height, NSData *data)
 {
-	LogImageTo_internal(NULL, domain, level, width, height, data);
+	LogImageTo_internal(NULL, NULL, 0, NULL, domain, level, width, height, data);
+}
+
+void LogImageDataF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, int width, int height, NSData *data)
+{
+	LogImageTo_internal(NULL, filename, lineNumber, functionName, domain, level, width, height, data);
 }
 
 void LogImageDataTo(Logger *logger, NSString *domain, int level, int width, int height, NSData *data)
 {
-	LogImageTo_internal(logger, domain, level, width, height, data);
+	LogImageTo_internal(logger, NULL, 0, NULL, domain, level, width, height, data);
+}
+
+void LogImageDataToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, int width, int height, NSData *data)
+{
+	LogImageTo_internal(logger, filename, lineNumber, functionName, domain, level, width, height, data);
 }
 
 void LogStartBlock(NSString *format, ...)

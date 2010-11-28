@@ -59,6 +59,9 @@
 	NSString *clientOSVersion;
 	NSString *clientDevice;
 
+	NSMutableSet *filenames;			// pool of unique file names
+	NSMutableSet *functionNames;		// pool of unique function names
+
 	NSData *clientAddress;				// depends on the underlying protocol
 
 	NSMutableArray *messages;
@@ -78,6 +81,9 @@
 @property (nonatomic, retain) NSString *clientOSVersion;
 @property (nonatomic, retain) NSString *clientDevice;
 
+@property (nonatomic, readonly) NSMutableSet *filenames;
+@property (nonatomic, readonly) NSMutableSet *functionNames;
+
 @property (nonatomic, readonly) NSMutableArray *messages;
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
@@ -96,3 +102,5 @@
 - (NSString *)clientDescription;
 
 @end
+
+extern char sConnectionAssociatedObjectKey;

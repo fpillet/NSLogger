@@ -33,7 +33,7 @@
 
 @implementation LoggerNativeMessage
 
-- (id)initWithData:(NSData *)data
+- (id)initWithData:(NSData *)data connection:(LoggerConnection *)aConnection
 {
 	if ((self = [super init]) != nil)
 	{
@@ -146,6 +146,20 @@
 						imageSize.height = value32;
 					else if (partType == PART_TYPE_INT64)
 						imageSize.height = value64;
+					break;
+				case PART_KEY_FILENAME:
+					if (part != nil)
+						[self setFilename:part connection:aConnection];
+					break;
+				case PART_KEY_FUNCTIONNAME:
+					if (part!= nil)
+						[self setFunctionName:part connection:aConnection];
+					break;
+				case PART_KEY_LINENUMBER:
+					if (partType == PART_TYPE_INT32)
+						lineNumber = value32;
+					else
+						lineNumber = value64;
 					break;
 				default: {
 					// all other keys are automatically added to the parts dictionary

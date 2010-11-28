@@ -525,7 +525,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 							// we receive a ClientInfo message only when the client connects. Once we get this message,
 							// the connection is considered being "live" (we need to wait a bit to let SSL negotiation to
 							// take place, and not open a window if it fails).
-							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
+							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:cnx];
 							CFRelease(subset);
 							if (message.type == LOGMSG_TYPE_CLIENTINFO)
 							{

@@ -28,8 +28,10 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import <objc/runtime.h>
 #import "LoggerMessage.h"
 #import "LoggerCommon.h"
+#import "LoggerConnection.h"
 
 static NSMutableArray *sTags = nil;
 
@@ -39,6 +41,7 @@ static NSMutableArray *sTags = nil;
 @synthesize type, contentsType, level, indent, timestamp;
 @synthesize parts;
 @synthesize cachedCellSize, image, imageSize;
+@synthesize filename, functionName, lineNumber;
 
 - (void)dealloc
 {
@@ -159,6 +162,19 @@ static NSMutableArray *sTags = nil;
 		contentsType = [decoder decodeIntForKey:@"ct"];
 		indent = [decoder decodeIntForKey:@"i"];
 		distanceFromParent = [decoder decodeIntForKey:@"d"];
+		
+		// reload the filename / function name / line number. Since this is a pool
+		// kept by the LoggerConnection itself, we use the runtime's associated objects
+		// feature to get a hold on the LoggerConnection object
+		LoggerConnection *cnx = objc_getAssociatedObject(decoder, &sConnectionAssociatedObjectKey);
+		NSString *s = [decoder decodeObjectForKey:@"f"];
+		if (s != nil)
+			[self setFilename:s connection:cnx];
+		s = [decoder decodeObjectForKey:@"fn"];
+		if (s != nil)
+			[self setFunctionName:s connection:cnx];
+		lineNumber = [decoder decodeIntForKey:@"ln"];
+
 		self.tag = [decoder decodeObjectForKey:@"tag"];
 	}
 	return self;
@@ -188,6 +204,12 @@ static NSMutableArray *sTags = nil;
 		[encoder encodeInt:indent forKey:@"i"];
 	if (distanceFromParent)
 		[encoder encodeInt:distanceFromParent forKey:@"d"];
+	if (filename != nil)
+		[encoder encodeObject:filename forKey:@"f"];
+	if (functionName != nil)
+		[encoder encodeObject:functionName forKey:@"fn"];
+	if (lineNumber != 0)
+		[encoder encodeInt:lineNumber forKey:@"ln"];
 }
 
 // -----------------------------------------------------------------------------
@@ -240,6 +262,30 @@ static NSMutableArray *sTags = nil;
 	}
 	else
 		tag = [sTags objectAtIndex:pos];
+}
+
+- (void)setFilename:(NSString *)aFilename connection:(LoggerConnection *)aConnection
+{
+	NSString *s = [aConnection.filenames member:aFilename];
+	if (s == nil)
+	{
+		[aConnection.filenames addObject:aFilename];
+		filename = aFilename;
+	}
+	else
+		filename = s;
+}
+
+- (void)setFunctionName:(NSString *)aFunctionName connection:(LoggerConnection *)aConnection
+{
+	NSString *s = [aConnection.functionNames member:aFunctionName];
+	if (s == nil)
+	{
+		[aConnection.functionNames addObject:aFunctionName];
+		functionName = aFunctionName;
+	}
+	else
+		functionName = s;
 }
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage

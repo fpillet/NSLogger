@@ -100,7 +100,24 @@
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		int what = (arc4random() % 4);
+		if (what == 0)
+			LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		else if (what == 1)
+		{
+			// log full origin info
+			LogMessageF(__FILE__, __LINE__, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		}
+		else if (what == 2)
+		{
+			// just log __FUNCTION__
+			LogMessageF(NULL, 0, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		}
+		else
+		{
+			// just log __FILE__ __LINE__
+			LogMessageF(__FILE__, __LINE__, NULL, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		}
 	}
 	else if (phase == 1)
 	{

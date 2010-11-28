@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b7 2010-11-23
+ * version 1.0b7 2010-11-28
  *
  * Part of NSLogger (client side)
  *
@@ -173,30 +173,43 @@ extern void LoggerStop(Logger *logger);
 // viewer. You should be using NO most of the time, but in some cases it can be useful.
 extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
 
-/* Logging functions. Each function exists in two versions, one without a Logger instance
- * as argument (uses the default logger), and the other which can direct traces to
- * a specific logger;
+/* Logging functions. Each function exists in four versions:
+ *
+ * - one without a Logger instance (uses default logger) and without filename/line/function (no F suffix)
+ * - one without a Logger instance but with filename/line/function (F suffix)
+ * - one with a Logger instance (use a specific Logger) and without filename/line/function (no F suffix)
+ * - one with a Logger instance (use a specific Logger) and with filename/line/function (F suffix)
+ *
+ * The exception being the single LogMessageCompat() function which is designed to be a drop-in replacement for NSLog()
+ *
  */
 
 // Log a message, calling format compatible with NSLog
 extern void LogMessageCompat(NSString *format, ...);
-extern void LogMessageCompatTo(Logger *logger, NSString *format, ...);
 
 // Log a message. domain can be nil if default domain.
 extern void LogMessage(NSString *domain, int level, NSString *format, ...);
+extern void LogMessageF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...);
 extern void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format, ...);
+extern void LogMessageToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...);
 
 // Log a message. domain can be nil if default domain (versions with va_list format args instead of ...)
 extern void LogMessage_va(NSString *domain, int level, NSString *format, va_list args);
+extern void LogMessageF_va(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args);
 extern void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args);
+extern void LogMessageToF_va(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args);
 
 // Send binary data to remote logger
 extern void LogData(NSString *domain, int level, NSData *data);
+extern void LogDataF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSData *data);
 extern void LogDataTo(Logger *logger, NSString *domain, int level, NSData *data);
+extern void LogDataToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSData *data);
 
 // Send image data to remote logger
 extern void LogImageData(NSString *domain, int level, int width, int height, NSData *data);
+extern void LogImageDataF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, int width, int height, NSData *data);
 extern void LogImageDataTo(Logger *logger, NSString *domain, int level, int width, int height, NSData *data);
+extern void LogImageDataToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, int width, int height, NSData *data);
 
 // Mark the start of a block. This allows the remote logger to group blocks together
 extern void LogStartBlock(NSString *format, ...);

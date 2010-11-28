@@ -33,13 +33,15 @@
 #import "LoggerAppDelegate.h"
 #import "LoggerMessage.h"
 #import "LoggerMessageCell.h"
+#import "LoggerConnection.h"
 
 enum {
 	kTimestampFont = 1,
 	kThreadIDFont,
 	kTagAndLevelFont,
 	kTextFont,
-	kDataFont
+	kDataFont,
+	kFileFunctionFont
 };
 
 NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
@@ -52,13 +54,14 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 @end
 
 @interface LoggerPrefsWindowController (Private)
-- (void)updateFontNames;
+- (void)updateUI;
 @end
 
 @implementation LoggerPrefsWindowController
 
 - (void)dealloc
 {
+	[fakeConnection release];
 	[attributes release];
 	[super dealloc];
 }
@@ -84,6 +87,8 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	}
 	prevMsg.timestamp = tv;
 
+	fakeConnection = [[LoggerConnection alloc] init];
+
 	LoggerMessage *msg = [[LoggerMessage alloc] init];
 	msg.timestamp = tv;
 	msg.tag = @"database";
@@ -92,6 +97,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	msg.level = 0;
 	msg.contentsType = kMessageString;
 	msg.cachedCellSize = sampleMessage.frame.size;
+	[msg setFilename:@"file.m" connection:fakeConnection];
+	msg.lineNumber = 100;
+	[msg setFunctionName:@"-[MyClass aMethod:withParameters:]" connection:fakeConnection];
 
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
 	cell.message = msg;
@@ -120,7 +128,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[msg release];
 	[prevMsg release];
 
-	[self updateFontNames];
+	[self updateUI];
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
 }
@@ -141,6 +149,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 			break;
 		case kDataFont:
 			font = [[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName];
+			break;
+		case kFileFunctionFont:
+			font = [[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName];
 			break;
 		default:
 			font = [[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName];
@@ -188,7 +199,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
-	[self updateFontNames];
+	[self updateUI];
 	
 	[self applyChanges:self];
 }
@@ -199,6 +210,18 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[[NSFontManager sharedFontManager] setTarget:self];
 	[[NSFontPanel sharedFontPanel] setPanelFont:[self fontForCurrentFontSelection] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
+}
+
+- (IBAction)selectColor:(id)sender
+{
+	if ([sender tag] == kFileFunctionFont)
+	{
+		[[attributes objectForKey:@"fileLineFunction"] setObject:[sender color] forKey:NSBackgroundColorAttributeName];
+		((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
+		((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
+		[sampleMessage setNeedsDisplay];
+		[sampleDataMessage setNeedsDisplay];
+	}
 }
 
 - (void)changeFont:(id)sender
@@ -220,6 +243,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 		case kDataFont:
 			[[attributes objectForKey:@"data"] setObject:newFont forKey:NSFontAttributeName];
 			break;
+		case kFileFunctionFont:
+			[[attributes objectForKey:@"fileLineFunction"] setObject:newFont forKey:NSFontAttributeName];
+			break;
 		default: {
 			[[attributes objectForKey:@"text"] setObject:newFont forKey:NSFontAttributeName];
 			[[attributes objectForKey:@"mark"] setObject:newFont forKey:NSFontAttributeName];
@@ -230,7 +256,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
-	[self updateFontNames];
+	[self updateUI];
 }
 
 - (NSString *)fontNameForFont:(NSFont *)aFont
@@ -238,13 +264,19 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	return [NSString stringWithFormat:@"%@ %.1f", [aFont displayName], [aFont pointSize]];
 }
 
-- (void)updateFontNames
+- (void)updateUI
 {
 	[timestampFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName]]];
 	[threadIDFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"threadID"] objectForKey:NSFontAttributeName]]];
 	[tagFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"tag"] objectForKey:NSFontAttributeName]]];
 	[textFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName]]];
 	[dataFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName]]];
+	[fileFunctionFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName]]];
+
+	NSColor *color = [[attributes objectForKey:@"fileLineFunction"] objectForKey:NSBackgroundColorAttributeName];
+	if (color == nil)
+		color = [NSColor clearColor];
+	[fileFunctionBackgroundColor setColor:color];
 }
 
 @end

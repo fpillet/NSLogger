@@ -30,6 +30,8 @@
  */
 #import <Cocoa/Cocoa.h>
 
+@class LoggerConnection;
+
 @interface LoggerPrefsWindowController : NSWindowController
 {
 	IBOutlet NSTabView *tabView;
@@ -42,12 +44,18 @@
 	IBOutlet NSTextField *tagFontName;
 	IBOutlet NSTextField *textFontName;
 	IBOutlet NSTextField *dataFontName;
+	IBOutlet NSTextField *fileFunctionFontName;
+	
+	IBOutlet NSColorWell *fileFunctionBackgroundColor;
 
+	LoggerConnection *fakeConnection;
+	
 	int currentFontSelection;
 	NSDictionary *attributes;
 }
 
 - (IBAction)selectFont:(id)sender;
+- (IBAction)selectColor:(id)sender;
 - (IBAction)applyChanges:(id)sender;
 - (IBAction)cancelChanges:(id)sender;
 - (IBAction)saveChanges:(id)sender;
