@@ -765,6 +765,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			{
 				attrs = [[attrs mutableCopy] autorelease];
 				[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+				[attrs setObject:[NSColor clearColor] forKey:NSBackgroundColorAttributeName];
 			}
 			[s drawWithRect:NSInsetRect(r, 4, 2)
 					options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
