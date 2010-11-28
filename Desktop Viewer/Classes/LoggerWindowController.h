@@ -40,6 +40,7 @@
 	IBOutlet NSTableView *filterSetsTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
+	IBOutlet NSButton *showFunctionNamesButton;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
 	IBOutlet NSArrayController *filterSetsListController;
@@ -77,11 +78,13 @@
 	BOOL loadComplete;
 	BOOL tableNeedsTiling;
 	BOOL tableTiledSinceLastRefresh;
+	BOOL showFunctionNames;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
 @property (nonatomic, assign) BOOL messagesSelected;
 @property (nonatomic, assign) BOOL hasQuickFilter;
+@property (nonatomic, assign) NSNumber* showFunctionNames;
 
 - (IBAction)openDetailsWindow:(id)sender;
 

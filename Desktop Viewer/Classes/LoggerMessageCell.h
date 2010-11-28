@@ -38,16 +38,19 @@
 	LoggerMessage *previousMessage;
 	
 	NSDictionary *messageAttributes;
+	
+	BOOL shouldShowFunctionNames;
 }
 
 @property (nonatomic, retain) LoggerMessage *message;
 @property (nonatomic, retain) LoggerMessage *previousMessage;
 @property (nonatomic, retain) NSDictionary *messageAttributes;
+@property (nonatomic, assign) BOOL shouldShowFunctionNames;
 
 + (NSDictionary *)defaultAttributesDictionary;
 + (NSDictionary *)defaultAttributes;
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes;
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz;
++ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
 + (CGFloat)minimumHeightForCell;
 
 @end

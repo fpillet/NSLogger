@@ -75,6 +75,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 @synthesize info, filterString, filterTag;
 @synthesize attachedConnection;
 @synthesize messagesSelected, hasQuickFilter;
+@dynamic showFunctionNames;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -245,7 +246,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	}
 }
 
-- (void)tileLogTableRowsInRange:(NSRange)range
+- (void)tileLogTableRowsInRange:(NSRange)range force:(BOOL)force
 {
 	NSUInteger displayed = [displayedMessages count];
 	NSSize sz = [logTable frame].size;
@@ -254,23 +255,25 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	{
 		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
 		NSSize cachedSize = msg.cachedCellSize;
-		if (cachedSize.width != sz.width)
+		if (force || cachedSize.width != sz.width)
 		{
 			CGFloat cachedHeight = cachedSize.height;
 			CGFloat newHeight = cachedHeight;
+			if (force)
+				msg.cachedCellSize = NSZeroSize;
 			switch (msg.type)
 			{
 				case LOGMSG_TYPE_LOG:
 				case LOGMSG_TYPE_BLOCKSTART:
 				case LOGMSG_TYPE_BLOCKEND:
-					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz];
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_CLIENTINFO:
 				case LOGMSG_TYPE_DISCONNECT:
-					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz];
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_MARK:
-					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz];
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
 					break;
 			}
 			if (newHeight != cachedHeight)
@@ -292,13 +295,13 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		NSRange visibleRows = [logTable rowsInRect:r];
 		visibleRows.location = MAX(0, visibleRows.location - 5);
 		visibleRows.length = MIN(visibleRows.location + visibleRows.length + 10, [displayedMessages count] - visibleRows.location);
-		[self tileLogTableRowsInRange:visibleRows];
+		[self tileLogTableRowsInRange:visibleRows force:force];
 		for (NSUInteger i = 0; i < [displayedMessages count]; i += 50)
 		{
 			dispatch_async(dispatch_get_main_queue(), ^{
 				NSRange range = NSMakeRange(i, MIN(50, [displayedMessages count] - i));
 				if (range.length > 0)
-					[self tileLogTableRowsInRange:range];
+					[self tileLogTableRowsInRange:range force:force];
 			});
 		}
 		tableTiledSinceLastRefresh = YES;
@@ -590,7 +593,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 					// of speed. Therefore, we schedule a block on the filtering serial queue
 					// which will get executed AFTER all the messages have been refreshed, and
 					// will in turn schedule a table retiling. Pfew.
-					
 					[self tileLogTable:YES];
 					tableTiledSinceLastRefresh = NO;
 				}
@@ -707,6 +709,29 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	}
 }
 
+- (void)setShowFunctionNames:(NSNumber *)value
+{
+	BOOL b = [value boolValue];
+	if (b != showFunctionNames)
+	{
+		[self willChangeValueForKey:@"showFunctionNames"];
+		showFunctionNames = b;
+		[self tileLogTable:YES];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[logTable reloadData];
+		});
+		[self didChangeValueForKey:@"showFunctionNames"];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[showFunctionNamesButton setState:showFunctionNames];
+		});
+	}
+}
+
+- (NSNumber *)showFunctionNames
+{
+	return [NSNumber numberWithInt:(showFunctionNames ? NSOnState : NSOffState)];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark LoggerConnectionDelegate
@@ -799,6 +824,7 @@ didReceiveMessages:(NSArray *)theMessages
 		// setup the message to be displayed
 		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
 		cell.message = [displayedMessages objectAtIndex:rowIndex];
+		cell.shouldShowFunctionNames = showFunctionNames;
 
 		// if previous message is a Mark, go back a bit more to get the real previous message
 		// if previous message is ClientInfo, don't use it.
@@ -868,17 +894,20 @@ didReceiveMessages:(NSArray *)theMessages
 			case LOGMSG_TYPE_BLOCKSTART:
 			case LOGMSG_TYPE_BLOCKEND:
 				newHeight = [LoggerMessageCell heightForCellWithMessage:message
-																maxSize:sz];
+																maxSize:sz
+													  showFunctionNames:showFunctionNames];
 				break;
 			case LOGMSG_TYPE_CLIENTINFO:
 			case LOGMSG_TYPE_DISCONNECT:
 				newHeight = [LoggerClientInfoCell heightForCellWithMessage:message
-																   maxSize:sz];
+																   maxSize:sz
+														 showFunctionNames:NO];
 				break;
 				
 			case LOGMSG_TYPE_MARK:
 				newHeight = [LoggerMarkerCell heightForCellWithMessage:message
-															   maxSize:sz];
+															   maxSize:sz
+													 showFunctionNames:NO];
 				break;
 
 			default:

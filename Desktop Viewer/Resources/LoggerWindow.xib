@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="457"/>
+			<integer value="1206"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -340,14 +340,14 @@
 																		<object class="NSTableView" id="150938961">
 																			<reference key="NSNextResponder" ref="70922810"/>
 																			<int key="NSvFlags">4352</int>
-																			<string key="NSFrameSize">{219, 299}</string>
+																			<string key="NSFrameSize">{216, 302}</string>
 																			<reference key="NSSuperview" ref="70922810"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSTableHeaderView" key="NSHeaderView" id="697792232">
 																				<reference key="NSNextResponder" ref="710855198"/>
 																				<int key="NSvFlags">256</int>
-																				<string key="NSFrameSize">{219, 17}</string>
+																				<string key="NSFrameSize">{216, 17}</string>
 																				<reference key="NSSuperview" ref="710855198"/>
 																				<reference key="NSTableView" ref="150938961"/>
 																			</object>
@@ -361,7 +361,7 @@
 																				<bool key="EncodedWithXMLCoder">YES</bool>
 																				<object class="NSTableColumn" id="34494719">
 																					<string key="NSIdentifier">filters</string>
-																					<double key="NSWidth">216</double>
+																					<double key="NSWidth">213</double>
 																					<double key="NSMinWidth">40</double>
 																					<double key="NSMaxWidth">1000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -413,7 +413,7 @@
 																			<int key="NSTableViewDraggingDestinationStyle">1</int>
 																		</object>
 																	</object>
-																	<string key="NSFrame">{{0, 17}, {216, 299}}</string>
+																	<string key="NSFrame">{{0, 17}, {216, 302}}</string>
 																	<reference key="NSSuperview" ref="624289750"/>
 																	<reference key="NSNextKeyView" ref="150938961"/>
 																	<reference key="NSDocView" ref="150938961"/>
@@ -434,7 +434,6 @@
 																	<int key="NSvFlags">-2147483392</int>
 																	<string key="NSFrame">{{-100, -100}, {200, 15}}</string>
 																	<reference key="NSSuperview" ref="624289750"/>
-																	<bool key="NSEnabled">YES</bool>
 																	<int key="NSsFlags">1</int>
 																	<reference key="NSTarget" ref="624289750"/>
 																	<string key="NSAction">_doScroller:</string>
@@ -456,10 +455,10 @@
 																</object>
 																<reference ref="1044448804"/>
 															</object>
-															<string key="NSFrame">{{0, 3}, {216, 316}}</string>
+															<string key="NSFrameSize">{216, 319}</string>
 															<reference key="NSSuperview" ref="624715448"/>
 															<reference key="NSNextKeyView" ref="70922810"/>
-															<int key="NSsFlags">656</int>
+															<int key="NSsFlags">528</int>
 															<reference key="NSVScroller" ref="940204013"/>
 															<reference key="NSHScroller" ref="682997029"/>
 															<reference key="NSContentView" ref="70922810"/>
@@ -577,7 +576,7 @@
 													</object>
 												</object>
 											</object>
-											<string key="NSFrame">{{0, 1}, {215, 23}}</string>
+											<string key="NSFrameSize">{215, 23}</string>
 											<reference key="NSSuperview" ref="797179158"/>
 											<bool key="BWABBIsResizable">YES</bool>
 											<bool key="BWABBIsAtBottom">YES</bool>
@@ -602,7 +601,7 @@
 												<object class="NSTextField" id="984409547">
 													<reference key="NSNextResponder" ref="919832767"/>
 													<int key="NSvFlags">266</int>
-													<string key="NSFrame">{{36, 3}, {210, 14}}</string>
+													<string key="NSFrame">{{63, 3}, {183, 14}}</string>
 													<reference key="NSSuperview" ref="919832767"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSTextFieldCell" key="NSCell" id="166932449">
@@ -930,7 +929,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">2</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -938,8 +936,32 @@
 														<int key="NSArrowPosition">2</int>
 													</object>
 												</object>
+												<object class="BWAnchoredButton" id="692175765">
+													<reference key="NSNextResponder" ref="919832767"/>
+													<int key="NSvFlags">268</int>
+													<string key="NSFrame">{{30, -1}, {28, 24}}</string>
+													<reference key="NSSuperview" ref="919832767"/>
+													<bool key="NSEnabled">YES</bool>
+													<object class="BWAnchoredButtonCell" key="NSCell" id="407396953">
+														<int key="NSCellFlags">68288064</int>
+														<int key="NSCellFlags2">134349824</int>
+														<string key="NSContents">ƒ</string>
+														<object class="NSFont" key="NSSupport">
+															<string key="NSName">LucidaGrande-Bold</string>
+															<double key="NSSize">11</double>
+															<int key="NSfFlags">16</int>
+														</object>
+														<reference key="NSControlView" ref="692175765"/>
+														<int key="NSButtonFlags">-1229700865</int>
+														<int key="NSButtonFlags2">163</int>
+														<string key="NSAlternateContents"/>
+														<string key="NSKeyEquivalent"/>
+														<int key="NSPeriodicDelay">200</int>
+														<int key="NSPeriodicInterval">25</int>
+													</object>
+												</object>
 											</object>
-											<string key="NSFrame">{{0, 1}, {660, 23}}</string>
+											<string key="NSFrameSize">{660, 23}</string>
 											<reference key="NSSuperview" ref="161733749"/>
 											<bool key="BWABBIsResizable">NO</bool>
 											<bool key="BWABBIsAtBottom">YES</bool>
@@ -1035,6 +1057,7 @@
 													<reference key="NSSuperview" ref="1043255743"/>
 													<reference key="NSTarget" ref="1043255743"/>
 													<string key="NSAction">_doScroller:</string>
+													<double key="NSCurValue">0.45186331868171692</double>
 													<double key="NSPercent">0.9972299337387085</double>
 												</object>
 												<object class="NSScroller" id="426073056">
@@ -3607,6 +3630,30 @@
 					</object>
 					<int key="connectionID">1191</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: showFunctionNames</string>
+						<reference key="source" ref="692175765"/>
+						<reference key="destination" ref="1021"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="692175765"/>
+							<reference key="NSDestination" ref="1021"/>
+							<string key="NSLabel">value: showFunctionNames</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">showFunctionNames</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1220</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">showFunctionNamesButton</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="692175765"/>
+					</object>
+					<int key="connectionID">1221</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3699,6 +3746,7 @@
 							<reference ref="984409547"/>
 							<reference ref="585281982"/>
 							<reference ref="531691545"/>
+							<reference ref="692175765"/>
 						</object>
 						<reference key="parent" ref="161733749"/>
 					</object>
@@ -4588,6 +4636,20 @@
 						<reference key="object" ref="562290842"/>
 						<reference key="parent" ref="183329842"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1206</int>
+						<reference key="object" ref="692175765"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="407396953"/>
+						</object>
+						<reference key="parent" ref="919832767"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1207</int>
+						<reference key="object" ref="407396953"/>
+						<reference key="parent" ref="692175765"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4622,6 +4684,10 @@
 					<string>1112.IBPluginDependency</string>
 					<string>1113.IBPluginDependency</string>
 					<string>1114.IBPluginDependency</string>
+					<string>1206.IBAttributePlaceholdersKey</string>
+					<string>1206.IBPluginDependency</string>
+					<string>1206.IBViewBoundsToFrameTransform</string>
+					<string>1207.IBPluginDependency</string>
 					<string>371.IBEditorWindowLastContentRect</string>
 					<string>371.IBPluginDependency</string>
 					<string>371.IBViewEditorWindowController.showingLayoutRectangles</string>
@@ -4642,6 +4708,7 @@
 					<string>468.IBViewBoundsToFrameTransform</string>
 					<string>469.IBPluginDependency</string>
 					<string>470.IBPluginDependency</string>
+					<string>471.IBAttributePlaceholdersKey</string>
 					<string>471.IBPluginDependency</string>
 					<string>472.IBPluginDependency</string>
 					<string>473.IBPluginDependency</string>
@@ -4654,15 +4721,19 @@
 					<string>480.IBPluginDependency</string>
 					<string>482.IBPluginDependency</string>
 					<string>485.IBPluginDependency</string>
+					<string>486.IBAttributePlaceholdersKey</string>
 					<string>486.IBPluginDependency</string>
 					<string>486.IBViewBoundsToFrameTransform</string>
 					<string>487.IBPluginDependency</string>
+					<string>488.IBAttributePlaceholdersKey</string>
 					<string>488.IBPluginDependency</string>
 					<string>488.IBViewBoundsToFrameTransform</string>
 					<string>489.IBPluginDependency</string>
 					<string>493.IBPluginDependency</string>
+					<string>508.IBAttributePlaceholdersKey</string>
 					<string>508.IBPluginDependency</string>
 					<string>509.IBPluginDependency</string>
+					<string>510.IBAttributePlaceholdersKey</string>
 					<string>510.IBPluginDependency</string>
 					<string>511.IBPluginDependency</string>
 					<string>532.IBPluginDependency</string>
@@ -4707,6 +4778,7 @@
 					<string>820.IBEditorWindowLastContentRect</string>
 					<string>854.IBEditorWindowLastContentRect</string>
 					<string>861.IBEditorWindowLastContentRect</string>
+					<string>894.IBAttributePlaceholdersKey</string>
 					<string>894.IBPluginDependency</string>
 					<string>894.IBViewBoundsToFrameTransform</string>
 					<string>895.IBPluginDependency</string>
@@ -4728,7 +4800,9 @@
 					<string>944.IBPluginDependency</string>
 					<string>945.IBPluginDependency</string>
 					<string>946.IBPluginDependency</string>
+					<string>947.IBAttributePlaceholdersKey</string>
 					<string>947.IBPluginDependency</string>
+					<string>948.IBAttributePlaceholdersKey</string>
 					<string>948.IBPluginDependency</string>
 					<string>949.IBPluginDependency</string>
 					<string>950.IBPluginDependency</string>
@@ -4750,7 +4824,7 @@
 						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
 					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{233, 304}, {251, 54}}</string>
+					<string>{{232, 453}, {177, 54}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -4782,10 +4856,23 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{20, 334}, {885, 666}}</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="692175765"/>
+							<string key="toolTip">Show / Hide file, line and function names</string>
+						</object>
+					</object>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABCGAAAwbAAAA</bytes>
+					</object>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<string>{{7, 486}, {885, 666}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{20, 334}, {885, 666}}</string>
+					<string>{{7, 486}, {885, 666}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<boolean value="YES"/>
@@ -4804,6 +4891,14 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="150938961"/>
+							<string key="toolTip">Select one or more items to filter log messages</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4818,19 +4913,51 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="360120797"/>
+							<string key="toolTip">Refine filter to display only messages matching a regular expression</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABDr4AAwZAAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="984409547"/>
+							<string key="toolTip">Number of messages displayed</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABCEAAAwXAAAA</bytes>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="983099424"/>
+							<string key="toolTip">Add a new filter</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="219283996"/>
+							<string key="toolTip">Delete selected filter</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4885,6 +5012,14 @@
 					<string>{{52, 328}, {149, 60}}</string>
 					<string>{{244, 353}, {136, 60}}</string>
 					<string>{{52, 341}, {123, 22}}</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="622971220"/>
+							<string key="toolTip">Refine filter to display only messages with the selected level and/or tag</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABD8AAAwaAAAA</bytes>
@@ -4910,7 +5045,23 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="179564853"/>
+							<string key="toolTip">Add a new filter set</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="206027241"/>
+							<string key="toolTip">Delete selected filter set</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -4943,7 +5094,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1205</int>
+			<int key="maxID">1224</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5120,6 +5271,7 @@
 							<string>markTitleField</string>
 							<string>markTitleWindow</string>
 							<string>quickFilter</string>
+							<string>showFunctionNamesButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5135,6 +5287,7 @@
 							<string>NSTextField</string>
 							<string>NSWindow</string>
 							<string>NSPopUpButton</string>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -5153,6 +5306,7 @@
 							<string>markTitleField</string>
 							<string>markTitleWindow</string>
 							<string>quickFilter</string>
+							<string>showFunctionNamesButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5203,6 +5357,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">quickFilter</string>
 								<string key="candidateClassName">NSPopUpButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">showFunctionNamesButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 						</object>
 					</object>

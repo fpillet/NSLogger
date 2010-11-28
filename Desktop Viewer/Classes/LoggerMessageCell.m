@@ -51,6 +51,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 @implementation LoggerMessageCell
 
 @synthesize message, previousMessage, messageAttributes;
+@synthesize shouldShowFunctionNames;
 
 // -----------------------------------------------------------------------------
 // Class methods
@@ -307,7 +308,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	return sDefaultFileLineFunctionHeight;
 }
 
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz
++ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames
 {
 	// return cached cell height if possible
 	CGFloat minimumHeight = [self minimumHeightForCell];
@@ -358,7 +359,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 
 	// If there is file / line / function information, add its height
-	if (aMessage.filename != nil || aMessage.functionName != nil)
+	if (showFunctionNames && (aMessage.filename != nil || aMessage.functionName != nil))
 		sz.height += [self heightForFileLineFunction];
 	
 	// cache and return cell height
@@ -653,7 +654,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
 				   NSHeight(cellFrame));
 
-	CGFloat fileLineFunctionHeight = (message.filename != nil || message.functionName != nil) ? [[self class] heightForFileLineFunction] : 0;
+	CGFloat fileLineFunctionHeight = (shouldShowFunctionNames && (message.filename != nil || message.functionName != nil)) ? [[self class] heightForFileLineFunction] : 0;
 	r.size.height -= fileLineFunctionHeight;
 	//r.origin.y += fileLineFunctionHeight;
 
