@@ -82,7 +82,7 @@ static NSShadow *contentShadow;
 {
 	[super drawWithFrame:cellFrame inView:controlView];
 
-	if ([self isHighlighted])
+	if ([self isHighlighted] || [self state] == NSOnState)
 	{
 		[pressedColor set];
 		NSRectFillUsingOperation([self highlightRectForBounds:cellFrame], NSCompositeSourceOver);
