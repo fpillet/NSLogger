@@ -188,6 +188,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		{
 			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
 			NSMutableDictionary *dict = [[attrs objectForKey:@"tag"] mutableCopy];
+			[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
 			NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
 														   green:(233.0f / 255.0f)
 															blue:(252.0f / 255.0f)
