@@ -68,4 +68,4 @@ You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLo
 
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
 
-NSLogger is Copyright (c) 2010 Florent Pillet, All Rights Reserved. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
+NSLogger is Copyright (c) 2010 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
