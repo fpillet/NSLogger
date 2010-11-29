@@ -23,6 +23,7 @@
 		3D6A34AD1262FD6C00D0EC3A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A34A71262FD5500D0EC3A /* MainMenu.xib */; };
 		3D6A37C51263998A00D0EC3A /* LoggerStatusWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */; };
 		3D6A37C9126399D700D0EC3A /* LoggerStatus.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A37C8126399D700D0EC3A /* LoggerStatus.xib */; };
+		3D6ED56912A3A55E0005DD57 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3D6ED56812A3A55E0005DD57 /* Icon.icns */; };
 		3D7C74FD0F3CA8AB006B55AD /* LoggerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C74FC0F3CA8AB006B55AD /* LoggerConnection.m */; };
 		3D7C75330F401B35006B55AD /* LoggerNativeConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75320F401B35006B55AD /* LoggerNativeConnection.m */; };
 		3D7C75510F4025A7006B55AD /* LoggerTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75500F4025A7006B55AD /* LoggerTransport.m */; };
@@ -107,6 +108,7 @@
 		3D6A37C31263998A00D0EC3A /* LoggerStatusWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerStatusWindowController.h; path = Classes/LoggerStatusWindowController.h; sourceTree = "<group>"; };
 		3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerStatusWindowController.m; path = Classes/LoggerStatusWindowController.m; sourceTree = "<group>"; };
 		3D6A37C8126399D700D0EC3A /* LoggerStatus.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerStatus.xib; path = Resources/LoggerStatus.xib; sourceTree = "<group>"; };
+		3D6ED56812A3A55E0005DD57 /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Icon.icns; path = Resources/Icon/Icon.icns; sourceTree = "<group>"; };
 		3D7C74FB0F3CA8AB006B55AD /* LoggerConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerConnection.h; path = Classes/LoggerConnection.h; sourceTree = "<group>"; };
 		3D7C74FC0F3CA8AB006B55AD /* LoggerConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerConnection.m; path = Classes/LoggerConnection.m; sourceTree = "<group>"; };
 		3D7C75310F401B35006B55AD /* LoggerNativeConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerNativeConnection.h; path = Classes/LoggerNativeConnection.h; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				3D6ED56812A3A55E0005DD57 /* Icon.icns */,
 				3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */,
@@ -382,6 +385,7 @@
 				3D027B2C12663E1200E6F241 /* LoggerPrefs.xib in Resources */,
 				3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */,
 				3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */,
+				3D6ED56912A3A55E0005DD57 /* Icon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
