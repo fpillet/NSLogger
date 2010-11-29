@@ -44,6 +44,16 @@ enum {
 	kFileFunctionFont
 };
 
+enum {
+	kTimestampFontColor = 1,
+	kThreadIDFontColor,
+	kTagAndLevelFontColor,
+	kTextFontColor,
+	kDataFontColor,
+	kFileFunctionFontColor,
+	kFileFunctionBackgroundColor
+};
+
 NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 @implementation SampleMessageControl
@@ -215,9 +225,33 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 - (IBAction)selectColor:(id)sender
 {
-	if ([sender tag] == kFileFunctionFont)
+	NSString *attrName = NSForegroundColorAttributeName, *dictName = nil, *dictName2 = nil;
+	int tag = [sender tag];
+	if (tag == kTimestampFontColor)
+		dictName = @"timestamp";
+	else if (tag == kThreadIDFontColor)
+		dictName = @"threadID";
+	else if (tag == kTagAndLevelFontColor)
 	{
-		[[attributes objectForKey:@"fileLineFunction"] setObject:[sender color] forKey:NSBackgroundColorAttributeName];
+		dictName = @"tag";
+		dictName2 = @"level";
+	}
+	else if (tag == kTextFontColor)
+		dictName = @"text";
+	else if (tag == kDataFontColor)
+		dictName = @"data";
+	else if (tag == kFileFunctionFontColor)
+		dictName = @"fileLineFunction";
+	else if (tag == kFileFunctionBackgroundColor)
+	{
+		dictName = @"fileLineFunction";
+		attrName = NSBackgroundColorAttributeName;
+	}
+	if (dictName != nil)
+	{
+		[[attributes objectForKey:dictName] setObject:[sender color] forKey:attrName];
+		if (dictName2 != nil)
+			[[attributes objectForKey:dictName2] setObject:[sender color] forKey:attrName];
 		((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
 		((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
 		[sampleMessage setNeedsDisplay];
@@ -265,6 +299,19 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	return [NSString stringWithFormat:@"%@ %.1f", [aFont displayName], [aFont pointSize]];
 }
 
+- (void)updateColor:(NSColorWell *)well ofDict:(NSString *)dictName attribute:(NSString *)attrName
+{
+	NSColor *color = [[attributes objectForKey:dictName] objectForKey:attrName];
+	if (color == nil)
+	{
+		if ([attrName isEqualToString:NSForegroundColorAttributeName])
+			color = [NSColor blackColor];
+		else
+			color = [NSColor clearColor];
+	}
+	[well setColor:color];
+}
+
 - (void)updateUI
 {
 	[timestampFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName]]];
@@ -274,10 +321,13 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[dataFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName]]];
 	[fileFunctionFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName]]];
 
-	NSColor *color = [[attributes objectForKey:@"fileLineFunction"] objectForKey:NSBackgroundColorAttributeName];
-	if (color == nil)
-		color = [NSColor clearColor];
-	[fileFunctionBackgroundColor setColor:color];
+	[self updateColor:timestampForegroundColor ofDict:@"timestamp" attribute:NSForegroundColorAttributeName];
+	[self updateColor:threadIDForegroundColor ofDict:@"threadID" attribute:NSForegroundColorAttributeName];
+	[self updateColor:tagLevelForegroundColor ofDict:@"tag" attribute:NSForegroundColorAttributeName];
+	[self updateColor:textForegroundColor ofDict:@"text" attribute:NSForegroundColorAttributeName];
+	[self updateColor:dataForegroundColor ofDict:@"data" attribute:NSForegroundColorAttributeName];
+	[self updateColor:fileFunctionForegroundColor ofDict:@"fileLineFunction" attribute:NSForegroundColorAttributeName];
+	[self updateColor:fileFunctionBackgroundColor ofDict:@"fileLineFunction" attribute:NSBackgroundColorAttributeName];
 }
 
 @end

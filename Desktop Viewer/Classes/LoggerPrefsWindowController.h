@@ -46,6 +46,12 @@
 	IBOutlet NSTextField *dataFontName;
 	IBOutlet NSTextField *fileFunctionFontName;
 	
+	IBOutlet NSColorWell *timestampForegroundColor;
+	IBOutlet NSColorWell *threadIDForegroundColor;
+	IBOutlet NSColorWell *tagLevelForegroundColor;
+	IBOutlet NSColorWell *textForegroundColor;
+	IBOutlet NSColorWell *dataForegroundColor;
+	IBOutlet NSColorWell *fileFunctionForegroundColor;
 	IBOutlet NSColorWell *fileFunctionBackgroundColor;
 
 	LoggerConnection *fakeConnection;
