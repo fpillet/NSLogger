@@ -1,3 +1,4 @@
+![Icon](https://github.com/fpillet/NSLogger/raw/master/Screenshots/icon_small_.png "Icon")
 # NSLogger #
 
 *NSLogger* is a high perfomance logging utility which displays traces emitted by client applications running on **Mac OS X** or **iOS (iPhone OS)**. It replaces your usual *NSLog()*-based traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
