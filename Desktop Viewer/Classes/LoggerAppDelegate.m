@@ -472,6 +472,7 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 
 	if (status != noErr)
 	{
+		NSLog(@"Initializing encryption failed, status=%d", (int)status);
 		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
 										code:status
 									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
