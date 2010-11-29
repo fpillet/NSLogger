@@ -104,6 +104,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
 	cell.message = msg;
 	cell.previousMessage = prevMsg;
+	cell.shouldShowFunctionNames = YES;
 	[sampleMessage setCell:cell];
 	[cell release];
 	[msg release];
