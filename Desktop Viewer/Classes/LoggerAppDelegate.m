@@ -354,7 +354,8 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	//
 	// May change this in the future.
 
-	*outError = nil;
+	if (outError != NULL)
+		*outError = nil;
 	
 	// Path to our self-signed certificate
 	NSString *tempDir = NSTemporaryDirectory();
@@ -473,13 +474,16 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	if (status != noErr)
 	{
 		NSLog(@"Initializing encryption failed, status=%d", (int)status);
-		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
-										code:status
-									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
-											  NSLocalizedString(@"Our private encryption certificate could not be loaded", @""), NSLocalizedFailureReasonErrorKey,
-											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
-											  nil]];
+		if (outError != NULL)
+		{
+			*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+											code:status
+										userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+												  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
+												  NSLocalizedString(@"Our private encryption certificate could not be loaded", @""), NSLocalizedFailureReasonErrorKey,
+												  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
+												  nil]];
+		}
 		return NO;
 	}
 	return YES;

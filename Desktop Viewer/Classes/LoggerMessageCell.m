@@ -117,6 +117,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[dict setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
 	[attrs setObject:dict forKey:@"tag"];
 	[attrs setObject:dict forKey:@"level"];
+	[dict release];
 	
 	// Text message attributes
 	dict = [textAttrs mutableCopy];
@@ -142,6 +143,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[dict setObject:style forKey:NSParagraphStyleAttributeName];
 	[style release];
 	[attrs setObject:dict forKey:@"mark"];
+	[dict release];
 
 	// File / Line / Function name attributes
 	dict = [textAttrs mutableCopy];
@@ -153,6 +155,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 												   alpha:1.0f];
 	[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
 	[attrs setObject:dict forKey:@"fileLineFunction"];
+	[dict release];
 
 	return attrs;
 }
@@ -771,6 +774,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 					options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 				 attributes:attrs];
 		}
+		[s release];
 	}
 }
 

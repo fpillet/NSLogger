@@ -630,7 +630,10 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 						{
 							NSUInteger where = [attachedConnection.messages indexOfObjectIdenticalTo:msg];
 							if (where == 0)
+							{
 								msgIndex = 0;
+								break;
+							}
 							else
 								msg = [attachedConnection.messages objectAtIndex:where-1];
 						}

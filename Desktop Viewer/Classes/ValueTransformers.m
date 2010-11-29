@@ -34,8 +34,9 @@
 
 + (void)load
 {
-	[NSValueTransformer setValueTransformer:[[self alloc] init]
-									forName:@"CanDeleteFilterSelection"];
+	CanFilterSelectionBeDeletedValueTransformer *t = [[self alloc] init];
+	[NSValueTransformer setValueTransformer:t forName:@"CanDeleteFilterSelection"];
+	[t release];
 }
 
 + (Class)transformedValueClass
@@ -63,8 +64,9 @@
 
 + (void)load
 {
-	[NSValueTransformer setValueTransformer:[[self alloc] init]
-									forName:@"FilterColumnHeader"];
+	FilterColumnHeaderValueTransformer *t = [[self alloc] init];
+	[NSValueTransformer setValueTransformer:t forName:@"FilterColumnHeader"];
+	[t release];
 }
 
 + (Class)transformedValueClass
@@ -82,8 +84,9 @@
 
 + (void)load
 {
-	[NSValueTransformer setValueTransformer:[[self alloc] init]
-									forName:@"TrimmedBonjourServiceName"];
+	BonjourServiceNameValueTransformer *t = [[self alloc] init];
+	[NSValueTransformer setValueTransformer:t forName:@"TrimmedBonjourServiceName"];
+	[t release];
 }
 
 + (Class)transformedValueClass
