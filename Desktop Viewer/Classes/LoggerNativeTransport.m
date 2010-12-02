@@ -440,7 +440,24 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
 }
 
-- (void)setupSSLForStream:(NSInputStream *)readStream
+- (BOOL)canDoSSL
+{
+	// This method can BLOCK THE CURRENT THREAD and run security dialog UI from the main thread
+	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
+	if (!appDelegate.serverCertsLoadAttempted)
+	{
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			NSError *error = nil;
+			if (![appDelegate loadEncryptionCertificate:&error])
+			{
+				[NSApp performSelector:@selector(presentError:) withObject:error afterDelay:0];
+			}
+		});
+	}
+	return (appDelegate.serverCerts != NULL);
+}
+
+- (BOOL)setupSSLForStream:(NSInputStream *)readStream
 {
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
 #ifdef DEBUG
@@ -449,8 +466,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	CFArrayRef serverCerts = appDelegate.serverCerts;
 	if (serverCerts != NULL)
 	{
-		[appDelegate unlockAppKeychain];
-
 		// setup stream for SSL
 		const void *SSLKeys[] = {
 			kCFStreamSSLLevel,
@@ -467,7 +482,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFReadStreamSetProperty((CFReadStreamRef)readStream, kCFStreamPropertySSLSettings, SSLDict);
 		CFRelease(SSLDict);
+		return YES;
 	}
+	return NO;
 }
 
 // -----------------------------------------------------------------------------
@@ -624,49 +641,64 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	{
 		if (type == kCFSocketAcceptCallBack)
 		{
+			// we have a new incoming connection with a child socket
 			// reenable accept callback
 			CFSocketEnableCallBacks(sock, kCFSocketAcceptCallBack);
 
-			// we have a new incoming connection with a child socket
-			int addrSize;
+			// Get the native socket handle for the new incoming connection
+			CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
+
 			LoggerNativeTransport *myself = (LoggerNativeTransport *)info;
-			BOOL ipv6 = (sock == myself.listenerSocket_ipv6);
-			if (!ipv6)
-				addrSize = sizeof(struct sockaddr_in);
-			else
-				addrSize = sizeof(struct sockaddr_in6);
-			
-			if (CFDataGetLength(address) == addrSize)
+			if (myself.secure && ![myself canDoSSL])
 			{
-				// create the input and output streams. We don't need an output stream,
-				// except for SSL negotiation.
-				CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
-				CFReadStreamRef readStream = NULL;
-				CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
-				if (readStream != NULL)
+				// should enable SSL but loading or authorization failed
+				close(nativeSocketHandle);
+			}
+			else
+			{
+				int addrSize;
+				BOOL ipv6 = (sock == myself.listenerSocket_ipv6);
+				if (!ipv6)
+					addrSize = sizeof(struct sockaddr_in);
+				else
+					addrSize = sizeof(struct sockaddr_in6);
+				
+				if (CFDataGetLength(address) == addrSize)
 				{
-					// although this is implied, just want to make sure
-					CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
-					if (myself.secure)
-						[myself setupSSLForStream:(NSInputStream *)readStream];
-
-					// Create the connection instance
-					LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
-																						clientAddress:(NSData *)address];
-					[myself addConnection:cnx];
-
-					// Schedule & open stream
-					[(NSInputStream *)readStream setDelegate:myself];
-					[(NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-
-					[(NSInputStream *)readStream open];
-					[(NSInputStream *)readStream release];
-					
-					[cnx release];
+					// create the input and output streams. We don't need an output stream,
+					// except for SSL negotiation.
+					CFReadStreamRef readStream = NULL;
+					CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
+					if (readStream != NULL)
+					{
+						// although this is implied, just want to make sure
+						CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
+						if (myself.secure)
+							[myself setupSSLForStream:(NSInputStream *)readStream];
+						
+						// Create the connection instance
+						LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
+																							clientAddress:(NSData *)address];
+						[myself addConnection:cnx];
+						
+						// Schedule & open stream
+						[(NSInputStream *)readStream setDelegate:myself];
+						[(NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+						
+						[(NSInputStream *)readStream open];
+						[(NSInputStream *)readStream release];
+						
+						[cnx release];
+					}
+					else
+					{
+						// immediately close the child socket, we can't use it anymore
+						close(nativeSocketHandle);
+					}
 				}
 				else
 				{
-					// immediately close the child socket, we can't use it anymore
+					// no valid address?
 					close(nativeSocketHandle);
 				}
 			}

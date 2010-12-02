@@ -43,6 +43,16 @@ static NSMutableArray *sTags = nil;
 @synthesize cachedCellSize, image, imageSize;
 @synthesize filename, functionName, lineNumber;
 
+- (id) init
+{
+	if (self = [super init])
+	{
+		filename = @"";
+		functionName = @"";
+	}
+	return self;
+}
+
 - (void)dealloc
 {
 	// remember that tag is non-retained
@@ -80,7 +90,14 @@ static NSMutableArray *sTags = nil;
 		if (type == LOGMSG_TYPE_MARK)
 			return [NSString stringWithFormat:@"%@\n", message];
 
-		// commmon case
+		/* commmon case */
+		
+		// if message is empty, use the function name (typical case of using a log to record
+		// a "waypoint" in the code flow)
+		NSString *s = message;
+		if (![s length] && [functionName length])
+			s = functionName;
+
 		return [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | %@\n",
 				sequence,
 				t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
@@ -170,9 +187,13 @@ static NSMutableArray *sTags = nil;
 		NSString *s = [decoder decodeObjectForKey:@"f"];
 		if (s != nil)
 			[self setFilename:s connection:cnx];
+		else
+			filename = @"";
 		s = [decoder decodeObjectForKey:@"fn"];
 		if (s != nil)
 			[self setFunctionName:s connection:cnx];
+		else
+			functionName = @"";
 		lineNumber = [decoder decodeIntForKey:@"ln"];
 
 		self.tag = [decoder decodeObjectForKey:@"tag"];

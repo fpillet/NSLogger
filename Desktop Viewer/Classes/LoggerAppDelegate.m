@@ -41,13 +41,9 @@ NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 
-@interface LoggerAppDelegate ()
-- (BOOL)loadEncryptionCertificate:(NSError **)outError;
-@end
-
 @implementation LoggerAppDelegate
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;
-@synthesize serverCerts;
+@synthesize serverCerts, serverCertsLoadAttempted;
 
 - (id) init
 {
@@ -134,8 +130,6 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 {
 	if (serverCerts != NULL)
 		CFRelease(serverCerts);
-	if (serverKeychain != NULL)
-		CFRelease(serverKeychain);
 	[transports release];
 	[super dealloc];
 }
@@ -212,15 +206,6 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 	[statusController showWindow:self];
 	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
-	// Retrieve server certs for SSL encryption
-	NSError *certError;
-	if (![self loadEncryptionCertificate:&certError])
-	{
-		[[NSApplication sharedApplication] performSelector:@selector(presentError:)
-												withObject:certError
-												afterDelay:0];
-	}
-	
 	/* initialize all supported transports */
 	
 	// unencrypted Bonjour service (for backwards compatibility)
@@ -258,14 +243,6 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
 	return NO;
-}
-
-- (void)applicationWillTerminate:(NSNotification *)aNotification
-{
-	if (serverKeychain != NULL)
-	{
-		SecKeychainDelete(serverKeychain);
-	}
 }
 
 - (void)newConnection:(LoggerConnection *)aConnection
@@ -322,171 +299,143 @@ NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
 #pragma mark -
 #pragma mark SSL support
 // -----------------------------------------------------------------------------
-
-- (BOOL)unlockAppKeychain
-{
-	if (serverKeychain != NULL)
-		return (SecKeychainUnlock(serverKeychain, 0, "", true) == noErr);
-	return NO;
-}
-
 - (BOOL)loadEncryptionCertificate:(NSError **)outError
 {
 	// Load the certificate we need to support encrypted incoming connections via SSL
 	//
-	// This is a tad more complicated than simply using the SSL API, because we insist
-	// on using CFStreams which want certificates in a special form (linked to a keychain)
-	// and we want to make this fully transparent to the user.
-	//
-	// To this end, we will (at each startup):
+	// To this end, we will (once):
 	// - generate a self-signed certificate and private key
-	// - create our own private keychain
-	// - setup access control to the keychain so that no dialog ever comes up
-	// - import the self-signed certificate and private key into our keychain
-	// - retrieve the certificate from our keychain
+	// - import the self-signed certificate and private key into the default keychain
+	// - retrieve the certificate from the keychain
 	// - create the required SecIdentityRef for the certificate to be recognized by the CFStream
 	// - keep this in the running app and use for incoming connections
-	//
-	// Ideally, we would create the keychain once and open it at each startup. The drawback is that
-	// the first time a connection comes in after app launch, a dialog would come up to ask for access
-	// to our private keychain. I want to avoid this and make it fully transparent, hence the keychain
-	// creation at each startup.
-	//
-	// May change this in the future.
 
 	if (outError != NULL)
 		*outError = nil;
-	
-	// Path to our self-signed certificate
-	NSString *tempDir = NSTemporaryDirectory();
-	NSString *pemFileName = @"NSLoggerCert.pem";
-	NSString *pemFilePath = [tempDir stringByAppendingPathComponent:pemFileName];
-	NSFileManager *fm = [NSFileManager defaultManager];
-	[fm removeItemAtPath:pemFilePath error:nil];
 
-	// Generate a private certificate
-	NSArray *args = [NSArray arrayWithObjects:
-					 @"req",
-					 @"-x509",
-					 @"-nodes",
-					 @"-days", @"3650",
-					 @"-config", [[NSBundle mainBundle] pathForResource:@"NSLoggerCertReq" ofType:@"conf"],
-					 @"-newkey", @"rsa:1024",
-					 @"-keyout", pemFileName,
-					 @"-out", pemFileName,
-					 @"-batch",
-					 nil];
+	serverCertsLoadAttempted = YES;
 
-	NSTask *certTask = [[[NSTask alloc] init] autorelease];
-	[certTask setLaunchPath:@"/usr/bin/openssl"];
-	[certTask setCurrentDirectoryPath:tempDir];
-	[certTask setArguments:args];
-    [certTask launch];
-	do
+	SecKeychainRef keychain;
+	NSString *failurePoint = NSLocalizedString(@"Can't get the default keychain", @"");
+	OSStatus status = SecKeychainCopyDefault(&keychain);
+	for (int pass = 0; pass < 2 && status == noErr && serverCerts == NULL; pass++)
 	{
-		[NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+		// Search through existing identities to find our NSLogger certificate
+		SecIdentitySearchRef searchRef = NULL;
+		failurePoint = NSLocalizedString(@"Can't search through default keychain", @"");
+		status = SecIdentitySearchCreate(keychain, CSSM_KEYUSE_ANY, &searchRef);
+		if (status == noErr)
+		{
+			SecIdentityRef identityRef = NULL;
+			while (serverCerts == NULL && SecIdentitySearchCopyNext(searchRef, &identityRef) == noErr)
+			{
+				SecCertificateRef certRef = NULL;
+				if (SecIdentityCopyCertificate(identityRef, &certRef) == noErr)
+				{
+					CFStringRef commonName = NULL;
+					if (SecCertificateCopyCommonName(certRef, &commonName) == noErr)
+					{
+						if (CFStringCompare(commonName, CFSTR("NSLogger SSL"), 0) == kCFCompareEqualTo)
+						{
+							// We found our identity
+							CFTypeRef values[] = {
+								identityRef, certRef
+							};
+							serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
+						}
+						CFRelease(commonName);
+					}
+					CFRelease(certRef);
+				}
+				CFRelease(identityRef);
+			}
+			CFRelease(searchRef);
+			status = noErr;
+		}
+		
+		// Not found: create a cert, import it
+		if (serverCerts == NULL && status == noErr && pass == 0)
+		{
+			// Path to our self-signed certificate
+			NSString *tempDir = NSTemporaryDirectory();
+			NSString *pemFileName = @"NSLoggerCert.pem";
+			NSString *pemFilePath = [tempDir stringByAppendingPathComponent:pemFileName];
+			NSFileManager *fm = [NSFileManager defaultManager];
+			[fm removeItemAtPath:pemFilePath error:nil];
+			
+			// Generate a private certificate
+			NSArray *args = [NSArray arrayWithObjects:
+							 @"req",
+							 @"-x509",
+							 @"-nodes",
+							 @"-days", @"3650",
+							 @"-config", [[NSBundle mainBundle] pathForResource:@"NSLoggerCertReq" ofType:@"conf"],
+							 @"-newkey", @"rsa:1024",
+							 @"-keyout", pemFileName,
+							 @"-out", pemFileName,
+							 @"-batch",
+							 nil];
+			
+			NSTask *certTask = [[[NSTask alloc] init] autorelease];
+			[certTask setLaunchPath:@"/usr/bin/openssl"];
+			[certTask setCurrentDirectoryPath:tempDir];
+			[certTask setArguments:args];
+			[certTask launch];
+			do
+			{
+				[NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+			}
+			while([certTask isRunning]);
+
+			// Load the NSLogger self-signed certificate
+			NSData *certData = [NSData dataWithContentsOfFile:pemFilePath];
+			if (certData == nil)
+			{
+				failurePoint = NSLocalizedString(@"Can't load self-signed certificate data", @"");
+				status = -1;
+			}
+			else
+			{
+				// Import certificate and private key into our private keychain
+				SecKeyImportExportParameters kp;
+				bzero(&kp, sizeof(kp));
+				kp.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
+				SecExternalFormat inputFormat = kSecFormatPEMSequence;
+				SecExternalItemType itemType = kSecItemTypeAggregate;
+				failurePoint = NSLocalizedString(@"Failed importing self-signed certificate", @"");
+				status = SecKeychainItemImport((CFDataRef)certData,
+											   (CFStringRef)pemFileName,
+											   &inputFormat,
+											   &itemType,
+											   0,				// flags are unused
+											   &kp,				// import-export parameters
+											   keychain,
+											   NULL);
+			}
+		}
 	}
-	while([certTask isRunning]);
 
-	// Path to our private keychain
-	NSString *path = [tempDir stringByAppendingPathComponent:@"NSLogger.keychain"];
-	[fm removeItemAtPath:path error:nil];
-	
-	// Open or create our private keychain, and unlock it
-	OSStatus status = -1;
-	const char *keychainPath = [path fileSystemRepresentation];
+	if (keychain != NULL)
+		CFRelease(keychain);
 
-	status = SecKeychainCreate(keychainPath,
-							   0, "",	// fixed password (useless, really)
-							   false,
-							   NULL,
-							   &serverKeychain);
-	if (status != noErr)
+	if (serverCerts == NULL && outError != NULL)
 	{
-		// we can't support SSL without a proper keychain
+		if (status == noErr)
+			failurePoint = NSLocalizedString(@"Failed retrieving our self-signed certificate", @"");
+		
+		NSString *errMsg = [NSString stringWithFormat:NSLocalizedString(@"Our private encryption certificate could not be loaded (%@, error code %d)", @""),
+							failurePoint, status];
+		
 		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
 										code:status
 									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
-											  NSLocalizedString(@"The private NSLogger keychain could not be opened or created.", @""), NSLocalizedFailureReasonErrorKey,
+											  NSLocalizedString(@"NSLogger won't be able to accept SSL connections", @""), NSLocalizedDescriptionKey,
+											  errMsg, NSLocalizedFailureReasonErrorKey,
 											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
 											  nil]];
-		return NO;
-	}
-	[self unlockAppKeychain];
-
-	SecCertificateRef certRef = NULL;
-
-	// Find the certificate if we have already loaded it, or instantiate and find again
-	for (int i = 0; i < 2 && status == noErr; i++)
-	{
-		// Search for the server certificate in the NSLogger keychain
-		SecKeychainSearchRef keychainSearchRef = NULL;
-		status = SecKeychainSearchCreateFromAttributes(serverKeychain, kSecCertificateItemClass, NULL, &keychainSearchRef);
-		if (status == noErr)
-			status = SecKeychainSearchCopyNext(keychainSearchRef, (SecKeychainItemRef *)&certRef);
-		CFRelease(keychainSearchRef);
-		
-		// Did we find the certificate?
-		if (status == noErr)
-			break;
-
-		// Load the NSLogger self-signed certificate
-		NSData *certData = [NSData dataWithContentsOfFile:pemFilePath];
-
-		// Import certificate and private key into our private keychain
-		SecKeyImportExportParameters kp;
-		bzero(&kp, sizeof(kp));
-		kp.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
-		SecExternalFormat inputFormat = kSecFormatPEMSequence;
-		SecExternalItemType itemType = kSecItemTypeAggregate;
-
-		status = SecKeychainItemImport((CFDataRef)certData,
-									   (CFStringRef)pemFileName,
-									   &inputFormat,
-									   &itemType,
-									   0,				// flags are unused
-									   &kp,				// import-export parameters
-									   serverKeychain,
-									   NULL);
 	}
 
-	if (status == noErr)
-	{
-		SecIdentityRef identityRef = NULL;
-		status = SecIdentityCreateWithCertificate(serverKeychain, certRef, &identityRef);
-		if (status == noErr)
-		{
-			CFTypeRef values[] = {
-				identityRef, certRef
-			};
-			serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
-			CFRelease(identityRef);
-		}
-	}
-
-	if (certRef != NULL)
-		CFRelease(certRef);
-
-	// destroy the PEM file we just created, it's now in our keychain
-	[fm removeItemAtPath:pemFilePath error:nil];
-
-	if (status != noErr)
-	{
-		NSLog(@"Initializing encryption failed, status=%d", (int)status);
-		if (outError != NULL)
-		{
-			*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
-											code:status
-										userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-												  NSLocalizedString(@"NSLogger won't be able to encrypt connections", @""), NSLocalizedDescriptionKey,
-												  NSLocalizedString(@"Our private encryption certificate could not be loaded", @""), NSLocalizedFailureReasonErrorKey,
-												  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
-												  nil]];
-		}
-		return NO;
-	}
-	return YES;
+	return (serverCerts != NULL);
 }
 
 @end

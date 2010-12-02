@@ -670,6 +670,13 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			attrs = [[attrs mutableCopy] autorelease];
 			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
 		}
+		
+		// in case the message text is empty, use the function name as message text
+		// this is typically used to record a waypoint in the code flow
+		NSString *s = message.message;
+		if (![s length] && message.functionName)
+			s = message.functionName;
+
 		NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
 															  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 														   attributes:attrs];

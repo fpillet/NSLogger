@@ -35,8 +35,7 @@
 @interface LoggerAppDelegate : NSObject
 {
 	CFArrayRef serverCerts;
-	SecKeychainRef serverKeychain;
-
+	BOOL serverCertsLoadAttempted;
 	NSMutableArray *transports;
 	NSMutableArray *filterSets;
 	NSArray *filtersSortDescriptors;
@@ -45,6 +44,7 @@
 }
 
 @property (nonatomic, readonly) CFArrayRef serverCerts;
+@property (nonatomic, readonly) BOOL serverCertsLoadAttempted;
 @property (nonatomic, readonly) NSMutableArray *transports;
 @property (nonatomic, readonly) NSMutableArray *filterSets;
 @property (nonatomic, retain) NSArray *filtersSortDescriptors;
@@ -57,7 +57,7 @@
 
 - (IBAction)showPreferences:(id)sender;
 
-- (BOOL)unlockAppKeychain;
+- (BOOL)loadEncryptionCertificate:(NSError **)outError;
 
 @end
 
