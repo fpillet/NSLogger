@@ -98,6 +98,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
+	[filterSetsListController removeObserver:self forKeyPath:@"selectedObjects"];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
 	[attachedConnection release];
@@ -137,6 +138,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[filterTable setDoubleAction:@selector(startEditingFilter:)];
 
 	[filterSetsListController addObserver:self forKeyPath:@"arrangedObjects" options:0 context:NULL];
+	[filterSetsListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
 	buttonBar.splitViewDelegate = self;
@@ -154,6 +156,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 											 selector:@selector(tileLogTableNotification:)
 												 name:@"TileLogTableNotification"
 											   object:nil];
+	
+	[self performSelector:@selector(restoreFiltersSelection) withObject:nil afterDelay:0];
 }
 
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
@@ -318,6 +322,73 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 {
 	[self tileLogTable:YES];
 	[logTable reloadData];
+}
+
+- (void)rememberFiltersSelection
+{
+	// remember the last filter set selected for this application identifier,
+	// we will use it to automatically reassociate it the next time the same
+	// application connects or a log file from this application is reopened
+	NSString *clientAppIdentifier = [attachedConnection clientName];
+	if (![clientAppIdentifier length])
+		return;
+
+	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
+	if (filterSet != nil)
+	{
+		NSNumber *filterSetUID = [filterSet objectForKey:@"uid"];
+//		NSArray *selectedFilters = [[filterListController selectedObjects] valueForKeyPath:@"uid"];
+//		if (selectedFilters != nil)
+		{
+			NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:
+									  filterSetUID, @"selectedFilterSet",
+//									  selectedFilters, @"selectedFilters",
+									  nil];
+
+			NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+			NSMutableDictionary *clientSettings = [ud objectForKey:kPrefClientApplicationSettings];
+			if (clientSettings == nil)
+				clientSettings = [NSMutableDictionary dictionary];
+			
+			NSDictionary *existingSettings = [clientSettings objectForKey:clientAppIdentifier];
+			if (existingSettings == nil)
+			{
+				[clientSettings setObject:settings forKey:clientAppIdentifier];
+			}
+			else
+			{
+				NSMutableDictionary *dict = [existingSettings mutableCopy];
+				[dict addEntriesFromDictionary:settings];
+				[clientSettings setObject:dict forKey:clientAppIdentifier];
+				[dict release];
+			}
+			[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
+		}
+	}
+}
+
+- (void)restoreFiltersSelection
+{
+	// when an application connects, we try to restore the last filter set that was
+	// selected for this application. Usually, you have a filter set per application
+	// (this is how it is intended to be used), so it makes sense to preselect it
+	// when the application connects.
+	NSString *clientAppIdentifier = [attachedConnection clientName];
+	if (![clientAppIdentifier length])
+		return;
+
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+	NSDictionary *clientSettings = [ud objectForKey:kPrefClientApplicationSettings];
+	NSDictionary *appSettings = [clientSettings objectForKey:clientAppIdentifier];
+	NSNumber *filterSetUID = [appSettings objectForKey:@"selectedFilterSet"];
+	if (filterSetUID != nil)
+	{
+		// try retrieving the filter set
+		NSArray *matchingFilters = [[filterSetsListController arrangedObjects] filteredArrayUsingPredicate:
+									[NSPredicate predicateWithFormat:@"uid == %@", filterSetUID]];
+		if ([matchingFilters count] == 1)
+			[filterSetsListController setSelectedObjects:matchingFilters];
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -775,10 +846,13 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 	else if (object == filterListController)
 	{
-		if ([keyPath isEqualToString:@"selectedObjects"] && [filterListController selectionIndex] != NSNotFound)
+		if ([keyPath isEqualToString:@"selectedObjects"])
 		{
-			[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
-			[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
+			if ([filterListController selectionIndex] != NSNotFound)
+			{
+				[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+				[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
+			}
 		}
 	}
 	else if (object == filterSetsListController)
@@ -788,6 +862,10 @@ didReceiveMessages:(NSArray *)theMessages
 			// we'll be called when arrangedObjects change, that is when a filter set is added,
 			// removed or renamed. Use this occasion to save the filters definition.
 			[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+		}
+		else if ([keyPath isEqualToString:@"selectedObjects"])
+		{
+			[self rememberFiltersSelection];
 		}
 	}
 }

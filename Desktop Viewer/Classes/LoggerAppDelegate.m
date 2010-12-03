@@ -40,6 +40,9 @@ NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
 NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
 NSString * const kPrefDirectTCPIPResponderPort = @"directTCPIPResponderPort";
 NSString * const kPrefBonjourServiceName = @"bonjourServiceName";
+NSString * const kPrefClientApplicationSettings = @"clientApplicationSettings";
+
+NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
 @implementation LoggerAppDelegate
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;

@@ -65,6 +65,9 @@ extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;
 extern NSString * const kPrefDirectTCPIPResponderPort;
 extern NSString * const kPrefBonjourServiceName;
+extern NSString * const kPrefClientApplicationSettings;
+
+extern NSString * const kPref_ApplicationFilterSet;
 
 // Menu item identifiers
 #define TOOLS_MENU_ITEM_TAG				1
