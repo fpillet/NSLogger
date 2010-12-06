@@ -337,33 +337,28 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	if (filterSet != nil)
 	{
 		NSNumber *filterSetUID = [filterSet objectForKey:@"uid"];
-//		NSArray *selectedFilters = [[filterListController selectedObjects] valueForKeyPath:@"uid"];
-//		if (selectedFilters != nil)
+		NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:
+								  filterSetUID, @"selectedFilterSet",
+								  nil];
+		
+		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+		NSMutableDictionary *clientSettings = [[[ud objectForKey:kPrefClientApplicationSettings] mutableCopy] autorelease];
+		if (clientSettings == nil)
+			clientSettings = [NSMutableDictionary dictionary];
+		
+		NSDictionary *existingSettings = [clientSettings objectForKey:clientAppIdentifier];
+		if (existingSettings == nil)
 		{
-			NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:
-									  filterSetUID, @"selectedFilterSet",
-//									  selectedFilters, @"selectedFilters",
-									  nil];
-
-			NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-			NSMutableDictionary *clientSettings = [ud objectForKey:kPrefClientApplicationSettings];
-			if (clientSettings == nil)
-				clientSettings = [NSMutableDictionary dictionary];
-			
-			NSDictionary *existingSettings = [clientSettings objectForKey:clientAppIdentifier];
-			if (existingSettings == nil)
-			{
-				[clientSettings setObject:settings forKey:clientAppIdentifier];
-			}
-			else
-			{
-				NSMutableDictionary *dict = [existingSettings mutableCopy];
-				[dict addEntriesFromDictionary:settings];
-				[clientSettings setObject:dict forKey:clientAppIdentifier];
-				[dict release];
-			}
-			[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
+			[clientSettings setObject:settings forKey:clientAppIdentifier];
 		}
+		else
+		{
+			NSMutableDictionary *dict = [existingSettings mutableCopy];
+			[dict addEntriesFromDictionary:settings];
+			[clientSettings setObject:dict forKey:clientAppIdentifier];
+			[dict release];
+		}
+		[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
 	}
 }
 
