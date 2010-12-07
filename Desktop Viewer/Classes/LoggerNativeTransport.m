@@ -567,11 +567,31 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				}
 				break;
 				
-			case NSStreamEventErrorOccurred:
-				// @@@ TODO: add message with error description
-#ifdef DEBUG
+			case NSStreamEventErrorOccurred: {
 				NSLog(@"Stream error occurred: stream=%@ self=%@ error=%@", theStream, self, [theStream streamError]);
-#endif
+				NSError *error = [theStream streamError];
+				NSInteger errCode = [error code];
+				if (errCode == errSSLDecryptionFail || errCode == errSSLBadRecordMac)
+				{
+					// Sporadic SSL failure:
+					// until we find a workaround, we need to restart the app
+					// See https://devforums.apple.com/thread/77848?tstart=0
+					dispatch_async(dispatch_get_main_queue(), ^{
+						NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+											  NSLocalizedString(@"NSLogger SSL connection failure", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"This error usually occurs the first time you start NSLogger.\n\nRestart NSLogger now to fix the issue.", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  [NSString stringWithFormat:@"CFStream error %d", errCode], NSUnderlyingErrorKey,
+											  NSLocalizedString(@"Click the Restart button to restart NSLogger now.", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  [NSArray arrayWithObject:NSLocalizedString(@"Restart", @"")],  NSLocalizedRecoveryOptionsErrorKey,
+											  [NSApp delegate], NSRecoveryAttempterErrorKey,
+											  nil];
+						[NSApp presentError:[NSError errorWithDomain:@"NSLogger"
+																code:errCode
+															userInfo:dict]];
+					});
+				}
+				break;
+			}
 				// fall through
 			case NSStreamEventEndEncountered: {
 				// Append a disconnect message for only one of the two streams
@@ -641,6 +661,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	{
 		if (type == kCFSocketAcceptCallBack)
 		{
+			NSLog(@"acceptSocketCallback");
 			// we have a new incoming connection with a child socket
 			// reenable accept callback
 			CFSocketEnableCallBacks(sock, kCFSocketAcceptCallBack);

@@ -24,7 +24,6 @@
 		3D6A37C51263998A00D0EC3A /* LoggerStatusWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */; };
 		3D6A37C9126399D700D0EC3A /* LoggerStatus.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A37C8126399D700D0EC3A /* LoggerStatus.xib */; };
 		3D6ED56912A3A55E0005DD57 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3D6ED56812A3A55E0005DD57 /* Icon.icns */; };
-		3D6ED59D12A3AE0C0005DD57 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 3D6ED59C12A3AE0C0005DD57 /* Credits.rtf */; };
 		3D7C74FD0F3CA8AB006B55AD /* LoggerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C74FC0F3CA8AB006B55AD /* LoggerConnection.m */; };
 		3D7C75330F401B35006B55AD /* LoggerNativeConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75320F401B35006B55AD /* LoggerNativeConnection.m */; };
 		3D7C75510F4025A7006B55AD /* LoggerTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75500F4025A7006B55AD /* LoggerTransport.m */; };
@@ -38,6 +37,9 @@
 		3DDAE1630F405CE5001B1408 /* LoggerIPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDAE1620F405CE5001B1408 /* LoggerIPConnection.m */; };
 		3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */; };
 		3DE01E941268D32100A39E7E /* LoggerDetailsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */; };
+		3DE8CE7D12AE4A60005C83D0 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 3D6ED59C12A3AE0C0005DD57 /* Credits.rtf */; };
+		3DE8CE7E12AE4A67005C83D0 /* relaunch.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE8CE7312AE49E7005C83D0 /* relaunch.m */; };
+		3DE8CEEC12AE50A8005C83D0 /* relaunch in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DE8CE7812AE4A17005C83D0 /* relaunch */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -64,6 +66,13 @@
 			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0;
 			remoteInfo = BWToolkitFramework;
 		};
+		3DE8CE8A12AE4A96005C83D0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3DE8CE7712AE4A17005C83D0 /* relaunch tool */;
+			remoteInfo = "relaunch tool";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -74,6 +83,16 @@
 			dstSubfolderSpec = 10;
 			files = (
 				3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3DE8CE8712AE4A74005C83D0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 12;
+			files = (
+				3DE8CEEC12AE50A8005C83D0 /* relaunch in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,11 +155,20 @@
 		3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerDetailsWindow.xib; path = Resources/LoggerDetailsWindow.xib; sourceTree = "<group>"; };
 		3DE01E921268D32100A39E7E /* LoggerDetailsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerDetailsWindowController.h; path = Classes/LoggerDetailsWindowController.h; sourceTree = "<group>"; };
 		3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDetailsWindowController.m; path = Classes/LoggerDetailsWindowController.m; sourceTree = "<group>"; };
+		3DE8CE7312AE49E7005C83D0 /* relaunch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = relaunch.m; path = Classes/relaunch.m; sourceTree = "<group>"; };
+		3DE8CE7812AE4A17005C83D0 /* relaunch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = relaunch; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3DE8CE7612AE4A17005C83D0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072E0486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -176,6 +204,7 @@
 				3DADCB9F125FC3B200807A7D /* ValueTransformers.m */,
 				3D0D601B0F4068A100EDB93B /* Views & Cells */,
 				3DDAE1570F405CD4001B1408 /* Model */,
+				3DE8CE6E12AE49C7005C83D0 /* Relaunch */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -203,6 +232,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1107320486CEB800E47090 /* NSLogger.app */,
+				3DE8CE7812AE4A17005C83D0 /* relaunch */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -308,9 +338,33 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
+		3DE8CE6E12AE49C7005C83D0 /* Relaunch */ = {
+			isa = PBXGroup;
+			children = (
+				3DE8CE7312AE49E7005C83D0 /* relaunch.m */,
+			);
+			name = Relaunch;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3DE8CE7712AE4A17005C83D0 /* relaunch tool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3DE8CE8812AE4A74005C83D0 /* Build configuration list for PBXNativeTarget "relaunch tool" */;
+			buildPhases = (
+				3DE8CE7512AE4A17005C83D0 /* Sources */,
+				3DE8CE7612AE4A17005C83D0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "relaunch tool";
+			productName = relaunch;
+			productReference = 3DE8CE7812AE4A17005C83D0 /* relaunch */;
+			productType = "com.apple.product-type.tool";
+		};
 		8D1107260486CEB800E47090 /* NSLogger */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "NSLogger" */;
@@ -319,11 +373,13 @@
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
 				3D4EA21C0F385B6100DF81E6 /* CopyFiles */,
+				3DE8CE8712AE4A74005C83D0 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				3D6A34A11262FCB100D0EC3A /* PBXTargetDependency */,
+				3DE8CE8B12AE4A96005C83D0 /* PBXTargetDependency */,
 			);
 			name = NSLogger;
 			productInstallPath = "$(HOME)/Applications";
@@ -355,6 +411,7 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* NSLogger */,
+				3DE8CE7712AE4A17005C83D0 /* relaunch tool */,
 			);
 		};
 /* End PBXProject section */
@@ -389,13 +446,21 @@
 				3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */,
 				3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */,
 				3D6ED56912A3A55E0005DD57 /* Icon.icns in Resources */,
-				3D6ED59D12A3AE0C0005DD57 /* Credits.rtf in Resources */,
+				3DE8CE7D12AE4A60005C83D0 /* Credits.rtf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3DE8CE7512AE4A17005C83D0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DE8CE7E12AE4A67005C83D0 /* relaunch.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -431,9 +496,60 @@
 			name = BWToolkitFramework;
 			targetProxy = 3D6A34A01262FCB100D0EC3A /* PBXContainerItemProxy */;
 		};
+		3DE8CE8B12AE4A96005C83D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3DE8CE7712AE4A17005C83D0 /* relaunch tool */;
+			targetProxy = 3DE8CE8A12AE4A96005C83D0 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3DE8CE7A12AE4A18005C83D0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = relaunch;
+			};
+			name = Debug;
+		};
+		3DE8CE7B12AE4A18005C83D0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					AppKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = relaunch;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -499,6 +615,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3DE8CE8812AE4A74005C83D0 /* Build configuration list for PBXNativeTarget "relaunch tool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3DE8CE7A12AE4A18005C83D0 /* Debug */,
+				3DE8CE7B12AE4A18005C83D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "NSLogger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

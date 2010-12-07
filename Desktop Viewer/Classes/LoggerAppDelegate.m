@@ -287,7 +287,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 {
 	// since we're using basic NSDictionary to store filters, we add a filter
 	// identifier number so that no two filters are strictly identical -- makes
-	// things much easier with NSArrayController
+	// things much easier wih NSArrayController
 	return [NSNumber numberWithInteger:[[filters valueForKeyPath:@"@max.uid"] integerValue] + 1];
 }
 
@@ -296,6 +296,24 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	if (prefsController == nil)
 		prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
 	[prefsController showWindow:sender];
+}
+
+- (void)relaunchApplication
+{
+	NSString *appToRelaunch = [[NSBundle mainBundle] bundlePath];
+	NSString *relaunchToolPath = [[[NSBundle mainBundle] sharedSupportPath] stringByAppendingPathComponent:@"relaunch"];
+	[NSTask launchedTaskWithLaunchPath:relaunchToolPath
+							 arguments:[NSArray arrayWithObjects:
+										appToRelaunch,
+										[NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]],
+										nil]];
+	exit(0);	
+}
+
+- (BOOL)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex
+{
+	[self relaunchApplication];
+	return NO;
 }
 
 // -----------------------------------------------------------------------------
