@@ -112,7 +112,7 @@ static NSMutableArray *sTags = nil;
 						threadID];
 
 	if (contentsType == kMessageImage)
-		return [NSString stringWithFormat:@"IMAGE size=%dx%d px\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
+		return [NSString stringWithFormat:@"%@IMAGE size=%dx%d px\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
 
 	assert([message isKindOfClass:[NSData class]]);
 	NSMutableString *s = [[NSMutableString alloc] init];
