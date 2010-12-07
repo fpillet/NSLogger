@@ -363,7 +363,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 
 	// If there is file / line / function information, add its height
-	if (showFunctionNames && (aMessage.filename != nil || aMessage.functionName != nil))
+	if (showFunctionNames && ([aMessage.filename length] || [aMessage.functionName length]))
 		sz.height += [self heightForFileLineFunction];
 	
 	// cache and return cell height
@@ -658,7 +658,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
 				   NSHeight(cellFrame));
 
-	CGFloat fileLineFunctionHeight = (shouldShowFunctionNames && (message.filename != nil || message.functionName != nil)) ? [[self class] heightForFileLineFunction] : 0;
+	CGFloat fileLineFunctionHeight = (shouldShowFunctionNames && ([message.filename length] || [message.functionName length])) ? [[self class] heightForFileLineFunction] : 0;
 	r.size.height -= fileLineFunctionHeight;
 	//r.origin.y += fileLineFunctionHeight;
 
