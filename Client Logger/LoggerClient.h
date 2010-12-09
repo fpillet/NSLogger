@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b7 2010-11-28
+ * version 1.0b7 2010-12-09
  *
  * Part of NSLogger (client side)
  *
