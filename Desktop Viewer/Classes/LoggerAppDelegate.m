@@ -228,9 +228,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	// Direct TCP/IP service (SSL mandatory)
 	t = [[LoggerNativeTransport alloc] init];
 	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
-#if LOGGER_USES_SSL
-	t.supportSSL = YES;
-#endif
+	t.secure = YES;
 	[transports addObject:t];
 	[t release];
 
