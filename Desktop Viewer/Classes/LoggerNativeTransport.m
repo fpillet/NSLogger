@@ -578,8 +578,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 					// See https://devforums.apple.com/thread/77848?tstart=0
 					dispatch_async(dispatch_get_main_queue(), ^{
 						NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-											  NSLocalizedString(@"NSLogger SSL connection failure", @""), NSLocalizedDescriptionKey,
-											  NSLocalizedString(@"This error usually occurs the first time you start NSLogger.\n\nRestart NSLogger now to fix the issue.", @""), NSLocalizedRecoverySuggestionErrorKey,
+											  NSLocalizedString(@"NSLogger SSL authentication failure", @""), NSLocalizedDescriptionKey,
+											  NSLocalizedString(@"Your NSLogger build may not be codesigned. As a result, a conflict between Firewall and Keychain tagging of your viewer requires that you restart NSLogger to complete the SSL certificate authorization.\n\nRestart NSLogger now to fix the issue.", @""), NSLocalizedRecoverySuggestionErrorKey,
 											  [NSString stringWithFormat:@"CFStream error %d", errCode], NSUnderlyingErrorKey,
 											  NSLocalizedString(@"Click the Restart button to restart NSLogger now.", @""), NSLocalizedRecoverySuggestionErrorKey,
 											  [NSArray arrayWithObject:NSLocalizedString(@"Restart", @"")],  NSLocalizedRecoveryOptionsErrorKey,
