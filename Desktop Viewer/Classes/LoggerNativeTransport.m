@@ -661,7 +661,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	{
 		if (type == kCFSocketAcceptCallBack)
 		{
-			NSLog(@"acceptSocketCallback");
 			// we have a new incoming connection with a child socket
 			// reenable accept callback
 			CFSocketEnableCallBacks(sock, kCFSocketAcceptCallBack);
