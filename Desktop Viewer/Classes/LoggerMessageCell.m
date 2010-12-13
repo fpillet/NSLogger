@@ -677,9 +677,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		if (![s length] && message.functionName)
 			s = message.functionName;
 
-		NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
-															  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-														   attributes:attrs];
+		NSRect lr = [s boundingRectWithSize:r.size
+									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+								 attributes:attrs];
 		r.size.height = lr.size.height;
 		CGFloat offset = floorf((NSHeight(cellFrame) - fileLineFunctionHeight - NSHeight(lr)) / 2.0f);
 		if (offset > 0)
