@@ -139,6 +139,8 @@ static void LoggerReadStreamCallback(CFReadStreamRef ws, CFStreamEventType event
 static void LoggerCreateBufferWriteStream(Logger *logger);
 static void LoggerCreateBufferReadStream(Logger *logger);
 static void LoggerEmptyBufferFile(Logger *logger);
+static void LoggerFileBufferingOptionsChanged(Logger *logger);
+static void LoggerFlushQueueToBufferStream(Logger *logger);
 
 // Encoding functions
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger);
@@ -278,17 +280,27 @@ void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 {
 	if (logger == NULL)
-		logger = LoggerGetDefaultLogger();
-	if (logger == NULL)
-		return;
-
-	if (logger->bufferFile != NULL)
 	{
-		CFRelease(logger->bufferFile);
-		logger->bufferFile = NULL;
+		logger = LoggerGetDefaultLogger();
+		if (logger == NULL)
+			return;
 	}
-	if (absolutePath != NULL)
-		logger->bufferFile = CFStringCreateCopy(NULL, absolutePath);
+
+	BOOL change = ((logger->bufferFile != NULL && absolutePath == NULL) ||
+				   (logger->bufferFile == NULL && absolutePath != NULL) ||
+				   (logger->bufferFile != NULL && absolutePath != NULL && CFStringCompare(logger->bufferFile, absolutePath, 0) != kCFCompareEqualTo));
+	if (change)
+	{
+		if (logger->bufferFile != NULL)
+		{
+			CFRelease(logger->bufferFile);
+			logger->bufferFile = NULL;
+		}
+		if (absolutePath != NULL)
+			logger->bufferFile = CFStringCreateCopy(NULL, absolutePath);
+		if (logger->bufferFileChangedSource != NULL)
+			CFRunLoopSourceSignal(logger->bufferFileChangedSource);
+	}
 }
 
 void LoggerStart(Logger *logger)
@@ -391,7 +403,7 @@ static void LoggerDbg(CFStringRef format, ...)
 static void *LoggerWorkerThread(Logger *logger)
 {
 	LOGGERDBG(CFSTR("Start LoggerWorkerThread"));
-	
+
 	// Register thread with Garbage Collector on Mac OS X if we're running an OS version that has GC
     void (*registerThreadWithCollector_fn)(void);
     registerThreadWithCollector_fn = (void(*)(void)) dlsym(RTLD_NEXT, "objc_registerThreadWithCollector");
@@ -407,7 +419,7 @@ static void *LoggerWorkerThread(Logger *logger)
 	CFRunLoopSourceContext context;
 	bzero(&context, sizeof(context));
 	context.info = logger;
-	context.perform = (void *)(void *)&LoggerWriteMoreData;
+	context.perform = (void *)&LoggerWriteMoreData;
 	logger->messagePushedSource = CFRunLoopSourceCreate(NULL, 0, &context);
 	if (logger->messagePushedSource == NULL)
 	{
@@ -419,6 +431,21 @@ static void *LoggerWorkerThread(Logger *logger)
 		return NULL;
 	}
 	CFRunLoopAddSource(runLoop, logger->messagePushedSource, kCFRunLoopDefaultMode);
+
+	// Create the buffering stream if needed
+	if (logger->bufferFile != NULL)
+		LoggerCreateBufferWriteStream(logger);
+	
+	// Create the runloop source that lets us know when file buffering options change
+	context.perform = (void *)&LoggerFileBufferingOptionsChanged;
+	logger->bufferFileChangedSource = CFRunLoopSourceCreate(NULL, 0, &context);
+	if (logger->bufferFileChangedSource == NULL)
+	{
+		// This failure MUST be logged to console
+		NSLog(@"*** NSLogger Warning: failed creating a runLoop source for file buffering options change.");
+	}
+	else
+		CFRunLoopAddSource(runLoop, logger->bufferFileChangedSource, kCFRunLoopDefaultMode);
 
 	// Start Bonjour browsing, wait for remote logging service to be found
 	if (logger->host == NULL && (logger->options & kLoggerOption_BrowseBonjour))
@@ -484,10 +511,20 @@ static void *LoggerWorkerThread(Logger *logger)
 		logger->bufferWriteStream = NULL;
 	}
 
-	CFRunLoopSourceInvalidate(logger->messagePushedSource);
-	CFRelease(logger->messagePushedSource);
-	logger->messagePushedSource = NULL;
+	if (logger->messagePushedSource != NULL)
+	{
+		CFRunLoopSourceInvalidate(logger->messagePushedSource);
+		CFRelease(logger->messagePushedSource);
+		logger->messagePushedSource = NULL;
+	}
 	
+	if (logger->bufferFileChangedSource != NULL)
+	{
+		CFRunLoopSourceInvalidate(logger->bufferFileChangedSource);
+		CFRelease(logger->bufferFileChangedSource);
+		logger->bufferFileChangedSource = NULL;
+	}
+
 	// if the client ever tries to log again against us, make sure that logs at least
 	// go to console
 	logger->options |= kLoggerOption_LogToConsole;
@@ -714,6 +751,10 @@ static void LoggerWriteMoreData(Logger *logger)
 			pthread_mutex_unlock(&logger->logQueueMutex);
 			pthread_cond_broadcast(&logger->logQueueEmpty);
 		}
+		else if (logger->bufferWriteStream != NULL)
+		{
+			LoggerFlushQueueToBufferStream(logger);
+		}
 		return;
 	}
 	
@@ -846,6 +887,10 @@ static void LoggerCreateBufferWriteStream(Logger *logger)
 		CFRelease(fileURL);
 		if (logger->bufferWriteStream != NULL)
 		{
+			// Set flag to append new data to buffer file
+			CFWriteStreamSetProperty(logger->bufferWriteStream, kCFStreamPropertyAppendToFile, kCFBooleanTrue);
+
+			// Open the buffer stream for writing
 			if (!CFWriteStreamOpen(logger->bufferWriteStream))
 			{
 				CFRelease(logger->bufferWriteStream);
@@ -853,31 +898,9 @@ static void LoggerCreateBufferWriteStream(Logger *logger)
 			}
 			else
 			{
-				// Set flag to append new data to buffer file
-				CFWriteStreamSetProperty(logger->bufferWriteStream, kCFStreamPropertyAppendToFile, kCFBooleanTrue);
-				
 				// Write client info and flush the queue contents to buffer file
-				CFIndex totalWritten = 0;
 				LoggerPushClientInfoToFrontOfQueue(logger);
-				pthread_mutex_lock(&logger->logQueueMutex);
-				logger->incompleteSendOfFirstItem = NO;
-				while (CFArrayGetCount(logger->logQueue))
-				{
-					CFDataRef data = CFArrayGetValueAtIndex(logger->logQueue, 0);
-					CFIndex dataLength = CFDataGetLength(data);
-					CFIndex written = CFWriteStreamWrite(logger->bufferWriteStream, CFDataGetBytePtr(data), dataLength);
-					totalWritten += written;
-					if (written != dataLength)
-					{
-						// couldn't write all data to file, maybe storage run out of space?
-						CFShow(CFSTR("NSLogger Error: failed flushing the whole queue to buffer file:"));
-						CFShow(logger->bufferFile);
-						break;
-					}
-					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
-				}
-				pthread_mutex_unlock(&logger->logQueueMutex);
-				LOGGERDBG(CFSTR("-> bytes written to file: %ld"), (long)totalWritten);
+				LoggerFlushQueueToBufferStream(logger);
 			}
 		}
 	}
@@ -926,6 +949,44 @@ static void LoggerEmptyBufferFile(Logger *logger)
 			free(buffer);
 		}
 	}
+}
+
+static void LoggerFileBufferingOptionsChanged(Logger *logger)
+{
+	// File buffering options changed:
+	// - close the current buffer file stream, if any
+	// - create a new one, if needed
+	LOGGERDBG(CFSTR("LoggerFileBufferingOptionsChanged bufferFile=%@"), logger->bufferFile);
+	if (logger->bufferWriteStream != NULL)
+	{
+		CFWriteStreamClose(logger->bufferWriteStream);
+		CFRelease(logger->bufferWriteStream);
+		logger->bufferWriteStream = NULL;
+	}
+	if (logger->bufferFile  != NULL)
+		LoggerCreateBufferWriteStream(logger);
+}
+
+static void LoggerFlushQueueToBufferStream(Logger *logger)
+{
+	LOGGERDBG(CFSTR("LoggerFlushQueueToBufferStream"));
+	pthread_mutex_lock(&logger->logQueueMutex);
+	logger->incompleteSendOfFirstItem = NO;
+	while (CFArrayGetCount(logger->logQueue))
+	{
+		CFDataRef data = CFArrayGetValueAtIndex(logger->logQueue, 0);
+		CFIndex dataLength = CFDataGetLength(data);
+		CFIndex written = CFWriteStreamWrite(logger->bufferWriteStream, CFDataGetBytePtr(data), dataLength);
+		if (written != dataLength)
+		{
+			// couldn't write all data to file, maybe storage run out of space?
+			CFShow(CFSTR("NSLogger Error: failed flushing the whole queue to buffer file:"));
+			CFShow(logger->bufferFile);
+			break;
+		}
+		CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+	}
+	pthread_mutex_unlock(&logger->logQueueMutex);	
 }
 
 // -----------------------------------------------------------------------------
@@ -1383,6 +1444,7 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 
 			logger->sendBufferUsed = 0;
 			logger->sendBufferOffset = 0;
+
 			if (logger->bufferReadStream != NULL)
 			{
 				// In the case the connection drops before we have flushed the
@@ -1394,6 +1456,9 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 				CFRelease(logger->bufferReadStream);
 				logger->bufferReadStream = NULL;
 			}
+			if (logger->bufferFile != NULL && logger->bufferWriteStream == NULL)
+				LoggerCreateBufferWriteStream(logger);
+			
 			if (logger->host != NULL && !(logger->options & kLoggerOption_BrowseBonjour))
 				LoggerStartReachabilityChecking(logger);
 			else
@@ -1741,6 +1806,18 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 		// In this case, the worker thread has not completed startup, so we don't need
 		// to fire the runLoop source
 		CFRunLoopSourceSignal(logger->messagePushedSource);
+	}
+	else if (logger->workerThread == NULL && (logger->options & kLoggerOption_LogToConsole))
+	{
+		// In this case, a failure creating the message runLoop source forces us
+		// to always log to console
+		pthread_mutex_lock(&logger->logQueueMutex);
+		while (CFArrayGetCount(logger->logQueue))
+		{
+			LoggerLogToConsole(CFArrayGetValueAtIndex(logger->logQueue, 0));
+			CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+		}
+		pthread_mutex_unlock(&logger->logQueueMutex);
 	}
 }
 
