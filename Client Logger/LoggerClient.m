@@ -152,6 +152,7 @@ static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key)
 static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key);
 static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, int key);
 static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType);
+static uint32_t LoggerMessageGetSeq(CFDataRef message);
 
 /* Static objects */
 static Logger* volatile sDefaultLogger = NULL;
@@ -1599,6 +1600,44 @@ static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int k
 	LoggerMessageUpdateDataHeader(data);
 }
 
+static uint32_t LoggerMessageGetSeq(CFDataRef message)
+{
+	// Extract the sequence number from a message. When pushing messages to the queue,
+	// we use this to guarantee the logging order according to the seq#
+	uint32_t seq = 0;
+	uint8_t *p = (uint8_t *)CFDataGetBytePtr(message) + 4;
+	uint16_t partCount;
+	memcpy(&partCount, p, 2);
+	partCount = ntohs(partCount);
+	p += 2;
+	while (partCount--)
+	{
+		uint8_t partKey = *p++;
+		uint8_t partType = *p++;
+		uint32_t partSize;
+		if (partType == PART_TYPE_INT16)
+			partSize = 2;
+		else if (partType == PART_TYPE_INT32)
+			partSize = 4;
+		else if (partType == PART_TYPE_INT64)
+			partSize = 8;
+		else
+		{
+			memcpy(&partSize, p, 4);
+			p += 4;
+			partSize = ntohl(partSize);
+		}
+		if (partKey == PART_KEY_MESSAGE_SEQ)
+		{
+			memcpy(&seq, p, sizeof(uint32_t));
+			seq = ntohl(seq);
+			break;
+		}
+		p += partSize;
+	}
+	return seq;
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Private logging functions
@@ -1674,9 +1713,25 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 {
 	// Add the message to the log queue and signal the runLoop source that will trigger
-	// a send on the worker thread
+	// a send on the worker thread.
 	pthread_mutex_lock(&logger->logQueueMutex);
-	CFArrayAppendValue(logger->logQueue, message);
+	CFIndex idx = CFArrayGetCount(logger->logQueue);
+	if (idx)
+	{
+		// to prevent out-of-order messages (as much as possible), we try to transmit messages in the
+		// order their sequence number was generated. Since the seq is generated first-thing,
+		// we can provide fine-grained ordering that gives a reasonable idea of the order
+		// the logging calls were made (useful for precise information about multithreading code)
+		uint32_t lastSeq, seq = LoggerMessageGetSeq(message);
+		do {
+			lastSeq = LoggerMessageGetSeq(CFArrayGetValueAtIndex(logger->logQueue, --idx));
+		} while (idx >= 0 && lastSeq > seq);
+		idx++;
+	}
+	if (idx >= 0)
+		CFArrayInsertValueAtIndex(logger->logQueue, idx, message);
+	else
+		CFArrayAppendValue(logger->logQueue, message);
 	pthread_mutex_unlock(&logger->logQueueMutex);
 	
 	if (logger->messagePushedSource != NULL)
@@ -1707,43 +1762,46 @@ static void LogMessageTo_internal(Logger *logger,
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
 	LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
-#if ALLOW_COCOA_USE
-	// Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
-	CFStringRef msgString = (CFStringRef)[[NSString alloc] initWithFormat:format arguments:args];
-#else
-	CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
-#endif
-	if (msgString != NULL)
+	CFMutableDataRef encoder = LoggerMessageCreate();
+	if (encoder != NULL)
 	{
-		CFMutableDataRef encoder = LoggerMessageCreate();
-		if (encoder != NULL)
-		{
-			LoggerMessageAddTimestampAndThreadID(encoder);
-			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
-			if (domain != nil && [domain length])
-				LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
-			if (level)
-				LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
-			if (filename != NULL)
-				LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
-			if (lineNumber)
-				LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
-			if (functionName != NULL)
-				LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
-			LoggerMessageAddString(encoder, msgString, PART_KEY_MESSAGE);
-			LoggerPushMessageToQueue(logger, encoder);
-			CFRelease(encoder);
-		}
-		else
-		{
-			LOGGERDBG2(CFSTR("-> failed creating encoder"));
-		}
+		LoggerMessageAddTimestampAndThreadID(encoder);
+		LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+		LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+		if (domain != nil && [domain length])
+			LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
+		if (level)
+			LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
+		if (filename != NULL)
+			LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
+		if (lineNumber)
+			LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
+		if (functionName != NULL)
+			LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
+
 #if ALLOW_COCOA_USE
-		[(id)msgString release];		// compatible with garbage-collected environments
+		// Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
+		NSString *msgString = [[NSString alloc] initWithFormat:format arguments:args];
+		if (msgString != nil)
+		{
+			LoggerMessageAddString(encoder, (CFStringRef)msgString, PART_KEY_MESSAGE);
+			[msgString release];
+		}
 #else
-		CFRelease(msgString);
+		CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
+		if (msgString != NULL)
+		{
+			LoggerMessageAddString(encoder, msgString, PART_KEY_MESSAGE);
+			CFRelease(msgString);
+		}
 #endif
+
+		LoggerPushMessageToQueue(logger, encoder);
+		CFRelease(encoder);
+	}
+	else
+	{
+		LOGGERDBG2(CFSTR("-> failed creating encoder"));
 	}
 }
 
