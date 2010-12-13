@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b7 2010-12-09
+ * version 1.0b8 2010-12-13
  *
  * Part of NSLogger (client side)
  *
@@ -97,6 +97,7 @@ typedef struct
 	CFReadStreamRef bufferReadStream;				// If bufferFile not NULL, points to a read stream that will be emptied prior to sending the rest of in-memory messages
 	
 	SCNetworkReachabilityRef reachability;			// The reachability object we use to determine when the target host becomes reachable
+	CFRunLoopTimerRef checkHostTimer;				// A timer to regularly check connection to the defined host, along with reachability for added reliability
 
 	uint8_t *sendBuffer;							// data waiting to be sent
 	NSUInteger sendBufferSize;

@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b7 2010-12-09
+ * version 1.0b8 2010-12-13
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -87,7 +87,10 @@
  * --------------------------------------------------------------------------------
  */
 
-// Set this to 1 to activate console logs when running the logger itself
+/* Logger internal debug flags */
+// Set to 0 to disable internal debug completely
+// Set to 1 to activate console logs when running the logger itself
+// Set to 2 to see every logging call issued by the app, too
 #define LOGGER_DEBUG 0
 #ifdef NSLog
 	#undef NSLog
@@ -95,10 +98,17 @@
 
 // Internal debugging stuff for the logger itself
 #if LOGGER_DEBUG
-#define LOGGERDBG LoggerDbg
-static void LoggerDbg(CFStringRef format, ...);
+	#define LOGGERDBG LoggerDbg
+	#if LOGGER_DEBUG > 1
+		#define LOGGERDBG2 LoggerDbg
+	#else
+		#define LOGGERDBG2(format, ...) do{}while(0)
+	#endif
+	// Internal logging function prototype
+	static void LoggerDbg(CFStringRef format, ...);
 #else
-#define LOGGERDBG(format, ...) while(0){}
+	#define LOGGERDBG(format, ...) do{}while(0)
+	#define LOGGERDBG2(format, ...) do{}while(0)
 #endif
 
 /* Local prototypes */
@@ -112,10 +122,11 @@ static void LoggerStopBonjourBrowsing(Logger *logger);
 static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
 static void LoggerServiceBrowserCallBack(CFNetServiceBrowserRef browser, CFOptionFlags flags, CFTypeRef domainOrService, CFStreamError* error, void *info);
 
-// Reachability
+// Reachability and reconnect timer
 static void LoggerStartReachabilityChecking(Logger *logger);
 static void LoggerStopReachabilityChecking(Logger *logger);
 static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *info);
+static void LoggerTimedReconnectCallback(CFRunLoopTimerRef timer, void *info);
 
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
@@ -296,7 +307,6 @@ void LoggerStart(Logger *logger)
 
 void LoggerStop(Logger *logger)
 {
-	// Stop logging remotely, stop Bonjour discovery, redirect all traces to console
 	LOGGERDBG(CFSTR("LoggerStop"));
 
 	pthread_mutex_lock(&sDefaultLoggerMutex);
@@ -436,7 +446,7 @@ static void *LoggerWorkerThread(Logger *logger)
 		{
 			if (logger->options & kLoggerOption_BrowseBonjour)
 				LoggerStartBonjourBrowsing(logger);
-			else if (logger->host != NULL && logger->reachability == NULL)
+			else if (logger->host != NULL && logger->reachability == NULL && logger->checkHostTimer == NULL)
 				LoggerTryConnect(logger);
 		}
 	}
@@ -1097,7 +1107,7 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 		char *buffer = (char *)malloc(length + 1);
 		CFStringGetBytes(logger->host, CFRangeMake(0, CFStringGetLength(logger->host)), kCFStringEncodingUTF8, '?', false, (UInt8 *)buffer, length, &length);
 		buffer[length] = 0;
-		
+
 		logger->reachability = SCNetworkReachabilityCreateWithName(NULL, buffer);
 		
 		SCNetworkReachabilityContext context = {0, logger, NULL, NULL, NULL};
@@ -1105,17 +1115,48 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 		SCNetworkReachabilityScheduleWithRunLoop(logger->reachability, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 
 		free(buffer);
+
+		// Also start a timer that will try to reconnect every N seconds
+		if (logger->checkHostTimer == NULL)
+		{
+			CFRunLoopTimerContext context = {
+				.version = 0,
+				.info = logger,
+				.retain = NULL,
+				.release = NULL,
+				.copyDescription = NULL
+			};
+			logger->checkHostTimer = CFRunLoopTimerCreate(NULL,
+														  CFAbsoluteTimeGetCurrent() + 5,
+														  5, // reconnect interval
+														  0,
+														  0,
+														  &LoggerTimedReconnectCallback,
+														  &context);
+			if (logger->checkHostTimer != NULL)
+			{
+				LOGGERDBG(CFSTR("Starting the TimedReconnect timer to regularly retry the connection"));
+				CFRunLoopAddTimer(CFRunLoopGetCurrent(), logger->checkHostTimer, kCFRunLoopCommonModes);
+			}
+		}
 	}
 }
 
 static void LoggerStopReachabilityChecking(Logger *logger)
 {
-	if (logger->reachability)
+	if (logger->reachability != NULL)
 	{
 		LOGGERDBG(CFSTR("Stopping SCNetworkReachability"));
 		SCNetworkReachabilityUnscheduleFromRunLoop(logger->reachability, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 		CFRelease(logger->reachability);
 		logger->reachability = NULL;
+	}
+	if (logger->checkHostTimer != NULL)
+	{
+		CFRunLoopTimerInvalidate(logger->checkHostTimer);
+		CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), logger->checkHostTimer, kCFRunLoopCommonModes);
+		CFRelease(logger->checkHostTimer);
+		logger->checkHostTimer = NULL;
 	}
 }
 
@@ -1133,6 +1174,26 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 			LOGGERDBG(CFSTR("-> host %@ became reachable, trying to connect."), logger->host);
 			LoggerTryConnect(logger);
 		}
+	}
+}
+
+static void LoggerTimedReconnectCallback(CFRunLoopTimerRef timer, void *info)
+{
+	Logger *logger = (Logger *)info;
+	assert(logger != NULL);
+	LOGGERDBG(CFSTR("LoggerTimedReconnectCallback"));
+	if (logger->logStream == NULL && logger->host != NULL)
+	{
+		LOGGERDBG(CFSTR("-> trying to reconnect to host %@"), logger->host);
+		LoggerTryConnect(logger);
+	}
+	else
+	{
+		LOGGERDBG(CFSTR("-> timer not needed anymore, removing it form runloop"));
+		CFRunLoopTimerInvalidate(timer);
+		CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), logger->checkHostTimer, kCFRunLoopCommonModes);
+		CFRelease(timer);
+		logger->checkHostTimer = NULL;
 	}
 }
 
@@ -1251,6 +1312,7 @@ static void LoggerTryConnect(Logger *logger)
 			// open is now in progress
 			return;
 		}
+		
 		// Could not connect to host: start Reachability so we know when target host becomes reachable
 		// and can try to connect again
 		LoggerStartReachabilityChecking(logger);
@@ -1643,7 +1705,7 @@ static void LogMessageTo_internal(Logger *logger,
 	}
 
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG(CFSTR("%ld LogMessage"), seq);
+	LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
 #if ALLOW_COCOA_USE
 	// Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
@@ -1675,7 +1737,7 @@ static void LogMessageTo_internal(Logger *logger,
 		}
 		else
 		{
-			LOGGERDBG(CFSTR("-> failed creating encoder"));
+			LOGGERDBG2(CFSTR("-> failed creating encoder"));
 		}
 #if ALLOW_COCOA_USE
 		[(id)msgString release];		// compatible with garbage-collected environments
@@ -1702,7 +1764,7 @@ static void LogImageTo_internal(Logger *logger,
 	}
 
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG(CFSTR("%ld LogImage"), seq);
+	LOGGERDBG2(CFSTR("%ld LogImage"), seq);
 
 	CFMutableDataRef encoder = LoggerMessageCreate();
 	if (encoder != NULL)
@@ -1732,7 +1794,7 @@ static void LogImageTo_internal(Logger *logger,
 	}
 	else
 	{
-		LOGGERDBG(CFSTR("-> failed creating encoder"));
+		LOGGERDBG2(CFSTR("-> failed creating encoder"));
 	}
 }
 
@@ -1750,7 +1812,7 @@ static void LogDataTo_internal(Logger *logger,
 	}
 
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG(CFSTR("%ld LogData"), seq);
+	LOGGERDBG2(CFSTR("%ld LogData"), seq);
 
 	CFMutableDataRef encoder = LoggerMessageCreate();
 	if (encoder != NULL)
@@ -1775,7 +1837,7 @@ static void LogDataTo_internal(Logger *logger,
 	}
 	else
 	{
-		LOGGERDBG(CFSTR("-> failed creating encoder"));
+		LOGGERDBG2(CFSTR("-> failed creating encoder"));
 	}
 }
 
@@ -1788,7 +1850,7 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 	}
 
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG(CFSTR("%ld LogStartBlock"), seq);
+	LOGGERDBG2(CFSTR("%ld LogStartBlock"), seq);
 
 	CFMutableDataRef encoder = LoggerMessageCreate();
 	if (encoder != NULL)
@@ -1945,7 +2007,7 @@ void LogEndBlockTo(Logger *logger)
 		return;
 	
 	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG(CFSTR("%ld LogEndBlock"), seq);
+	LOGGERDBG2(CFSTR("%ld LogEndBlock"), seq);
 
 	CFMutableDataRef encoder = LoggerMessageCreate();
 	if (encoder != NULL)
@@ -1958,7 +2020,7 @@ void LogEndBlockTo(Logger *logger)
 	}
 	else
 	{
-		LOGGERDBG(CFSTR("-> failed creating encoder"));
+		LOGGERDBG2(CFSTR("-> failed creating encoder"));
 	}
 }
 
