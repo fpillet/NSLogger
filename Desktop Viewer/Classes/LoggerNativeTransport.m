@@ -573,8 +573,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				NSInteger errCode = [error code];
 				if (errCode == errSSLDecryptionFail || errCode == errSSLBadRecordMac)
 				{
-					// Sporadic SSL failure:
-					// until we find a workaround, we need to restart the app
+					// SSL failure due to the application not being codesigned
 					// See https://devforums.apple.com/thread/77848?tstart=0
 					dispatch_async(dispatch_get_main_queue(), ^{
 						NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
