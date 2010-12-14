@@ -83,6 +83,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.0b8</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0b8</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.6.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
