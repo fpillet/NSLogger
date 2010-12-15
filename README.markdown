@@ -9,15 +9,16 @@
   * Online (application running and connected to _NSLogger_) and offline (saved logs) log viewing
   * Buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
   * Secure logging (connections use SSL by default)
+  * Advanced log filtering options
   * Save viewer logs to share them and/or review them later
   * Export logs to text files
   * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
 
-You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki/).
+**You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki/).**
 
 Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
 
-Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host / port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
+Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host/port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
 
 ![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
@@ -41,6 +42,7 @@ The desktop viewer application provides tools like:
  * [Markers](https://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
  * Fast navigation in your logs
  * Display and export all your logs as text
+ * Optional display of file, line and function for uncluttered display
  
  
 Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When logging to a file, name your log file with extension `.rawnsloggerdata` so NSLogger can reopen and process it. You can have clients remotely generating raw logger data files, then send them to you so you can investigate post-mortem.
@@ -69,3 +71,4 @@ You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLo
 NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
 
 NSLogger is Copyright (c) 2010 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
+The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
