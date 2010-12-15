@@ -218,13 +218,23 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	}
 	if ([filterString length])
 	{
+		// "refine filter" string looks up in both message text and function name
 		NSExpression *lhs = [NSExpression expressionForKeyPath:@"messageText"];
 		NSExpression *rhs = [NSExpression expressionForConstantValue:filterString];
-		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
-																	rightExpression:rhs
-																		   modifier:NSDirectPredicateModifier
-																			   type:NSContainsPredicateOperatorType
-																			options:NSCaseInsensitivePredicateOption]];
+		NSPredicate *messagePredicate = [NSComparisonPredicate predicateWithLeftExpression:lhs
+																		   rightExpression:rhs
+																				  modifier:NSDirectPredicateModifier
+																					  type:NSContainsPredicateOperatorType
+																				   options:NSCaseInsensitivePredicateOption];
+		lhs = [NSExpression expressionForKeyPath:@"functionName"];
+		NSPredicate *functionPredicate = [NSComparisonPredicate predicateWithLeftExpression:lhs
+																			rightExpression:rhs
+																				   modifier:NSDirectPredicateModifier
+																					   type:NSContainsPredicateOperatorType
+																					options:NSCaseInsensitivePredicateOption];
+		
+		[andPredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:
+								  [NSArray arrayWithObjects:messagePredicate, functionPredicate, nil]]];
 	}
 	if ([andPredicates count])
 	{
