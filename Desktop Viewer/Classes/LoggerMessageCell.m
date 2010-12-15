@@ -154,6 +154,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 													blue:(252.0f / 255.0f)
 												   alpha:1.0f];
 	[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
+	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	[style setLineBreakMode:NSLineBreakByTruncatingMiddle];
+	[dict setObject:style forKey:NSParagraphStyleAttributeName];
+	[style release];
 	[attrs setObject:dict forKey:@"fileLineFunction"];
 	[dict release];
 
@@ -185,7 +189,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			[self setDefaultAttributes:attrs];
 			[attrs release];
 		}
-		
+
 		// update from pre-1.0b7, adding attributes for file / line / function
 		if ([sDefaultAttributes objectForKey:@"fileLineFunction"] == nil)
 		{
@@ -197,6 +201,22 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 															blue:(252.0f / 255.0f)
 														   alpha:1.0f];
 			[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
+			[attrs setObject:dict forKey:@"fileLineFunction"];
+			[dict release];
+			[self setDefaultAttributes:attrs];
+			[attrs release];
+		}
+		
+		// update from pre-1.0b9, setting middle truncation for file/line/function
+		NSParagraphStyle *style = [[sDefaultAttributes objectForKey:@"fileLineFunction"] objectForKey:NSParagraphStyleAttributeName];
+		if ([style lineBreakMode] != NSLineBreakByTruncatingMiddle)
+		{
+			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
+			NSMutableDictionary *dict = [[attrs objectForKey:@"fileLineFunction"] mutableCopy];
+			NSMutableParagraphStyle *style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+			[style setLineBreakMode:NSLineBreakByTruncatingMiddle];
+			[dict setObject:style forKey:NSParagraphStyleAttributeName];
+			[style release];
 			[attrs setObject:dict forKey:@"fileLineFunction"];
 			[dict release];
 			[self setDefaultAttributes:attrs];
@@ -660,7 +680,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 
 	CGFloat fileLineFunctionHeight = (shouldShowFunctionNames && ([message.filename length] || [message.functionName length])) ? [[self class] heightForFileLineFunction] : 0;
 	r.size.height -= fileLineFunctionHeight;
-	//r.origin.y += fileLineFunctionHeight;
+	r.origin.y += fileLineFunctionHeight;
 
 	if (message.contentsType == kMessageString)
 	{
@@ -747,7 +767,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	{
 		attrs = [self fileLineFunctionAttributes];
 		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 1,
-					   /*NSMinY(cellFrame), */NSMaxY(cellFrame) - fileLineFunctionHeight - 1,
+					   NSMinY(cellFrame), /*NSMaxY(cellFrame) - fileLineFunctionHeight - 1,*/
 					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH),
 					   fileLineFunctionHeight);
 		if (!highlighted)
@@ -759,16 +779,30 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				NSRectFill(r);
 			}
 		}
-		NSMutableString *s = [[NSMutableString alloc] init];
-		if (message.filename)
+		NSString *s = @"";
+		BOOL hasFilename = ([message.filename length] != 0);
+		BOOL hasFunction = ([message.functionName length] != 0);
+		if (hasFunction && hasFilename)
 		{
 			if (message.lineNumber)
-				[s appendFormat:@"%@:%d ", [message.filename lastPathComponent], message.lineNumber];
+				s = [NSString stringWithFormat:@"%@ (%@:%d)", message.functionName, [message.filename lastPathComponent], message.lineNumber];
 			else
-				[s appendFormat:@"%@ ", [message.filename lastPathComponent]];
+				s = [NSString stringWithFormat:@"%@ (%@)", message.functionName, [message.filename lastPathComponent]];
 		}
-		if (message.functionName)
-			[s appendString:message.functionName];
+		else if (hasFunction)
+		{
+			if (message.lineNumber)
+				s = [NSString stringWithFormat:NSLocalizedString(@"%@ (line %d)", @""), message.functionName, message.lineNumber];
+			else
+				s = message.functionName;
+		}
+		else
+		{
+			if (message.lineNumber)
+				s = [NSString stringWithFormat:@"%@:%d", [message.filename lastPathComponent], message.lineNumber];
+			else
+				s = [message.filename lastPathComponent];
+		}
 		if ([s length])
 		{
 			if (highlighted)
@@ -781,7 +815,6 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 					options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 				 attributes:attrs];
 		}
-		[s release];
 	}
 }
 
