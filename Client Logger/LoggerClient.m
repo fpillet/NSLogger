@@ -1789,9 +1789,8 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 		// the logging calls were made (useful for precise information about multithreading code)
 		uint32_t lastSeq, seq = LoggerMessageGetSeq(message);
 		do {
-			lastSeq = LoggerMessageGetSeq(CFArrayGetValueAtIndex(logger->logQueue, --idx));
-		} while (idx >= 0 && lastSeq > seq);
-		idx++;
+			lastSeq = LoggerMessageGetSeq(CFArrayGetValueAtIndex(logger->logQueue, idx-1));
+		} while (lastSeq > seq && --idx > 0);
 	}
 	if (idx >= 0)
 		CFArrayInsertValueAtIndex(logger->logQueue, idx, message);
