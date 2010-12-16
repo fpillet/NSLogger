@@ -156,8 +156,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 											 selector:@selector(tileLogTableNotification:)
 												 name:@"TileLogTableNotification"
 											   object:nil];
-	
-	[self performSelector:@selector(restoreFiltersSelection) withObject:nil afterDelay:0];
 }
 
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
@@ -334,58 +332,76 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[logTable reloadData];
 }
 
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Per-Application settings
+// -----------------------------------------------------------------------------
+- (NSDictionary *)settingsForClientApplication
+{
+	NSString *clientAppIdentifier = [attachedConnection clientName];
+	if (![clientAppIdentifier length])
+		return nil;
+
+	NSDictionary *clientSettings = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefClientApplicationSettings];
+	if (clientSettings == nil)
+		return [NSDictionary dictionary];
+	
+	NSDictionary *appSettings = [clientSettings objectForKey:clientAppIdentifier];
+	if (appSettings == nil)
+		return [NSDictionary dictionary];
+	return appSettings;
+}
+
+- (void)saveSettingsForClientApplication:(NSDictionary *)newSettings
+{
+	NSString *clientAppIdentifier = [attachedConnection clientName];
+	if (![clientAppIdentifier length])
+		return;
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+	NSMutableDictionary *clientSettings = [[[ud objectForKey:kPrefClientApplicationSettings] mutableCopy] autorelease];
+	if (clientSettings == nil)
+		clientSettings = [NSMutableDictionary dictionary];
+	[clientSettings setObject:newSettings forKey:clientAppIdentifier];
+	[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
+}
+
+- (void)setSettingForClientApplication:(id)aValue forKey:(NSString *)aKey
+{
+	NSMutableDictionary *dict = [[self settingsForClientApplication] mutableCopy];
+	[dict setObject:aValue forKey:aKey];
+	[self saveSettingsForClientApplication:dict];
+	[dict release];
+}
+
 - (void)rememberFiltersSelection
 {
 	// remember the last filter set selected for this application identifier,
 	// we will use it to automatically reassociate it the next time the same
 	// application connects or a log file from this application is reopened
-	NSString *clientAppIdentifier = [attachedConnection clientName];
-	if (![clientAppIdentifier length])
-		return;
-
 	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
 	if (filterSet != nil)
-	{
-		NSNumber *filterSetUID = [filterSet objectForKey:@"uid"];
-		NSDictionary *settings = [NSDictionary dictionaryWithObjectsAndKeys:
-								  filterSetUID, @"selectedFilterSet",
-								  nil];
-		
-		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-		NSMutableDictionary *clientSettings = [[[ud objectForKey:kPrefClientApplicationSettings] mutableCopy] autorelease];
-		if (clientSettings == nil)
-			clientSettings = [NSMutableDictionary dictionary];
-		
-		NSDictionary *existingSettings = [clientSettings objectForKey:clientAppIdentifier];
-		if (existingSettings == nil)
-		{
-			[clientSettings setObject:settings forKey:clientAppIdentifier];
-		}
-		else
-		{
-			NSMutableDictionary *dict = [existingSettings mutableCopy];
-			[dict addEntriesFromDictionary:settings];
-			[clientSettings setObject:dict forKey:clientAppIdentifier];
-			[dict release];
-		}
-		[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
-	}
+		[self setSettingForClientApplication:[filterSet objectForKey:@"uid"] forKey:@"selectedFilterSet"];
 }
 
-- (void)restoreFiltersSelection
+- (void)restoreClientApplicationSettings
 {
-	// when an application connects, we try to restore the last filter set that was
+	NSDictionary *clientAppSettings = [self settingsForClientApplication];
+	if (clientAppSettings == nil)
+		return;
+
+	clientAppSettingsRestored = YES;
+
+	// when an application connects, we restore some saved settings so the user
+	// comes back to about the same configuration she was using the last time
+	id showFuncs = [clientAppSettings objectForKey:@"showFunctionNames"];
+	if (showFuncs != nil)
+		[self setShowFunctionNames:showFuncs];
+	
+	// try to restore the last filter set that was
 	// selected for this application. Usually, you have a filter set per application
 	// (this is how it is intended to be used), so it makes sense to preselect it
 	// when the application connects.
-	NSString *clientAppIdentifier = [attachedConnection clientName];
-	if (![clientAppIdentifier length])
-		return;
-
-	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-	NSDictionary *clientSettings = [ud objectForKey:kPrefClientApplicationSettings];
-	NSDictionary *appSettings = [clientSettings objectForKey:clientAppIdentifier];
-	NSNumber *filterSetUID = [appSettings objectForKey:@"selectedFilterSet"];
+	NSNumber *filterSetUID = [clientAppSettings objectForKey:@"selectedFilterSet"];
 	if (filterSetUID != nil)
 	{
 		// try retrieving the filter set
@@ -762,6 +778,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		attachedConnection.attachedToWindow = YES;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[self updateClientInfo];
+			if (!clientAppSettingsRestored)
+				[self restoreClientApplicationSettings];
 			[self refreshAllMessages:nil];
 		});
 	}
@@ -802,6 +820,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[self didChangeValueForKey:@"showFunctionNames"];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[showFunctionNamesButton setState:showFunctionNames];
+			[self setSettingForClientApplication:value forKey:@"showFunctionNames"];
 		});
 	}
 }
@@ -846,6 +865,8 @@ didReceiveMessages:(NSArray *)theMessages
 		{
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self updateClientInfo];
+				if (!clientAppSettingsRestored)
+					[self restoreClientApplicationSettings];
 			});			
 		}
 	}

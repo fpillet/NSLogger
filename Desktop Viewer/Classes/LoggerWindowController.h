@@ -79,6 +79,7 @@
 	BOOL tableNeedsTiling;
 	BOOL tableTiledSinceLastRefresh;
 	BOOL showFunctionNames;
+	BOOL clientAppSettingsRestored;
 }
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
