@@ -69,10 +69,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		}
 		else
 		{
-			int oldPort = listenerPort;
 			int port = [[[NSUserDefaults standardUserDefaults] objectForKey:kPrefDirectTCPIPResponderPort] integerValue];
-			shouldRestart = (oldPort != port);
-			
+			shouldRestart = (listenerPort != port);
 		}
 		if (shouldRestart)
 		{
@@ -95,6 +93,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		[self performSelector:_cmd withObject:nil afterDelay:0.1];
 		return;
 	}
+	if (!publishBonjourService)
+		listenerPort = [[[NSUserDefaults standardUserDefaults] objectForKey:kPrefDirectTCPIPResponderPort] integerValue];
 	[self startup];
 }
 
