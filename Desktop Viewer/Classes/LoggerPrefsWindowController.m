@@ -65,24 +65,47 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 @interface LoggerPrefsWindowController (Private)
 - (void)updateUI;
+- (NSMutableDictionary *)copyNetworkPrefs;
 @end
 
 @implementation LoggerPrefsWindowController
+
+- (id)initWithWindowNibName:(NSString *)windowNibName
+{
+	if ((self = [super initWithWindowNibName:windowNibName]) != nil)
+	{
+		// Extract current prefs for bindings. We don't want to rely on a global NSUserDefaultsController
+		networkPrefs = [self copyNetworkPrefs];
+
+		// make a deep copy of default attributes by going back and forth with
+		// an archiver
+		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributes]];
+		attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+	}
+	return self;
+}
 
 - (void)dealloc
 {
 	[fakeConnection release];
 	[attributes release];
+	[networkPrefs release];
 	[super dealloc];
 }
 
-- (void)windowDidLoad
+- (NSMutableDictionary *)copyNetworkPrefs
 {
-	// make a deep copy of default attributes by going back and forth with
-	// an archiver
-	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributes]];
-	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+	return [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+			[ud objectForKey:kPrefPublishesBonjourService], kPrefPublishesBonjourService,
+			[ud objectForKey:kPrefBonjourServiceName], kPrefBonjourServiceName,
+			[ud objectForKey:kPrefHasDirectTCPIPResponder], kPrefHasDirectTCPIPResponder,
+			[ud objectForKey:kPrefDirectTCPIPResponderPort], kPrefDirectTCPIPResponderPort,
+			nil];
+}
 
+- (void)awakeFromNib
+{
 	// Prepare a couple fake messages to get a sample display
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
@@ -144,6 +167,121 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[sampleDataMessage setNeedsDisplay];
 }
 
+- (BOOL)hasNetworkChanges
+{
+	// Check whether attributes or network settings have changed
+	for (NSString *key in networkPrefs)
+	{
+		if (![[[NSUserDefaults standardUserDefaults] objectForKey:key] isEqual:[networkPrefs objectForKey:key]])
+			return YES;
+	}
+	return NO;
+}
+
+- (BOOL)hasFontChanges
+{
+	return (NO == [[LoggerMessageCell defaultAttributes] isEqual:attributes]);
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Close & Apply management
+// -----------------------------------------------------------------------------
+- (BOOL)windowShouldClose:(id)sender
+{
+	if (![networkDefaultsController commitEditing])
+		return NO;
+	if ([self hasNetworkChanges] || [self hasFontChanges])
+	{
+		NSAlert *alert = [[NSAlert alloc] init];
+		[alert setMessageText:NSLocalizedString(@"Would you like to apply your changes before closing the Preferences window?", @"")];
+		[alert addButtonWithTitle:NSLocalizedString(@"Apply", @"")];
+		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
+		[alert addButtonWithTitle:NSLocalizedString(@"Don't Apply", @"")];
+		[alert beginSheetModalForWindow:[self window]
+						  modalDelegate:self
+						 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
+							contextInfo:NULL];
+		[alert release];
+		return NO;
+	}
+	return YES;
+}
+
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[[alert window] orderOut:self];
+	if (returnCode == NSAlertFirstButtonReturn)
+	{
+		// Apply (and close window)
+		if ([self hasNetworkChanges])
+			[self applyNetworkChanges:nil];
+		if ([self hasFontChanges])
+			[self applyFontChanges:nil];
+		[[self window] performSelector:@selector(close) withObject:nil afterDelay:0];
+	}
+	else if (returnCode == NSAlertSecondButtonReturn)
+	{
+		// Cancel (don't close window)
+		// nothing more to do
+	}
+	else
+	{
+		// Don't Apply (and close window)
+		[[self window] performSelector:@selector(close) withObject:nil afterDelay:0];
+	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Network preferences
+// -----------------------------------------------------------------------------
+- (IBAction)restoreNetworkDefaults:(id)sender
+{
+	[networkDefaultsController commitEditing];
+	NSDictionary *dict = [LoggerAppDelegate defaultPreferences];
+	for (NSString *key in dict)
+	{
+		if ([networkPrefs objectForKey:key] != nil)
+			[[networkDefaultsController selection] setValue:[dict objectForKey:key] forKey:key];
+	}
+}
+
+- (void)applyNetworkChanges:(id)sender
+{
+	if ([networkDefaultsController commitEditing])
+	{
+		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+		for (NSString *key in [networkPrefs allKeys])
+			[ud setObject:[networkPrefs objectForKey:key] forKey:key];
+		[ud synchronize];
+		[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
+	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Font preferences
+// -----------------------------------------------------------------------------
+- (IBAction)applyFontChanges:(id)sender
+{
+	[[LoggerMessageCell class] setDefaultAttributes:attributes];
+	[[NSUserDefaults standardUserDefaults] synchronize];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
+}
+
+- (IBAction)restoreFontDefaults:(id)sender
+{
+	[attributes release];
+	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributesDictionary]];
+	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
+	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
+	[sampleMessage setNeedsDisplay];
+	[sampleDataMessage setNeedsDisplay];
+	[self updateUI];
+}
+
 - (NSFont *)fontForCurrentFontSelection
 {
 	NSFont *font;
@@ -169,50 +307,6 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 			break;
 	}
 	return font;	
-}
-
-- (IBAction)applyChanges:(id)sender
-{
-	[[LoggerMessageCell class] setDefaultAttributes:attributes];
-
-	// Steal first responder status from any text field to force saving its value to the prefs (bindings)
-	[[self window] becomeFirstResponder];
-
-	// note: save is deferred to the next pass of the runloop. When we send out the notification,
-	// we also take this into account and deferr the update-from-prefs until the next runloop pass.
-	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
-	[udc save:self];
-	[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
-}
-
-- (IBAction)cancelChanges:(id)sender
-{
-	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
-	[udc revert:self];
-	[[self window] orderOut:sender];
-}
-
-- (IBAction)saveChanges:(id)sender
-{
-	[self applyChanges:sender];
-	[[self window] orderOut:sender];
-}
-
-- (IBAction)revertToDefaults:(id)sender
-{
-	[[NSUserDefaultsController sharedUserDefaultsController] revertToInitialValues:self];
-
-	// revert message defaults
-	[attributes release];
-	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributesDictionary]];
-	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
-	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
-	[sampleMessage setNeedsDisplay];
-	[sampleDataMessage setNeedsDisplay];
-	[self updateUI];
-	
-	[self applyChanges:self];
 }
 
 - (IBAction)selectFont:(id)sender

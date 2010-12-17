@@ -50,6 +50,8 @@
 @property (nonatomic, retain) NSArray *filtersSortDescriptors;
 @property (nonatomic, readonly) LoggerStatusWindowController *statusController;
 
++ (NSDictionary *)defaultPreferences;
+
 - (void)newConnection:(LoggerConnection *)aConnection;
 - (NSMutableArray *)defaultFilters;
 - (NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters;

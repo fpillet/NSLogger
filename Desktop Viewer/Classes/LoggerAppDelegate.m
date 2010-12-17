@@ -48,6 +48,21 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;
 @synthesize serverCerts, serverCertsLoadAttempted;
 
++ (NSDictionary *)defaultPreferences
+{
+	return [NSDictionary dictionaryWithObjectsAndKeys:
+			[NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
+			[NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
+			[NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
+			@"", kPrefBonjourServiceName,
+			nil];
+}
+
++ (void)init
+{
+	[[NSUserDefaults standardUserDefaults] registerDefaults:[self defaultPreferences]];
+}
+
 - (id) init
 {
 	if ((self = [super init]) != nil)
@@ -157,14 +172,13 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
 - (void)prefsChangeNotification:(NSNotification *)note
 {
-	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0.2];
+	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
 }
 
 - (void)startStopTransports
 {
 	// Start and stop transports as needed
-	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
-	id udcv = [udc values];
+	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 	for (LoggerTransport *transport in transports)
 	{
 		if ([transport isKindOfClass:[LoggerNativeTransport class]])
@@ -172,14 +186,14 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			LoggerNativeTransport *t = (LoggerNativeTransport *)transport;
 			if (t.publishBonjourService)
 			{
-				if ([[udcv valueForKey:kPrefPublishesBonjourService] boolValue])
+				if ([[ud objectForKey:kPrefPublishesBonjourService] boolValue])
 					[t restart];
 				else if (t.active)
 					[t shutdown];
 			}
 			else
 			{
-				if ([[udcv valueForKey:kPrefHasDirectTCPIPResponder] boolValue])
+				if ([[ud objectForKey:kPrefHasDirectTCPIPResponder] boolValue])
 					[t restart];
 				else
 					[t shutdown];
@@ -190,15 +204,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-	// Initialize the user defaults controller
-	NSUserDefaultsController *udc = [NSUserDefaultsController sharedUserDefaultsController];
-	[udc setInitialValues:[NSDictionary dictionaryWithObjectsAndKeys:
-						   [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
-						   [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
-						   [NSNumber numberWithInteger:0], kPrefDirectTCPIPResponderPort,
-						   nil]];
-	[udc setAppliesImmediately:NO];
-	
 	// Listen to prefs change notifications, where we start / stop transports on demand
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefsChangeNotification:)

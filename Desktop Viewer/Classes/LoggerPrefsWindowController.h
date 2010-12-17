@@ -32,9 +32,9 @@
 
 @class LoggerConnection;
 
-@interface LoggerPrefsWindowController : NSWindowController
+@interface LoggerPrefsWindowController : NSWindowController <NSWindowDelegate>
 {
-	IBOutlet NSTabView *tabView;
+	IBOutlet NSObjectController *networkDefaultsController;
 
 	IBOutlet NSControl *sampleMessage;
 	IBOutlet NSControl *sampleDataMessage;
@@ -58,14 +58,18 @@
 	
 	int currentFontSelection;
 	NSDictionary *attributes;
+
+	NSMutableDictionary *networkPrefs;
 }
 
 - (IBAction)selectFont:(id)sender;
 - (IBAction)selectColor:(id)sender;
-- (IBAction)applyChanges:(id)sender;
-- (IBAction)cancelChanges:(id)sender;
-- (IBAction)saveChanges:(id)sender;
-- (IBAction)revertToDefaults:(id)sender;
+
+- (IBAction)applyNetworkChanges:(id)sender;
+- (IBAction)restoreNetworkDefaults:(id)sender;
+
+- (IBAction)applyFontChanges:(id)sender;
+- (IBAction)restoreFontDefaults:(id)sender;
 
 @end
 
