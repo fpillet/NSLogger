@@ -58,7 +58,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			nil];
 }
 
-+ (void)init
++ (void)load
 {
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[self defaultPreferences]];
 }
