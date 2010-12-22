@@ -50,12 +50,19 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
 + (NSDictionary *)defaultPreferences
 {
-	return [NSDictionary dictionaryWithObjectsAndKeys:
-			[NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
-			[NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
-			[NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
-			@"", kPrefBonjourServiceName,
-			nil];
+	static NSDictionary *sDefaultPrefs = nil;
+	if (sDefaultPrefs == nil)
+	{
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		sDefaultPrefs = [[NSDictionary alloc] initWithObjectsAndKeys:
+						 [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
+						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
+						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
+						 @"", kPrefBonjourServiceName,
+						 nil];
+		[pool release];
+	}
+	return sDefaultPrefs;
 }
 
 + (void)load
