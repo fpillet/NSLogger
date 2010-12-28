@@ -114,6 +114,11 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[super dealloc];
 }
 
+- (NSUndoManager *)undoManager
+{
+	return [[self document] undoManager];
+}
+
 - (void)windowDidLoad
 {
 	messageCell = [[LoggerMessageCell alloc] init];
@@ -1153,22 +1158,48 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark Filter sets management
 // -----------------------------------------------------------------------------
+- (void)undoableAddFilterSet:(id)set
+{
+	NSUndoManager *um = [self undoManager];
+	[um registerUndoWithTarget:self selector:_cmd object:set];
+	[um setActionName:NSLocalizedString(@"Add Application Set", @"")];
+	if ([um isUndoing])
+		[filterSetsListController removeObject:set];
+	else
+	{
+		[filterSetsListController addObject:set];
+		if (![um isRedoing])
+		{
+			NSUInteger index = [[filterSetsListController arrangedObjects] indexOfObject:set];
+			[filterSetsTable editColumn:0 row:index withEvent:nil select:YES];
+		}
+	}
+}
+
+- (void)undoableDeleteFilterSet:(id)set
+{
+	NSUndoManager *um = [self undoManager];
+	[um registerUndoWithTarget:self selector:_cmd object:set];
+	[um setActionName:NSLocalizedString(@"Delete Application Set", @"")];
+	if ([um isUndoing])
+		[filterSetsListController addObjects:set];
+	else
+		[filterSetsListController removeObjects:set];
+}
+
 - (IBAction)addFilterSet:(id)sender
 {
-	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
-						  NSLocalizedString(@"New Filter Set", @""), @"title",
-						  [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
-						  nil];
-	[filterSetsListController addObject:dict];
-	NSUInteger index = [[filterSetsListController arrangedObjects] indexOfObject:dict];
-	[filterSetsTable editColumn:0 row:index withEvent:nil select:YES];
+	id dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+			   [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
+			   NSLocalizedString(@"New App. Set", @""), @"title",
+			   [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
+			   nil];
+	[self undoableAddFilterSet:dict];
 }
 
 - (IBAction)deleteSelectedFilterSet:(id)sender
 {
-	// @@@ TODO: make this undoable
-	[filterSetsListController removeObjects:[filterSetsListController selectedObjects]];
+	[self undoableDeleteFilterSet:[filterSetsListController selectedObjects]];
 }
 
 // -----------------------------------------------------------------------------
@@ -1186,6 +1217,99 @@ didReceiveMessages:(NSArray *)theMessages
 	return [NSCompoundPredicate orPredicateWithSubpredicates:predicates];
 }
 
+- (void)undoableModifyFilter:(NSDictionary *)filter
+{
+	NSMutableDictionary *previousFilter = nil;
+	for (NSMutableDictionary *dict in [filterListController content])
+	{
+		if ([[dict objectForKey:@"uid"] isEqual:[filter objectForKey:@"uid"]])
+		{
+			previousFilter = dict;
+			break;
+		}
+	}
+	assert(previousFilter != nil);
+	[[self undoManager] registerUndoWithTarget:self selector:_cmd object:[[previousFilter mutableCopy] autorelease]];
+	[[self undoManager] setActionName:NSLocalizedString(@"Modify Filter", @"")];
+	[previousFilter addEntriesFromDictionary:filter];
+	[filterListController setSelectedObjects:[NSArray arrayWithObject:previousFilter]];
+}
+
+- (void)undoableCreateFilter:(NSDictionary *)filter
+{
+	NSUndoManager *um = [self undoManager];
+	[um registerUndoWithTarget:self selector:_cmd object:filter];
+	[um setActionName:NSLocalizedString(@"Create Filter", @"")];
+	if ([um isUndoing])
+		[filterListController removeObject:filter];
+	else
+	{
+		[filterListController addObject:filter];
+		[filterListController setSelectedObjects:[NSArray arrayWithObject:filter]];
+	}
+}
+
+- (void)undoableDeleteFilters:(NSArray *)filters
+{
+	NSUndoManager *um = [self undoManager];
+	[um registerUndoWithTarget:self selector:_cmd object:filters];
+	[um setActionName:NSLocalizedString(@"Delete Filters", @"")];
+	if ([um isUndoing])
+	{
+		[filterListController addObjects:filters];
+		[filterListController setSelectedObjects:filters];
+	}
+	else
+		[filterListController removeObjects:filters];
+}
+
+- (void)openFilterEditSheet:(NSDictionary *)dict
+{
+	[filterName setStringValue:[dict objectForKey:@"title"]];
+	NSPredicate *predicate = [dict objectForKey:@"predicate"];
+	[filterEditor setObjectValue:[[predicate copy] autorelease]];
+	
+	[NSApp beginSheet:filterEditorWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:[dict retain]];	
+}
+
+- (void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode)
+	{
+		NSMutableDictionary *dict = [[(NSDictionary *)contextInfo mutableCopy] autorelease];
+		BOOL exists = [[filterListController content] containsObject:(id)contextInfo];
+		
+		NSPredicate *predicate = [filterEditor predicate];
+		if (predicate == nil)
+			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
+		[dict setObject:predicate forKey:@"predicate"];
+		
+		NSString *title = [[filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+		if ([title length])
+			[dict setObject:title forKey:@"title"];
+		
+		if (exists)
+			[self undoableModifyFilter:dict];
+		else
+			[self undoableCreateFilter:dict];
+		
+		[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
+		
+		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+	}
+	[(id)contextInfo release];
+	[filterEditorWindow orderOut:self];
+}
+
+- (IBAction)deleteSelectedFilters:(id)sender
+{
+	[self undoableDeleteFilters:[filterListController selectedObjects]];
+}
+
 - (IBAction)addFilter:(id)sender
 {
 	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
@@ -1195,9 +1319,7 @@ didReceiveMessages:(NSArray *)theMessages
 						  NSLocalizedString(@"New filter", @""), @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
 						  nil];
-	[filterListController addObject:dict];
-	[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
-	[self startEditingFilter:self];
+	[self openFilterEditSheet:dict];
 }
 
 - (IBAction)startEditingFilter:(id)sender
@@ -1207,15 +1329,7 @@ didReceiveMessages:(NSArray *)theMessages
 	NSDictionary *dict = [[filterListController selectedObjects] lastObject];
 	if (dict == nil || [[dict objectForKey:@"uid"] integerValue] == 1)
 		return;
-	[filterName setStringValue:[dict objectForKey:@"title"]];
-	NSPredicate *predicate = [dict objectForKey:@"predicate"];
-	[filterEditor setObjectValue:[[predicate copy] autorelease]];
-
-	[NSApp beginSheet:filterEditorWindow
-	   modalForWindow:[self window]
-		modalDelegate:self
-	   didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:NULL];
+	[self openFilterEditSheet:dict];
 }
 
 - (IBAction)cancelFilterEdition:(id)sender
@@ -1226,33 +1340,6 @@ didReceiveMessages:(NSArray *)theMessages
 - (IBAction)validateFilterEdition:(id)sender
 {
 	[NSApp endSheet:filterEditorWindow returnCode:1];
-}
-
-- (void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	if (returnCode)
-	{
-		// update filter & refresh list
-		// @@@ TODO: make this undoable
-		NSMutableDictionary *dict = [[filterListController selectedObjects] lastObject];
-		NSPredicate *predicate = [filterEditor predicate];
-		if (predicate == nil)
-			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
-		[dict setObject:predicate forKey:@"predicate"];
-		NSString *title = [[filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-		if ([title length])
-			[dict setObject:title forKey:@"title"];
-		[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
-		
-		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
-	}
-	[filterEditorWindow orderOut:self];
-}
-
-- (IBAction)deleteSelectedFilters:(id)sender
-{
-	// @@@ TODO: make this undoable
-	[filterListController removeObjects:[filterListController selectedObjects]];
 }
 
 // -----------------------------------------------------------------------------
