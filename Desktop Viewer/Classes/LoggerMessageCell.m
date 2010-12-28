@@ -516,7 +516,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
 	CGColorRef cellSeparatorColor;
-	if (highlighted || !frontWindow)
+	if (highlighted)
 		cellSeparatorColor = CGColorCreateGenericGray(1.0f, 1.0f);
 	else
 		cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
