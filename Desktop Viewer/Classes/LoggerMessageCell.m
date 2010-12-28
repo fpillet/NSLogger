@@ -475,6 +475,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 
 	BOOL highlighted = [self isHighlighted];
+	BOOL frontWindow = [[controlView window] isMainWindow];
+
 	NSColor *highlightedTextColor = nil;
 	if (highlighted)
 		highlightedTextColor = [NSColor whiteColor];
@@ -500,7 +502,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			return;
 	}
 	
-	// Draw cell background and separators
+	// Draw cell background
 	if (!highlighted)
 	{
 		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
@@ -508,10 +510,16 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);
 	}
+	
+	// Draw separators
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
-	CGColorRef cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
+	CGColorRef cellSeparatorColor;
+	if (highlighted || !frontWindow)
+		cellSeparatorColor = CGColorCreateGenericGray(1.0f, 1.0f);
+	else
+		cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
 	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
 	CGColorRelease(cellSeparatorColor);
 	CGContextBeginPath(ctx);
@@ -527,10 +535,6 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
 	
-	// If the window is not main, don't change the text color
-	if (highlighted && ![[controlView window] isMainWindow])
-		highlighted = NO;
-
 	// Draw timestamp and time delta column
 	NSRect r, tr;
 	r = NSMakeRect(NSMinX(cellFrame),
