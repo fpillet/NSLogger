@@ -82,7 +82,8 @@ static NSShadow *contentShadow;
 {
 	[super drawWithFrame:cellFrame inView:controlView];
 
-	if ([self isHighlighted] || [self state] == NSOnState)
+	// @fpillet: added checks for showState and state if NSOnState should highlight
+	if ([self isHighlighted] || ([self showsStateBy] && [self state] != NSOffState))
 	{
 		[pressedColor set];
 		NSRectFillUsingOperation([self highlightRectForBounds:cellFrame], NSCompositeSourceOver);

@@ -818,8 +818,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			[logTable reloadData];
 		});
 		[self didChangeValueForKey:@"showFunctionNames"];
+
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[showFunctionNamesButton setState:showFunctionNames];
 			[self setSettingForClientApplication:value forKey:@"showFunctionNames"];
 		});
 	}
@@ -827,7 +827,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (NSNumber *)showFunctionNames
 {
-	return [NSNumber numberWithInt:(showFunctionNames ? NSOnState : NSOffState)];
+	return [NSNumber numberWithBool:showFunctionNames];
 }
 
 // -----------------------------------------------------------------------------
