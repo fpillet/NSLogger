@@ -48,7 +48,7 @@
 - (void)updateFilterPredicate;
 - (void)refreshAllMessages:(NSArray *)selectMessages;
 - (void)filterIncomingMessages:(NSArray *)messages withFilter:(NSPredicate *)aFilter;
-- (NSPredicate *)currentFilterPredicate;
+- (NSPredicate *)filterPredicateFromCurrentSelection;
 - (void)tileLogTable:(BOOL)force;
 - (void)rebuildMarksSubmenu;
 @end
@@ -111,6 +111,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[messageCell release];
 	[clientInfoCell release];
 	[markerCell release];
+	if (lastTilingGroup)
+		dispatch_release(lastTilingGroup);
 	[super dealloc];
 }
 
@@ -180,6 +182,144 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	[self synchronizeWindowTitleWithDocumentName];
 }
 
+- (void)tileLogTableMessages:(NSArray *)messages
+					withSize:(NSSize)tableSize
+					   force:(BOOL)force
+					   group:(dispatch_group_t)group
+{
+	NSMutableArray *updatedMessages = [[NSMutableArray alloc] initWithCapacity:[messages count]];
+	for (LoggerMessage *msg in messages)
+	{
+		// detect cancellation
+		if (group != NULL && dispatch_get_context(group) == NULL)
+			break;
+
+		// compute size
+		NSSize cachedSize = msg.cachedCellSize;
+		if (force || cachedSize.width != tableSize.width)
+		{
+			CGFloat cachedHeight = cachedSize.height;
+			CGFloat newHeight = cachedHeight;
+			if (force)
+				msg.cachedCellSize = NSZeroSize;
+			switch (msg.type)
+			{
+				case LOGMSG_TYPE_LOG:
+				case LOGMSG_TYPE_BLOCKSTART:
+				case LOGMSG_TYPE_BLOCKEND:
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					break;
+				case LOGMSG_TYPE_CLIENTINFO:
+				case LOGMSG_TYPE_DISCONNECT:
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					break;
+				case LOGMSG_TYPE_MARK:
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					break;
+			}
+			if (newHeight != cachedHeight)
+				[updatedMessages addObject:msg];
+		}
+	}
+	if ([updatedMessages count] && (group == NULL || dispatch_get_context(group)))
+	{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSMutableIndexSet *set = [[NSMutableIndexSet alloc] init];
+			for (LoggerMessage *msg in updatedMessages)
+			{
+				NSUInteger pos = [displayedMessages indexOfObjectIdenticalTo:msg];
+				if (pos != NSNotFound)
+					[set addIndex:pos];
+			}
+			if ([set count])
+				[logTable noteHeightOfRowsWithIndexesChanged:set];
+			[set release];
+		});
+	}
+	[updatedMessages release];
+}
+
+- (void)tileLogTable:(BOOL)force
+{
+	if (force || tableNeedsTiling)
+	{
+		// tile the visible rows (and a bit more) first, then tile all the rest
+		// this gives us a better perceived speed
+		NSSize tableSize = [logTable frame].size;
+		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
+		NSRange visibleRows = [logTable rowsInRect:r];
+		visibleRows.location = MAX((int)0, (int)visibleRows.location - 10);
+		visibleRows.length = MIN(visibleRows.location + visibleRows.length + 10, [displayedMessages count] - visibleRows.location);
+		if (visibleRows.length)
+		{
+			[self tileLogTableMessages:[displayedMessages subarrayWithRange:visibleRows]
+							  withSize:tableSize
+								 force:force
+								 group:NULL];
+			[logTable setNeedsDisplay:YES];
+		}
+
+		// cancel previous tiling group
+		if (lastTilingGroup != NULL)
+		{
+			dispatch_set_context(lastTilingGroup, NULL);
+			dispatch_release(lastTilingGroup);
+		}
+		
+		// create new group, set it a non-NULL context to indicate that it is running
+		lastTilingGroup = dispatch_group_create();
+		dispatch_set_context(lastTilingGroup, dispatch_get_main_queue());
+
+		// perform layout in chunks in the background
+		for (NSUInteger i = 0; i < [displayedMessages count]; i += 1024)
+		{
+			// tiling is executed on a parallel queue, and checks for cancellation
+			// by looking at its group's context object 
+			NSRange range = NSMakeRange(i, MIN(1024, [displayedMessages count] - i));
+			if (range.length > 0)
+			{
+				NSArray *subArray = [displayedMessages subarrayWithRange:range];
+				dispatch_group_t group = lastTilingGroup;		// careful with self dereference, could use the wrong group at run time, hence the copy here
+				dispatch_group_async(group,
+									 dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+					[self tileLogTableMessages:subArray
+									  withSize:tableSize
+										 force:force
+										 group:group];
+				});
+			}
+		}
+		tableTiledSinceLastRefresh = YES;
+	}
+	tableNeedsTiling = NO;
+}
+
+- (void)tileLogTableNotification:(NSNotification *)note
+{
+	[self tileLogTable:NO];
+}
+
+- (void)applyFontChanges
+{
+	[self tileLogTable:YES];
+	[logTable reloadData];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Filter predicate assembly
+// -----------------------------------------------------------------------------
+- (NSPredicate *)filterPredicateFromCurrentSelection
+{
+	// the current filter is the aggregate (OR clause) of all the selected filters
+	NSArray *predicates = [[filterListController selectedObjects] valueForKey:@"predicate"];
+	if (![predicates count])
+		return [NSPredicate predicateWithValue:YES];
+	if ([predicates count] == 1)
+		return [predicates lastObject];
+	return [NSCompoundPredicate orPredicateWithSubpredicates:predicates];
+}
+
 - (NSPredicate *)alwaysVisibleEntriesPredicate
 {
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
@@ -197,8 +337,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)updateFilterPredicate
 {
-	NSPredicate *p = [self currentFilterPredicate];
-	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:2];
+	assert([NSThread isMainThread]);
+	NSPredicate *p = [self filterPredicateFromCurrentSelection];
+	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:3];
 	if (logLevel)
 	{
 		NSExpression *lhs = [NSExpression expressionForKeyPath:@"level"];
@@ -244,6 +385,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
+	// @@@ TODO: eliminate TRUEPREDICATE (p is constant value YES) by testing it and not assembling the OR predicate as needed
 	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
 	[filterPredicate autorelease];
 	filterPredicate = [p retain];
@@ -261,80 +403,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[self rebuildQuickFilterPopup];
 		[self performSelector:@selector(refreshAllMessages:) withObject:nil afterDelay:0];
 	}
-}
-
-- (void)tileLogTableRowsInRange:(NSRange)range force:(BOOL)force
-{
-	NSUInteger displayed = [displayedMessages count];
-	NSSize sz = [logTable frame].size;
-	NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
-	for (NSUInteger row = 0; row < range.length && (row+range.location) < displayed; row++)
-	{
-		LoggerMessage *msg = [displayedMessages objectAtIndex:row+range.location];
-		NSSize cachedSize = msg.cachedCellSize;
-		if (force || cachedSize.width != sz.width)
-		{
-			CGFloat cachedHeight = cachedSize.height;
-			CGFloat newHeight = cachedHeight;
-			if (force)
-				msg.cachedCellSize = NSZeroSize;
-			switch (msg.type)
-			{
-				case LOGMSG_TYPE_LOG:
-				case LOGMSG_TYPE_BLOCKSTART:
-				case LOGMSG_TYPE_BLOCKEND:
-					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
-					break;
-				case LOGMSG_TYPE_CLIENTINFO:
-				case LOGMSG_TYPE_DISCONNECT:
-					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
-					break;
-				case LOGMSG_TYPE_MARK:
-					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:sz showFunctionNames:showFunctionNames];
-					break;
-			}
-			if (newHeight != cachedHeight)
-				[indexSet addIndex:row+range.location];
-		}
-	}
-	if ([indexSet count])
-		[logTable noteHeightOfRowsWithIndexesChanged:indexSet];
-	[indexSet release];
-}
-
-- (void)tileLogTable:(BOOL)force
-{
-	if (force || tableNeedsTiling)
-	{
-		// tile the visible rows (and a bit more) first, then tile all the rest
-		// this gives us a better perceived speed
-		NSRect r = [[logTable superview] convertRect:[[logTable superview] bounds] toView:logTable];
-		NSRange visibleRows = [logTable rowsInRect:r];
-		visibleRows.location = MAX(0, visibleRows.location - 5);
-		visibleRows.length = MIN(visibleRows.location + visibleRows.length + 10, [displayedMessages count] - visibleRows.location);
-		[self tileLogTableRowsInRange:visibleRows force:force];
-		for (NSUInteger i = 0; i < [displayedMessages count]; i += 50)
-		{
-			dispatch_async(dispatch_get_main_queue(), ^{
-				NSRange range = NSMakeRange(i, MIN(50, [displayedMessages count] - i));
-				if (range.length > 0)
-					[self tileLogTableRowsInRange:range force:force];
-			});
-		}
-		tableTiledSinceLastRefresh = YES;
-	}
-	tableNeedsTiling = NO;
-}
-
-- (void)tileLogTableNotification:(NSNotification *)note
-{
-	[self tileLogTable:NO];
-}
-
-- (void)applyFontChanges
-{
-	[self tileLogTable:YES];
-	[logTable reloadData];
 }
 
 // -----------------------------------------------------------------------------
@@ -667,9 +735,10 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			NSUInteger length = MIN(4096, numMessages - i);
 			if (length)
 			{
+				NSPredicate *aFilter = filterPredicate;
+				NSArray *subArray = [attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)];
 				dispatch_async(messageFilteringQueue, ^{
-					[self filterIncomingMessages:[attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)]
-									  withFilter:filterPredicate];
+					[self filterIncomingMessages:subArray withFilter:aFilter];
 				});
 			}
 			i += length;
@@ -748,9 +817,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 - (void)filterIncomingMessages:(NSArray *)messages
 {
 	assert([NSThread isMainThread]);
+	NSPredicate *aFilter = filterPredicate;		// catch value now rather than dereference it from self later
 	dispatch_async(messageFilteringQueue, ^{
-		[self filterIncomingMessages:(NSArray *)messages
-						  withFilter:filterPredicate];
+		[self filterIncomingMessages:(NSArray *)messages withFilter:aFilter];
 	});
 }
 
@@ -990,8 +1059,8 @@ didReceiveMessages:(NSArray *)theMessages
 		// first time and when tileLogTable is called. Due to the large number
 		// of entries we can have in the table, this is a requirement.
 		LoggerMessage *message = [displayedMessages objectAtIndex:row];
-		NSSize sz = [tableView frame].size;
 		NSSize cachedSize = message.cachedCellSize;
+		NSSize sz = [tableView frame].size;
 		if (cachedSize.width == sz.width)
 			return cachedSize.height;
 		CGFloat newHeight = cachedSize.height;
@@ -1206,17 +1275,6 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark Filter editor
 // -----------------------------------------------------------------------------
-- (NSPredicate *)currentFilterPredicate
-{
-	// the current filter is the aggregate (OR clause) of all the selected filters
-	NSArray *predicates = [[filterListController selectedObjects] valueForKey:@"predicate"];
-	if (![predicates count])
-		return [NSPredicate predicateWithValue:YES];
-	if ([predicates count] == 1)
-		return [predicates lastObject];
-	return [NSCompoundPredicate orPredicateWithSubpredicates:predicates];
-}
-
 - (void)undoableModifyFilter:(NSDictionary *)filter
 {
 	NSMutableDictionary *previousFilter = nil;

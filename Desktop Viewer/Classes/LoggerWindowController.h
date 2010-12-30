@@ -71,6 +71,7 @@
 	int logLevel;
 
 	dispatch_queue_t messageFilteringQueue;
+	dispatch_group_t lastTilingGroup;
 
 	int lastMessageRow;
 	BOOL messagesSelected;
