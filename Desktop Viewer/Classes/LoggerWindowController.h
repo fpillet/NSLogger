@@ -77,8 +77,6 @@
 	BOOL messagesSelected;
 	BOOL hasQuickFilter;
 	BOOL loadComplete;
-	BOOL tableNeedsTiling;
-	BOOL tableTiledSinceLastRefresh;
 	BOOL showFunctionNames;
 	BOOL clientAppSettingsRestored;
 }
