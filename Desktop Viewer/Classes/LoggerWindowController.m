@@ -1322,6 +1322,7 @@ didReceiveMessages:(NSArray *)theMessages
 						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
 						  nil];
 	[self openFilterEditSheet:dict];
+	[filterEditor addRow:self];
 }
 
 - (IBAction)startEditingFilter:(id)sender
@@ -1332,6 +1333,7 @@ didReceiveMessages:(NSArray *)theMessages
 	if (dict == nil || [[dict objectForKey:@"uid"] integerValue] == 1)
 		return;
 	[self openFilterEditSheet:dict];
+	
 }
 
 - (IBAction)cancelFilterEdition:(id)sender
