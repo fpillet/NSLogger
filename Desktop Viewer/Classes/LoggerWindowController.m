@@ -1350,11 +1350,21 @@ didReceiveMessages:(NSArray *)theMessages
 - (IBAction)createNewFilterFromQuickFilter:(id) sender {
 	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
 	assert(filterSet != nil);
+	
+	NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:0];
+	NSString *newFilterTitle;
+	
+	if (! [[self filterString] isEqualToString:@""]) {
+		[predicates addObject:[NSPredicate predicateWithFormat:@"messageText contains %@", [self filterString]]];
+		newFilterTitle = [NSString stringWithFormat:NSLocalizedString(@"Quick Filter: %@", @""), [self filterString]];
+	} else {
+		newFilterTitle = NSLocalizedString(@"Quick Filter", @"");
+	}
+	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
-						  [NSString stringWithFormat:@"Quick Filter: %@", [self filterString]], @"title",
-						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate
-						    predicateWithFormat:@"messageText contains %@", [self filterString]]]], @"predicate",
+						  newFilterTitle, @"title",
+						  [NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
 						  nil];
 	[self openFilterEditSheet:dict];
 	
