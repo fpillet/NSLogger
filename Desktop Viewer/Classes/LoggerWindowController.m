@@ -1361,6 +1361,11 @@ didReceiveMessages:(NSArray *)theMessages
 		newFilterTitle = NSLocalizedString(@"Quick Filter", @"");
 	}
 	
+	
+	if (logLevel) {
+		[predicates addObject:[NSPredicate predicateWithFormat:@"level = %d", logLevel - 1]];		
+	}
+	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
 						  newFilterTitle, @"title",
