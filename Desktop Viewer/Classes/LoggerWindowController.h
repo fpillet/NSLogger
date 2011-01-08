@@ -100,6 +100,7 @@
 - (IBAction)cancelFilterEdition:(id)sender;
 - (IBAction)validateFilterEdition:(id)sender;
 - (IBAction)deleteSelectedFilters:(id)sender;
+- (IBAction)createNewFilterFromQuickFilter:(id) sender;
 
 - (IBAction)addMark:(id)sender;
 - (IBAction)addMarkWithTitle:(id)sender;

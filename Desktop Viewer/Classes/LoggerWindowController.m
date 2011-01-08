@@ -1346,6 +1346,20 @@ didReceiveMessages:(NSArray *)theMessages
 	[NSApp endSheet:filterEditorWindow returnCode:1];
 }
 
+
+- (IBAction)createNewFilterFromQuickFilter:(id) sender {
+	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
+	assert(filterSet != nil);
+	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
+						  [NSString stringWithFormat:@"Quick Filter: %@", [self filterString]], @"title",
+						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate
+						    predicateWithFormat:@"messageText contains %@", [self filterString]]]], @"predicate",
+						  nil];
+	[self openFilterEditSheet:dict];
+	
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Markers
