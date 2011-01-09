@@ -352,10 +352,15 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	switch (aMessage.contentsType)
 	{
 		case kMessageString: {
-			NSRect lr = [aMessage.message boundingRectWithSize:sz
-													   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-													attributes:[[self defaultAttributes] objectForKey:@"text"]];
-			sz.height = fminf(NSHeight(lr), sz.height);			
+			// restrict message length for very long contents
+			NSString *s = aMessage.message;
+			if ([s length] > 2048)
+				s = [s substringToIndex:2048];
+
+			NSRect lr = [s boundingRectWithSize:sz
+										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+									 attributes:[[self defaultAttributes] objectForKey:@"text"]];
+			sz.height = fminf(NSHeight(lr), sz.height);
 			break;
 		}
 
@@ -468,6 +473,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	return [messageAttributes objectForKey:@"fileLineFunction"];
 }
 
+#pragma mark -
+#pragma mark Drawing
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
 	cellFrame.size = message.cachedCellSize;
@@ -475,7 +483,6 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 
 	BOOL highlighted = [self isHighlighted];
-	BOOL frontWindow = [[controlView window] isMainWindow];
 
 	NSColor *highlightedTextColor = nil;
 	if (highlighted)
@@ -510,7 +517,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);
 	}
-	
+
 	// Draw separators
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
@@ -685,9 +692,13 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
 				   NSHeight(cellFrame));
 
-	CGFloat fileLineFunctionHeight = (shouldShowFunctionNames && ([message.filename length] || [message.functionName length])) ? [[self class] heightForFileLineFunction] : 0;
-	r.size.height -= fileLineFunctionHeight;
-	r.origin.y += fileLineFunctionHeight;
+	CGFloat fileLineFunctionHeight = 0;
+	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
+	{
+		fileLineFunctionHeight = [[self class] heightForFileLineFunction];
+		r.size.height -= fileLineFunctionHeight;
+		r.origin.y += fileLineFunctionHeight;
+	}
 
 	if (message.contentsType == kMessageString)
 	{
@@ -703,17 +714,60 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		NSString *s = message.message;
 		if (![s length] && message.functionName)
 			s = message.functionName;
+		
+		// very long messages can't be displayed entirely. No need to compute their full size,
+		// it slows down the UI to no avail. Just cut the string to a reasonable size, and take
+		// the calculations from here.
+		BOOL truncated = NO;
+		if ([s length] > 2048)
+		{
+			truncated = YES;
+			s = [s substringToIndex:2048];
+		}
 
+		// compute display string size, limit to cell height
 		NSRect lr = [s boundingRectWithSize:r.size
 									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 								 attributes:attrs];
-		r.size.height = lr.size.height;
-		CGFloat offset = floorf((NSHeight(cellFrame) - fileLineFunctionHeight - NSHeight(lr)) / 2.0f);
+		if (NSHeight(lr) > NSHeight(r))
+			truncated = YES;
+		else
+			r.size.height = NSHeight(lr);
+
+		CGFloat hintHeight = 0;
+		NSString *hint = nil;
+		NSMutableDictionary *hintAttrs = nil;
+		if (truncated)
+		{
+			// display a hint instructing user to double-click message in order
+			// to see all contents
+			hintAttrs = [[attrs mutableCopy] autorelease];
+			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
+			[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
+			
+			hint = NSLocalizedString(@"Double-click to see all text...", @"");
+			hintHeight = [hint boundingRectWithSize:r.size
+											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+										 attributes:hintAttrs].size.height;
+		}
+		
+		CGFloat offset = floorf((NSHeight(cellFrame) - fileLineFunctionHeight - NSHeight(r) - hintHeight) / 2.0f);
 		if (offset > 0)
 			r.origin.y += offset;
-		[(NSString *)message.message drawWithRect:r
-										  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-									   attributes:attrs];
+		r.size.height -= hintHeight;
+		[s drawWithRect:r
+				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+			 attributes:attrs];
+		
+		// Draw hint "Double click to see all text..." if needed
+		if (hint != nil)
+		{
+			r.origin.y += NSHeight(r);
+			r.size.height = hintHeight;
+			[hint drawWithRect:r
+					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+					attributes:hintAttrs];
+		}
 	}
 	else if (message.contentsType == kMessageData)
 	{
