@@ -1354,7 +1354,7 @@ didReceiveMessages:(NSArray *)theMessages
 	NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:0];
 	NSString *newFilterTitle;
 	
-	if (! [[self filterString] isEqualToString:@""]) {
+	if ([self filterString] && ! [[self filterString] isEqualToString:@""]) {
 		[predicates addObject:[NSPredicate predicateWithFormat:@"messageText contains %@", [self filterString]]];
 		newFilterTitle = [NSString stringWithFormat:NSLocalizedString(@"Quick Filter: %@", @""), [self filterString]];
 	} else {
@@ -1363,7 +1363,7 @@ didReceiveMessages:(NSArray *)theMessages
 	
 	
 	if (logLevel) {
-		[predicates addObject:[NSPredicate predicateWithFormat:@"level = %d", logLevel - 1]];		
+		[predicates addObject:[NSPredicate predicateWithFormat:@"level <= %d", logLevel - 1]];
 	}
 	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
