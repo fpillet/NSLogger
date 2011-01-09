@@ -346,7 +346,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8 + (aMessage.indent * INDENTATION_TAB_WIDTH);
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8;
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
@@ -480,7 +480,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	NSColor *highlightedTextColor = nil;
 	if (highlighted)
 		highlightedTextColor = [NSColor whiteColor];
-
+/*
 	// Update cell frame to take indent into account
 	CGFloat indent = message.indent * INDENTATION_TAB_WIDTH;
 	if (indent)
@@ -501,7 +501,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		if (cellFrame.size.width < 30)
 			return;
 	}
-	
+*/
 	// Draw cell background
 	if (!highlighted)
 	{
@@ -523,12 +523,15 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
 	CGColorRelease(cellSeparatorColor);
 	CGContextBeginPath(ctx);
+
 	// horizontal bottom separator
 	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
 	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
+	
 	// timestamp/thread separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
+	
 	// thread/message separator
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));

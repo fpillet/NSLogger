@@ -37,8 +37,8 @@ static NSMutableArray *sTags = nil;
 
 @implementation LoggerMessage
 
-@synthesize tag, message, threadID, distanceFromParent;
-@synthesize type, contentsType, level, indent, timestamp;
+@synthesize tag, message, threadID;
+@synthesize type, contentsType, level, timestamp;
 @synthesize parts;
 @synthesize cachedCellSize, image, imageSize;
 @synthesize filename, functionName, lineNumber;
@@ -177,8 +177,6 @@ static NSMutableArray *sTags = nil;
 		level = [decoder decodeIntForKey:@"l"];
 		type = [decoder decodeIntForKey:@"mt"];
 		contentsType = [decoder decodeIntForKey:@"ct"];
-		indent = [decoder decodeIntForKey:@"i"];
-		distanceFromParent = [decoder decodeIntForKey:@"d"];
 		
 		// reload the filename / function name / line number. Since this is a pool
 		// kept by the LoggerConnection itself, we use the runtime's associated objects
@@ -221,10 +219,6 @@ static NSMutableArray *sTags = nil;
 		[encoder encodeInt:type forKey:@"mt"];
 	if (contentsType)
 		[encoder encodeInt:contentsType forKey:@"ct"];
-	if (indent)
-		[encoder encodeInt:indent forKey:@"i"];
-	if (distanceFromParent)
-		[encoder encodeInt:distanceFromParent forKey:@"d"];
 	if (filename != nil)
 		[encoder encodeObject:filename forKey:@"f"];
 	if (functionName != nil)
@@ -337,8 +331,8 @@ static NSMutableArray *sTags = nil;
 	else
 		desc = (NSString *)message;
 	
-	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d indent=%d message=%@>",
-			[self class], self, sequence, typeString, threadID, tag, (int)level, (int)indent, desc];
+	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d message=%@>",
+			[self class], self, sequence, typeString, threadID, tag, (int)level, desc];
 }
 #endif
 

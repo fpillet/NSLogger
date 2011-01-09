@@ -54,12 +54,7 @@
 	short type;
 	short contentsType;			// the type of message data (string, data, image)
 
-	// indentation (blocks) management. Since the contents of log is immutable
-	// we can speed up by caching some data
-	short indent;				// horizontal indent (count of nested blockstarts)
-	int distanceFromParent;		// distance from last blockStart (thisMsgIndex - parentMsgIndex)
-
-	// other cached data
+	// unsaved cached data
 	NSSize imageSize;
 	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
 }
@@ -71,8 +66,6 @@
 @property (nonatomic, retain) id message;
 @property (nonatomic, assign) short type;
 @property (nonatomic, assign) short level;
-@property (nonatomic, assign) short indent;
-@property (nonatomic, assign) int distanceFromParent;
 @property (nonatomic, retain) NSString *threadID;
 @property (nonatomic, readonly) NSSize imageSize;
 @property (nonatomic, assign) NSSize cachedCellSize;
