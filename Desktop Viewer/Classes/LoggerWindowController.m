@@ -1347,28 +1347,27 @@ didReceiveMessages:(NSArray *)theMessages
 }
 
 
-- (IBAction)createNewFilterFromQuickFilter:(id) sender {
+- (IBAction)createNewFilterFromQuickFilter:(id) sender
+{
 	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
 	assert(filterSet != nil);
 	
-	NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:0];
+	NSMutableArray *predicates = [NSMutableArray arrayWithCapacity:3];
 	NSString *newFilterTitle;
 	
-	if ([self filterString] && ! [[self filterString] isEqualToString:@""]) {
-		[predicates addObject:[NSPredicate predicateWithFormat:@"messageText contains %@", [self filterString]]];
-		newFilterTitle = [NSString stringWithFormat:NSLocalizedString(@"Quick Filter: %@", @""), [self filterString]];
-	} else {
+	if ([filterString length])
+	{
+		[predicates addObject:[NSPredicate predicateWithFormat:@"messageText contains %@", filterString]];
+		newFilterTitle = [NSString stringWithFormat:NSLocalizedString(@"Quick Filter: %@", @""), filterString];
+	}
+	else
 		newFilterTitle = NSLocalizedString(@"Quick Filter", @"");
-	}
 	
-	if (logLevel) {
+	if (logLevel)
 		[predicates addObject:[NSPredicate predicateWithFormat:@"level <= %d", logLevel - 1]];
-	}
 
-	if (self.filterTag) {
-		[predicates addObject:[NSPredicate predicateWithFormat:@"tag = %@", self.filterTag]];
-	}
-	
+	if (self.filterTag)
+		[predicates addObject:[NSPredicate predicateWithFormat:@"tag = %@", self.filterTag]];	
 	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
@@ -1376,7 +1375,6 @@ didReceiveMessages:(NSArray *)theMessages
 						  [NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
 						  nil];
 	[self openFilterEditSheet:dict];
-	
 }
 
 // -----------------------------------------------------------------------------
