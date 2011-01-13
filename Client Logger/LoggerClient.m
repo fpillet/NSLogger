@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b9 2010-12-17
+ * version 1.0b10 2011-01-13
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -140,7 +140,7 @@ static void LoggerCreateBufferWriteStream(Logger *logger);
 static void LoggerCreateBufferReadStream(Logger *logger);
 static void LoggerEmptyBufferFile(Logger *logger);
 static void LoggerFileBufferingOptionsChanged(Logger *logger);
-static void LoggerFlushQueueToBufferStream(Logger *logger);
+static void LoggerFlushQueueToBufferStream(Logger *logger, BOOL firstEntryIsClientInfo);
 
 // Encoding functions
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger);
@@ -753,7 +753,7 @@ static void LoggerWriteMoreData(Logger *logger)
 		}
 		else if (logger->bufferWriteStream != NULL)
 		{
-			LoggerFlushQueueToBufferStream(logger);
+			LoggerFlushQueueToBufferStream(logger, NO);
 		}
 		return;
 	}
@@ -900,7 +900,7 @@ static void LoggerCreateBufferWriteStream(Logger *logger)
 			{
 				// Write client info and flush the queue contents to buffer file
 				LoggerPushClientInfoToFrontOfQueue(logger);
-				LoggerFlushQueueToBufferStream(logger);
+				LoggerFlushQueueToBufferStream(logger, YES);
 			}
 		}
 	}
@@ -967,11 +967,24 @@ static void LoggerFileBufferingOptionsChanged(Logger *logger)
 		LoggerCreateBufferWriteStream(logger);
 }
 
-static void LoggerFlushQueueToBufferStream(Logger *logger)
+static void LoggerFlushQueueToBufferStream(Logger *logger, BOOL firstEntryIsClientInfo)
 {
 	LOGGERDBG(CFSTR("LoggerFlushQueueToBufferStream"));
 	pthread_mutex_lock(&logger->logQueueMutex);
+	if (logger->incompleteSendOfFirstItem)
+	{
+		// drop anything being sent
+		logger->sendBufferUsed = 0;
+		logger->sendBufferOffset = 0;
+	}
 	logger->incompleteSendOfFirstItem = NO;
+
+	// Write outstanding messages to the buffer file (streams don't detect disconnection
+	// until the next write, where we could lose one or more messages)
+	if (!firstEntryIsClientInfo && logger->sendBufferUsed)
+		CFWriteStreamWrite(logger->bufferWriteStream, logger->sendBuffer + logger->sendBufferOffset, logger->sendBufferUsed - logger->sendBufferOffset);
+	
+	int n = 0;
 	while (CFArrayGetCount(logger->logQueue))
 	{
 		CFDataRef data = CFArrayGetValueAtIndex(logger->logQueue, 0);
@@ -985,7 +998,15 @@ static void LoggerFlushQueueToBufferStream(Logger *logger)
 			break;
 		}
 		CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+		if (n == 0 && firstEntryIsClientInfo && logger->sendBufferUsed)
+		{
+			// try hard: write any outstanding messages to the buffer file, after the client info
+			CFWriteStreamWrite(logger->bufferWriteStream, logger->sendBuffer + logger->sendBufferOffset, logger->sendBufferUsed - logger->sendBufferOffset);
+		}
+		n++;
 	}
+	logger->sendBufferUsed = 0;
+	logger->sendBufferOffset = 0;
 	pthread_mutex_unlock(&logger->logQueueMutex);	
 }
 
@@ -1441,9 +1462,6 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			
 			CFRelease(logger->logStream);
 			logger->logStream = NULL;
-
-			logger->sendBufferUsed = 0;
-			logger->sendBufferOffset = 0;
 
 			if (logger->bufferReadStream != NULL)
 			{
