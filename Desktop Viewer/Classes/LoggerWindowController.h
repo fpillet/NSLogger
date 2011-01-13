@@ -76,7 +76,7 @@
 	int lastMessageRow;
 	BOOL messagesSelected;
 	BOOL hasQuickFilter;
-	BOOL loadComplete;
+	BOOL initialRefreshDone;
 	BOOL showFunctionNames;
 	BOOL clientAppSettingsRestored;
 }

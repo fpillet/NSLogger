@@ -152,7 +152,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate];
-	loadComplete = YES;
 	[logTable sizeToFit];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -804,6 +803,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 				}
 			});
 		});
+		initialRefreshDone = YES;
 	}
 }
 
@@ -877,6 +877,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		attachedConnection.attachedToWindow = NO;
 		[attachedConnection release];
 		attachedConnection = nil;
+		initialRefreshDone = NO;
 	}
 	if (aConnection != nil)
 	{
@@ -938,13 +939,11 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 didReceiveMessages:(NSArray *)theMessages
 			 range:(NSRange)rangeInMessagesList
 {
-	if (loadComplete)
-	{
-		// We need to hop thru the main thread to have a recent and stable copy of the filter string and current filter
-		dispatch_async(dispatch_get_main_queue(), ^{
+	// We need to hop thru the main thread to have a recent and stable copy of the filter string and current filter
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (initialRefreshDone)
 			[self filterIncomingMessages:theMessages];
-		});
-	}
+	});
 }
 
 - (void)remoteDisconnected:(LoggerConnection *)theConnection
