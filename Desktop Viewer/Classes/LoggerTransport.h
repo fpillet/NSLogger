@@ -39,6 +39,7 @@
 }
 
 @property (nonatomic, readonly) BOOL active;
+@property (nonatomic, readonly) NSMutableArray *connections;
 
 - (void)startup;
 - (void)shutdown;

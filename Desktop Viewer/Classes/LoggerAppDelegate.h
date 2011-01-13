@@ -30,7 +30,7 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@class LoggerConnection, LoggerStatusWindowController, LoggerPrefsWindowController;
+@class LoggerConnection, LoggerTransport, LoggerStatusWindowController, LoggerPrefsWindowController;
 
 @interface LoggerAppDelegate : NSObject
 {
@@ -52,7 +52,8 @@
 
 + (NSDictionary *)defaultPreferences;
 
-- (void)newConnection:(LoggerConnection *)aConnection;
+- (void)newConnection:(LoggerConnection *)aConnection fromTransport:(LoggerTransport *)aTransport;
+
 - (NSMutableArray *)defaultFilters;
 - (NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters;
 - (void)saveFiltersDefinition;

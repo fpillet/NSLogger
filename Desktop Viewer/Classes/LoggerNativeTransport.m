@@ -415,7 +415,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSString *clientVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
 	NSString *clientAppInfo = @"";
 	if ([clientName length])
-		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"\nClient: %@ %@", @""),
+		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"Client connected: %@ %@", @""),
 						 clientName,
 						 clientVersion ? clientVersion : @""];
 
@@ -423,7 +423,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSString *osVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
 	NSString *osInfo = @"";
 	if ([osName length])
-		osInfo = [NSString stringWithFormat:NSLocalizedString(@"\nOS: %@ %@", @""),
+		osInfo = [NSString stringWithFormat:NSLocalizedString(@"%@(%@ %@)", @""),
+				  [clientAppInfo length] ? @" (" : NSLocalizedString(@"Client connected ", @""),
 				  osName,
 				  osVersion ? osVersion : @""];
 
@@ -436,8 +437,10 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSString *uniqueIDString = @"";
 	if ([uniqueID length])
 		uniqueIDString = [NSString stringWithFormat:NSLocalizedString(@"\nUDID: %@", @""), uniqueID];
-	return [NSString stringWithFormat:NSLocalizedString(@"Client connected%@%@%@%@", @""),
-			clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
+	NSString *header = @"";
+	if (clientAppInfo == nil)
+		header = NSLocalizedString(@"Client connected\n", @"");
+	return [NSString stringWithFormat:@"%@%@%@%@%@", header, clientAppInfo, osInfo, hardwareInfo, uniqueIDString];
 }
 
 - (BOOL)canDoSSL

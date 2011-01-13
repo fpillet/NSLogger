@@ -234,6 +234,43 @@
 	return nil;
 }
 
+- (void)setAttachedConnection:(LoggerConnection *)aConnection
+{
+	assert([NSThread isMainThread]);
+
+	// First, close all non-main window attached windows
+	NSMutableArray *windowsToClose = [NSMutableArray array];
+	LoggerWindowController *mainWindow = nil;
+	for (NSWindowController *wc in [self windowControllers])
+	{
+		if (![wc isKindOfClass:[LoggerWindowController class]])
+			[windowsToClose addObject:wc];
+		else
+			mainWindow = (LoggerWindowController *)wc;
+	}
+	for (NSWindowController *wc in windowsToClose)
+		[wc close];
+
+	// Don't use the previous connection anymore
+	if (attachedConnection != nil)
+	{
+		attachedConnection.delegate = nil;
+		[attachedConnection release];
+		attachedConnection = nil;
+	}
+	
+	// Reset the document change bit
+	[self updateChangeCount:NSChangeCleared];
+	
+	// Changed the attached connection
+	attachedConnection = [aConnection retain];
+	attachedConnection.delegate = self;
+	mainWindow.attachedConnection = aConnection;
+	
+	// Bring window to front
+	[mainWindow showWindow:self];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark LoggerConnectionDelegate

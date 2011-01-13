@@ -223,20 +223,23 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 				msg.cachedCellSize = cachedSize;
 		}
 	}
-	if ([updatedMessages count] && (group == NULL || dispatch_get_context(group)))
+	if ([updatedMessages count])
 	{
 		dispatch_async(dispatch_get_main_queue(), ^{
-			NSMutableIndexSet *set = [[NSMutableIndexSet alloc] init];
-			for (LoggerMessage *msg in updatedMessages)
+			if (group == NULL || dispatch_get_context(group) != NULL)
 			{
-				NSUInteger pos = [displayedMessages indexOfObjectIdenticalTo:msg];
-				if (pos == NSNotFound || pos > lastMessageRow)
-					break;
-				[set addIndex:pos];
+				NSMutableIndexSet *set = [[NSMutableIndexSet alloc] init];
+				for (LoggerMessage *msg in updatedMessages)
+				{
+					NSUInteger pos = [displayedMessages indexOfObjectIdenticalTo:msg];
+					if (pos == NSNotFound || pos > lastMessageRow)
+						break;
+					[set addIndex:pos];
+				}
+				if ([set count])
+					[logTable noteHeightOfRowsWithIndexesChanged:set];
+				[set release];
 			}
-			if ([set count])
-				[logTable noteHeightOfRowsWithIndexesChanged:set];
-			[set release];
 		});
 	}
 	[updatedMessages release];
@@ -268,7 +271,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	
 	// create new group, set it a non-NULL context to indicate that it is running
 	lastTilingGroup = dispatch_group_create();
-	dispatch_set_context(lastTilingGroup, dispatch_get_main_queue());
+	dispatch_set_context(lastTilingGroup, "running");
 	
 	// perform layout in chunks in the background
 	for (NSUInteger i = 0; i < [displayedMessages count]; i += 1024)
@@ -281,7 +284,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			NSArray *subArray = [displayedMessages subarrayWithRange:range];
 			dispatch_group_t group = lastTilingGroup;		// careful with self dereference, could use the wrong group at run time, hence the copy here
 			dispatch_group_async(group,
-								 dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+								 dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0),
+								 ^{
 									 [self tileLogTableMessages:subArray
 													   withSize:tableSize
 													forceUpdate:forceUpdate
@@ -704,6 +708,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 			}
 		}
 
+		LoggerConnection *theConnection = attachedConnection;
+
 		NSSize tableFrameSize = [logTable frame].size;
 		NSUInteger numMessages = [attachedConnection.messages count];
 		for (int i = 0; i < numMessages;)
@@ -725,7 +731,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 				NSPredicate *aFilter = filterPredicate;
 				NSArray *subArray = [attachedConnection.messages subarrayWithRange:NSMakeRange(i, length)];
 				dispatch_async(messageFilteringQueue, ^{
-					[self filterIncomingMessages:subArray withFilter:aFilter tableFrameSize:tableFrameSize];
+					// Check that the connection didn't change
+					if (attachedConnection == theConnection)
+						[self filterIncomingMessages:subArray withFilter:aFilter tableFrameSize:tableFrameSize];
 				});
 			}
 			i += length;
@@ -736,58 +744,64 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		// being executed only at the end of the filtering process
 		dispatch_async(messageFilteringQueue, ^{
 			dispatch_async(dispatch_get_main_queue(), ^{
-				if (lastMessageRow < [displayedMessages count])
+				// if the connection changed since the last refreshAll call, stop now
+				if (attachedConnection = theConnection)		// note that block retains self, not self.attachedConnection.
 				{
-					// perform table updates now, so we can properly reselect afterwards
-					[NSObject cancelPreviousPerformRequestsWithTarget:self
-															 selector:@selector(messagesAppendedToTable)
-															   object:nil];
-					[self messagesAppendedToTable];
-				}
-
-				if ([selectedMessages count])
-				{
-					// If there were selected rows, try to reselect them
-					NSMutableIndexSet *newSelectionIndexes = [[NSMutableIndexSet alloc] init];
-					for (id msg in selectedMessages)
+					if (lastMessageRow < [displayedMessages count])
 					{
-						NSInteger msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg];
-						if (msgIndex != NSNotFound)
-							[newSelectionIndexes addIndex:(NSUInteger)msgIndex];
+						// perform table updates now, so we can properly reselect afterwards
+						[NSObject cancelPreviousPerformRequestsWithTarget:self
+																 selector:@selector(messagesAppendedToTable)
+																   object:nil];
+						[self messagesAppendedToTable];
 					}
-					if ([newSelectionIndexes count])
+					
+					if ([selectedMessages count])
 					{
-						[logTable selectRowIndexes:newSelectionIndexes byExtendingSelection:NO];
-						[[self window] makeFirstResponder:logTable];
-					}
-					[newSelectionIndexes release];
-				}
-				
-				if (messageToMakeVisible != nil)
-				{
-					// Restore the logical location in the message flow, to keep the user
-					// in-context
-					NSUInteger msgIndex;
-					id msg = messageToMakeVisible;
-					@synchronized(attachedConnection.messages)
-					{
-						while ((msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg]) == NSNotFound)
+						// If there were selected rows, try to reselect them
+						NSMutableIndexSet *newSelectionIndexes = [[NSMutableIndexSet alloc] init];
+						for (id msg in selectedMessages)
 						{
-							NSUInteger where = [attachedConnection.messages indexOfObjectIdenticalTo:msg];
-							if (where == 0)
-							{
-								msgIndex = 0;
-								break;
-							}
-							else
-								msg = [attachedConnection.messages objectAtIndex:where-1];
+							NSInteger msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg];
+							if (msgIndex != NSNotFound)
+								[newSelectionIndexes addIndex:(NSUInteger)msgIndex];
 						}
-						if (msgIndex != NSNotFound)
-							[logTable scrollRowToVisible:msgIndex];
+						if ([newSelectionIndexes count])
+						{
+							[logTable selectRowIndexes:newSelectionIndexes byExtendingSelection:NO];
+							[[self window] makeFirstResponder:logTable];
+						}
+						[newSelectionIndexes release];
 					}
+					
+					if (messageToMakeVisible != nil)
+					{
+						// Restore the logical location in the message flow, to keep the user
+						// in-context
+						NSUInteger msgIndex;
+						id msg = messageToMakeVisible;
+						@synchronized(attachedConnection.messages)
+						{
+							while ((msgIndex = [displayedMessages indexOfObjectIdenticalTo:msg]) == NSNotFound)
+							{
+								NSUInteger where = [attachedConnection.messages indexOfObjectIdenticalTo:msg];
+								if (where == NSNotFound)
+									break;
+								if (where == 0)
+								{
+									msgIndex = 0;
+									break;
+								}
+								else
+									msg = [attachedConnection.messages objectAtIndex:where-1];
+							}
+							if (msgIndex != NSNotFound)
+								[logTable scrollRowToVisible:msgIndex];
+						}
+					}
+					
+					[self rebuildMarksSubmenu];
 				}
-				
-				[self rebuildMarksSubmenu];
 			});
 		});
 	}
@@ -815,9 +829,13 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	if ([filteredMessages count])
 	{
 		[self tileLogTableMessages:filteredMessages withSize:tableFrameSize forceUpdate:NO group:NULL];
+		LoggerConnection *theConnection = attachedConnection;
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[self appendMessagesToTable:filteredMessages];
-			[self addTags:msgTags];
+			if (attachedConnection == theConnection)
+			{
+				[self appendMessagesToTable:filteredMessages];
+				[self addTags:msgTags];
+			}
 		});
 	}
 }
@@ -828,6 +846,38 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 // -----------------------------------------------------------------------------
 - (void)setAttachedConnection:(LoggerConnection *)aConnection
 {
+	assert([NSThread isMainThread]);
+
+	if (attachedConnection != nil)
+	{
+		// Completely clear log table
+		[logTable deselectAll:self];
+		lastMessageRow = 0;
+		[displayedMessages removeAllObjects];
+		[logTable reloadData];
+		self.info = NSLocalizedString(@"No message", @"");
+		[self rebuildMarksSubmenu];
+
+		// Close filter editor sheet (with cancel) if open
+		if ([filterEditorWindow isVisible])
+			[NSApp endSheet:filterEditorWindow returnCode:0];
+		
+		// Cancel pending tasks
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages:) object:nil];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(messagesAppendedToTable) object:nil];
+		if (lastTilingGroup != NULL)
+		{
+			dispatch_set_context(lastTilingGroup, NULL);
+			dispatch_release(lastTilingGroup);
+			lastTilingGroup = NULL;
+		}
+		
+		// Detach previous connection
+		attachedConnection.attachedToWindow = NO;
+		[attachedConnection release];
+		attachedConnection = nil;
+	}
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
@@ -838,12 +888,6 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 				[self restoreClientApplicationSettings];
 			[self refreshAllMessages:nil];
 		});
-	}
-	else if (attachedConnection != nil)
-	{
-		attachedConnection.attachedToWindow = NO;
-		[attachedConnection release];
-		attachedConnection = nil;
 	}
 }
 

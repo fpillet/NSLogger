@@ -28,6 +28,7 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#include <netinet/in.h>
 #import <objc/runtime.h>
 #import "LoggerConnection.h"
 #import "LoggerMessage.h"
@@ -41,8 +42,8 @@ char sConnectionAssociatedObjectKey = 1;
 
 @synthesize delegate;
 @synthesize messages;
-@synthesize connected, restoredFromSave, attachedToWindow;
-@synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice;
+@synthesize reconnectionCount, connected, restoredFromSave, attachedToWindow;
+@synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice, clientAddress;
 @synthesize messageProcessingQueue;
 @synthesize filenames, functionNames;
 
@@ -87,6 +88,73 @@ char sConnectionAssociatedObjectKey = 1;
 	[filenames release];
 	[functionNames release];
 	[super dealloc];
+}
+
+- (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection
+{
+	// Try to detect if a connection is a new run of an older, disconnected session
+	// (goal is to detect restarts, so as to replace logs in the same window)
+	assert(restoredFromSave == NO);
+
+	// exclude files loaded from disk
+	if (aConnection.restoredFromSave)
+		return NO;
+	
+	// as well as still-up connections
+	if (aConnection.connected)
+		return NO;
+
+	// check whether client info is the same
+	BOOL (^isSame)(NSString *, NSString *) = ^(NSString *s1, NSString *s2)
+	{
+		if ((s1 == nil) != (s2 == nil))
+			return NO;
+		if (s1 != nil && ![s2 isEqualToString:s1])
+			return NO;
+		return YES;	// s1 and d2 either nil or same
+	};
+	if (!isSame(clientName, aConnection.clientName) ||
+		!isSame(clientVersion, aConnection.clientVersion) ||
+		!isSame(clientOSName, aConnection.clientOSName) ||
+		!isSame(clientOSVersion, aConnection.clientOSVersion) ||
+		!isSame(clientDevice, aConnection.clientDevice))
+	{
+		return NO;
+	}
+	
+	// check whether address is the same
+	if ((clientAddress != nil) != (aConnection.clientAddress != nil))
+		return NO;
+	if (clientAddress != nil)
+	{
+		// compare address blocks sizes (ipv4 vs. ipv6)
+		NSUInteger addrSize = [clientAddress length];
+		if (addrSize != [aConnection.clientAddress length])
+			return NO;
+		
+		// compare ipv4 or ipv6 address. We don't want to compare the source port,
+		// because it will change with each connection
+		if (addrSize == sizeof(struct sockaddr_in))
+		{
+			struct sockaddr_in addra, addrb;
+			[clientAddress getBytes:&addra];
+			[aConnection.clientAddress getBytes:&addrb];
+			if (memcmp(&addra.sin_addr, &addrb.sin_addr, sizeof(addra.sin_addr)))
+				return NO;
+		}
+		else if (addrSize == sizeof(struct sockaddr_in6))
+		{
+			struct sockaddr_in6 addr6a, addr6b;
+			[clientAddress getBytes:&addr6a];
+			[aConnection.clientAddress getBytes:&addr6b];
+			if (memcmp(&addr6a.sin6_addr, &addr6b.sin6_addr, sizeof(addr6a.sin6_addr)))
+				return NO;
+		}
+		else if (![clientAddress isEqualToData:aConnection.clientAddress])
+			return NO;		// we only support ipv4 and ipv6, so this should not happen
+	}
+	
+	return YES;
 }
 
 - (void)messagesReceived:(NSArray *)msgs

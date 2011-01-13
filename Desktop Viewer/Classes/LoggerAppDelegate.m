@@ -258,10 +258,32 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	return NO;
 }
 
-- (void)newConnection:(LoggerConnection *)aConnection
+- (void)newConnection:(LoggerConnection *)aConnection fromTransport:(LoggerTransport *)aTransport
 {
+	// we are being called on the main thread (using dispatch_sync() from transport, so take care)
+	// Detect reconnection from a previously disconnected client
+	NSDocumentController *docController = [NSDocumentController sharedDocumentController];
+	for (LoggerConnection *c in aTransport.connections)
+	{
+		if (c != aConnection && [aConnection isNewRunOfClient:c])
+		{
+			// Find the document using the previous connection
+			for (LoggerDocument *doc in [docController documents])
+			{
+				if ([doc isKindOfClass:[LoggerDocument class]] && doc.attachedConnection == c)
+				{
+					// recycle this document window, bring it to front
+					aConnection.reconnectionCount = c.reconnectionCount + 1;
+					doc.attachedConnection = aConnection;
+					return;
+				}
+			}
+		}
+	}
+
+	// Instantiate a new window for this connection
 	LoggerDocument *doc = [[LoggerDocument alloc] initWithConnection:aConnection];
-	[[NSDocumentController sharedDocumentController] addDocument:doc];
+	[docController addDocument:doc];
 	[doc makeWindowControllers];
 	[doc showWindows];
 	[doc release];

@@ -68,6 +68,7 @@
 	NSMutableArray *parentIndexesStack;	// during messages receive, use this to quickly locate parent indexes in groups
 	dispatch_queue_t messageProcessingQueue;
 
+	int reconnectionCount;				// when a reconnection is detected (same client, disconnects then reconnects), the # reconnection for this connection
 	BOOL connected;
 	BOOL restoredFromSave;
 	BOOL attachedToWindow;
@@ -80,15 +81,15 @@
 @property (nonatomic, retain) NSString *clientOSName;
 @property (nonatomic, retain) NSString *clientOSVersion;
 @property (nonatomic, retain) NSString *clientDevice;
-
+@property (nonatomic, readonly) NSData *clientAddress;
 @property (nonatomic, readonly) NSMutableSet *filenames;
 @property (nonatomic, readonly) NSMutableSet *functionNames;
 
 @property (nonatomic, readonly) NSMutableArray *messages;
+@property (nonatomic, assign) int reconnectionCount;
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
 @property (nonatomic, assign) BOOL attachedToWindow;
-
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
 
 - (id)initWithAddress:(NSData *)anAddress;
@@ -100,6 +101,8 @@
 - (NSString *)clientAppDescription;
 - (NSString *)clientAddressDescription;
 - (NSString *)clientDescription;
+
+- (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection;
 
 @end
 
