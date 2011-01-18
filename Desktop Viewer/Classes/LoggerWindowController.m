@@ -55,21 +55,6 @@
 
 static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
 
-// -----------------------------------------------------------------------------
-#pragma mark -
-#pragma Standard LoggerTableView
-// -----------------------------------------------------------------------------
-@implementation LoggerTableView
-- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
-{
-	// Don't understand why I have to override this method, but it's the only
-	// way I could get dragging from table to work. Tried various additional
-	// things with no luck...
-	return YES;
-}
-@end
-
-
 @implementation LoggerWindowController
 
 @synthesize info, filterString, filterTag;

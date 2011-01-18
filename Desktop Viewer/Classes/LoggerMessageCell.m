@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -47,6 +47,7 @@ static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
 
 NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
+NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
 
 @implementation LoggerMessageCell
 
@@ -56,6 +57,10 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 // -----------------------------------------------------------------------------
 // Class methods
 // -----------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Colors and text attributes
+
 + (NSColor *)cellStandardBgColor
 {
 	static NSColor *sColor = nil;
@@ -249,6 +254,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	return [self defaultTagAndLevelColor];
 }
 
+#pragma mark -
+#pragma mark Helpers
+
 + (NSArray *)stringsWithData:(NSData *)data
 {
 	// convert NSData block to hex-ascii strings
@@ -298,6 +306,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	}
 	return [strings autorelease];
 }
+
+#pragma mark -
+#pragma mark Cell size calculations
 
 + (CGFloat)minimumHeightForCell
 {
@@ -398,7 +409,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 }
 
 // -----------------------------------------------------------------------------
-// Instance methods
+#pragma mark -
+#pragma mark Instance methods
 // -----------------------------------------------------------------------------
 - (id)copyWithZone:(NSZone *)zone
 {
@@ -476,90 +488,20 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 #pragma mark -
 #pragma mark Drawing
 
-- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+- (void)drawTimestampAndDeltaInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor
 {
-	cellFrame.size = message.cachedCellSize;
-
-	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-
-	BOOL highlighted = [self isHighlighted];
-
-	NSColor *highlightedTextColor = nil;
-	if (highlighted)
-		highlightedTextColor = [NSColor whiteColor];
-/*
-	// Update cell frame to take indent into account
-	CGFloat indent = message.indent * INDENTATION_TAB_WIDTH;
-	if (indent)
-	{
-		// draw color bars to represent the indentation width
-		CGColorRef indentBarColor = CGColorCreateGenericGray(0.90f, 1.0f);
-		CGContextSetFillColorWithColor(ctx, indentBarColor);
-		for (int i = 0; i < message.indent; i++)
-		{
-			CGContextFillRect(ctx, CGRectMake(NSMinX(cellFrame) + (i * INDENTATION_TAB_WIDTH) + 2,
-											  NSMinY(cellFrame),
-											  INDENTATION_TAB_WIDTH - 4,
-											  NSHeight(cellFrame)));
-		}
-		CGColorRelease(indentBarColor);
-		cellFrame.origin.x += indent;
-		cellFrame.size.width -= indent;
-		if (cellFrame.size.width < 30)
-			return;
-	}
-*/
-	// Draw cell background
-	if (!highlighted)
-	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
-		CGContextSetFillColorWithColor(ctx, cellBgColor);
-		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
-		CGColorRelease(cellBgColor);
-	}
-
-	// Draw separators
-	CGContextSetShouldAntialias(ctx, false);
-	CGContextSetLineWidth(ctx, 1.0f);
-	CGContextSetLineCap(ctx, kCGLineCapSquare);
-	CGColorRef cellSeparatorColor;
-	if (highlighted)
-		cellSeparatorColor = CGColorCreateGenericGray(1.0f, 1.0f);
-	else
-		cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
-	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
-	CGColorRelease(cellSeparatorColor);
-	CGContextBeginPath(ctx);
-
-	// horizontal bottom separator
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
-	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
-	
-	// timestamp/thread separator
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
-	
-	// thread/message separator
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
-	CGContextStrokePath(ctx);
-	CGContextSetShouldAntialias(ctx, true);
-	
 	// Draw timestamp and time delta column
-	NSRect r, tr;
-	r = NSMakeRect(NSMinX(cellFrame),
-				   NSMinY(cellFrame),
-				   TIMESTAMP_COLUMN_WIDTH,
-				   NSHeight(cellFrame));
+	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	CGContextSaveGState(ctx);
 	CGContextClipToRect(ctx, NSRectToCGRect(r));
-	tr = NSInsetRect(r, 2, 0);
-
+	NSRect tr = NSInsetRect(r, 2, 0);
+	
+	// Prepare time delta between this message and the previous displayed (filtered) message
 	struct timeval tv = message.timestamp;
 	struct timeval td;
 	if (previousMessage != nil)
 		[message computeTimeDelta:&td since:previousMessage];
-
+	
 	time_t sec = tv.tv_sec;
 	struct tm *t = localtime(&sec);
 	NSString *timestampStr;
@@ -571,15 +513,15 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	NSString *timeDeltaStr = nil;
 	if (previousMessage != nil)
 		timeDeltaStr = StringWithTimeDelta(&td);
-
+	
 	NSMutableDictionary *attrs = [self timestampAttributes];
 	NSRect bounds = [timestampStr boundingRectWithSize:tr.size
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:attrs];
 	NSRect timeRect = NSMakeRect(NSMinX(tr), NSMinY(tr), NSWidth(tr), NSHeight(bounds));
 	NSRect deltaRect = NSMakeRect(NSMinX(tr), NSMaxY(timeRect)+1, NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
-
-	if (highlighted)
+	
+	if (highlightedTextColor)
 	{
 		attrs = [[attrs mutableCopy] autorelease];
 		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
@@ -587,9 +529,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[timestampStr drawWithRect:timeRect
 					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 					attributes:attrs];
-
+	
 	attrs = [self timedeltaAttributes];
-	if (highlighted)
+	if (highlightedTextColor)
 	{
 		attrs = [[attrs mutableCopy] autorelease];
 		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
@@ -597,20 +539,25 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	[timeDeltaStr drawWithRect:deltaRect
 					   options:NSStringDrawingUsesLineFragmentOrigin
 					attributes:attrs];
-	CGContextRestoreGState(ctx);
+	CGContextRestoreGState(ctx);	
+}
+
+- (void)drawThreadIDAndTagInRect:(NSRect)drawRect highlightedTextColor:(NSColor *)highlightedTextColor
+{
+	NSRect r = drawRect;
 
 	// Draw thread ID
-	attrs = [self threadIDAttributes];
-	if (highlighted)
+	NSMutableDictionary *attrs = [self threadIDAttributes];
+	if (highlightedTextColor != nil)
 	{
 		attrs = [[attrs mutableCopy] autorelease];
 		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
 	}
-	r = NSOffsetRect(r, TIMESTAMP_COLUMN_WIDTH, 0);
-	r.size.width = THREAD_COLUMN_WIDTH;
+	
+	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	CGContextSaveGState(ctx);
 	CGContextClipToRect(ctx, NSRectToCGRect(r));
-	r.size.height = [message.threadID boundingRectWithSize:NSMakeSize(NSWidth(r), NSHeight(cellFrame))
+	r.size.height = [message.threadID boundingRectWithSize:r.size
 												   options:NSStringDrawingUsesLineFragmentOrigin
 												attributes:attrs].size.height;
 	[message.threadID drawWithRect:NSInsetRect(r, 3, 0)
@@ -628,7 +575,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
-			tagSize = [tag boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
+			tagSize = [tag boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(drawRect) - NSHeight(r))
 										options:NSStringDrawingUsesLineFragmentOrigin
 									 attributes:[self tagAttributes]].size;
 			tagSize.width += 4;
@@ -637,7 +584,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		if (level)
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
-			levelSize = [levelString boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(cellFrame) - NSHeight(r))
+			levelSize = [levelString boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(drawRect) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
 											   attributes:[self levelAttributes]].size;
 			levelSize.width += 4;
@@ -653,7 +600,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 									  levelSize.width,
 									  h);
 		NSRect tagAndLevelRect = NSUnionRect(tagRect, levelRect);
-
+		
 		MakeRoundedPath(ctx, NSRectToCGRect(tagAndLevelRect), 3.0f);
 		CGColorRef fillColor = CreateCGColorFromNSColor([[self class] colorForTag:tag]);
 		CGContextSetFillColorWithColor(ctx, fillColor);
@@ -670,7 +617,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			CGContextFillPath(ctx);
 			CGContextRestoreGState(ctx);
 		}
-
+		
 		if (tagSize.width)
 		{
 			[tag drawWithRect:NSInsetRect(tagRect, 2, 1)
@@ -684,26 +631,21 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 						   attributes:[self levelAttributes]];
 		}
 	}
-	CGContextRestoreGState(ctx);
+	CGContextRestoreGState(ctx);	
+}
 
-	// Draw message
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 3,
-				   NSMinY(cellFrame),
-				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
-				   NSHeight(cellFrame));
-
-	CGFloat fileLineFunctionHeight = 0;
-	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
-	{
-		fileLineFunctionHeight = [[self class] heightForFileLineFunction];
-		r.size.height -= fileLineFunctionHeight;
-		r.origin.y += fileLineFunctionHeight;
-	}
+- (void)drawMessageInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor
+{
+	/*
+	 * Draw the message portion of cells
+	 *
+	 */
+	NSMutableDictionary *attrs;
 
 	if (message.contentsType == kMessageString)
 	{
 		attrs = [self messageTextAttributes];
-		if (highlighted)
+		if (highlightedTextColor != nil)
 		{
 			attrs = [[attrs mutableCopy] autorelease];
 			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
@@ -724,7 +666,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			truncated = YES;
 			s = [s substringToIndex:2048];
 		}
-
+		
 		// compute display string size, limit to cell height
 		NSRect lr = [s boundingRectWithSize:r.size
 									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
@@ -732,8 +674,11 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		if (NSHeight(lr) > NSHeight(r))
 			truncated = YES;
 		else
+		{
+			r.origin.y += floorf((NSHeight(r) - NSHeight(lr)) / 2.0f);
 			r.size.height = NSHeight(lr);
-
+		}
+		
 		CGFloat hintHeight = 0;
 		NSString *hint = nil;
 		NSMutableDictionary *hintAttrs = nil;
@@ -743,7 +688,8 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 			// to see all contents
 			hintAttrs = [[attrs mutableCopy] autorelease];
 			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
-			[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
+			if (highlightedTextColor == nil)
+				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
 			
 			hint = NSLocalizedString(@"Double-click to see all text...", @"");
 			hintHeight = [hint boundingRectWithSize:r.size
@@ -751,12 +697,9 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 										 attributes:hintAttrs].size.height;
 		}
 		
-		CGFloat offset = floorf((NSHeight(cellFrame) - fileLineFunctionHeight - NSHeight(r) - hintHeight) / 2.0f);
-		if (offset > 0)
-			r.origin.y += offset;
 		r.size.height -= hintHeight;
 		[s drawWithRect:r
-				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine)
 			 attributes:attrs];
 		
 		// Draw hint "Double click to see all text..." if needed
@@ -773,7 +716,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 	{
 		NSArray *strings = [[self class] stringsWithData:(NSData *)message.message];
 		attrs = [self messageDataAttributes];
-		if (highlighted)
+		if (highlightedTextColor != nil)
 		{
 			attrs = [[attrs mutableCopy] autorelease];
 			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
@@ -813,6 +756,7 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 		NSSize srcSize = message.imageSize;
 		CGFloat ratio = fmaxf(1.0f, fmaxf(srcSize.width / NSWidth(r), srcSize.height / NSHeight(r)));
 		CGSize newSize = CGSizeMake(floorf(srcSize.width / ratio), floorf(srcSize.height / ratio));
+		CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(ctx);
 		CGContextTranslateCTM(ctx, NSMinX(r), NSMinY(r) + NSHeight(r));
 		CGContextScaleCTM(ctx, 1.0f, -1.0f);
@@ -822,61 +766,158 @@ NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChan
 						 fraction:1.0f];
 		CGContextRestoreGState(ctx);
 	}
+}
+
+- (void)drawFileLineFunctionInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor mouseOver:(BOOL)mouseOver
+{
+	// @@@ TODO: mouseOver support
+
+	NSMutableDictionary *attrs = [self fileLineFunctionAttributes];
+	if (highlightedTextColor == nil)
+	{
+		NSColor *fillColor = [attrs objectForKey:NSBackgroundColorAttributeName];
+		if (fillColor != nil)
+		{
+			[fillColor set];
+			NSRectFill(r);
+		}
+	}
+	NSString *s = @"";
+	BOOL hasFilename = ([message.filename length] != 0);
+	BOOL hasFunction = ([message.functionName length] != 0);
+	if (hasFunction && hasFilename)
+	{
+		if (message.lineNumber)
+			s = [NSString stringWithFormat:@"%@ (%@:%d)", message.functionName, [message.filename lastPathComponent], message.lineNumber];
+		else
+			s = [NSString stringWithFormat:@"%@ (%@)", message.functionName, [message.filename lastPathComponent]];
+	}
+	else if (hasFunction)
+	{
+		if (message.lineNumber)
+			s = [NSString stringWithFormat:NSLocalizedString(@"%@ (line %d)", @""), message.functionName, message.lineNumber];
+		else
+			s = message.functionName;
+	}
+	else
+	{
+		if (message.lineNumber)
+			s = [NSString stringWithFormat:@"%@:%d", [message.filename lastPathComponent], message.lineNumber];
+		else
+			s = [message.filename lastPathComponent];
+	}
+	if ([s length])
+	{
+		if (highlightedTextColor)
+		{
+			attrs = [[attrs mutableCopy] autorelease];
+			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+			[attrs setObject:[NSColor clearColor] forKey:NSBackgroundColorAttributeName];
+		}
+		[s drawWithRect:NSInsetRect(r, 4, 2)
+				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+			 attributes:attrs];
+	}
+}
+
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+{
+	cellFrame.size = message.cachedCellSize;
+
+	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+
+	BOOL highlighted = [self isHighlighted];
+
+	NSColor *highlightedTextColor = nil;
+	if (highlighted)
+		highlightedTextColor = [NSColor whiteColor];
+
+	// Draw cell background
+	if (!highlighted)
+	{
+		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
+		CGContextSetFillColorWithColor(ctx, cellBgColor);
+		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
+		CGColorRelease(cellBgColor);
+	}
+
+	// turn antialiasing off
+	CGContextSetShouldAntialias(ctx, false);
+
+	// Draw separators
+	CGContextSetLineWidth(ctx, 1.0f);
+	CGContextSetLineCap(ctx, kCGLineCapSquare);
+	CGColorRef cellSeparatorColor;
+	if (highlighted)
+		cellSeparatorColor = CGColorCreateGenericGray(1.0f, 1.0f);
+	else
+		cellSeparatorColor = CGColorCreateGenericGray(0.80f, 1.0f);
+	CGContextSetStrokeColorWithColor(ctx, cellSeparatorColor);
+	CGColorRelease(cellSeparatorColor);
+	CGContextBeginPath(ctx);
+
+	// horizontal bottom separator
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
+	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
+	
+	// timestamp/thread separator
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
+	
+	// thread/message separator
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
+	CGContextStrokePath(ctx);
+	
+	// restore antialiasing
+	CGContextSetShouldAntialias(ctx, true);
+	
+	// Draw timestamp and time delta column
+	NSRect r = NSMakeRect(NSMinX(cellFrame),
+						  NSMinY(cellFrame),
+						  TIMESTAMP_COLUMN_WIDTH,
+						  NSHeight(cellFrame));
+	[self drawTimestampAndDeltaInRect:r highlightedTextColor:highlightedTextColor];
+
+	// Draw thread ID and tag
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH,
+				   NSMinY(cellFrame),
+				   THREAD_COLUMN_WIDTH,
+				   NSHeight(cellFrame));
+	[self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
+	
+	// Draw message
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 3,
+				   NSMinY(cellFrame),
+				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
+				   NSHeight(cellFrame));
+	CGFloat fileLineFunctionHeight = 0;
+	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
+	{
+		fileLineFunctionHeight = [[self class] heightForFileLineFunction];
+		r.size.height -= fileLineFunctionHeight;
+		r.origin.y += fileLineFunctionHeight;
+	}
+	[self drawMessageInRect:r highlightedTextColor:highlightedTextColor];
 	
 	// Draw File / Line / Function
 	if (fileLineFunctionHeight)
 	{
-		attrs = [self fileLineFunctionAttributes];
 		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 1,
-					   NSMinY(cellFrame), /*NSMaxY(cellFrame) - fileLineFunctionHeight - 1,*/
+					   NSMinY(cellFrame),
 					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH),
 					   fileLineFunctionHeight);
-		if (!highlighted)
-		{
-			NSColor *fillColor = [attrs objectForKey:NSBackgroundColorAttributeName];
-			if (fillColor != nil)
-			{
-				[fillColor set];
-				NSRectFill(r);
-			}
-		}
-		NSString *s = @"";
-		BOOL hasFilename = ([message.filename length] != 0);
-		BOOL hasFunction = ([message.functionName length] != 0);
-		if (hasFunction && hasFilename)
-		{
-			if (message.lineNumber)
-				s = [NSString stringWithFormat:@"%@ (%@:%d)", message.functionName, [message.filename lastPathComponent], message.lineNumber];
-			else
-				s = [NSString stringWithFormat:@"%@ (%@)", message.functionName, [message.filename lastPathComponent]];
-		}
-		else if (hasFunction)
-		{
-			if (message.lineNumber)
-				s = [NSString stringWithFormat:NSLocalizedString(@"%@ (line %d)", @""), message.functionName, message.lineNumber];
-			else
-				s = message.functionName;
-		}
-		else
-		{
-			if (message.lineNumber)
-				s = [NSString stringWithFormat:@"%@:%d", [message.filename lastPathComponent], message.lineNumber];
-			else
-				s = [message.filename lastPathComponent];
-		}
-		if ([s length])
-		{
-			if (highlighted)
-			{
-				attrs = [[attrs mutableCopy] autorelease];
-				[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-				[attrs setObject:[NSColor clearColor] forKey:NSBackgroundColorAttributeName];
-			}
-			[s drawWithRect:NSInsetRect(r, 4, 2)
-					options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-				 attributes:attrs];
-		}
+		[self drawFileLineFunctionInRect:r highlightedTextColor:highlightedTextColor mouseOver:NO];
 	}
+}
+
+#pragma mark -
+#pragma mark Contextual menu
+
+- (NSMenu *)menuForEvent:(NSEvent *)anEvent inRect:(NSRect)cellFrame ofView:(NSView *)aView
+{
+	// @@@ TODO: filter / highlight by same thread, same tag, same message, etc
+	return nil;
 }
 
 @end

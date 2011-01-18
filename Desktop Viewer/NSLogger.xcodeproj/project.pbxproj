@@ -28,6 +28,7 @@
 		3D7C75330F401B35006B55AD /* LoggerNativeConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75320F401B35006B55AD /* LoggerNativeConnection.m */; };
 		3D7C75510F4025A7006B55AD /* LoggerTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75500F4025A7006B55AD /* LoggerTransport.m */; };
 		3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B63DC126B79CA00659751 /* LoggerSplitView.m */; };
+		3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA319AA12E37088003F68E6 /* LoggerTableView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
@@ -140,6 +141,8 @@
 		3D7C75550F4026D2006B55AD /* LoggerNativeTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerNativeTransport.m; path = Classes/LoggerNativeTransport.m; sourceTree = "<group>"; };
 		3D8B63DB126B79CA00659751 /* LoggerSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerSplitView.h; path = Classes/LoggerSplitView.h; sourceTree = "<group>"; };
 		3D8B63DC126B79CA00659751 /* LoggerSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerSplitView.m; path = Classes/LoggerSplitView.m; sourceTree = "<group>"; };
+		3DA319A912E37088003F68E6 /* LoggerTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerTableView.h; path = Classes/LoggerTableView.h; sourceTree = "<group>"; };
+		3DA319AA12E37088003F68E6 /* LoggerTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTableView.m; path = Classes/LoggerTableView.m; sourceTree = "<group>"; };
 		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
 		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
@@ -288,6 +291,8 @@
 		3D0D601B0F4068A100EDB93B /* Views & Cells */ = {
 			isa = PBXGroup;
 			children = (
+				3DA319A912E37088003F68E6 /* LoggerTableView.h */,
+				3DA319AA12E37088003F68E6 /* LoggerTableView.m */,
 				3D8B63DB126B79CA00659751 /* LoggerSplitView.h */,
 				3D8B63DC126B79CA00659751 /* LoggerSplitView.m */,
 				3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */,
@@ -468,7 +473,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nif [ -z \"$CODE_SIGN_IDENTITY\" ] ; then\n\tosascript -e \"tell application \\\"Xcode\\\"\n\t\tactivate\n\t\tdisplay alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart.\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\" as warning\n\t\tend tell\"\nfi\n";
+			shellScript = "#!/bin/sh\nif [ -z \"$CODE_SIGN_IDENTITY\" ] || [ \"$CODE_SIGN_IDENTITY\" == \"Don't Code Sign\" ] ; then\n\tosascript -e \"tell application \\\"Xcode\\\"\n\t\tactivate\n\t\tdisplay alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart.\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\" as warning\n\t\tend tell\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -505,6 +510,7 @@
 				3DD61AB7127F7617009871F1 /* LoggerClientInfoCell.m in Sources */,
 				3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */,
 				3DEE27B712B773D8009ADA67 /* LoggerNativeTransport.m in Sources */,
+				3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,10 +611,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
@@ -622,8 +629,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Florent Pillet (NTPTWU4424)";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;

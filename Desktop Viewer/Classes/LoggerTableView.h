@@ -1,5 +1,5 @@
 /*
- * LoggerMessageCell.h
+ * LoggerTableView.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,34 +28,18 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
 
-@class LoggerMessage;
-
-@interface LoggerMessageCell : NSCell
+@interface LoggerTableView : NSTableView
 {
-	LoggerMessage *message;
-	LoggerMessage *previousMessage;
-	
-	NSDictionary *messageAttributes;
-	
+	NSTrackingArea *tableTrackingArea;
+	NSTrackingArea *timestampSeparatorTrackingArea;
+	NSTrackingArea *threadSeparatorTrackingArea;
+
 	CGFloat timestampColumnWidth;
 	CGFloat threadIDColumnWidth;
-	
-	BOOL shouldShowFunctionNames;
 }
 
-@property (nonatomic, retain) LoggerMessage *message;
-@property (nonatomic, retain) LoggerMessage *previousMessage;
-@property (nonatomic, retain) NSDictionary *messageAttributes;
-@property (nonatomic, assign) BOOL shouldShowFunctionNames;
-
-+ (NSDictionary *)defaultAttributesDictionary;
-+ (NSDictionary *)defaultAttributes;
-+ (void)setDefaultAttributes:(NSDictionary *)newAttributes;
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
-+ (CGFloat)minimumHeightForCell;
+@property (nonatomic, assign) CGFloat timestampColumnWidth;
+@property (nonatomic, assign) CGFloat threadIDColumnWidth;
 
 @end
-
-extern NSString * const kMessageAttributesChangedNotification;

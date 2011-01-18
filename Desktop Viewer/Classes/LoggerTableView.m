@@ -1,9 +1,9 @@
 /*
- * LoggerMessageCell.h
+ * LoggerTableView.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-1011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,34 +28,37 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
+#import "LoggerTableView.h"
 
-@class LoggerMessage;
+@implementation LoggerTableView
 
-@interface LoggerMessageCell : NSCell
+@synthesize timestampColumnWidth, threadIDColumnWidth;
+
+- (void) dealloc
 {
-	LoggerMessage *message;
-	LoggerMessage *previousMessage;
-	
-	NSDictionary *messageAttributes;
-	
-	CGFloat timestampColumnWidth;
-	CGFloat threadIDColumnWidth;
-	
-	BOOL shouldShowFunctionNames;
+	[tableTrackingArea release];
+	[timestampSeparatorTrackingArea release];
+	[threadSeparatorTrackingArea release];
+	[super dealloc];
 }
 
-@property (nonatomic, retain) LoggerMessage *message;
-@property (nonatomic, retain) LoggerMessage *previousMessage;
-@property (nonatomic, retain) NSDictionary *messageAttributes;
-@property (nonatomic, assign) BOOL shouldShowFunctionNames;
+#pragma mark -
+#pragma mark MouseOver support
 
-+ (NSDictionary *)defaultAttributesDictionary;
-+ (NSDictionary *)defaultAttributes;
-+ (void)setDefaultAttributes:(NSDictionary *)newAttributes;
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
-+ (CGFloat)minimumHeightForCell;
+- (void)updateTrackingAreas
+{
+	// @@@ TODO
+}
+
+#pragma mark -
+#pragma mark Dragging support
+
+- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint
+{
+	// Don't understand why I have to override this method, but it's the only
+	// way I could get dragging from table to work. Tried various additional
+	// things with no luck...
+	return YES;
+}
 
 @end
-
-extern NSString * const kMessageAttributesChangedNotification;
