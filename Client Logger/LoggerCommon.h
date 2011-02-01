@@ -1,13 +1,15 @@
 /*
  * LoggerCommon.h
  *
- * version 1.0b10 2011-01-13
+ * version 1.0b10 2011-02-01
  *
- * Definitions common to NSLogger and NSLoggerClient for the binary messages format
+ * Definitions common to NSLogger Viewer and NSLoggerClient
+ * for the binary messages format
+ * https://github.com/fpillet/NSLogger
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2011 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:

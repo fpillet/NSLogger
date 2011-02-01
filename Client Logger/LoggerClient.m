@@ -1,14 +1,15 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b10 2011-01-13
+ * version 1.0b10 2011-02-01
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
+ * https://github.com/fpillet/NSLogger
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2011 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
