@@ -35,10 +35,12 @@
  * 
  */
 #import <sys/time.h>
-#if TARGET_OS_MAC
-#import <sys/types.h>
-#import <sys/sysctl.h>
-#import <dlfcn.h>
+#if !TARGET_OS_IPHONE
+	#import <sys/types.h>
+	#import <sys/sysctl.h>
+	#import <dlfcn.h>
+#elif ALLOW_COCOA_USE
+	#import <UIKit/UIKit.h>
 #endif
 #import <fcntl.h>
 
@@ -405,11 +407,13 @@ static void *LoggerWorkerThread(Logger *logger)
 {
 	LOGGERDBG(CFSTR("Start LoggerWorkerThread"));
 
+#if !TARGET_OS_IPHONE
 	// Register thread with Garbage Collector on Mac OS X if we're running an OS version that has GC
     void (*registerThreadWithCollector_fn)(void);
     registerThreadWithCollector_fn = (void(*)(void)) dlsym(RTLD_NEXT, "objc_registerThreadWithCollector");
     if (registerThreadWithCollector_fn)
         (*registerThreadWithCollector_fn)();
+#endif
 
 	// Create and get the runLoop for this thread
 	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
@@ -547,10 +551,10 @@ static CFStringRef LoggerCreateStringRepresentationFromBinaryData(CFDataRef data
 		CFStringAppendFormat(s, NULL, CFSTR("Raw data, %u bytes:\n"), dataLen);
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+		int i, j, b = sprintf(buffer," %04x: ", offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
-		for (int j=i; j < 16; j++)
+		for (j=i; j < 16; j++)
 			strcat(buffer, "   ");
 		
 		b = strlen(buffer);
@@ -562,7 +566,7 @@ static CFStringRef LoggerCreateStringRepresentationFromBinaryData(CFDataRef data
 			else
 				buffer[b++] = ' ';
 		}
-		for (int j=i; j < 16; j++)
+		for (j=i; j < 16; j++)
 			buffer[b++] = ' ';
 		buffer[b++] = '\'';
 		buffer[b++] = '\n';
@@ -1063,7 +1067,8 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	}
 	
 	// stop browsing for services
-	for (CFIndex idx = 0; idx < CFArrayGetCount(logger->bonjourServiceBrowsers); idx++)
+	CFIndex idx;
+	for (idx = 0; idx < CFArrayGetCount(logger->bonjourServiceBrowsers); idx++)
 	{
 		CFNetServiceBrowserRef browser = (CFNetServiceBrowserRef)CFArrayGetValueAtIndex(logger->bonjourServiceBrowsers, idx);
 		CFNetServiceBrowserStopSearch(browser, NULL);
@@ -1128,7 +1133,8 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 		if (!(flags & kCFNetServiceFlagIsDomain))
 		{
 			CFNetServiceRef service = (CFNetServiceRef)domainOrService;
-			for (CFIndex idx = 0; idx < CFArrayGetCount(logger->bonjourServices); idx++)
+			CFIndex idx;
+			for (idx = 0; idx < CFArrayGetCount(logger->bonjourServices); idx++)
 			{
 				if (CFArrayGetValueAtIndex(logger->bonjourServices, idx) == service)
 				{
@@ -1619,8 +1625,8 @@ static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, 
 	uint8_t *buf = malloc(2 * len);
 	if (buf != NULL)
 	{
-		int n = 0;
-		for (int i = 0; i < len; i++)
+		int i, n = 0;
+		for (i = 0; i < len; i++)
 		{
 			uint8_t c = (uint8_t)(*aString++);
 			if (c < 0x80)
