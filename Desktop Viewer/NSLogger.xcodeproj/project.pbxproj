@@ -473,7 +473,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nif [ -z \"$CODE_SIGN_IDENTITY\" ] || [ \"$CODE_SIGN_IDENTITY\" == \"Don't Code Sign\" ] ; then\n\tosascript -e \"tell application \\\"Xcode\\\"\n\t\tactivate\n\t\tdisplay alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart.\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\" as warning\n\t\tend tell\"\nfi\n";
+			shellScript = "#!/bin/bash\nif [ -z \"$CODE_SIGN_IDENTITY\" ] || [ \"$CODE_SIGN_IDENTITY\" == \"Don't Code Sign\" ] ; then\n    osascript -e \"tell application \\\"Xcode\\\"\n            display alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart.\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\"\n            end tell\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -620,7 +620,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 			};
 			name = Debug;
@@ -635,7 +634,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				PREBINDING = NO;
 				SDKROOT = macosx10.6;
 			};
 			name = Release;
