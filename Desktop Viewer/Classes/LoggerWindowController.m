@@ -729,7 +729,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		dispatch_async(messageFilteringQueue, ^{
 			dispatch_async(dispatch_get_main_queue(), ^{
 				// if the connection changed since the last refreshAll call, stop now
-				if (attachedConnection = theConnection)		// note that block retains self, not self.attachedConnection.
+				if (attachedConnection == theConnection)		// note that block retains self, not self.attachedConnection.
 				{
 					if (lastMessageRow < [displayedMessages count])
 					{
@@ -786,9 +786,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 					
 					[self rebuildMarksSubmenu];
 				}
+				initialRefreshDone = YES;
 			});
 		});
-		initialRefreshDone = YES;
 	}
 }
 
