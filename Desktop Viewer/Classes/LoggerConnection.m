@@ -43,13 +43,13 @@ char sConnectionAssociatedObjectKey = 1;
 @synthesize delegate;
 @synthesize messages;
 @synthesize reconnectionCount, connected, restoredFromSave, attachedToWindow;
-@synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice, clientAddress;
+@synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice, clientAddress, clientUDID;
 @synthesize messageProcessingQueue;
 @synthesize filenames, functionNames;
 
 - (id)init
 {
-	if (self = [super init])
+	if ((self = [super init]) != nil)
 	{
 		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 		messages = [[NSMutableArray alloc] initWithCapacity:1024];
@@ -85,6 +85,7 @@ char sConnectionAssociatedObjectKey = 1;
 	[clientOSVersion release];
 	[clientDevice release];
 	[clientAddress release];
+	[clientUDID release];
 	[filenames release];
 	[functionNames release];
 	[super dealloc];
@@ -113,6 +114,7 @@ char sConnectionAssociatedObjectKey = 1;
 			return NO;
 		return YES;	// s1 and d2 either nil or same
 	};
+
 	if (!isSame(clientName, aConnection.clientName) ||
 		!isSame(clientVersion, aConnection.clientVersion) ||
 		!isSame(clientOSName, aConnection.clientOSName) ||
@@ -122,9 +124,15 @@ char sConnectionAssociatedObjectKey = 1;
 		return NO;
 	}
 	
-	// check whether address is the same
+	// check whether address is the same, OR hardware ID (if present) is the same.
+	// hardware ID wins (on desktop, iOS simulator can connect have different
+	// addresses from run to run if the computer has multiple network interfaces / VMs installed
+	if (clientUDID != nil && isSame(clientUDID, aConnection.clientUDID))
+		return YES;
+	
 	if ((clientAddress != nil) != (aConnection.clientAddress != nil))
 		return NO;
+
 	if (clientAddress != nil)
 	{
 		// compare address blocks sizes (ipv4 vs. ipv6)
@@ -245,6 +253,9 @@ char sConnectionAssociatedObjectKey = 1;
 		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
 		if (value != nil)
 			self.clientDevice = value;
+		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+		if (value != nil)
+			self.clientUDID = value;
 	});
 }
 
@@ -323,13 +334,14 @@ char sConnectionAssociatedObjectKey = 1;
 // -----------------------------------------------------------------------------
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
-	if (self = [super init])
+	if ((self = [super init]) != nil)
 	{
 		clientName = [[aDecoder decodeObjectForKey:@"clientName"] retain];
 		clientVersion = [[aDecoder decodeObjectForKey:@"clientVersion"] retain];
 		clientOSName = [[aDecoder decodeObjectForKey:@"clientOSName"] retain];
 		clientOSVersion = [[aDecoder decodeObjectForKey:@"clientOSVersion"] retain];
 		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
+		clientUDID = [[aDecoder decodeObjectForKey:@"clientUDID"] retain];
 		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
 		filenames = [[aDecoder decodeObjectForKey:@"filenames"] retain];
 		if (filenames == nil)
@@ -360,6 +372,8 @@ char sConnectionAssociatedObjectKey = 1;
 		[aCoder encodeObject:clientOSVersion forKey:@"clientOSVersion"];
 	if (clientDevice != nil)
 		[aCoder encodeObject:clientDevice forKey:@"clientDevice"];
+	if (clientUDID != nil)
+		[aCoder encodeObject:clientUDID forKey:@"clientUDID"];
 	[aCoder encodeObject:filenames forKey:@"filenames"];
 	[aCoder encodeObject:functionNames forKey:@"functionNames"];
 	@synchronized (messages)

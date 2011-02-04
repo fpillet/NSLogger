@@ -58,6 +58,7 @@
 	NSString *clientOSName;
 	NSString *clientOSVersion;
 	NSString *clientDevice;
+	NSString *clientUDID;
 
 	NSMutableSet *filenames;			// pool of unique file names
 	NSMutableSet *functionNames;		// pool of unique function names
@@ -81,6 +82,8 @@
 @property (nonatomic, retain) NSString *clientOSName;
 @property (nonatomic, retain) NSString *clientOSVersion;
 @property (nonatomic, retain) NSString *clientDevice;
+@property (nonatomic, retain) NSString *clientUDID;
+
 @property (nonatomic, readonly) NSData *clientAddress;
 @property (nonatomic, readonly) NSMutableSet *filenames;
 @property (nonatomic, readonly) NSMutableSet *functionNames;
