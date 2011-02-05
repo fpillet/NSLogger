@@ -67,15 +67,7 @@
 			{
 				if (partType == PART_TYPE_STRING)
 				{
-					// trim whitespace and newline at both ends of the string
-					uint8_t *q = p;
-					uint32_t l = partSize;
-					while (l && (*q == ' ' || *q == '\t' || *q == '\n' || *q == '\r'))
-						q++, l--;
-					uint8_t *r = q + l - 1;
-					while (l && (*r == ' ' || *r == '\t' || *r == '\n' || *r == '\r'))
-						r--, l--;
-					part = [[NSString alloc] initWithBytes:q length:l encoding:NSUTF8StringEncoding];
+					part = [[NSString alloc] initWithBytes:p length:partSize encoding:NSUTF8StringEncoding];
 				}
 				else if (partType == PART_TYPE_BINARY || partType == PART_TYPE_IMAGE)
 				{
