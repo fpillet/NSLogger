@@ -672,6 +672,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	assert([NSThread isMainThread]);
 	@synchronized (attachedConnection.messages)
 	{
+		BOOL quickFilterWasFirstResponder = ([[self window] firstResponder] == [quickFilterTextField currentEditor]);
 		id messageToMakeVisible = [selectedMessages objectAtIndex:0];
 		if (messageToMakeVisible == nil)
 		{
@@ -753,7 +754,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 						if ([newSelectionIndexes count])
 						{
 							[logTable selectRowIndexes:newSelectionIndexes byExtendingSelection:NO];
-							[[self window] makeFirstResponder:logTable];
+							if (!quickFilterWasFirstResponder)
+								[[self window] makeFirstResponder:logTable];
 						}
 						[newSelectionIndexes release];
 					}

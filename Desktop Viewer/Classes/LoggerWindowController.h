@@ -41,6 +41,7 @@
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet NSButton *showFunctionNamesButton;
+	IBOutlet NSSearchField *quickFilterTextField;
 	IBOutlet BWAnchoredButtonBar *buttonBar;
 
 	IBOutlet NSArrayController *filterSetsListController;

@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10J567</string>
-		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,7 +15,7 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>804</string>
+				<string>823</string>
 				<string>1.2.5</string>
 			</object>
 		</object>
@@ -941,7 +941,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">3</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -3787,6 +3786,14 @@
 					</object>
 					<int key="connectionID">1251</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">quickFilterTextField</string>
+						<reference key="source" ref="1021"/>
+						<reference key="destination" ref="360120797"/>
+					</object>
+					<int key="connectionID">1252</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5255,7 +5262,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1251</int>
+			<int key="maxID">1252</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5266,6 +5273,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Classes/LoggerSplitView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">LoggerTableView</string>
+					<string key="superclassName">NSTableView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Classes/LoggerTableView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -5439,6 +5454,7 @@
 							<string>markTitleField</string>
 							<string>markTitleWindow</string>
 							<string>quickFilter</string>
+							<string>quickFilterTextField</string>
 							<string>showFunctionNamesButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -5455,6 +5471,7 @@
 							<string>NSTextField</string>
 							<string>NSWindow</string>
 							<string>NSPopUpButton</string>
+							<string>NSSearchField</string>
 							<string>NSButton</string>
 						</object>
 					</object>
@@ -5474,6 +5491,7 @@
 							<string>markTitleField</string>
 							<string>markTitleWindow</string>
 							<string>quickFilter</string>
+							<string>quickFilterTextField</string>
 							<string>showFunctionNamesButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -5525,6 +5543,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">quickFilter</string>
 								<string key="candidateClassName">NSPopUpButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">quickFilterTextField</string>
+								<string key="candidateClassName">NSSearchField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">showFunctionNamesButton</string>
