@@ -423,8 +423,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	NSString *osVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
 	NSString *osInfo = @"";
 	if ([osName length])
-		osInfo = [NSString stringWithFormat:NSLocalizedString(@"%@(%@ %@)", @""),
-				  [clientAppInfo length] ? @" (" : NSLocalizedString(@"Client connected ", @""),
+		osInfo = [NSString stringWithFormat:NSLocalizedString(@"%@ (%@ %@)", @""),
+				  [clientAppInfo length] ? @"" : NSLocalizedString(@"Client connected", @""),
 				  osName,
 				  osVersion ? osVersion : @""];
 
