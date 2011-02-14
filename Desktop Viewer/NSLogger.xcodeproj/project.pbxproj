@@ -28,6 +28,11 @@
 		3D7C75330F401B35006B55AD /* LoggerNativeConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75320F401B35006B55AD /* LoggerNativeConnection.m */; };
 		3D7C75510F4025A7006B55AD /* LoggerTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75500F4025A7006B55AD /* LoggerTransport.m */; };
 		3D8B63DD126B79CA00659751 /* LoggerSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B63DC126B79CA00659751 /* LoggerSplitView.m */; };
+		3D8E060F1305AE690024917B /* status_disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E060C1305AE690024917B /* status_disconnected.png */; };
+		3D8E06101305AE690024917B /* status_error.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E060D1305AE690024917B /* status_error.png */; };
+		3D8E06111305AE690024917B /* status_ready_connected.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E060E1305AE690024917B /* status_ready_connected.png */; };
+		3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8E06231306C06A0024917B /* LoggerTransportStatusCell.m */; };
+		3D8E078113097D6E0024917B /* ssl_badge.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E078013097D6E0024917B /* ssl_badge.png */; };
 		3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA319AA12E37088003F68E6 /* LoggerTableView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
@@ -141,6 +146,12 @@
 		3D7C75550F4026D2006B55AD /* LoggerNativeTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerNativeTransport.m; path = Classes/LoggerNativeTransport.m; sourceTree = "<group>"; };
 		3D8B63DB126B79CA00659751 /* LoggerSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerSplitView.h; path = Classes/LoggerSplitView.h; sourceTree = "<group>"; };
 		3D8B63DC126B79CA00659751 /* LoggerSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerSplitView.m; path = Classes/LoggerSplitView.m; sourceTree = "<group>"; };
+		3D8E060C1305AE690024917B /* status_disconnected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = status_disconnected.png; path = Resources/status_disconnected.png; sourceTree = "<group>"; };
+		3D8E060D1305AE690024917B /* status_error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = status_error.png; path = Resources/status_error.png; sourceTree = "<group>"; };
+		3D8E060E1305AE690024917B /* status_ready_connected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = status_ready_connected.png; path = Resources/status_ready_connected.png; sourceTree = "<group>"; };
+		3D8E06221306C06A0024917B /* LoggerTransportStatusCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerTransportStatusCell.h; path = Classes/LoggerTransportStatusCell.h; sourceTree = "<group>"; };
+		3D8E06231306C06A0024917B /* LoggerTransportStatusCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTransportStatusCell.m; path = Classes/LoggerTransportStatusCell.m; sourceTree = "<group>"; };
+		3D8E078013097D6E0024917B /* ssl_badge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssl_badge.png; path = Resources/ssl_badge.png; sourceTree = "<group>"; };
 		3DA319A912E37088003F68E6 /* LoggerTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerTableView.h; path = Classes/LoggerTableView.h; sourceTree = "<group>"; };
 		3DA319AA12E37088003F68E6 /* LoggerTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTableView.m; path = Classes/LoggerTableView.m; sourceTree = "<group>"; };
 		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
@@ -274,6 +285,10 @@
 				3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */,
 				3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */,
 				3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */,
+				3D8E060C1305AE690024917B /* status_disconnected.png */,
+				3D8E060D1305AE690024917B /* status_error.png */,
+				3D8E060E1305AE690024917B /* status_ready_connected.png */,
+				3D8E078013097D6E0024917B /* ssl_badge.png */,
 				3D6ED59C12A3AE0C0005DD57 /* Credits.rtf */,
 			);
 			name = Resources;
@@ -301,6 +316,8 @@
 				3DD61AB6127F7617009871F1 /* LoggerClientInfoCell.m */,
 				3DBB562512829BCC004F729D /* LoggerMarkerCell.h */,
 				3DBB562612829BCC004F729D /* LoggerMarkerCell.m */,
+				3D8E06221306C06A0024917B /* LoggerTransportStatusCell.h */,
+				3D8E06231306C06A0024917B /* LoggerTransportStatusCell.m */,
 			);
 			name = "Views & Cells";
 			sourceTree = "<group>";
@@ -456,6 +473,10 @@
 				3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */,
 				3D6ED56912A3A55E0005DD57 /* Icon.icns in Resources */,
 				3DE8CE7D12AE4A60005C83D0 /* Credits.rtf in Resources */,
+				3D8E060F1305AE690024917B /* status_disconnected.png in Resources */,
+				3D8E06101305AE690024917B /* status_error.png in Resources */,
+				3D8E06111305AE690024917B /* status_ready_connected.png in Resources */,
+				3D8E078113097D6E0024917B /* ssl_badge.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -511,6 +532,7 @@
 				3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */,
 				3DEE27B712B773D8009ADA67 /* LoggerNativeTransport.m in Sources */,
 				3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */,
+				3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -580,6 +602,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Florent Pillet (NTPTWU4424)";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;

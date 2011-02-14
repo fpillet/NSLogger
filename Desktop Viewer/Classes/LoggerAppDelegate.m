@@ -219,7 +219,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	// Prepare the logger status
 	statusController = [[LoggerStatusWindowController alloc] initWithWindowNibName:@"LoggerStatus"];
 	[statusController showWindow:self];
-	[statusController appendStatus:NSLocalizedString(@"Logger starting up", @"")];
 
 	/* initialize all supported transports */
 	

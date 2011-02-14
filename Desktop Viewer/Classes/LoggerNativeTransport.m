@@ -44,7 +44,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 @implementation LoggerNativeTransport
 
 @synthesize listenerPort, listenerSocket_ipv4, listenerSocket_ipv6;
-@synthesize secure, publishBonjourService;
+@synthesize publishBonjourService;
 
 - (void)dealloc
 {
@@ -52,6 +52,54 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	[bonjourService release];
 	[bonjourServiceName release];
 	[super dealloc];
+}
+
+- (NSString *)transportInfoString
+{
+	if (publishBonjourService)
+	{
+		NSString *name = bonjourServiceName;
+		if (![name length])
+			name = [bonjourService name];
+		if ([name length])
+			return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (%@, port %d%s)", @"Named Bonjour transport info string"),
+					bonjourServiceName,
+					listenerPort,
+					secure ? ", SSL" : ""];
+		return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (port %d%s)", @"Bonjour transport (default name) info string"),
+				listenerPort,
+				secure ? ", SSL" : ""];
+	}
+	return [NSString stringWithFormat:NSLocalizedString(@"TCP/IP (port %d%s)", @"TCP/IP transport info string"),
+			listenerPort,
+			secure ? ", SSL" : ""];
+}
+
+- (NSString *)transportStatusString
+{
+	if (failed)
+	{
+		if (failureReason != nil)
+			return failureReason;
+		return NSLocalizedString(@"Failed opening service", @"Transport failed opening - unknown reason");
+	}
+	if (active && ready)
+	{
+		__block NSInteger numConnected = 0;
+		[connections enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+			if (((LoggerConnection *)obj).connected)
+				numConnected++;
+		}];
+
+		if (numConnected == 0)
+			return NSLocalizedString(@"Ready to accept connections", @"Transport ready status");
+		if (numConnected == 1)
+			return NSLocalizedString(@"1 active connection", @"1 active connection for transport");
+		return [NSString stringWithFormat:NSLocalizedString(@"%d active connections", @"Number of active connections for transport"), numConnected];
+	}
+	if (active)
+		return NSLocalizedString(@"Opening service", @"Transport status: opening");
+	return NSLocalizedString(@"Unavailable", @"Transport status: service unavailable");
 }
 
 - (void)restart
@@ -103,7 +151,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	if (!active)
 	{
 		active = YES;
+		ready = NO;
+		failed = NO;
+		self.failureReason = nil;
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(completeRestart) object:nil];
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:self];	
 		[NSThread detachNewThreadSelector:@selector(listenerThread) toTarget:self withObject:nil];		
 	}
 }
@@ -118,15 +170,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		[self performSelector:_cmd onThread:listenerThread withObject:nil waitUntilDone:YES];
 		return;
 	}
-	
-	// post status update
-	NSString *status;
-	if (publishBonjourService)
-		status = [NSString stringWithFormat:NSLocalizedString(@"Bonjour%s service closing.", @""), secure ? " SSL" : ""];
-	else
-		status = [NSString stringWithFormat:NSLocalizedString(@"TCP/IP%s responder for port %d closing.", @""), secure ? " SSL" : "", listenerPort];
-	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
-														object:status];
 
 	// stop Bonjour service
 	[bonjourService setDelegate:nil];
@@ -159,6 +202,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	// another startup with a different port can take place.
 	listenerThread = nil;
 	active = NO;
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:self];	
 }
 
 - (void)removeConnection:(LoggerConnection *)aConnection
@@ -218,7 +263,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	    if (CFSocketSetAddress(listenerSocket_ipv4, (CFDataRef)address4) != kCFSocketSuccess)
 		{
 			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
-										   reason:NSLocalizedString(@"Failed setting socket address", @"")
+										   reason:NSLocalizedString(@"Failed setting IPv4 socket address", @"")
 										 userInfo:nil];
 		}
 		
@@ -243,7 +288,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		if (CFSocketSetAddress(listenerSocket_ipv6, (CFDataRef)address6) != kCFSocketSuccess)
 		{
 			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
-										   reason:NSLocalizedString(@"Failed setting socket address", @"")
+										   reason:NSLocalizedString(@"Failed setting IPv6 socket address", @"")
 										 userInfo:nil];
 		}
 		
@@ -258,7 +303,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		CFRelease(source6);
 
 		// register Bonjour service
-		NSString *status;
 		if (publishBonjourService)
 		{
 			// The service type is nslogger-ssl (now the default), or nslogger for backwards
@@ -281,26 +325,24 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 															 port:listenerPort];
 			[bonjourService setDelegate:self];
 			[bonjourService publish];
-
-			status = [NSString stringWithFormat:NSLocalizedString(@"Bonjour%s service starting up...", @""), secure ? " SSL" : ""];
 		}
 		else
 		{
-			status = [NSString stringWithFormat:@"TCP/IP%s responder ready (local port %d)", secure ? " SSL" : "", listenerPort];
+			ready = YES;
 		}
 
-		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
-															object:status];
 	}
 	@catch (NSException * e)
 	{
-		NSString *status;
+		failed = YES;
 		if (publishBonjourService)
-			status = [NSString stringWithFormat:NSLocalizedString(@"Failed creating sockets for Bonjour%s service.", @""), secure ? " SSL" : ""];
+			self.failureReason = NSLocalizedString(@"Failed creating sockets for Bonjour%s service.", @"");
 		else
-			status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting TCP/IP%s responder on port %d",@""), secure ? " SSL" : "", listenerPort];
+			self.failureReason = [NSString stringWithFormat:NSLocalizedString(@"Failed listening on port %d (port busy?)",@""), listenerPort];
+
 		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
-															object:status];
+															object:self];
+		
 		if (listenerSocket_ipv4 != NULL)
 		{
 			CFRelease(listenerSocket_ipv4);
@@ -312,6 +354,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			listenerSocket_ipv6 = NULL;
 		}
 		return NO;
+	}
+	@finally
+	{
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+															object:self];
 	}
 	return YES;
 }
@@ -634,24 +681,25 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 {
 	[self shutdown];
 	
-	NSString *errorString = [errorDict description];
 	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
 	if (errorCode == NSNetServicesCollisionError)
-		errorString = NSLocalizedString(@"Another logger may be publishing itself on your network with the same service name", @"");
+		self.failureReason = NSLocalizedString(@"Duplicate Bonjour service name on your network", @"");
 	else if (errorCode == NSNetServicesBadArgumentError)
-		errorString = NSLocalizedString(@"Bonjour is improperly configured (bad argument) - please contact NSLogger developers", @"");
+		self.failureReason = NSLocalizedString(@"Bonjour bad argument - please report bug.", @"");
 	else if (errorCode == NSNetServicesInvalidError)
-		errorString = NSLocalizedString(@"Bonjour is improperly configured (invalid) - please contact NSLogger developers", @"");
+		self.failureReason = NSLocalizedString(@"Bonjour invalid configuration - please report bug.", @"");
+	else
+		self.failureReason = [NSString stringWithFormat:NSLocalizedString(@"Bonjour error %d", @""), errorCode];
+	failed = YES;
 
-	NSString *status = [NSString stringWithFormat:NSLocalizedString(@"Failed starting Bonjour service (%@).", @""), errorString];
-	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:status];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification object:self];
 }
 
 - (void)netServiceDidPublish:(NSNetService *)sender
 {
-	NSString *status = [NSString stringWithFormat:@"Bonjour%s service ready (%@ local port %d)", secure ? " SSL" :"", [sender domain], listenerPort];
+	ready = YES;
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
-														object:status];
+														object:self];
 }
 
 @end

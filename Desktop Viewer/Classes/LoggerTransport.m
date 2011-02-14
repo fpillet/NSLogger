@@ -35,7 +35,8 @@
 
 @implementation LoggerTransport
 
-@synthesize active, connections;
+@synthesize connections;
+@synthesize secure, active, ready, failed, failureReason;
 
 - (id)init
 {
@@ -48,6 +49,7 @@
 
 - (void)dealloc
 {
+	[failureReason release];
 	[connections release];
 	[super dealloc];
 }
@@ -91,7 +93,13 @@
 	// subclasses should implement this
 }
 
-- (NSString *)status
+- (NSString *)transportInfoString
+{
+	// subclasses should implement this, LoggerStatusWindowController uses it
+	return @"";
+}
+
+- (NSString *)transportStatusString
 {
 	// subclasses should implement this, LoggerStatusWindowController uses it
 	return @"";
