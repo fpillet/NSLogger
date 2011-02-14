@@ -35,11 +35,19 @@
 @interface LoggerTransport : NSObject 
 {
 	NSMutableArray *connections;
+	NSString *failureReason;
+	BOOL secure;
 	BOOL active;
+	BOOL ready;
+	BOOL failed;
 }
 
+@property (nonatomic, assign) BOOL secure;
 @property (nonatomic, readonly) BOOL active;
+@property (nonatomic, readonly) BOOL failed;
+@property (nonatomic, readonly) BOOL ready;
 @property (nonatomic, readonly) NSMutableArray *connections;
+@property (nonatomic, retain) NSString *failureReason;
 
 - (void)startup;
 - (void)shutdown;
@@ -47,5 +55,8 @@
 - (void)addConnection:(LoggerConnection *)aConnection;
 - (void)removeConnection:(LoggerConnection *)aConnection;
 - (void)attachConnectionToWindow:(LoggerConnection *)aConnection;
+
+- (NSString *)transportInfoString;
+- (NSString *)transportStatusString;
 
 @end

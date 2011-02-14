@@ -256,6 +256,9 @@ char sConnectionAssociatedObjectKey = 1;
 		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
 		if (value != nil)
 			self.clientUDID = value;
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
+															object:self];
 	});
 }
 

@@ -1,9 +1,9 @@
 /*
- * LoggerReadyWindowController.h
+ * LoggerStatusWindowController.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,14 +28,15 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Cocoa/Cocoa.h>
 
-@interface LoggerStatusWindowController : NSWindowController
+@class LoggerTransportStatusCell;
+
+@interface LoggerStatusWindowController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
 {
-	IBOutlet NSTextView *infoView;
+	LoggerTransportStatusCell *transportStatusCell;
+	
+	IBOutlet NSTableView *statusTable;
 }
-
-- (void)appendStatus:(NSString *)newText; 
 
 @end
 

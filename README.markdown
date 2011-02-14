@@ -59,7 +59,6 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 # Work in progress - Current status #
 This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
 
- * For multiple subsequent connections by the same client (multiple app runs), reuse the same window much like Instruments does
  * Log entry colorization
  * Search and search term highlight in Details window
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
