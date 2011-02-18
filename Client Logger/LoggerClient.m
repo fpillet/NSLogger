@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b10 2011-02-01
+ * version 1.0b10 2011-02-18
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -552,14 +552,14 @@ static CFStringRef LoggerCreateStringRepresentationFromBinaryData(CFDataRef data
 	while (dataLen)
 	{
 		int i, j, b = sprintf(buffer," %04x: ", offset);
-		for (i=0; i < 16 && i < dataLen; i++)
+		for (i=0; i < 16 && i < (int)dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (j=i; j < 16; j++)
 			strcat(buffer, "   ");
 		
 		b = strlen(buffer);
 		buffer[b++] = '\'';
-		for (i=0; i < 16 && i < dataLen; i++, q++)
+		for (i=0; i < 16 && i < (int)dataLen; i++, q++)
 		{
 			if (*q >= 32 && *q < 128)
 				buffer[b++] = *q;
@@ -1608,7 +1608,7 @@ static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key)
 
 static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key)
 {
-	uint32_t partData[2] = {htonl(anInt >> 32), htonl(anInt)};
+	uint32_t partData[2] = {htonl((uint32_t)(anInt >> 32)), htonl((uint32_t)anInt)};
 	uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_INT64};
 	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
 	CFDataAppendBytes(data, (const UInt8 *)&partData, 8);
