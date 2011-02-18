@@ -28,7 +28,7 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "BWToolkitFramework/BWToolkitFramework.h"
+#import "BWToolkitFramework.h"
 
 @interface LoggerSplitView : BWSplitView
 {

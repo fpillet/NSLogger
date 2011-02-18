@@ -29,7 +29,7 @@
  * 
  */
 #import "LoggerConnection.h"
-#import "BWToolkitFramework/BWToolkitFramework.h"
+#import "BWToolkitFramework.h"
 
 @class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView;
 @class LoggerDetailsWindowController;

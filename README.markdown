@@ -67,7 +67,7 @@ This tool comes from a personal need for a more powerful logger. There are more 
 
 You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLogger/wiki/)
 
-NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/). The source tree for BWToolkit is currently included here because I suck at Git.
+NSLogger uses [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
 
-NSLogger is Copyright (c) 2010 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
+NSLogger is Copyright (c) 2010-2011 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)

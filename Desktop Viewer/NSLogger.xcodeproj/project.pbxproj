@@ -610,6 +610,9 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NSLogger_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"\"Third Party/BWToolkit\"",
+				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = NSLogger;
@@ -624,6 +627,9 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NSLogger_Prefix.pch;
+				HEADER_SEARCH_PATHS = (
+					"\"Third Party/BWToolkit\"",
+				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = NSLogger;
