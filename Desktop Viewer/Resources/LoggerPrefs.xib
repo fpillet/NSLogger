@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10H574</string>
+		<string key="IBDocument.SystemVersion">10J567</string>
 		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
-		<string key="IBDocument.HIToolboxVersion">461.00</string>
+		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
@@ -49,7 +49,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSWindowTemplate" id="374844220">
-				<int key="NSWindowStyleMask">15</int>
+				<int key="NSWindowStyleMask">7</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{485, 537}, {487, 275}}</string>
 				<int key="NSWTFlags">611845120</int>
@@ -1133,9 +1133,9 @@ WiAAAAAAAABW+AAArC8AAB0DWFlaIAAAAAAAACYiAAASfwAAsXA</bytes>
 						<object class="NSMutableData" key="BWSTHWindowSizesByIdentifier">
 							<bytes key="NS.bytes">BAtzdHJlYW10eXBlZIHoA4QBQISEhAxOU0RpY3Rpb25hcnkAhIQITlNPYmplY3QAhYQBaQOShISECE5T
 U3RyaW5nAZSEASskREE3OUU0ODMtRUYzNC00QUIxLTkzQ0MtREY4NDI2RkUzRUUzhpKEhIQHTlNWYWx1
-ZQCUhAEqhIQMe19OU1NpemU9ZmZ9moHnAYFhAYaShJaXFkJXVG9vbGJhclNob3dGb250c0l0ZW2GkoSY
-mZmagSQCgdsBhpKElpckMEQ1OTUwRDEtRDRBOC00NEM2LTlEQkMtMjUxQ0ZFRjg1MkUyhpKEmJmZmoE/
-AoH9AYaGA</bytes>
+ZQCUhAEqhIQMe19OU1NpemU9ZmZ9moHnAYFhAYaShJaXJDBENTk1MEQxLUQ0QTgtNDRDNi05REJDLTI1
+MUNGRUY4NTJFMoaShJiZmZqBPwKB/QGGkoSWlxZCV1Rvb2xiYXJTaG93Rm9udHNJdGVthpKEmJmZmoEk
+AoHbAYaGA</bytes>
 						</object>
 						<string key="BWSTHSelectedIdentifier">DA79E483-EF34-4AB1-93CC-DF8426FE3EE3</string>
 						<string key="BWSTHOldWindowTitle">Window</string>
