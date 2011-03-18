@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		182FF3071333F29C00EA7910 /* Load.png in Resources */ = {isa = PBXBuildFile; fileRef = 182FF3051333F29C00EA7910 /* Load.png */; };
+		182FF3081333F29C00EA7910 /* Save.png in Resources */ = {isa = PBXBuildFile; fileRef = 182FF3061333F29C00EA7910 /* Save.png */; };
+		182FF3161333F8EC00EA7910 /* Export.png in Resources */ = {isa = PBXBuildFile; fileRef = 182FF3151333F8EC00EA7910 /* Export.png */; };
 		3D027B2C12663E1200E6F241 /* LoggerPrefs.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D027B2B12663E1200E6F241 /* LoggerPrefs.xib */; };
 		3D027B2F12663E3F00E6F241 /* LoggerPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */; };
 		3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */ = {isa = PBXBuildFile; fileRef = 3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */; };
@@ -107,6 +110,9 @@
 /* Begin PBXFileReference section */
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		182FF3051333F29C00EA7910 /* Load.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Load.png; path = Resources/Icon/Load.png; sourceTree = "<group>"; };
+		182FF3061333F29C00EA7910 /* Save.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Save.png; path = Resources/Icon/Save.png; sourceTree = "<group>"; };
+		182FF3151333F8EC00EA7910 /* Export.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Export.png; path = Resources/Icon/Export.png; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -276,6 +282,9 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				182FF3151333F8EC00EA7910 /* Export.png */,
+				182FF3051333F29C00EA7910 /* Load.png */,
+				182FF3061333F29C00EA7910 /* Save.png */,
 				3D6ED56812A3A55E0005DD57 /* Icon.icns */,
 				3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
@@ -477,6 +486,9 @@
 				3D8E06101305AE690024917B /* status_error.png in Resources */,
 				3D8E06111305AE690024917B /* status_ready_connected.png in Resources */,
 				3D8E078113097D6E0024917B /* ssl_badge.png in Resources */,
+				182FF3071333F29C00EA7910 /* Load.png in Resources */,
+				182FF3081333F29C00EA7910 /* Save.png in Resources */,
+				182FF3161333F8EC00EA7910 /* Export.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -556,6 +568,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -579,6 +592,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -602,7 +616,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Florent Pillet (NTPTWU4424)";
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -623,6 +637,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "Don't Code Sign";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

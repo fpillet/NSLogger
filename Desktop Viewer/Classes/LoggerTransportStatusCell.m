@@ -95,7 +95,7 @@
 	NSFont *descFont = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
 	NSFont *statusFont = [NSFont systemFontOfSize:[NSFont systemFontSize] - 2];
 	
-	NSColor *textColor = (highlighted ? [NSColor whiteColor] : [NSColor blackColor]);
+	NSColor *textColor = (highlighted ? [NSColor grayColor] : [NSColor whiteColor]);
 	NSDictionary *descAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
 							   descFont, NSFontAttributeName,
 							   textColor, NSForegroundColorAttributeName,
@@ -107,7 +107,7 @@
 		if (transport.failed)
 			textColor = [NSColor redColor];
 		else
-			textColor = [NSColor darkGrayColor];
+			textColor = [NSColor grayColor];
 	}
 	NSDictionary *statusAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
 								 statusFont, NSFontAttributeName,

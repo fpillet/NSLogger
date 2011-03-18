@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10J567</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -39,14 +39,14 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSWindowTemplate" id="327296022">
-				<int key="NSWindowStyleMask">25</int>
+				<int key="NSWindowStyleMask">8217</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{19, 913}, {414, 228}}</string>
+				<string key="NSWindowRect">{{126, 724}, {414, 228}}</string>
 				<int key="NSWTFlags">611844096</int>
 				<string key="NSWindowTitle">Logger Status</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{340, 130}</string>
 				<object class="NSView" key="NSWindowView" id="948701384">
 					<reference key="NSNextResponder"/>
@@ -97,7 +97,7 @@
 															<int key="NSColorSpace">6</int>
 															<string key="NSCatalogName">System</string>
 															<string key="NSColorName">headerTextColor</string>
-															<object class="NSColor" key="NSColor" id="815257754">
+															<object class="NSColor" key="NSColor">
 																<int key="NSColorSpace">3</int>
 																<bytes key="NSWhite">MAA</bytes>
 															</object>
@@ -113,20 +113,13 @@
 															<int key="NSfFlags">1044</int>
 														</object>
 														<reference key="NSControlView" ref="484395050"/>
-														<object class="NSColor" key="NSBackgroundColor" id="367191545">
-															<int key="NSColorSpace">6</int>
-															<string key="NSCatalogName">System</string>
-															<string key="NSColorName">controlBackgroundColor</string>
-															<object class="NSColor" key="NSColor">
-																<int key="NSColorSpace">3</int>
-																<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
-															</object>
+														<object class="NSColor" key="NSBackgroundColor">
+															<int key="NSColorSpace">3</int>
+															<bytes key="NSWhite">MSAwAA</bytes>
 														</object>
 														<object class="NSColor" key="NSTextColor">
-															<int key="NSColorSpace">6</int>
-															<string key="NSCatalogName">System</string>
-															<string key="NSColorName">controlTextColor</string>
-															<reference key="NSColor" ref="815257754"/>
+															<int key="NSColorSpace">3</int>
+															<bytes key="NSWhite">MQA</bytes>
 														</object>
 													</object>
 													<int key="NSResizingMask">3</int>
@@ -139,21 +132,17 @@
 											<double key="NSIntercellSpacingHeight">2</double>
 											<object class="NSColor" key="NSBackgroundColor">
 												<int key="NSColorSpace">3</int>
-												<bytes key="NSWhite">MQA</bytes>
+												<bytes key="NSWhite">MSAwAA</bytes>
 											</object>
 											<object class="NSColor" key="NSGridColor">
-												<int key="NSColorSpace">6</int>
-												<string key="NSCatalogName">System</string>
-												<string key="NSColorName">gridColor</string>
-												<object class="NSColor" key="NSColor">
-													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MC41AA</bytes>
-												</object>
+												<int key="NSColorSpace">3</int>
+												<bytes key="NSWhite">MSAwLjEyAA</bytes>
 											</object>
 											<double key="NSRowHeight">40</double>
-											<int key="NSTvFlags">46137344</int>
+											<int key="NSTvFlags">37748736</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
+											<int key="NSGridStyleMask">2</int>
 											<int key="NSColumnAutoresizingStyle">5</int>
 											<int key="NSDraggingSourceMaskForLocal">15</int>
 											<int key="NSDraggingSourceMaskForNonLocal">0</int>
@@ -165,8 +154,11 @@
 									<reference key="NSSuperview" ref="714613892"/>
 									<reference key="NSNextKeyView" ref="484395050"/>
 									<reference key="NSDocView" ref="484395050"/>
-									<reference key="NSBGColor" ref="367191545"/>
-									<int key="NScvFlags">4</int>
+									<object class="NSColor" key="NSBGColor">
+										<int key="NSColorSpace">3</int>
+										<bytes key="NSWhite">MSAwAA</bytes>
+									</object>
+									<int key="NScvFlags">2</int>
 								</object>
 								<object class="NSScroller" id="780767002">
 									<reference key="NSNextResponder" ref="714613892"/>
@@ -175,6 +167,7 @@
 									<reference key="NSSuperview" ref="714613892"/>
 									<reference key="NSTarget" ref="714613892"/>
 									<string key="NSAction">_doScroller:</string>
+									<double key="NSCurValue">0.095652173913043467</double>
 									<double key="NSPercent">0.99567097425460815</double>
 								</object>
 								<object class="NSScroller" id="1062427898">
@@ -185,6 +178,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="714613892"/>
 									<string key="NSAction">_doScroller:</string>
+									<double key="NSCurValue">0.12740384615384615</double>
 									<double key="NSPercent">0.99284011125564575</double>
 								</object>
 							</object>
@@ -201,9 +195,9 @@
 					<string key="NSFrameSize">{414, 228}</string>
 					<reference key="NSSuperview"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1600, 1178}}</string>
-				<string key="NSMinSize">{340, 146}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSScreenRect">{{0, 0}, {1920, 1058}}</string>
+				<string key="NSMinSize">{340, 149}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">loggerStatusWindow</string>
 			</object>
 		</object>
@@ -339,6 +333,7 @@
 				<object class="NSArray" key="dict.sortedKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>18.IBPluginDependency</string>
+					<string>18.IBViewBoundsToFrameTransform</string>
 					<string>19.IBPluginDependency</string>
 					<string>20.IBPluginDependency</string>
 					<string>21.IBPluginDependency</string>
@@ -356,15 +351,18 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAw2MAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{3, 927}, {414, 228}}</string>
+					<string>{{126, 724}, {414, 228}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
-					<string>{{3, 927}, {414, 228}}</string>
+					<string>{{126, 724}, {414, 228}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{340, 130}</string>
