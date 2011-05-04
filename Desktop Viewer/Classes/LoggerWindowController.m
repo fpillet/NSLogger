@@ -1536,19 +1536,19 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (IBAction)insertMarkWithTitle:(id)sender
 {
-	NSUInteger rowIndex = [logTable selectedRow];
-	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
-		[self addMarkWithTitleBeforeMessage:[displayedMessages objectAtIndex:rowIndex]];
+	NSInteger rowIndex = [logTable selectedRow];
+	if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count])
+		[self addMarkWithTitleBeforeMessage:[displayedMessages objectAtIndex:(NSUInteger)rowIndex]];
 }
 
 - (IBAction)deleteMark:(id)sender
 {
-	NSUInteger rowIndex = [logTable selectedRow];
-	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+	NSInteger rowIndex = [logTable selectedRow];
+	if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count])
 	{
-		LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+		LoggerMessage *markMessage = [displayedMessages objectAtIndex:(NSUInteger)rowIndex];
 		assert(markMessage.type == LOGMSG_TYPE_MARK);
-		[displayedMessages removeObjectAtIndex:rowIndex];
+		[displayedMessages removeObjectAtIndex:(NSUInteger)rowIndex];
 		[logTable reloadData];
 		[self rebuildMarksSubmenu];
 		dispatch_async(messageFilteringQueue, ^{
@@ -1594,10 +1594,10 @@ didReceiveMessages:(NSArray *)theMessages
 	SEL action = [anItem action];
 	if (action == @selector(deleteMark:))
 	{
-		NSUInteger rowIndex = [logTable selectedRow];
-		if (rowIndex >= 0 && rowIndex < [displayedMessages count])
+		NSInteger rowIndex = [logTable selectedRow];
+		if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count])
 		{
-			LoggerMessage *markMessage = [displayedMessages objectAtIndex:rowIndex];
+			LoggerMessage *markMessage = [displayedMessages objectAtIndex:(NSUInteger)rowIndex];
 			return (markMessage.type == LOGMSG_TYPE_MARK);
 		}
 		return NO;
