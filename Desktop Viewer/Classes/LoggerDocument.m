@@ -180,7 +180,7 @@
 														   kCFAllocatorNull);
 			if (subset != NULL)
 			{
-				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset];
+				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:attachedConnection];
 				if (message.type == LOGMSG_TYPE_CLIENTINFO)
 					[attachedConnection clientInfoReceived:message];
 				else
