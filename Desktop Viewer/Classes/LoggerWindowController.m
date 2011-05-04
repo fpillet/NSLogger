@@ -299,9 +299,31 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	// the current filter is the aggregate (OR clause) of all the selected filters
 	NSArray *predicates = [[filterListController selectedObjects] valueForKey:@"predicate"];
 	if (![predicates count])
-		return [NSPredicate predicateWithValue:YES];
+		return nil;
 	if ([predicates count] == 1)
 		return [predicates lastObject];
+	
+	// Isolate the NOT type predicates, merge predicates this way:
+	// result = (AND all NOT predicates)) AND (OR all ANY/ALL predicates)
+	NSMutableArray *anyAllPredicates = [NSMutableArray arrayWithCapacity:[predicates count]];
+	NSMutableArray *notPredicates = [NSMutableArray arrayWithCapacity:[predicates count]];
+	for (NSCompoundPredicate *pred in predicates)
+	{
+		if ([pred isKindOfClass:[NSCompoundPredicate class]] && [pred compoundPredicateType] == NSNotPredicateType)
+			[notPredicates addObject:pred];
+		else
+			[anyAllPredicates addObject:pred];
+	}
+	if ([notPredicates count] && [anyAllPredicates count])
+	{
+		return [NSCompoundPredicate andPredicateWithSubpredicates:
+				[NSArray arrayWithObjects:
+				 [NSCompoundPredicate andPredicateWithSubpredicates:notPredicates],
+				 [NSCompoundPredicate orPredicateWithSubpredicates:anyAllPredicates],
+				 nil]];
+	}
+	if ([notPredicates count])
+		return [NSCompoundPredicate andPredicateWithSubpredicates:notPredicates];
 	return [NSCompoundPredicate orPredicateWithSubpredicates:predicates];
 }
 
@@ -367,11 +389,14 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	}
 	if ([andPredicates count])
 	{
-		[andPredicates addObject:p];
+		if (p != nil)
+			[andPredicates addObject:p];
 		p = [NSCompoundPredicate andPredicateWithSubpredicates:andPredicates];
 	}
-	// @@@ TODO: eliminate TRUEPREDICATE (p is constant value YES) by testing it and not assembling the OR predicate as needed
-	p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
+	if (p == nil)
+		p = [NSPredicate predicateWithValue:YES];
+	else
+		p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
 	[filterPredicate autorelease];
 	filterPredicate = [p retain];
 	[andPredicates release];
