@@ -165,6 +165,28 @@ char sConnectionAssociatedObjectKey = 1;
 	return YES;
 }
 
+- (void)addMessagesFromPreviousRun:(LoggerConnection*)aConnection
+{
+    if (![self isNewRunOfClient:aConnection])
+        return;
+    
+    dispatch_async(messageProcessingQueue, ^ {
+        NSRange range;
+        range = NSMakeRange(0, [aConnection.messages count]);
+        
+		@synchronized (messages)
+		{
+            [aConnection.messages enumerateObjectsWithOptions:NSEnumerationReverse
+                                                   usingBlock:^(id message, NSUInteger idx, BOOL *stop) {
+                                                       [messages insertObject:message atIndex:0];
+                                                   }];
+		}
+		
+		if (attachedToWindow)
+			[self.delegate connection:self didReceiveMessages:aConnection.messages range:range];
+    });
+}
+
 - (void)messagesReceived:(NSArray *)msgs
 {
 	dispatch_async(messageProcessingQueue, ^{

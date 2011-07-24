@@ -272,6 +272,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				if ([doc isKindOfClass:[LoggerDocument class]] && doc.attachedConnection == c)
 				{
 					// recycle this document window, bring it to front
+                    [aConnection addMessagesFromPreviousRun:c];
 					aConnection.reconnectionCount = c.reconnectionCount + 1;
 					doc.attachedConnection = aConnection;
 					return;

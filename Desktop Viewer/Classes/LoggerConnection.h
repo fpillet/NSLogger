@@ -106,6 +106,7 @@
 - (NSString *)clientDescription;
 
 - (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection;
+- (void)addMessagesFromPreviousRun:(LoggerConnection*)aConnection;
 
 @end
 
