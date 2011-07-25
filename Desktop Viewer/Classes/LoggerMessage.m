@@ -45,7 +45,7 @@ static NSMutableArray *sTags = nil;
 
 - (id) init
 {
-	if (self = [super init])
+	if ((self = [super init]) != nil)
 	{
 		filename = @"";
 		functionName = @"";
@@ -166,7 +166,7 @@ static NSMutableArray *sTags = nil;
 // -----------------------------------------------------------------------------
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	if (self = [super init])
+	if ((self = [super init]) != nil)
 	{
 		timestamp.tv_sec = [decoder decodeInt64ForKey:@"s"];
 		timestamp.tv_usec = [decoder decodeInt64ForKey:@"us"];
