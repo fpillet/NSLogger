@@ -63,7 +63,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			name = [bonjourService name];
 		if ([name length])
 			return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (%@, port %d%s)", @"Named Bonjour transport info string"),
-					bonjourServiceName,
+					name,
 					listenerPort,
 					secure ? ", SSL" : ""];
 		return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (port %d%s)", @"Bonjour transport (default name) info string"),
