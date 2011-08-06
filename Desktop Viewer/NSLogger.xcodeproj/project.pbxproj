@@ -21,6 +21,7 @@
 		3D4EA05B0F3769B000DF81E6 /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */; };
 		3D4EA1E10F3854C300DF81E6 /* LoggerWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */; };
 		3D65634F13ED896400004DB6 /* ToolbarItemFonts.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 3D65634E13ED896400004DB6 /* ToolbarItemFonts.tiff */; };
+		3D65635513ED9C6800004DB6 /* LoggerDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D65635413ED9C6600004DB6 /* LoggerDocumentController.m */; };
 		3D6A346A1262F60400D0EC3A /* LoggerDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6A34691262F60400D0EC3A /* LoggerDocument.m */; };
 		3D6A34AB1262FD5D00D0EC3A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */; };
 		3D6A34AC1262FD6300D0EC3A /* LoggerWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */; };
@@ -129,6 +130,8 @@
 		3D4EA1DF0F3854C300DF81E6 /* LoggerWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerWindowController.h; path = Classes/LoggerWindowController.h; sourceTree = "<group>"; };
 		3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerWindowController.m; path = Classes/LoggerWindowController.m; sourceTree = "<group>"; };
 		3D65634E13ED896400004DB6 /* ToolbarItemFonts.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = ToolbarItemFonts.tiff; path = "Third Party/BWToolkit/ToolbarItemFonts.tiff"; sourceTree = "<group>"; };
+		3D65635313ED9C6500004DB6 /* LoggerDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerDocumentController.h; sourceTree = "<group>"; };
+		3D65635413ED9C6600004DB6 /* LoggerDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerDocumentController.m; sourceTree = "<group>"; };
 		3D6A34681262F60400D0EC3A /* LoggerDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerDocument.h; path = Classes/LoggerDocument.h; sourceTree = "<group>"; };
 		3D6A34691262F60400D0EC3A /* LoggerDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDocument.m; path = Classes/LoggerDocument.m; sourceTree = "<group>"; };
 		3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Resources/InfoPlist.strings; sourceTree = "<group>"; };
@@ -213,6 +216,8 @@
 				3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */,
 				3D6A34681262F60400D0EC3A /* LoggerDocument.h */,
 				3D6A34691262F60400D0EC3A /* LoggerDocument.m */,
+				3D65635313ED9C6500004DB6 /* LoggerDocumentController.h */,
+				3D65635413ED9C6600004DB6 /* LoggerDocumentController.m */,
 				3D4EA1DF0F3854C300DF81E6 /* LoggerWindowController.h */,
 				3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */,
 				3DE01E921268D32100A39E7E /* LoggerDetailsWindowController.h */,
@@ -554,6 +559,7 @@
 				3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */,
 				3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */,
 				3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */,
+				3D65635513ED9C6800004DB6 /* LoggerDocumentController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

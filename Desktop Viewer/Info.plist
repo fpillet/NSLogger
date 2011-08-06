@@ -80,13 +80,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0b10-pre</string>
+	<string>1.0-pre</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
 	<array/>
 	<key>CFBundleVersion</key>
-	<string>1.0b10</string>
+	<string>1.0-b11</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6.0</string>
 	<key>NSMainNibFile</key>

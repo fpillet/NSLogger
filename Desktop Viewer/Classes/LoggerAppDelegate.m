@@ -33,6 +33,7 @@
 #import "LoggerNativeTransport.h"
 #import "LoggerWindowController.h"
 #import "LoggerDocument.h"
+#import "LoggerDocumentController.h"
 #import "LoggerStatusWindowController.h"
 #import "LoggerPrefsWindowController.h"
 
@@ -55,6 +56,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	{
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		sDefaultPrefs = [[NSDictionary alloc] initWithObjectsAndKeys:
+						 //						 [NSNumber numberWithBool:NO], k
 						 [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
 						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
 						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
@@ -207,6 +209,12 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			}
 		}
 	}
+}
+
+- (void)applicationWillFinishLaunching:(NSNotification *)aNotification
+{
+	// instantiate our controller once to make it the shared document controller
+	[LoggerDocumentController sharedDocumentController];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
