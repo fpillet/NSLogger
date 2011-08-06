@@ -1209,7 +1209,7 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 		// Also start a timer that will try to reconnect every N seconds
 		if (logger->checkHostTimer == NULL)
 		{
-			CFRunLoopTimerContext timerContext = {
+			CFRunLoopTimerContext timerCtx = {
 				.version = 0,
 				.info = logger,
 				.retain = NULL,
@@ -1222,7 +1222,7 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 														  0,
 														  0,
 														  &LoggerTimedReconnectCallback,
-														  &timerContext);
+														  &timerCtx);
 			if (logger->checkHostTimer != NULL)
 			{
 				LOGGERDBG(CFSTR("Starting the TimedReconnect timer to regularly retry the connection"));
