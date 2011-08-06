@@ -726,7 +726,7 @@ static void LoggerLogToConsole(CFDataRef data)
 
 	char threadNamePadding[16];
 	threadNamePadding[0] = 0;
-	if (CFStringGetLength(thread) < 16)
+	if (thread != NULL && CFStringGetLength(thread) < 16)
 	{
 		int n = 16 - (int)CFStringGetLength(thread);
 		memset(threadNamePadding, ' ', n);
@@ -734,7 +734,7 @@ static void LoggerLogToConsole(CFDataRef data)
 	}
 	CFStringAppendFormat(s, NULL, CFSTR(".%04d %s%@ | %@"),
 						 (int)(timestamp.tv_usec / 1000),
-						 threadNamePadding, thread,
+						 threadNamePadding, (thread == NULL) ? CFSTR("") : thread,
 						 message ? message : CFSTR(""));
 
 	if (thread != NULL)
