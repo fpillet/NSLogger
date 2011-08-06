@@ -465,12 +465,19 @@ static void *LoggerWorkerThread(Logger *logger)
 	}
 
 	// Run logging thread until LoggerStop() is called
+	NSTimeInterval timeout = 0.10;
 	while (!logger->quit)
 	{
-		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, true);
+		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, true);
 		if (result == kCFRunLoopRunFinished || result == kCFRunLoopRunStopped)
 			break;
-		
+		if (result == kCFRunLoopRunHandledSource)
+		{
+			timeout = 0.0;
+			continue;
+		}
+		timeout = fmin(0.10, timeout+0.0005);
+
 		// Make sure we restart connection attempts if we get disconnected
 		if (!logger->connected &&
 			!CFArrayGetCount(logger->bonjourServices) &&
@@ -874,6 +881,12 @@ static void LoggerWriteMoreData(Logger *logger)
 			pthread_mutex_unlock(&logger->logQueueMutex);
 			logger->sendBufferOffset = 0;
 		}
+		
+		pthread_mutex_lock(&logger->logQueueMutex);
+		int remainingMsgs = CFArrayGetCount(logger->logQueue);
+		pthread_mutex_unlock(&logger->logQueueMutex);
+		if (remainingMsgs == 0)
+			pthread_cond_broadcast(&logger->logQueueEmpty);
 	}
 }
 
