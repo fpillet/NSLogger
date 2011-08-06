@@ -10,7 +10,7 @@
 #import "NSColor+BWAdditions.h"
 #import "NSWindow+BWAdditions.h"
 #import "NSApplication+BWAdditions.h"
-#import "IBColor.h"
+//#import "IBColor.h"
 
 @interface BWCustomView (BWCVPrivate)
 - (void)drawTextInRect:(NSRect)rect;

@@ -79,11 +79,13 @@
 							</object>
 							<string key="NSToolbarItemLabel">Quick Search</string>
 							<string key="NSToolbarItemPaletteLabel">Quick Search</string>
-							<nil key="NSToolbarItemToolTip"/>
+							<string key="NSToolbarItemToolTip">Refine by filtering the current filter/tag/level settings on a search term</string>
 							<object class="NSSearchField" key="NSToolbarItemView" id="26638440">
-								<nil key="NSNextResponder"/>
+								<reference key="NSNextResponder"/>
 								<int key="NSvFlags">268</int>
 								<string key="NSFrame">{{0, 14}, {117, 22}}</string>
+								<reference key="NSSuperview"/>
+								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSSearchFieldCell" key="NSCell" id="490457310">
 									<int key="NSCellFlags">343014976</int>
@@ -167,7 +169,7 @@
 							</object>
 							<string key="NSToolbarItemLabel">Save</string>
 							<string key="NSToolbarItemPaletteLabel">Save</string>
-							<string key="NSToolbarItemToolTip"/>
+							<string key="NSToolbarItemToolTip">Save this log file</string>
 							<nil key="NSToolbarItemView"/>
 							<object class="NSCustomResource" key="NSToolbarItemImage">
 								<string key="NSClassName">NSImage</string>
@@ -189,7 +191,7 @@
 							</object>
 							<string key="NSToolbarItemLabel">Preferences</string>
 							<string key="NSToolbarItemPaletteLabel">Preferences</string>
-							<string key="NSToolbarItemToolTip"/>
+							<string key="NSToolbarItemToolTip">Open the Preferences window</string>
 							<nil key="NSToolbarItemView"/>
 							<object class="NSCustomResource" key="NSToolbarItemImage">
 								<string key="NSClassName">NSImage</string>
@@ -211,7 +213,7 @@
 							</object>
 							<string key="NSToolbarItemLabel">Export</string>
 							<string key="NSToolbarItemPaletteLabel">Export</string>
-							<string key="NSToolbarItemToolTip"/>
+							<string key="NSToolbarItemToolTip">Export this log file to text format</string>
 							<nil key="NSToolbarItemView"/>
 							<object class="NSCustomResource" key="NSToolbarItemImage">
 								<string key="NSClassName">NSImage</string>
@@ -233,7 +235,7 @@
 							</object>
 							<string key="NSToolbarItemLabel">Open</string>
 							<string key="NSToolbarItemPaletteLabel">Open</string>
-							<string key="NSToolbarItemToolTip"/>
+							<string key="NSToolbarItemToolTip">Open a log file</string>
 							<nil key="NSToolbarItemView"/>
 							<object class="NSCustomResource" key="NSToolbarItemImage">
 								<string key="NSClassName">NSImage</string>
@@ -337,7 +339,7 @@
 							</object>
 						</object>
 					</dictionary>
-					<array key="NSToolbarIBAllowedItems">
+					<array class="NSMutableArray" key="NSToolbarIBAllowedItems">
 						<reference ref="999087205"/>
 						<reference ref="958014623"/>
 						<reference ref="1072918009"/>

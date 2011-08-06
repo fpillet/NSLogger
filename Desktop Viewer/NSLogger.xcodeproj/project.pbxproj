@@ -20,6 +20,7 @@
 		3D4EA0580F3768EA00DF81E6 /* LoggerMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA0570F3768EA00DF81E6 /* LoggerMessage.m */; };
 		3D4EA05B0F3769B000DF81E6 /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */; };
 		3D4EA1E10F3854C300DF81E6 /* LoggerWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */; };
+		3D65634F13ED896400004DB6 /* ToolbarItemFonts.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 3D65634E13ED896400004DB6 /* ToolbarItemFonts.tiff */; };
 		3D6A346A1262F60400D0EC3A /* LoggerDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6A34691262F60400D0EC3A /* LoggerDocument.m */; };
 		3D6A34AB1262FD5D00D0EC3A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */; };
 		3D6A34AC1262FD6300D0EC3A /* LoggerWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */; };
@@ -38,6 +39,8 @@
 		3D8E078113097D6E0024917B /* ssl_badge.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E078013097D6E0024917B /* ssl_badge.png */; };
 		3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA319AA12E37088003F68E6 /* LoggerTableView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
+		3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */; };
+		3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
@@ -54,13 +57,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3D24C4061256387900435837 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8D1AC9740486D14A00FE50C9;
-			remoteInfo = BWToolkit;
-		};
 		3D24C4081256387900435837 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */;
@@ -132,6 +128,7 @@
 		3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerNativeMessage.m; path = Classes/LoggerNativeMessage.m; sourceTree = "<group>"; };
 		3D4EA1DF0F3854C300DF81E6 /* LoggerWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerWindowController.h; path = Classes/LoggerWindowController.h; sourceTree = "<group>"; };
 		3D4EA1E00F3854C300DF81E6 /* LoggerWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerWindowController.m; path = Classes/LoggerWindowController.m; sourceTree = "<group>"; };
+		3D65634E13ED896400004DB6 /* ToolbarItemFonts.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = ToolbarItemFonts.tiff; path = "Third Party/BWToolkit/ToolbarItemFonts.tiff"; sourceTree = "<group>"; };
 		3D6A34681262F60400D0EC3A /* LoggerDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerDocument.h; path = Classes/LoggerDocument.h; sourceTree = "<group>"; };
 		3D6A34691262F60400D0EC3A /* LoggerDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDocument.m; path = Classes/LoggerDocument.m; sourceTree = "<group>"; };
 		3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Resources/InfoPlist.strings; sourceTree = "<group>"; };
@@ -162,6 +159,10 @@
 		3DA319AA12E37088003F68E6 /* LoggerTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTableView.m; path = Classes/LoggerTableView.m; sourceTree = "<group>"; };
 		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
 		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
+		3DAC10DF13ED5A7E00D5E6BA /* SSSelectableToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSSelectableToolbar.h; path = "Third Party/SSSelectableToolbar/SSSelectableToolbar.h"; sourceTree = "<group>"; };
+		3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSSelectableToolbar.m; path = "Third Party/SSSelectableToolbar/SSSelectableToolbar.m"; sourceTree = "<group>"; };
+		3DAC10E113ED5A7E00D5E6BA /* SSSelectableToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSSelectableToolbarItem.h; path = "Third Party/SSSelectableToolbar/SSSelectableToolbarItem.h"; sourceTree = "<group>"; };
+		3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSSelectableToolbarItem.m; path = "Third Party/SSSelectableToolbar/SSSelectableToolbarItem.m"; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
 		3DADCB9F125FC3B200807A7D /* ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ValueTransformers.m; path = Classes/ValueTransformers.m; sourceTree = "<group>"; };
 		3DBB562512829BCC004F729D /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMarkerCell.h; path = Classes/LoggerMarkerCell.h; sourceTree = "<group>"; };
@@ -260,6 +261,7 @@
 		29B97314FDCFA39411CA2CEA /* NSLogger */ = {
 			isa = PBXGroup;
 			children = (
+				3DAC10DE13ED5A6D00D5E6BA /* SSSelectableToolbar */,
 				3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
@@ -282,6 +284,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				3D65634E13ED896400004DB6 /* ToolbarItemFonts.tiff */,
 				182FF3151333F8EC00EA7910 /* Export.png */,
 				182FF3051333F29C00EA7910 /* Load.png */,
 				182FF3061333F29C00EA7910 /* Save.png */,
@@ -334,7 +337,6 @@
 		3D24C3FE1256387900435837 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3D24C4071256387900435837 /* BWToolkit.ibplugin */,
 				3D24C4091256387900435837 /* BWToolkitFramework.framework */,
 			);
 			name = Products;
@@ -351,6 +353,17 @@
 				3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */,
 			);
 			name = "Native log format";
+			sourceTree = "<group>";
+		};
+		3DAC10DE13ED5A6D00D5E6BA /* SSSelectableToolbar */ = {
+			isa = PBXGroup;
+			children = (
+				3DAC10DF13ED5A7E00D5E6BA /* SSSelectableToolbar.h */,
+				3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */,
+				3DAC10E113ED5A7E00D5E6BA /* SSSelectableToolbarItem.h */,
+				3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */,
+			);
+			name = SSSelectableToolbar;
 			sourceTree = "<group>";
 		};
 		3DDAE1570F405CD4001B1408 /* Model */ = {
@@ -452,13 +465,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		3D24C4071256387900435837 /* BWToolkit.ibplugin */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = BWToolkit.ibplugin;
-			remoteRef = 3D24C4061256387900435837 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		3D24C4091256387900435837 /* BWToolkitFramework.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -489,6 +495,7 @@
 				182FF3071333F29C00EA7910 /* Load.png in Resources */,
 				182FF3081333F29C00EA7910 /* Save.png in Resources */,
 				182FF3161333F8EC00EA7910 /* Export.png in Resources */,
+				3D65634F13ED896400004DB6 /* ToolbarItemFonts.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -545,6 +552,8 @@
 				3DEE27B712B773D8009ADA67 /* LoggerNativeTransport.m in Sources */,
 				3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */,
 				3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */,
+				3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */,
+				3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -616,7 +625,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "Don't Code Sign";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -637,7 +646,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "Don't Code Sign";
+				CODE_SIGN_IDENTITY = "";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

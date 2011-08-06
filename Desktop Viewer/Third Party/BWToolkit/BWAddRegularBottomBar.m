@@ -7,7 +7,7 @@
 //
 
 #import "BWAddRegularBottomBar.h"
-#import "NSWindow-NSTimeMachineSupport.h"
+//#import "NSWindow-NSTimeMachineSupport.h"
 
 @implementation BWAddRegularBottomBar
 

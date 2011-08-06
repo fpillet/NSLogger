@@ -7,7 +7,7 @@
 //
 
 #import "BWAddSmallBottomBar.h"
-#import "NSWindow-NSTimeMachineSupport.h"
+//#import "NSWindow-NSTimeMachineSupport.h"
 
 @implementation BWAddSmallBottomBar
 
