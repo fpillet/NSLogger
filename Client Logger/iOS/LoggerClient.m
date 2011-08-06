@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0b11 2011-06-19
+ * version 1.0 2011-08-06
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -742,7 +742,7 @@ static void LoggerLogToConsole(CFDataRef data)
 	if (message)
 		CFRelease(message);
 
-	if (type == LOGMSG_TYPE_LOG)
+	if (type == LOGMSG_TYPE_LOG || type == LOGMSG_TYPE_MARK)
 		CFShow(s);
 
 	CFRelease(s);
@@ -2199,4 +2199,47 @@ void LogEndBlockTo(Logger *logger)
 void LogEndBlock(void)
 {
 	LogEndBlockTo(NULL);
+}
+
+void LogMarkerTo(Logger *logger, NSString *text)
+{
+	if (logger == NULL)
+	{
+		logger = LoggerGetDefaultLogger();
+		LoggerStart(logger);
+	}
+	
+	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+	LOGGERDBG2(CFSTR("%ld LogMarker"), seq);
+	
+	CFMutableDataRef encoder = LoggerMessageCreate();
+	if (encoder != NULL)
+	{
+		LoggerMessageAddTimestampAndThreadID(encoder);
+		LoggerMessageAddInt32(encoder, LOGMSG_TYPE_MARK, PART_KEY_MESSAGE_TYPE);
+		if (text == nil)
+		{
+			CFDateFormatterRef df = CFDateFormatterCreate(NULL, NULL, kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
+			CFStringRef str = CFDateFormatterCreateStringWithAbsoluteTime(NULL, df, CFAbsoluteTimeGetCurrent());
+			CFRelease(df);
+			LoggerMessageAddString(encoder, str, PART_KEY_MESSAGE);
+			CFRelease(str);
+		}
+		else
+		{
+			LoggerMessageAddString(encoder, (CFStringRef)text, PART_KEY_MESSAGE);
+		}
+		LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+		LoggerPushMessageToQueue(logger, encoder);
+		CFRelease(encoder);
+	}
+	else
+	{
+		LOGGERDBG2(CFSTR("-> failed creating encoder"));
+	}
+}
+
+void LogMarker(NSString *text)
+{
+	LogMarkerTo(NULL, text);
 }

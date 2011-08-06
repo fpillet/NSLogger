@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0b11 2011-06-19
+ * version 1.0 2011-08-06
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
@@ -221,7 +221,11 @@ extern void LogStartBlockTo(Logger *logger, NSString *format, ...);
 // Mark the end of a block
 extern void LogEndBlock(void);
 extern void LogEndBlockTo(Logger *logger);
-	
+
+// Log a marker (text can be null)
+extern void LogMarker(NSString *text);
+extern void LogMarkerTo(Logger *logger, NSString *text);
+
 #ifdef __cplusplus
 };
 #endif
