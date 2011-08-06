@@ -564,7 +564,7 @@ static CFStringRef LoggerCreateStringRepresentationFromBinaryData(CFDataRef data
 		for (j=i; j < 16; j++)
 			strcat(buffer, "   ");
 		
-		b = strlen(buffer);
+		b = (int)strlen(buffer);
 		buffer[b++] = '\'';
 		for (i=0; i < 16 && i < (int)dataLen; i++, q++)
 		{
@@ -728,7 +728,7 @@ static void LoggerLogToConsole(CFDataRef data)
 	threadNamePadding[0] = 0;
 	if (CFStringGetLength(thread) < 16)
 	{
-		int n = 16 - CFStringGetLength(thread);
+		int n = 16 - (int)CFStringGetLength(thread);
 		memset(threadNamePadding, ' ', n);
 		threadNamePadding[n] = 0;
 	}
@@ -1634,7 +1634,7 @@ static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, 
 		return;
 	
 	// convert to UTF-8
-	int len = strlen(aString);
+	int len = (int)strlen(aString);
 	uint8_t *buf = malloc(2 * len);
 	if (buf != NULL)
 	{
