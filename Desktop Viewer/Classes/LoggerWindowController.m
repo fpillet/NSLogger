@@ -108,6 +108,9 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)windowDidLoad
 {
+	if ([[self window] respondsToSelector:@selector(setRestorable:)])
+		[[self window] setRestorable:NO];
+
 	messageCell = [[LoggerMessageCell alloc] init];
 	clientInfoCell = [[LoggerClientInfoCell alloc] init];
 	markerCell = [[LoggerMarkerCell alloc] init];

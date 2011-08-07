@@ -260,6 +260,11 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	return NO;
 }
 
+- (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
+{
+	return NO;
+}
+
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
 	return NO;

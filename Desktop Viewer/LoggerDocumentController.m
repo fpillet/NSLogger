@@ -42,6 +42,21 @@
 	return sSharedController;
 }
 
+- (id)openUntitledDocumentAndDisplay:(BOOL)displayDocument error:(NSError **)outError
+{
+	if (outError != NULL)
+		*outError = [[NSError alloc] initWithDomain:@"NSLogger" code:-1 userInfo:nil];
+	return nil;
+}
+
+- (void)reopenDocumentForURL:(NSURL *)urlOrNil
+		   withContentsOfURL:(NSURL *)contentsURL
+					 display:(BOOL)displayDocument
+		   completionHandler:(void (^)(NSDocument *document, BOOL documentWasAlreadyOpen, NSError *error))completionHandler
+{
+	completionHandler(nil, NO, nil);
+}
+
 - (id)makeUntitledDocumentOfType:(NSString *)typeName error:(NSError **)outError
 {
 	// Prevent the OS from creating a new, Untitled document on 10.7+
