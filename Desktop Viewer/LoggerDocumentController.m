@@ -57,10 +57,4 @@
 	completionHandler(nil, NO, nil);
 }
 
-- (id)makeUntitledDocumentOfType:(NSString *)typeName error:(NSError **)outError
-{
-	// Prevent the OS from creating a new, Untitled document on 10.7+
-	return nil;
-}
-
 @end
