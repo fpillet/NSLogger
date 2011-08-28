@@ -644,7 +644,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Florent Pillet (NTPTWU4424)";
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -657,7 +657,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = NSLogger;
-				PROVISIONING_PROFILE = "4ADB556C-D436-4894-AC89-2EB0B0BB7E43";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -665,7 +665,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Florent Pillet (NTPTWU4424)";
+				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -676,7 +676,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = NSLogger;
-				PROVISIONING_PROFILE = "4ADB556C-D436-4894-AC89-2EB0B0BB7E43";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};
