@@ -1328,7 +1328,7 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 				kCFStreamSSLPeerName
 			};
 			const void *SSLValues[] = {
-				kCFStreamSocketSecurityLevelNegotiatedSSL,
+				kCFStreamSocketSecurityLevelSSLv3,
 				kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
 				kCFBooleanFalse,			// not a server
 				kCFNull
