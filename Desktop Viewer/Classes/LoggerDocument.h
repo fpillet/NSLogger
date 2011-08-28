@@ -34,12 +34,16 @@
 
 @interface LoggerDocument : NSDocument <LoggerConnectionDelegate>
 {
-	LoggerConnection *attachedConnection;
+	NSMutableArray *attachedLogs;
+	LoggerConnection *currentConnection;			// the connection currently visible in the main window
 }
 
-@property (nonatomic, retain) LoggerConnection *attachedConnection;
+@property (nonatomic, readonly) NSArray *attachedLogs;
+@property (nonatomic, retain) NSNumber *indexOfCurrentVisibleLog;
 
 - (id)initWithConnection:(LoggerConnection *)aConnection;
 - (LoggerWindowController *)mainWindowController;
+- (NSArray *)attachedLogsPopupNames;
+- (void)addConnection:(LoggerConnection *)newConnection;
 
 @end

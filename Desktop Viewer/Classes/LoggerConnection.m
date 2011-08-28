@@ -354,6 +354,7 @@ char sConnectionAssociatedObjectKey = 1;
 			functionNames = [[NSMutableSet alloc] init];
 		objc_setAssociatedObject(aDecoder, &sConnectionAssociatedObjectKey, self, OBJC_ASSOCIATION_ASSIGN);
 		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
+		reconnectionCount = [aDecoder decodeIntForKey:@"reconnectionCount"];
 		restoredFromSave = YES;
 		
 		// we need a messageProcessingQueue just for the ability to add/insert marks
@@ -379,6 +380,7 @@ char sConnectionAssociatedObjectKey = 1;
 		[aCoder encodeObject:clientUDID forKey:@"clientUDID"];
 	[aCoder encodeObject:filenames forKey:@"filenames"];
 	[aCoder encodeObject:functionNames forKey:@"functionNames"];
+	[aCoder encodeInt:reconnectionCount forKey:@"reconnectionCount"];
 	@synchronized (messages)
 	{
 		[aCoder encodeObject:messages forKey:@"messages"];

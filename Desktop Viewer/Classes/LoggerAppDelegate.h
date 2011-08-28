@@ -64,6 +64,8 @@
 
 @end
 
+extern NSString * const kPrefKeepMultipleRuns;
+
 extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;
 extern NSString * const kPrefDirectTCPIPResponderPort;
@@ -79,3 +81,6 @@ extern NSString * const kPref_ApplicationFilterSet;
 #define TOOLS_MENU_INSERT_MARK_TAG				3
 #define TOOLS_MENU_DELETE_MARK_TAG				4
 #define TOOLS_MENU_JUMP_TO_MARK_TAG				5
+
+#define VIEW_MENU_ITEM_TAG				2
+#define VIEW_MENU_SWITCH_TO_RUN_TAG				6

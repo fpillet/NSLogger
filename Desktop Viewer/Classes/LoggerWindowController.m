@@ -38,6 +38,7 @@
 #import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
 #import "LoggerCommon.h"
+#import "LoggerDocument.h"
 
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
@@ -51,6 +52,9 @@
 - (NSPredicate *)filterPredicateFromCurrentSelection;
 - (void)tileLogTable:(BOOL)forceUpdate;
 - (void)rebuildMarksSubmenu;
+- (void)clearMarksSubmenu;
+- (void)rebuildRunsSubmenu;
+- (void)clearRunsSubmenu;
 @end
 
 static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
@@ -167,6 +171,20 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	// Update the source label
 	assert([NSThread isMainThread]);
 	[self synchronizeWindowTitleWithDocumentName];
+}
+
+- (void)updateMenuBar:(BOOL)documentIsFront
+{
+	if (documentIsFront)
+	{
+		[self rebuildMarksSubmenu];
+		[self rebuildRunsSubmenu];
+	}
+	else
+	{
+		[self clearRunsSubmenu];
+		[self clearMarksSubmenu];
+	}
 }
 
 - (void)tileLogTableMessages:(NSArray *)messages
@@ -291,6 +309,49 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 {
 	[self tileLogTable:YES];
 	[logTable reloadData];
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Support for multiple runs in same window
+// -----------------------------------------------------------------------------
+- (void)rebuildRunsSubmenu
+{
+	LoggerDocument *doc = (LoggerDocument *)self.document;
+	NSMenuItem *runsSubmenu = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:VIEW_MENU_SWITCH_TO_RUN_TAG];
+	NSArray *runsNames = [doc attachedLogsPopupNames];
+	NSMenu *menu = [runsSubmenu submenu];
+	[menu removeAllItems];
+	NSInteger i = 0;
+	NSInteger currentRun = [[doc indexOfCurrentVisibleLog] integerValue];
+	for (NSString *name in runsNames)
+	{
+		NSMenuItem *runItem = [[NSMenuItem alloc] initWithTitle:name
+														 action:@selector(selectRun:)
+												  keyEquivalent:@""];
+		if (i == currentRun)
+			[runItem setState:NSOnState];
+		[runItem setTag:i++];
+		[runItem setTarget:self];
+		[menu addItem:runItem];
+		[runItem release];
+	}
+}
+
+- (void)clearRunsSubmenu
+{
+	NSMenuItem *runsSubmenu = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:VIEW_MENU_SWITCH_TO_RUN_TAG];
+	NSMenu *menu = [runsSubmenu submenu];
+	[menu removeAllItems];
+	NSMenuItem *dummyItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Run Log", @"") action:nil keyEquivalent:@""];
+	[dummyItem setEnabled:NO];
+	[menu addItem:dummyItem];
+	[dummyItem release];
+}
+
+- (void)selectRun:(NSMenuItem *)anItem
+{
+	((LoggerDocument *)self.document).indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[anItem tag]];
 }
 
 // -----------------------------------------------------------------------------
@@ -524,6 +585,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
+	[self updateMenuBar:YES];
+
 	NSColor *bgColor = [NSColor colorWithCalibratedRed:(218.0 / 255.0)
 												 green:(221.0 / 255.0)
 												  blue:(229.0 / 255.0)
@@ -534,6 +597,8 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)windowDidResignMain:(NSNotification *)notification
 {
+	[self updateMenuBar:NO];
+
 	// constants by Brandon Walkin
 	NSColor *bgColor = [NSColor colorWithCalibratedRed:(234.0 / 255.0)
 												 green:(234.0 / 255.0)
@@ -869,14 +934,14 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		[logTable deselectAll:self];
 		lastMessageRow = 0;
 		[displayedMessages removeAllObjects];
-		[logTable reloadData];
 		self.info = NSLocalizedString(@"No message", @"");
+		[logTable reloadData];
 		[self rebuildMarksSubmenu];
 
 		// Close filter editor sheet (with cancel) if open
 		if ([filterEditorWindow isVisible])
 			[NSApp endSheet:filterEditorWindow returnCode:0];
-		
+
 		// Cancel pending tasks
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages:) object:nil];
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
@@ -892,19 +957,28 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 		attachedConnection.attachedToWindow = NO;
 		[attachedConnection release];
 		attachedConnection = nil;
-		initialRefreshDone = NO;
 	}
 	if (aConnection != nil)
 	{
 		attachedConnection = [aConnection retain];
 		attachedConnection.attachedToWindow = YES;
-		dispatch_async(dispatch_get_main_queue(), ^{
+		//dispatch_async(dispatch_get_main_queue(), ^{
+			initialRefreshDone = NO;
 			[self updateClientInfo];
 			if (!clientAppSettingsRestored)
 				[self restoreClientApplicationSettings];
+			[self rebuildRunsSubmenu];
 			[self refreshAllMessages:nil];
-		});
+		//});
 	}
+}
+
+- (NSNumber *)shouldEnableRunsPopup
+{
+	NSUInteger numRuns = [((LoggerDocument *)[self document]).attachedLogs count];
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:kPrefKeepMultipleRuns] && numRuns <= 1)
+		return (id)kCFBooleanFalse;
+	return (id)kCFBooleanTrue;
 }
 
 - (void)setFilterString:(NSString *)newString
@@ -1473,6 +1547,17 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 }
 
+- (void)clearMarksSubmenu
+{
+	NSMenuItem *marksSubmenu = [[[[NSApp mainMenu] itemWithTag:TOOLS_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_JUMP_TO_MARK_TAG];
+	NSMenu *menu = [marksSubmenu submenu];
+	[menu removeAllItems];
+	NSMenuItem *dummyItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Mark", @"") action:nil keyEquivalent:@""];
+	[dummyItem setEnabled:NO];
+	[menu addItem:dummyItem];
+	[dummyItem release];
+}
+
 - (void)jumpToMark:(NSMenuItem *)markMenuItem
 {
 	LoggerMessage *mark = [markMenuItem representedObject];
@@ -1486,6 +1571,7 @@ didReceiveMessages:(NSArray *)theMessages
 	{
 		[logTable scrollRowToVisible:idx];
 		[logTable selectRowIndexes:[NSIndexSet indexSetWithIndex:idx] byExtendingSelection:NO];
+		[self.window makeMainWindow];
 	}
 }
 

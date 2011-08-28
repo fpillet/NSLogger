@@ -110,6 +110,8 @@
 - (IBAction)validateAddMark:(id)sender;
 - (IBAction)deleteMark:(id)sender;
 
+- (void)updateMenuBar:(BOOL)documentIsFront;
+
 @end
 
 @interface LoggerTableView : NSTableView

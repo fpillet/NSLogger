@@ -52,6 +52,16 @@
 	[detailsView setTextContainerInset:NSMakeSize(2, 2)];
 }
 
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+	[[self.document mainWindowController] updateMenuBar:YES];
+}
+
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+	[[self.document mainWindowController] updateMenuBar:YES];
+}
+
 - (void)setMessages:(NSArray *)messages
 {
 	// defer text generation to queues

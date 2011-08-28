@@ -38,19 +38,31 @@
 
 @implementation LoggerDocument
 
-@synthesize attachedConnection;
+@synthesize attachedLogs;
+@dynamic indexOfCurrentVisibleLog;
 
 + (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName
 {
 	return YES;
 }
 
+- (id)init
+{
+	if ((self = [super init]) != nil)
+	{
+		attachedLogs = [[NSMutableArray alloc] init];
+	}
+	return self;
+}
+
 - (id)initWithConnection:(LoggerConnection *)aConnection
 {
 	if (self = [super init])
 	{
-		self.attachedConnection = aConnection;
-		attachedConnection.delegate = self;
+		attachedLogs = [[NSMutableArray alloc] init];
+		aConnection.delegate = self;
+		[attachedLogs addObject:aConnection];
+		currentConnection = aConnection;
 	}
 	return self;
 }
@@ -58,19 +70,101 @@
 - (void)close
 {
 	// since delegate is retained, we need to set it to nil
-	attachedConnection.delegate = nil;
+	[attachedLogs makeObjectsPerformSelector:@selector(setDelegate:) withObject:nil];
 	[super close];
+}
+
+- (void)selectRun:(NSInteger)runIndex
+{
+	if (![attachedLogs count])
+		return;
+	if (runIndex < 0 || runIndex >= [attachedLogs count])
+		runIndex = [attachedLogs count] - 1;
+	currentConnection = [attachedLogs objectAtIndex:runIndex];
+}
+
+- (NSArray *)attachedLogsPopupNames
+{
+	NSMutableArray *array = [NSMutableArray arrayWithCapacity:[attachedLogs count]];
+	NSUInteger count = [attachedLogs count];
+	if (count == 1)
+	{
+		int reconnectionCount = ((LoggerConnection *)[attachedLogs lastObject]).reconnectionCount + 1;
+		[array addObject:[NSString stringWithFormat:NSLocalizedString(@"Run %d of %d", @""), reconnectionCount, reconnectionCount]];
+	}
+	else for (NSInteger i=0; i < count; i++)
+		[array addObject:[NSString stringWithFormat:NSLocalizedString(@"Run %d of %d", @""), i+1, count]];
+	return array;
+}
+
+- (void)addConnection:(LoggerConnection *)newConnection
+{
+	newConnection.delegate = self;
+	[attachedLogs addObject:newConnection];
+
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// add the new connection to our list, potentially clearing previous ones
+		// if prefs say we shouldn't keep previous logs around
+		currentConnection = nil;
+		[self willChangeValueForKey:@"attachedLogsPopupNames"];
+		if (![[NSUserDefaults standardUserDefaults] boolForKey:kPrefKeepMultipleRuns])
+		{
+			while ([attachedLogs count] > 1)
+				[attachedLogs removeObjectAtIndex:0];
+		}
+		[self didChangeValueForKey:@"attachedLogsPopupNames"];
+		currentConnection = newConnection;
+
+		// switch the document's associated main window to show this new connection
+		self.indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[attachedLogs indexOfObjectIdenticalTo:newConnection]];
+	});
+}
+
+- (NSNumber *)indexOfCurrentVisibleLog
+{
+	NSInteger idx = [attachedLogs indexOfObjectIdenticalTo:currentConnection];
+	assert(idx != NSNotFound || currentConnection == nil);
+	if (idx == NSNotFound)
+		idx = [attachedLogs count] - 1;
+	return [NSNumber numberWithInteger:idx];
+}
+
+- (void)setIndexOfCurrentVisibleLog:(NSNumber *)anIndex
+{
+	assert([NSThread isMainThread]);
+
+	// First, close all non-main window attached windows
+	NSMutableArray *windowsToClose = [NSMutableArray array];
+	LoggerWindowController *mainWindow = nil;
+	for (NSWindowController *wc in [self windowControllers])
+	{
+		if (![wc isKindOfClass:[LoggerWindowController class]])
+			[windowsToClose addObject:wc];
+		else
+			mainWindow = (LoggerWindowController *)wc;
+	}
+	for (NSWindowController *wc in windowsToClose)
+		[wc close];
+	
+	// Changed the attached connection
+	[self willChangeValueForKey:@"indexOfCurrentVisibleLog"];
+	[self selectRun:[anIndex integerValue]];
+	mainWindow.attachedConnection = currentConnection;
+	[self didChangeValueForKey:@"indexOfCurrentVisibleLog"];
+	
+	// Bring window to front
+	[mainWindow showWindow:self];
 }
 
 - (void)dealloc
 {
-	if (attachedConnection != nil)
+	for (LoggerConnection *connection in attachedLogs)
 	{
 		// close the connection (if not already done) and make sure it is removed from transport
 		for (LoggerTransport *t in ((LoggerAppDelegate *)[NSApp	delegate]).transports)
-			[t removeConnection:attachedConnection];
-		[attachedConnection release];
+			[t removeConnection:connection];
 	}
+	[attachedLogs release];
 	[super dealloc];
 }
 
@@ -78,28 +172,23 @@
 {
 	if ([typeName isEqualToString:@"NSLogger Data"])
 	{
-		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:attachedConnection];
+		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:attachedLogs];
 		if (data != nil)
 			return [data writeToURL:absoluteURL atomically:NO];
 	}
 	else if ([typeName isEqualToString:@"public.plain-text"])
 	{
-		// Export messages as text
+		// Export messages as text. Only the current visible connection is exported at text
 		// Make a copy of the array state now so we're not bothered with the array
 		// changing while we're processing it
+		NSInteger connectionIndex = [[self indexOfCurrentVisibleLog] integerValue];
+		assert(connectionIndex != NSNotFound);
+		LoggerConnection *connection = [attachedLogs objectAtIndex:connectionIndex];
 		__block NSArray *allMessages = nil;
-//		if (attachedConnection.messageProcessingQueue != NULL)
-//		{
-			// live connections have a processing queue
-			dispatch_sync(attachedConnection.messageProcessingQueue , ^{
-				allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
-			});
-//		}
-//		else
-//		{
-//			// reloaded files don't have a queue
-//			allMessages = [[NSArray alloc] initWithArray:attachedConnection.messages];
-//		}
+		dispatch_sync(connection.messageProcessingQueue , ^{
+			allMessages = [[NSArray alloc] initWithArray:connection.messages];
+		});
+
 		BOOL (^flushData)(NSOutputStream*, NSMutableData*) = ^(NSOutputStream *stream, NSMutableData *data) 
 		{
 			NSUInteger length = [data length];
@@ -153,14 +242,22 @@
 
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
 {
-	assert(attachedConnection == nil);
+	assert([attachedLogs count] == 0);
+	NSUInteger previousLogs = [attachedLogs count];
+
 	if ([typeName isEqualToString:@"NSLogger Data"])
 	{
-		attachedConnection = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		id logs = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		if ([logs isKindOfClass:[LoggerConnection class]])
+			[attachedLogs addObject:logs];
+		else
+			[attachedLogs addObjectsFromArray:logs];
 	}
 	else if ([typeName isEqualToString:@"NSLogger Raw Data"])
 	{
-		attachedConnection = [[LoggerConnection alloc] init];
+		LoggerConnection *connection = [[[LoggerConnection alloc] init] autorelease];
+		[attachedLogs addObject:connection];
+
 		NSMutableArray *msgs = [[NSMutableArray alloc] init];
 		long dataLength = [data length];
 		const uint8_t *p = [data bytes];
@@ -180,9 +277,9 @@
 														   kCFAllocatorNull);
 			if (subset != NULL)
 			{
-				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:attachedConnection];
+				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:connection];
 				if (message.type == LOGMSG_TYPE_CLIENTINFO)
-					[attachedConnection clientInfoReceived:message];
+					[connection clientInfoReceived:message];
 				else
 					[msgs addObject:message];
 				[message release];
@@ -191,20 +288,22 @@
 			dataLength -= length + 4;
 			p += length + 4;
 		}
-		
 		if ([msgs count])
-			[attachedConnection messagesReceived:msgs];
+			[connection messagesReceived:msgs];
 		[msgs release];
 	}
-	return (attachedConnection != nil);
+	currentConnection = [attachedLogs lastObject];
+	return ([attachedLogs count] != previousLogs);
 }
 
 - (void)makeWindowControllers
 {
 	LoggerWindowController *controller = [[LoggerWindowController alloc] initWithWindowNibName:@"LoggerWindow"];
-	controller.attachedConnection = attachedConnection;
 	[self addWindowController:controller];
 	[controller release];
+
+	// force assignment of the current connection to the main window
+	self.indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[attachedLogs indexOfObjectIdenticalTo:currentConnection]];
 }
 
 - (BOOL)prepareSavePanel:(NSSavePanel *)sp
@@ -234,43 +333,6 @@
 	return nil;
 }
 
-- (void)setAttachedConnection:(LoggerConnection *)aConnection
-{
-	assert([NSThread isMainThread]);
-
-	// First, close all non-main window attached windows
-	NSMutableArray *windowsToClose = [NSMutableArray array];
-	LoggerWindowController *mainWindow = nil;
-	for (NSWindowController *wc in [self windowControllers])
-	{
-		if (![wc isKindOfClass:[LoggerWindowController class]])
-			[windowsToClose addObject:wc];
-		else
-			mainWindow = (LoggerWindowController *)wc;
-	}
-	for (NSWindowController *wc in windowsToClose)
-		[wc close];
-
-	// Don't use the previous connection anymore
-	if (attachedConnection != nil)
-	{
-		attachedConnection.delegate = nil;
-		[attachedConnection release];
-		attachedConnection = nil;
-	}
-	
-	// Reset the document change bit
-	[self updateChangeCount:NSChangeCleared];
-	
-	// Changed the attached connection
-	attachedConnection = [aConnection retain];
-	attachedConnection.delegate = self;
-	mainWindow.attachedConnection = aConnection;
-	
-	// Bring window to front
-	[mainWindow showWindow:self];
-}
-
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark LoggerConnectionDelegate
@@ -279,7 +341,9 @@
 didReceiveMessages:(NSArray *)theMessages
 			 range:(NSRange)rangeInMessagesList
 {
-	[[self mainWindowController] connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
+	LoggerWindowController *wc = [self mainWindowController];
+	if (wc.attachedConnection == theConnection)
+		[wc connection:theConnection didReceiveMessages:theMessages range:rangeInMessagesList];
 	if (theConnection.connected)
 	{
 		// fixed a crash where calling updateChangeCount: which does not appear to be
@@ -292,7 +356,9 @@ didReceiveMessages:(NSArray *)theMessages
 
 - (void)remoteDisconnected:(LoggerConnection *)theConnection
 {
-	[[self mainWindowController] remoteDisconnected:theConnection];
+	LoggerWindowController *wc = [self mainWindowController];
+	if (wc.attachedConnection == theConnection)
+		[wc remoteDisconnected:theConnection];
 }
 
 @end
