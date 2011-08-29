@@ -535,7 +535,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nif [ -z \"$CODE_SIGN_IDENTITY\" ] || [ \"$CODE_SIGN_IDENTITY\" == \"Don't Code Sign\" ] ; then\n    osascript -e \"tell application \\\"Xcode\\\"\n            display alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart.\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\"\n            end tell\"\nfi\n";
+			shellScript = "#!/bin/bash\nif [ -z \"$CODE_SIGN_IDENTITY\" ] || [ \"$CODE_SIGN_IDENTITY\" == \"Don't Code Sign\" ] ; then\n    osascript -e \"tell application \\\"Xcode\\\"\n            display alert \\\"Your build is not code signed\\\" message \\\"Signing your build will prevent an issue with SSL connections failing the first time and requiring a NSLogger restart (or even failing altogether on OS X 10.7).\\n\\nTo sign your build, open the NSLogger target and select your developer certificate in the Code Signing Identity build setting.\\n\\nFurther instructions can be found in the README.txt file in the project folder.\\\"\n            end tell\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
