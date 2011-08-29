@@ -1548,7 +1548,7 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		NSThread *thread = [NSThread currentThread];
 		NSString *name = [thread name];
-		if (name == nil)
+		if (![name length])
 		{
 			if ([thread isMainThread])
 				name = @"Main thread";
