@@ -355,7 +355,7 @@ void LoggerStop(Logger *logger)
 
 		// to make sure potential errors are catched, set the whole structure
 		// to a value that will make code crash if it tries using pointers to it.
-		memset(logger, 0x55, sizeof(logger));
+		memset(logger, 0x55, sizeof(*logger));
 
 		free(logger);
 	}
