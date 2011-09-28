@@ -403,7 +403,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 					CFStringRef commonName = NULL;
 					if (SecCertificateCopyCommonName(certRef, &commonName) == noErr)
 					{
-						if (CFStringCompare(commonName, CFSTR("NSLogger SSL"), 0) == kCFCompareEqualTo)
+						if (commonName != NULL && CFStringCompare(commonName, CFSTR("NSLogger SSL"), 0) == kCFCompareEqualTo)
 						{
 							// We found our identity
 							CFTypeRef values[] = {
