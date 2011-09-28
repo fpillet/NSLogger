@@ -1716,7 +1716,44 @@ didReceiveMessages:(NSArray *)theMessages
 		}
 		return NO;
 	}
+	else if (action == @selector(clearCurrentLog:))
+	{
+		// Allow "Clear Log" only if the log was not restored from save
+		if (attachedConnection == nil || attachedConnection.restoredFromSave)
+			return NO;
+	}
+	else if (action == @selector(clearAllLogs:))
+	{
+		// Allow "Clear All Run Logs" only if the log was not restored from save
+		// and there are multiple run logs
+		if (attachedConnection == nil || attachedConnection.restoredFromSave || [((LoggerDocument *)[self document]).attachedLogs count] <= 1)
+			return NO;
+	}
 	return YES;
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Support for clear current // all logs
+// -----------------------------------------------------------------------------
+- (BOOL)canClearCurrentLog
+{
+	return (attachedConnection != nil && !attachedConnection.restoredFromSave);
+}
+
+- (IBAction)clearCurrentLog:(id)sender
+{
+	[(LoggerDocument *)[self document] clearLogs:NO];
+}
+
+- (BOOL)canClearAllLogs
+{
+	return (attachedConnection != nil && !attachedConnection.restoredFromSave && [((LoggerDocument *)[self document]).attachedLogs count] > 1);
+}
+
+- (IBAction)clearAllLogs:(id)sender
+{
+	[(LoggerDocument *)[self document] clearLogs:YES];
 }
 
 @end

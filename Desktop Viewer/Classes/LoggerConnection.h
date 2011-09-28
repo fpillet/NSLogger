@@ -100,6 +100,7 @@
 
 - (void)messagesReceived:(NSArray *)msgs;
 - (void)clientInfoReceived:(LoggerMessage *)message;
+- (void)clearMessages;
 
 - (NSString *)clientAppDescription;
 - (NSString *)clientAddressDescription;

@@ -110,6 +110,9 @@
 - (IBAction)validateAddMark:(id)sender;
 - (IBAction)deleteMark:(id)sender;
 
+- (IBAction)clearCurrentLog:(id)sender;
+- (IBAction)clearAllLogs:(id)sender;
+
 - (void)updateMenuBar:(BOOL)documentIsFront;
 
 @end

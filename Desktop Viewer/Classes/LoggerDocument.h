@@ -45,5 +45,6 @@
 - (LoggerWindowController *)mainWindowController;
 - (NSArray *)attachedLogsPopupNames;
 - (void)addConnection:(LoggerConnection *)newConnection;
+- (void)clearLogs:(BOOL)includingPreviousRuns;
 
 @end

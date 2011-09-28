@@ -220,6 +220,21 @@ char sConnectionAssociatedObjectKey = 1;
 	});
 }
 
+- (void)clearMessages
+{
+	// Clear the backlog of messages, only keeping the top (client info) message
+	// This MUST be called on the messageProcessingQueue
+	assert(dispatch_get_current_queue() == messageProcessingQueue);
+	if (![messages count])
+		return;
+
+	// Locate the clientInfo message
+	if (((LoggerMessage *)[messages objectAtIndex:0]).type == LOGMSG_TYPE_CLIENTINFO)
+		[messages removeObjectsInRange:NSMakeRange(1, [messages count]-1)];
+	else
+		[messages removeAllObjects];
+}
+
 - (void)clientInfoReceived:(LoggerMessage *)message
 {
 	// Insert message at first position in the message list. In the unlikely event there is

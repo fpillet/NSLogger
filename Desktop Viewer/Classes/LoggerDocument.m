@@ -90,7 +90,7 @@
 	if (count == 1)
 	{
 		int reconnectionCount = ((LoggerConnection *)[attachedLogs lastObject]).reconnectionCount + 1;
-		[array addObject:[NSString stringWithFormat:NSLocalizedString(@"Run %d of %d", @""), reconnectionCount, reconnectionCount]];
+		[array addObject:[NSString stringWithFormat:NSLocalizedString(@"Run %d", @""), reconnectionCount]];
 	}
 	else for (NSInteger i=0; i < count; i++)
 		[array addObject:[NSString stringWithFormat:NSLocalizedString(@"Run %d of %d", @""), i+1, count]];
@@ -117,6 +117,28 @@
 
 		// switch the document's associated main window to show this new connection
 		self.indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[attachedLogs indexOfObjectIdenticalTo:newConnection]];
+	});
+}
+
+- (void)clearLogs:(BOOL)includingPreviousRuns
+{
+	if (includingPreviousRuns)
+	{
+		// Remove all previous run logs
+		[self willChangeValueForKey:@"attachedLogsPopupNames"];
+		while ([attachedLogs count] > 1)
+			[attachedLogs removeObjectAtIndex:0];
+		[self didChangeValueForKey:@"attachedLogsPopupNames"];
+	}
+
+	// Remove all entries from current run log
+	LoggerConnection *connection = [attachedLogs lastObject];
+	dispatch_async(connection.messageProcessingQueue, ^{
+		[connection clearMessages];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			// this forces a full refresh of the view in a clean way
+			self.indexOfCurrentVisibleLog = self.indexOfCurrentVisibleLog;
+		});
 	});
 }
 
