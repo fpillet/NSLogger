@@ -45,6 +45,8 @@
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
+		3DD2EB9314334BA8004EEB19 /* logfile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3DD2EB9114334BA8004EEB19 /* logfile.icns */; };
+		3DD2EB9414334BA8004EEB19 /* rawlogfile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3DD2EB9214334BA8004EEB19 /* rawlogfile.icns */; };
 		3DD61AB7127F7617009871F1 /* LoggerClientInfoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DD61AB6127F7617009871F1 /* LoggerClientInfoCell.m */; };
 		3DDAE1630F405CE5001B1408 /* LoggerIPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDAE1620F405CE5001B1408 /* LoggerIPConnection.m */; };
 		3DE01E901268D30C00A39E7E /* LoggerDetailsWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */; };
@@ -172,6 +174,8 @@
 		3DBB562612829BCC004F729D /* LoggerMarkerCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMarkerCell.m; path = Classes/LoggerMarkerCell.m; sourceTree = "<group>"; };
 		3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMessageCell.h; path = Classes/LoggerMessageCell.h; sourceTree = "<group>"; };
 		3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMessageCell.m; path = Classes/LoggerMessageCell.m; sourceTree = "<group>"; };
+		3DD2EB9114334BA8004EEB19 /* logfile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = logfile.icns; path = Resources/Icon/logfile.icns; sourceTree = "<group>"; };
+		3DD2EB9214334BA8004EEB19 /* rawlogfile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = rawlogfile.icns; path = Resources/Icon/rawlogfile.icns; sourceTree = "<group>"; };
 		3DD61AB5127F7617009871F1 /* LoggerClientInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClientInfoCell.h; path = Classes/LoggerClientInfoCell.h; sourceTree = "<group>"; };
 		3DD61AB6127F7617009871F1 /* LoggerClientInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClientInfoCell.m; path = Classes/LoggerClientInfoCell.m; sourceTree = "<group>"; };
 		3DDAE1610F405CE5001B1408 /* LoggerIPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerIPConnection.h; path = Classes/LoggerIPConnection.h; sourceTree = "<group>"; };
@@ -294,6 +298,8 @@
 				182FF3051333F29C00EA7910 /* Load.png */,
 				182FF3061333F29C00EA7910 /* Save.png */,
 				3D6ED56812A3A55E0005DD57 /* Icon.icns */,
+				3DD2EB9114334BA8004EEB19 /* logfile.icns */,
+				3DD2EB9214334BA8004EEB19 /* rawlogfile.icns */,
 				3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */,
@@ -459,7 +465,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0410;
+				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "Florent Pillet";
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLogger" */;
@@ -518,6 +524,8 @@
 				182FF3081333F29C00EA7910 /* Save.png in Resources */,
 				182FF3161333F8EC00EA7910 /* Export.png in Resources */,
 				3D65634F13ED896400004DB6 /* ToolbarItemFonts.tiff in Resources */,
+				3DD2EB9314334BA8004EEB19 /* logfile.icns in Resources */,
+				3DD2EB9414334BA8004EEB19 /* rawlogfile.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
