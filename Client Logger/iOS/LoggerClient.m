@@ -1693,14 +1693,16 @@ static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, i
 
 static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType)
 {
-	uint8_t keyAndType[2] = {(uint8_t)key, (uint8_t)partType};
-	CFIndex dataLength = CFDataGetLength(theData);
-	uint32_t partSize = htonl(dataLength);
-	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-	CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
-	if (partSize)
-		CFDataAppendBytes(data, CFDataGetBytePtr(theData), dataLength);
-	LoggerMessageUpdateDataHeader(data);
+	if ( theData != nil ){
+		uint8_t keyAndType[2] = {(uint8_t)key, (uint8_t)partType};
+		CFIndex dataLength = CFDataGetLength(theData);
+		uint32_t partSize = htonl(dataLength);
+		CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
+		CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
+		if (partSize)
+			CFDataAppendBytes(data, CFDataGetBytePtr(theData), dataLength);
+		LoggerMessageUpdateDataHeader(data);
+	}
 }
 
 static uint32_t LoggerMessageGetSeq(CFDataRef message)
