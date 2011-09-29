@@ -289,7 +289,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			if (c != aConnection && [aConnection isNewRunOfClient:c])
 			{
 				// recycle this document window, bring it to front
-				aConnection.reconnectionCount = c.reconnectionCount + 1;
+				aConnection.reconnectionCount = ((LoggerConnection *)[doc.attachedLogs lastObject]).reconnectionCount + 1;
 				[doc addConnection:aConnection];
 				return;
 			}

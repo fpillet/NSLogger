@@ -122,17 +122,19 @@
 
 - (void)clearLogs:(BOOL)includingPreviousRuns
 {
+	LoggerConnection *connection = [attachedLogs lastObject];
+
 	if (includingPreviousRuns)
 	{
 		// Remove all previous run logs
 		[self willChangeValueForKey:@"attachedLogsPopupNames"];
 		while ([attachedLogs count] > 1)
 			[attachedLogs removeObjectAtIndex:0];
+		connection.reconnectionCount = 0;
 		[self didChangeValueForKey:@"attachedLogsPopupNames"];
 	}
 
 	// Remove all entries from current run log
-	LoggerConnection *connection = [attachedLogs lastObject];
 	dispatch_async(connection.messageProcessingQueue, ^{
 		[connection clearMessages];
 		dispatch_async(dispatch_get_main_queue(), ^{
