@@ -12,7 +12,7 @@
 				<string>nsloggerdata</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>logfile</string>
+			<string>logfile.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>NSLogger Data</string>
 			<key>CFBundleTypeRole</key>
@@ -36,7 +36,7 @@
 				<string>rawnsloggerdata</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>rawlogfile</string>
+			<string>rawlogfile.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>NSLogger Raw Data</string>
 			<key>CFBundleTypeRole</key>
