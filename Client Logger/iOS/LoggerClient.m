@@ -1350,11 +1350,27 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 				kCFStreamSSLPeerName
 			};
 			const void *SSLValues[] = {
-				kCFStreamSocketSecurityLevelSSLv3,
+				kCFStreamSocketSecurityLevelNegotiatedSSL,
 				kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
 				kCFBooleanFalse,			// not a server
 				kCFNull
 			};
+			
+#if TARGET_OS_IPHONE
+			// workaround for TLS in iOS 5 as per TN2287
+			// see http://developer.apple.com/library/ios/#technotes/tn2287/_index.html#//apple_ref/doc/uid/DTS40011309
+			// if we are running iOS 5 or later, use a special mode that allows the stack to downgrade gracefully
+	#if ALLOW_COCOA_USE
+			NSString *versionString = [[UIDevice currentDevice] systemVersion];
+			if ([versionString compare:@"5.0" options:NSNumericSearch] != NSOrderedAscending)
+				SSLValues[0] = CFSTR("kCFStreamSocketSecurityLevelTLSv1_0SSLv3");
+	#else
+			// we can't find out, assume we _may_ be on iOS 5 but can't be certain
+			// go for SSLv3 which works without the TLS 1.2 / 1.1 / 1.0 downgrade issue
+			SSLValues[0] = kCFStreamSocketSecurityLevelSSLv3;
+	#endif
+#endif
+
 			CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 			CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
 			CFRelease(SSLDict);
