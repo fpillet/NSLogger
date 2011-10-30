@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.0 2011-08-06
+ * version 1.0 2011-10-30
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
