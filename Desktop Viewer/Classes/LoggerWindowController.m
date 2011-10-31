@@ -686,7 +686,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (IBAction)selectQuickFilterLevel:(id)sender
 {
-	int level = [sender tag];
+	int level = [(NSView *)sender tag];
 	if (level != logLevel)
 	{
 		logLevel = level;

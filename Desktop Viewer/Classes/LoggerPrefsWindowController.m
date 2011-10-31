@@ -311,7 +311,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 - (IBAction)selectFont:(id)sender
 {
-	currentFontSelection = [sender tag];
+	currentFontSelection = [(NSView *)sender tag];
 	[[NSFontManager sharedFontManager] setTarget:self];
 	[[NSFontPanel sharedFontPanel] setPanelFont:[self fontForCurrentFontSelection] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
@@ -320,7 +320,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 - (IBAction)selectColor:(id)sender
 {
 	NSString *attrName = NSForegroundColorAttributeName, *dictName = nil, *dictName2 = nil;
-	int tag = [sender tag];
+	int tag = [(NSView *)sender tag];
 	if (tag == kTimestampFontColor)
 		dictName = @"timestamp";
 	else if (tag == kThreadIDFontColor)
