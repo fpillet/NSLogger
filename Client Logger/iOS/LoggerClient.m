@@ -131,7 +131,7 @@
 	#define CAST_TO_CFSTRING			CFStringRef
 	#define CAST_TO_CFDATA				CFDataRef
 	#define RELEASE(obj)				[obj release]
-	#define AUTORELEASE_POOL_BEGIN		NSAutoreleasePool __pool=[[NSAutoreleasePool alloc] init];
+	#define AUTORELEASE_POOL_BEGIN		NSAutoreleasePool *__pool=[[NSAutoreleasePool alloc] init];
 	#define AUTORELEASE_POOL_END		[__pool drain];
 #endif
 #undef LOGGER_ARC_MACROS_DEFINED
