@@ -73,10 +73,13 @@
 				{
 					part = [[NSData alloc] initWithBytes:p length:partSize];
 				}
+				else if (partType == PART_TYPE_INT16)
+				{
+					value32 = (((uint32_t)p[0]) << 8) | (uint32_t)p[1];
+				}
 				else if (partType == PART_TYPE_INT32)
 				{
-					memcpy(&value32, p, 4);
-					value32 = ntohl(value32);
+					value32 = (((uint32_t)p[0]) << 24) | (((uint32_t)p[1]) << 16) | (((uint32_t)p[2]) << 8) | (uint32_t)p[3];
 				}
 				else if (partType == PART_TYPE_INT64)
 				{
