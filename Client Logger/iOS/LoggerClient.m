@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.0 2011-10-30
+ * version 1.0.1 2011-12-03
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -672,6 +672,10 @@ static void LoggerLogToConsole(CFDataRef data)
 			{
 				// ignore image data, we can't log it to console
 			}
+			else if (partType == PART_TYPE_INT16)
+			{
+				value32 = ((uint32_t)p[0]) << 8 | (uint32_t)p[1];
+			}
 			else if (partType == PART_TYPE_INT32)
 			{
 				memcpy(&value32, p, 4);
@@ -746,7 +750,7 @@ static void LoggerLogToConsole(CFDataRef data)
 	if (contentsType == PART_TYPE_IMAGE)
 		message = CFStringCreateWithFormat(NULL, NULL, CFSTR("<image width=%d height=%d>"), imgWidth, imgHeight);
 
-	char threadNamePadding[16];
+	char threadNamePadding[20];
 	threadNamePadding[0] = 0;
 	if (thread != NULL && CFStringGetLength(thread) < 16)
 	{
