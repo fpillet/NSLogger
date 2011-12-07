@@ -1361,6 +1361,7 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			};
 			
 #if TARGET_OS_IPHONE
+            AUTORELEASE_POOL_BEGIN
 			// workaround for TLS in iOS 5 as per TN2287
 			// see http://developer.apple.com/library/ios/#technotes/tn2287/_index.html#//apple_ref/doc/uid/DTS40011309
 			// if we are running iOS 5 or later, use a special mode that allows the stack to downgrade gracefully
@@ -1373,6 +1374,7 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			// go for SSLv3 which works without the TLS 1.2 / 1.1 / 1.0 downgrade issue
 			SSLValues[0] = kCFStreamSocketSecurityLevelSSLv3;
 	#endif
+            AUTORELEASE_POOL_END
 #endif
 
 			CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
@@ -1817,7 +1819,10 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		{
 			AUTORELEASE_POOL_BEGIN
 			UIDevice *device = [UIDevice currentDevice];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.uniqueIdentifier, PART_KEY_UNIQUEID);
+#pragma GCC diagnostic pop
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemVersion, PART_KEY_OS_VERSION);
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemName, PART_KEY_OS_NAME);
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.model, PART_KEY_CLIENT_MODEL);
