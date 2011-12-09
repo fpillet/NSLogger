@@ -1365,9 +1365,11 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			// see http://developer.apple.com/library/ios/#technotes/tn2287/_index.html#//apple_ref/doc/uid/DTS40011309
 			// if we are running iOS 5 or later, use a special mode that allows the stack to downgrade gracefully
 	#if ALLOW_COCOA_USE
+            AUTORELEASE_POOL_BEGIN
 			NSString *versionString = [[UIDevice currentDevice] systemVersion];
 			if ([versionString compare:@"5.0" options:NSNumericSearch] != NSOrderedAscending)
 				SSLValues[0] = CFSTR("kCFStreamSocketSecurityLevelTLSv1_0SSLv3");
+            AUTORELEASE_POOL_END
 	#else
 			// we can't find out, assume we _may_ be on iOS 5 but can't be certain
 			// go for SSLv3 which works without the TLS 1.2 / 1.1 / 1.0 downgrade issue
