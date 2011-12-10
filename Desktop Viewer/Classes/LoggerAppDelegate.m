@@ -411,7 +411,10 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 							};
 							serverCerts = CFArrayCreate(NULL, values, 2, &kCFTypeArrayCallBacks);
 						}
-						CFRelease(commonName);
+                        if (commonName != NULL)
+                        {
+                            CFRelease(commonName);
+                        }
 					}
 					CFRelease(certRef);
 				}
