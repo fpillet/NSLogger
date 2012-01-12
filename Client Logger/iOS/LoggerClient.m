@@ -156,9 +156,6 @@ static void LoggerTimedReconnectCallback(CFRunLoopTimerRef timer, void *info);
 // Connection & stream management
 static void LoggerTryConnect(Logger *logger);
 static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType event, void* info);
-#if LOGGER_DEBUG
-static void LoggerReadStreamCallback(CFReadStreamRef ws, CFStreamEventType event, void* info);
-#endif
 
 // File buffering
 static void LoggerCreateBufferWriteStream(Logger *logger);
@@ -170,13 +167,14 @@ static void LoggerFlushQueueToBufferStream(Logger *logger, BOOL firstEntryIsClie
 // Encoding functions
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger);
 static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder);
-static void LogDataInternal(Logger *logger, NSString *domain, int level, NSData *data, int binaryOrImageType);
 
 static CFMutableDataRef LoggerMessageCreate();
 static void LoggerMessageUpdateDataHeader(CFMutableDataRef data);
-static void LoggerMessageAddInt16(CFMutableDataRef data, int16_t anInt, int key);
+
 static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key);
+#if __LP64__
 static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key);
+#endif
 static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, int key);
 static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType);
 static uint32_t LoggerMessageGetSeq(CFDataRef message);
@@ -401,6 +399,7 @@ void LoggerFlush(Logger *logger, BOOL waitForConnection)
 	}
 }
 
+#if LOGGER_DEBUG
 static void LoggerDbg(CFStringRef format, ...)
 {
 	// Internal debugging function
@@ -420,6 +419,7 @@ static void LoggerDbg(CFStringRef format, ...)
 		AUTORELEASE_POOL_END
 	}
 }
+#endif
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -1645,15 +1645,6 @@ static CFMutableDataRef LoggerMessageCreate()
 	return data;
 }
 
-static void LoggerMessageAddInt16(CFMutableDataRef data, int16_t anInt, int key)
-{
-	uint16_t partData = htonl(anInt);
-	uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_INT16};
-	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-	CFDataAppendBytes(data, (const UInt8 *)&partData, 2);
-	LoggerMessageUpdateDataHeader(data);
-}
-
 static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key)
 {
 	uint32_t partData = htonl(anInt);
@@ -1663,6 +1654,7 @@ static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key)
 	LoggerMessageUpdateDataHeader(data);
 }
 
+#if __LP64__
 static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key)
 {
 	uint32_t partData[2] = {htonl((uint32_t)(anInt >> 32)), htonl((uint32_t)anInt)};
@@ -1671,6 +1663,7 @@ static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key)
 	CFDataAppendBytes(data, (const UInt8 *)&partData, 8);
 	LoggerMessageUpdateDataHeader(data);
 }
+#endif
 
 static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, int key)
 {
