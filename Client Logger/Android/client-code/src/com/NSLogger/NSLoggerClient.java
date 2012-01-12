@@ -1,14 +1,14 @@
 /*
  * NSLoggerClient.java
  *
- * version 1.0b2 2011-10-21
+ * version 1.0b3 2012-01-11
  *
  * Android port of the NSLogger client code
  * https://github.com/fpillet/NSLogger
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  *
- * Copyright (c) 2011 Florent Pillet All Rights Reserved.
+ * Copyright (c) 2011-2012 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -35,6 +35,24 @@
  */
 package com.NSLogger;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.net.SSLCertificateSocketFactory;
+import android.net.wifi.WifiManager;
+import android.os.*;
+import android.os.Process;
+import android.provider.Settings.Secure;
+import android.util.Log;
+import com.commandfusion.droidviewer.util.StringHelper;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
+import javax.net.ssl.HandshakeCompletedEvent;
+import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -48,22 +66,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.LogRecord;
-import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
-import javax.jmdns.*;
-
-import android.content.pm.ApplicationInfo;
-import android.net.SSLCertificateSocketFactory;
-import android.net.wifi.WifiManager;
-import android.os.*;
-import android.content.Context;
-import android.os.Process;
-import android.provider.Settings.Secure;
-import android.text.AndroidCharacter;
-import android.util.Log;
 
 /**
  * NSLoggerClient maintain one connection to the remote NSLogger desktop viewer (or log to a log file)
@@ -95,7 +97,7 @@ public class NSLoggerClient
 	// A global lock that we use to tell the OS that we need to use multicasting
 	// when we need to use Bonjour. Each NSLogger instance willing to use Bonjour
 	// will acquire() the lock when needed. Lock is created on-demand the first
-	private static WifiManager.MulticastLock multicastLock = null;
+	private static WifiManager.MulticastLock multicastLock;
 
 	// Instance variables
 	Context currentContext;
@@ -322,7 +324,7 @@ public class NSLoggerClient
 			}
 			if (method != null)
 				lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
-			if (tag != null && tag.length() != 0)
+			if (tag != null && !tag.isEmpty())
 				lm.addString(tag, LogMessage.PART_KEY_TAG);
 			lm.addString(message, LogMessage.PART_KEY_MESSAGE);
 			
@@ -551,10 +553,10 @@ public class NSLoggerClient
 			LOGMSG_TYPE_MARK = 5;			// Pseudo-message that defines a "mark" that users can place in the log flow
 
 		// Instance variables
-		private ByteArrayOutputStream data;
-		private DataOutputStream stream;
+		private final ByteArrayOutputStream data;
+		private final DataOutputStream stream;
+		private final int sequenceNumber;
 		private short numParts;
-		private int sequenceNumber;
 
 		// Flushing support
 		private ReentrantLock doneLock;
@@ -567,12 +569,12 @@ public class NSLoggerClient
 		 */
 		public LogMessage(LogRecord record, int seq)
 		{
+			sequenceNumber = seq;
+			String msg = record.getMessage();
+			data = new ByteArrayOutputStream(msg.length() + 32);	// gross approximation
+			stream = new DataOutputStream(data);
 			try
 			{
-				sequenceNumber = seq;
-				String msg = record.getMessage();
-				data = new ByteArrayOutputStream(msg.length() + 32);	// gross approximation
-				stream = new DataOutputStream(data);
 
 				addTimestamp(record.getMillis());
 				addInt32(LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
@@ -584,7 +586,6 @@ public class NSLoggerClient
 
 				stream.flush();
 				stream.close();
-				stream = null;
 			}
 			catch (IOException e)
 			{
@@ -685,7 +686,6 @@ public class NSLoggerClient
 				{
 					stream.flush();
 					stream.close();
-					stream = null;
 				}
 				catch (IOException e)
 				{
@@ -732,7 +732,7 @@ public class NSLoggerClient
 					}
 				}
 			}
-			if (s == null || s.length() == 0)
+			if (s == null || s.isEmpty())
 				s = "Thread " + Long.toString(threadID);
 			else if (!s.contains("thread"))
 				s += " thread";
@@ -893,7 +893,7 @@ public class NSLoggerClient
 				// We are ready to run. Unpark the waiting threads now
 				// (there may be multiple thread trying to start logging at the same time)
 				ready.set(true);
-				while (readyWaiters.size() > 0)
+				while (!readyWaiters.isEmpty())
 					LockSupport.unpark(readyWaiters.poll());
 
 				// Initial setup according to current parameters
@@ -925,7 +925,7 @@ public class NSLoggerClient
 
 				// In case an exception was caused before run, make sure waiters are unblocked
 				ready.set(true);
-				while (readyWaiters.size() > 0)
+				while (!readyWaiters.isEmpty())
 					LockSupport.unpark(readyWaiters.peek());
 			}
 		}
@@ -960,7 +960,7 @@ public class NSLoggerClient
 				else
 				{
 					host = newOptions.getProperty("remoteHost");
-					port = Integer.parseInt(newOptions.getProperty("remotePort", "0"));
+					port = StringHelper.toInteger(newOptions.getProperty("remotePort"));
 					if (!change && (options & OPT_BROWSE_BONJOUR) == 0)
 					{
 						// Check if changing host or port
@@ -1026,8 +1026,9 @@ public class NSLoggerClient
 						int n = Math.min(remaining, incompleteSend.length - incompleteSendOffset);
 						writeStream.write(incompleteSend, incompleteSendOffset, n);
 						written += n;
+						incompleteSendOffset += n;
 						remaining -= n;
-						if ((incompleteSendOffset + n) == incompleteSend.length)
+						if (incompleteSendOffset == incompleteSend.length)
 						{
 							incompleteSend = null;
 							incompleteSendOffset = 0;
@@ -1234,7 +1235,7 @@ public class NSLoggerClient
 		{
 			// Create the write stream that writes to a log file,
 			// and if needed flush the current logs to the log file
-			if (bufferFile == null || bufferFile.length() == 0)
+			if (bufferFile == null || bufferFile.isEmpty())
 				return;
 
 			try
@@ -1334,7 +1335,7 @@ public class NSLoggerClient
 						bonjourBrowser = JmDNS.create();
 						bonjourBrowser.setDelegate(this);
 						bonjourListeningType = bonjourServiceType;
-						if (bonjourListeningType == null || bonjourListeningType.length() == 0)
+						if (bonjourListeningType == null || bonjourListeningType.isEmpty())
 							bonjourListeningType = ((options & OPT_USE_SSL) != 0) ? "_nslogger-ssl._tcp.local." : "_nslogger._tcp.local.";
 						bonjourBrowser.addServiceListener(bonjourListeningType, this);
 					}
