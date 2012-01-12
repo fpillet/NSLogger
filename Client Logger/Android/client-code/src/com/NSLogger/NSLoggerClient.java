@@ -43,7 +43,6 @@ import android.os.*;
 import android.os.Process;
 import android.provider.Settings.Secure;
 import android.util.Log;
-import com.commandfusion.droidviewer.util.StringHelper;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -960,7 +959,7 @@ public class NSLoggerClient
 				else
 				{
 					host = newOptions.getProperty("remoteHost");
-					port = StringHelper.toInteger(newOptions.getProperty("remotePort"));
+					port = Integer.parseInt(newOptions.getProperty("remotePort", "0"));
 					if (!change && (options & OPT_BROWSE_BONJOUR) == 0)
 					{
 						// Check if changing host or port
