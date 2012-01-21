@@ -793,6 +793,23 @@ static void LoggerWriteMoreData(Logger *logger)
 		{
 			LoggerFlushQueueToBufferStream(logger, NO);
 		}
+        else if (!(logger->options & kLoggerOption_BufferLogsUntilConnection))
+        {
+            /* No client connected
+             * User don't want to log to console
+             * User don't want to log to file
+             * and user don't want us to buffer it in memory
+             * So let's just sack the whole queue
+             */
+			pthread_mutex_lock(&logger->logQueueMutex);
+			while (CFArrayGetCount(logger->logQueue))
+			{
+				CFArrayRemoveValueAtIndex(logger->logQueue, 0);
+			}
+			pthread_mutex_unlock(&logger->logQueueMutex);
+			pthread_cond_broadcast(&logger->logQueueEmpty);
+        }
+
 		return;
 	}
 	
