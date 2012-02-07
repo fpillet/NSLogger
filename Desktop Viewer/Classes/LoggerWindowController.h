@@ -31,7 +31,7 @@
 #import "LoggerConnection.h"
 #import "BWToolkitFramework.h"
 
-@class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView;
+@class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView, LoggerSplitView;
 @class LoggerDetailsWindowController;
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
@@ -53,6 +53,7 @@
 	
 	IBOutlet NSWindow *markTitleWindow;
 	IBOutlet NSTextField *markTitleField;
+    IBOutlet LoggerSplitView *splitView;
 
 	LoggerConnection *attachedConnection;
 	LoggerDetailsWindowController *detailsWindowController;
@@ -112,6 +113,8 @@
 
 - (IBAction)clearCurrentLog:(id)sender;
 - (IBAction)clearAllLogs:(id)sender;
+
+- (IBAction)collapseTaskbar:(id)sender;
 
 - (void)updateMenuBar:(BOOL)documentIsFront;
 
