@@ -75,12 +75,13 @@ extern NSString * const kPrefClientApplicationSettings;
 extern NSString * const kPref_ApplicationFilterSet;
 
 // Menu item identifiers
-#define TOOLS_MENU_ITEM_TAG				1
+#define TOOLS_MENU_ITEM_TAG				        1
 #define TOOLS_MENU_ADD_MARK_TAG					1
 #define TOOLS_MENU_ADD_MARK_WITH_TITLE_TAG		2
 #define TOOLS_MENU_INSERT_MARK_TAG				3
 #define TOOLS_MENU_DELETE_MARK_TAG				4
 #define TOOLS_MENU_JUMP_TO_MARK_TAG				5
+#define TOOLS_MENU_HIDE_SHOW_TOOLBAR		    7
 
-#define VIEW_MENU_ITEM_TAG				2
+#define VIEW_MENU_ITEM_TAG                      2
 #define VIEW_MENU_SWITCH_TO_RUN_TAG				6

@@ -1756,5 +1756,23 @@ didReceiveMessages:(NSArray *)theMessages
 	[(LoggerDocument *)[self document] clearLogs:YES];
 }
 
+#pragma mark - 
+#pragma mark - Collapsing Taskbar
+
+- (IBAction)collapseTaskbar:(id)sender{
+    
+    NSMenuItem *hideShowButton = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_HIDE_SHOW_TOOLBAR];
+    
+    if (![splitView collapsibleSubviewCollapsed]) {
+        [hideShowButton setTitle:NSLocalizedString(@"Show Taskbar", @"Show Taskbar")];
+    }
+    else{
+        [hideShowButton setTitle:NSLocalizedString(@"Hide Taskbar", @"Hide Taskbar")];
+    }
+
+    [splitView toggleCollapse:nil];
+
+}
+
 @end
 
