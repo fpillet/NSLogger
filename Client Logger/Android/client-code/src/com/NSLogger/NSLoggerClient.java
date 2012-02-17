@@ -135,7 +135,7 @@ public class NSLoggerClient
 	{
 		if (DEBUG_LOGGER)
 			Log.i("NSLogger", "NSLoggerClient created");
-		currentContext = ctx;
+		currentContext = ctx.getApplicationContext();
 
 		// create the multicast lock (for Bonjour) if needed, otherwise the WiFi adapter
 		// doesn't process multicast packets when needed. We will acquire the lock ONLY
@@ -163,7 +163,7 @@ public class NSLoggerClient
 	 * if we are not currently connected to the desktop viewer
 	 * @param flushEachMessage	set to true to enable flushing
 	 */
-	public synchronized void setMessageFlushing(boolean flushEachMessage)
+	public final synchronized void setMessageFlushing(boolean flushEachMessage)
 	{
 		if (flushEachMessage)
 			options |= OPT_FLUSH_EACH_MESSAGE;
@@ -177,7 +177,7 @@ public class NSLoggerClient
 	 * to a file instead
 	 * @param filePath an absolute path to the buffer file
 	 */
-	public synchronized void setBufferFile(String filePath)
+	public final synchronized void setBufferFile(String filePath)
 	{
 		if (loggingThreadHandler != null)
 		{
@@ -208,7 +208,7 @@ public class NSLoggerClient
 	 * 						Passing the same name here guarantees that your logger will only connect to this instance.
 	 * @param useSSL		set to true to use the secure transport to desktop viewer
 	 */
-	public synchronized void setupBonjour(String serviceType, String serviceName, boolean useSSL)
+	public final synchronized void setupBonjour(String serviceType, String serviceName, boolean useSSL)
 	{
 		if (loggingThreadHandler != null)
 		{
@@ -238,7 +238,7 @@ public class NSLoggerClient
 	 * @param port			non-zero port, or zero to cancel and use Bonjour
 	 * @param useSSL		set to true to select SSL transport to desktop viewer
 	 */
-	public synchronized void setRemoteHost(String hostname, int port, boolean useSSL)
+	public final synchronized void setRemoteHost(String hostname, int port, boolean useSSL)
 	{
 		if (DEBUG_LOGGER)
 			Log.i("NSLogger", String.format("setRemoteHost host=%s port=%d useSSL=%b", hostname, port, useSSL));
@@ -306,40 +306,34 @@ public class NSLoggerClient
 	 * @param level			a level >= 0
 	 * @param message		the message to send
 	 */
-	public void log(String filename, int lineNumber, String method, String tag, int level, String message)
+	public final void log(String filename, int lineNumber, String method, String tag, int level, String message)
 	{
 		startLoggingThreadIfNeeded();
 		if (loggingThreadHandler == null)
 			return;
-		try
-		{
-			LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
-			lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
-			if (filename != null)
-			{
-				lm.addString(filename, LogMessage.PART_KEY_FILENAME);
-				if (lineNumber != 0)
-					lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
-			}
-			if (method != null)
-				lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
-			if (tag != null && !tag.isEmpty())
-				lm.addString(tag, LogMessage.PART_KEY_TAG);
-			lm.addString(message, LogMessage.PART_KEY_MESSAGE);
-			
-			boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
-			if (needsFlush)
-				lm.prepareForFlush();
 
-			loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
-
-			if (needsFlush)
-				lm.waitFlush();
-		}
-		catch (Exception e)
+		final LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
+		lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
+		if (filename != null)
 		{
-			Log.e("NSLogger", "Exception catched in log(): " + e.toString());
+			lm.addString(filename, LogMessage.PART_KEY_FILENAME);
+			if (lineNumber != 0)
+				lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
 		}
+		if (method != null)
+			lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
+		if (tag != null && !tag.isEmpty())
+			lm.addString(tag, LogMessage.PART_KEY_TAG);
+		lm.addString(message, LogMessage.PART_KEY_MESSAGE);
+
+		final boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
+		if (needsFlush)
+			lm.prepareForFlush();
+
+		loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
+
+		if (needsFlush)
+			lm.waitFlush();
 	}
 
 	/**
@@ -348,7 +342,7 @@ public class NSLoggerClient
 	 * @param level			a level >= 0
 	 * @param message		the message to send
 	 */
-	public void log(String tag, int level, String message)
+	public final void log(String tag, int level, String message)
 	{
 		log(null, 0, null, tag, level, message);
 	}
@@ -357,7 +351,7 @@ public class NSLoggerClient
 	 * Log a message with no tag and default level (0)
 	 * @param message		the message to send
 	 */
-	public void log(String message)
+	public final void log(String message)
 	{
 		log(null, 0, message);
 	}
@@ -366,7 +360,7 @@ public class NSLoggerClient
 	 * Log a message that you built yourself
 	 * @param message
 	 */
-	public void log(LogMessage message)
+	public final void log(LogMessage message)
 	{
 		startLoggingThreadIfNeeded();
 		if (loggingThreadHandler != null)
@@ -382,38 +376,34 @@ public class NSLoggerClient
 	 * @param level			a level >= 0
 	 * @param data			a block of data
 	 */
-	public void logData(String filename, int lineNumber, String method, String tag, int level, byte[] data)
+	public final void logData(String filename, int lineNumber, String method, String tag, int level, byte[] data)
 	{
 		startLoggingThreadIfNeeded();
-		try
+		if (loggingThreadHandler == null)
+			return;
+
+		final LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
+		lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
+		if (filename != null)
 		{
-			LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
-			lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
-			if (filename != null)
-			{
-				lm.addString(filename, LogMessage.PART_KEY_FILENAME);
-				if (lineNumber != 0)
-					lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
-			}				
-			if (method != null)
-				lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
-			if (tag != null && tag.length() != 0)
-				lm.addString(tag, LogMessage.PART_KEY_TAG);
-			lm.addBinaryData(data, LogMessage.PART_KEY_MESSAGE);
-
-			boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
-			if (needsFlush)
-				lm.prepareForFlush();
-
-			loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
-
-			if (needsFlush)
-				lm.waitFlush();
+			lm.addString(filename, LogMessage.PART_KEY_FILENAME);
+			if (lineNumber != 0)
+				lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
 		}
-		catch (Exception e)
-		{
-			Log.e("NSLogger", "Exception catched in logData(): " + e.toString());
-		}
+		if (method != null)
+			lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
+		if (tag != null && tag.length() != 0)
+			lm.addString(tag, LogMessage.PART_KEY_TAG);
+		lm.addBinaryData(data, LogMessage.PART_KEY_MESSAGE);
+
+		final boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
+		if (needsFlush)
+			lm.prepareForFlush();
+
+		loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
+
+		if (needsFlush)
+			lm.waitFlush();
 	}
 
 	/**
@@ -427,38 +417,34 @@ public class NSLoggerClient
 	 * @param data			raw image data. Most image file formats are automatically decoded and recognized
 	 * 						by the desktop viewer
 	 */
-	public void logImage(String filename, int lineNumber, String method, String tag, int level, byte[] data)
+	public final void logImage(String filename, int lineNumber, String method, String tag, int level, byte[] data)
 	{
 		startLoggingThreadIfNeeded();
-		try
+		if (loggingThreadHandler == null)
+			return;
+
+		final LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
+		lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
+		if (filename != null)
 		{
-			LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_LOG, nextSequenceNumber.getAndIncrement());
-			lm.addInt16(level, LogMessage.PART_KEY_LEVEL);
-			if (filename != null)
-			{
-				lm.addString(filename, LogMessage.PART_KEY_FILENAME);
-				if (lineNumber != 0)
-					lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
-			}
-			if (method != null)
-				lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
-			if (tag != null && tag.length() != 0)
-				lm.addString(tag, LogMessage.PART_KEY_TAG);
-			lm.addImageData(data, LogMessage.PART_KEY_MESSAGE);
-
-			boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
-			if (needsFlush)
-				lm.prepareForFlush();
-
-			loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
-
-			if (needsFlush)
-				lm.waitFlush();
+			lm.addString(filename, LogMessage.PART_KEY_FILENAME);
+			if (lineNumber != 0)
+				lm.addInt32(lineNumber, LogMessage.PART_KEY_LINENUMBER);
 		}
-		catch (Exception e)
-		{
-			Log.e("NSLogger", "Exception catched in logData(): " + e.toString());
-		}
+		if (method != null)
+			lm.addString(method, LogMessage.PART_KEY_FUNCTIONNAME);
+		if (tag != null && tag.length() != 0)
+			lm.addString(tag, LogMessage.PART_KEY_TAG);
+		lm.addImageData(data, LogMessage.PART_KEY_MESSAGE);
+
+		final boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
+		if (needsFlush)
+			lm.prepareForFlush();
+
+		loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
+
+		if (needsFlush)
+			lm.waitFlush();
 	}
 
 	/**
@@ -467,31 +453,27 @@ public class NSLoggerClient
 	 * current date / time
 	 * @param message	optional message
 	 */
-	public void logMark(String message)
+	public final void logMark(String message)
 	{
 		startLoggingThreadIfNeeded();
-		try
-		{
-			LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_MARK, nextSequenceNumber.getAndIncrement());
-			lm.addInt16(0, LogMessage.PART_KEY_LEVEL);
-			if (message != null && message.length() != 0)
-				lm.addString(message, LogMessage.PART_KEY_MESSAGE);
-			else
-				lm.addString(new Date().toString(), LogMessage.PART_KEY_MESSAGE);
+		if (loggingThreadHandler == null)
+			return;
 
-			boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
-			if (needsFlush)
-				lm.prepareForFlush();
+		final LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_MARK, nextSequenceNumber.getAndIncrement());
+		lm.addInt16(0, LogMessage.PART_KEY_LEVEL);
+		if (message != null && message.length() != 0)
+			lm.addString(message, LogMessage.PART_KEY_MESSAGE);
+		else
+			lm.addString(new Date().toString(), LogMessage.PART_KEY_MESSAGE);
 
-			loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
+		final boolean needsFlush = ((options & OPT_FLUSH_EACH_MESSAGE) != 0);
+		if (needsFlush)
+			lm.prepareForFlush();
 
-			if (needsFlush)
-				lm.waitFlush();
-		}
-		catch (Exception e)
-		{
-			Log.e("NSLogger", "Exception catched in logMark(): " + e.toString());
-		}
+		loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_ADDLOG, lm));
+
+		if (needsFlush)
+			lm.waitFlush();
 	}
 
 	/**
@@ -501,7 +483,7 @@ public class NSLoggerClient
 	 * getBytes() method returns a full-fledged binary message to send to the desktop
 	 * viewer.
 	 */
-	public class LogMessage
+	public final class LogMessage
 	{
 		// Constants for the "part key" field
 		static final int
@@ -552,8 +534,8 @@ public class NSLoggerClient
 			LOGMSG_TYPE_MARK = 5;			// Pseudo-message that defines a "mark" that users can place in the log flow
 
 		// Instance variables
-		private final ByteArrayOutputStream data;
-		private final DataOutputStream stream;
+		private byte[] data;
+		private int dataUsed;
 		private final int sequenceNumber;
 		private short numParts;
 
@@ -570,26 +552,15 @@ public class NSLoggerClient
 		{
 			sequenceNumber = seq;
 			String msg = record.getMessage();
-			data = new ByteArrayOutputStream(msg.length() + 32);	// gross approximation
-			stream = new DataOutputStream(data);
-			try
-			{
-
-				addTimestamp(record.getMillis());
-				addInt32(LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-				addInt32(sequenceNumber, PART_KEY_MESSAGE_SEQ);
-				addString(Long.toString(record.getThreadID()), PART_KEY_THREAD_ID);
-				addInt16(record.getLevel().intValue(), PART_KEY_LEVEL);
-				addString(record.getSourceClassName() + "." + record.getSourceMethodName(), PART_KEY_FUNCTIONNAME);
-				addString(record.getMessage(), PART_KEY_MESSAGE);
-
-				stream.flush();
-				stream.close();
-			}
-			catch (IOException e)
-			{
-				Log.e("NSLogger", "Exception catched in LogMessage(LogRecord): " + e.toString());
-			}
+			data = new byte[msg.length() + 64];			// gross approximation
+			dataUsed = 6;
+			addTimestamp(record.getMillis());
+			addInt32(LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+			addInt32(sequenceNumber, PART_KEY_MESSAGE_SEQ);
+			addString(Long.toString(record.getThreadID()), PART_KEY_THREAD_ID);
+			addInt16(record.getLevel().intValue(), PART_KEY_LEVEL);
+			addString(record.getSourceClassName() + "." + record.getSourceMethodName(), PART_KEY_FUNCTIONNAME);
+			addString(record.getMessage(), PART_KEY_MESSAGE);
 		}
 
 		/**
@@ -600,21 +571,12 @@ public class NSLoggerClient
 		public LogMessage(int messageType, int seq)
 		{
 			sequenceNumber = seq;
-			data = new ByteArrayOutputStream(64);	// gross approximation
-			stream = new DataOutputStream(data);
-			try
-			{
-				stream.writeInt(0);
-				stream.writeShort(0);
-				addInt32(messageType, PART_KEY_MESSAGE_TYPE);
-				addInt32(sequenceNumber, PART_KEY_MESSAGE_SEQ);
-				addTimestamp(0);
-				addThreadID(Thread.currentThread().getId());
-			}
-			catch (IOException e)
-			{
-				Log.e("NSLogger", "Exception catched in LogMessage: " + e.toString());
-			}
+			data = new byte[256];
+			dataUsed = 6;
+			addInt32(messageType, PART_KEY_MESSAGE_TYPE);
+			addInt32(sequenceNumber, PART_KEY_MESSAGE_SEQ);
+			addTimestamp(0);
+			addThreadID(Thread.currentThread().getId());
 		}
 
 		/**
@@ -678,31 +640,27 @@ public class NSLoggerClient
 		 */
 		byte[] getBytes()
 		{
-			// Finalize the size and return the bytes
-			if (stream != null)
-			{
-				try
-				{
-					stream.flush();
-					stream.close();
-				}
-				catch (IOException e)
-				{
-					Log.e("NSLogger", "Exception catched in LogMessage.getBytes(): " + e.toString());
-				}
-			}
-			byte[] array = data.toByteArray();
-			int size = array.length - 4;
-			array[0] = (byte) (size >> 24);
-			array[1] = (byte) (size >> 16);
-			array[2] = (byte) (size >> 8);
-			array[3] = (byte) size;
-			array[4] = (byte) (numParts >> 8);
-			array[5] = (byte) numParts;
-			return array;
+			if (dataUsed == data.length)
+				return data;
+
+			int size = dataUsed - 4;
+			data[0] = (byte) (size >> 24);
+			data[1] = (byte) (size >> 16);
+			data[2] = (byte) (size >> 8);
+			data[3] = (byte) size;
+			data[4] = (byte) (numParts >> 8);
+			data[5] = (byte) numParts;
+
+			if (dataUsed == data.length)
+				return data;
+
+			byte[] b = new byte[dataUsed];
+			System.arraycopy(data, 0, b, 0, dataUsed);
+			data = null;
+			return b;
 		}
 
-		void addTimestamp(long ts) throws IOException
+		void addTimestamp(long ts)
 		{
 			if (ts == 0)
 				ts = System.currentTimeMillis();
@@ -710,7 +668,7 @@ public class NSLoggerClient
 			addInt16((int) (ts % 1000), PART_KEY_TIMESTAMP_MS);
 		}
 
-		void addThreadID(long threadID) throws IOException
+		void addThreadID(long threadID)
 		{
 			String s = null;
 			// If the thread is part if our thread group, we can extract its
@@ -732,55 +690,95 @@ public class NSLoggerClient
 				}
 			}
 			if (s == null || s.isEmpty())
-				s = "Thread " + Long.toString(threadID);
-			else if (!s.contains("thread"))
-				s += " thread";
+				s = Long.toString(threadID);
 			addString(s, PART_KEY_THREAD_ID);
 		}
 
-		public void addInt16(int value, int key) throws IOException
+		private void need(int nBytes)
 		{
-			stream.writeInt((key << 24) | (PART_TYPE_INT16 << 16) | (value & 0xffff));
+			final int n = data.length;
+			if (n >= dataUsed + nBytes)
+				return;
+
+			byte b[] = new byte[Math.max(n + n / 2, dataUsed + nBytes + 64)];
+			System.arraycopy(data, 0, b, 0, dataUsed);
+			data = b;
+		}
+
+		public void addInt16(int value, int key)
+		{
+			need(4);
+			int n = dataUsed;
+			data[n++] = (byte)key;
+			data[n++] = (byte)PART_TYPE_INT16;
+			data[n++] = (byte)((value >> 8) & 0xff);
+			data[n++] = (byte)(value & 0xff);
+			dataUsed = n;
 			numParts++;
 		}
 
-		public void addInt32(int value, int key) throws IOException
+		public void addInt32(int value, int key)
 		{
-			stream.writeShort((key << 8) | PART_TYPE_INT32);
-			stream.writeInt(value);
+			need(6);
+			int n = dataUsed;
+			data[n++] = (byte)key;
+			data[n++] = (byte)PART_TYPE_INT32;
+			data[n++] = (byte)((value >> 24) & 0xff);
+			data[n++] = (byte)((value >> 16) & 0xff);
+			data[n++] = (byte)((value >> 8) & 0xff);
+			data[n++] = (byte)(value & 0xff);
+			dataUsed = n;
 			numParts++;
 		}
 
-		public void addInt64(long value, int key) throws IOException
+		public void addInt64(long value, int key)
 		{
-			stream.writeShort((key << 8) | PART_TYPE_INT64);
-			stream.writeLong(value);
+			need(10);
+			int n = dataUsed;
+			data[n++] = (byte)key;
+			data[n++] = (byte)PART_TYPE_INT64;
+			data[n++] = (byte)((value >> 56) & 0xff);
+			data[n++] = (byte)((value >> 48) & 0xff);
+			data[n++] = (byte)((value >> 40) & 0xff);
+			data[n++] = (byte)((value >> 32) & 0xff);
+			data[n++] = (byte)((value >> 24) & 0xff);
+			data[n++] = (byte)((value >> 16) & 0xff);
+			data[n++] = (byte)((value >> 8) & 0xff);
+			data[n++] = (byte)(value & 0xff);
+			dataUsed = n;
 			numParts++;
 		}
 
-		public void addString(String s, int key) throws IOException
+		public void addBytes(int key, int type, byte[] bytes)
+		{
+			final int l = bytes.length;
+			need(l + 6);
+			int n = dataUsed;
+			data[n++] = (byte)key;
+			data[n++] = (byte)type;
+			data[n++] = (byte)((l >> 24) & 0xff);
+			data[n++] = (byte)((l >> 16) & 0xff);
+			data[n++] = (byte)((l >> 8) & 0xff);
+			data[n++] = (byte)(l & 0xff);
+			System.arraycopy(bytes, 0, data, n, l);
+			dataUsed = n + l;
+			numParts++;
+		}
+
+		public void addString(String s, int key)
 		{
 			byte[] sb = s.getBytes(stringsCharset);
-			stream.writeShort((key << 8) | PART_TYPE_STRING);
-			stream.writeInt(sb.length);
-			stream.write(sb);
-			numParts++;
+			addBytes(key, PART_TYPE_STRING, sb);
 		}
 
-		public void addBinaryData(byte[] d, int key) throws IOException
+		public void addBinaryData(byte[] d, int key)
 		{
-			stream.writeShort((key << 8) | PART_TYPE_BINARY);
-			stream.writeInt(d.length);
-			stream.write(d);
-			numParts++;
+			addBytes(key, PART_TYPE_BINARY, d);
 		}
 
-		public void addImageData(byte[] img, int key) throws IOException
+		public void addImageData(byte[] img, int key)
 		{
-			stream.writeShort((key << 8) | PART_TYPE_IMAGE);
-			stream.writeInt(img.length);
-			stream.write(img);
-			numParts++;
+			addBytes(key, PART_TYPE_IMAGE, img);
 		}
 	}
 
@@ -1198,35 +1196,28 @@ public class NSLoggerClient
 
 		void pushClientInfoToFrontOfQueue()
 		{
-			try
-			{
-				if (DEBUG_LOGGER)
-					Log.v("NSLogger", "Pushing client info to front of queue");
+			if (DEBUG_LOGGER)
+				Log.v("NSLogger", "Pushing client info to front of queue");
 
-				LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_CLIENTINFO, nextSequenceNumber.getAndIncrement());
-				lm.addString(Build.MANUFACTURER + " " + Build.MODEL, LogMessage.PART_KEY_CLIENT_MODEL);
-				lm.addString("Android", LogMessage.PART_KEY_OS_NAME);
-				lm.addString(Build.VERSION.RELEASE, LogMessage.PART_KEY_OS_VERSION);
-				lm.addString(Secure.getString(currentContext.getContentResolver(), Secure.ANDROID_ID), LogMessage.PART_KEY_UNIQUEID);
-				ApplicationInfo ai = currentContext.getApplicationInfo();
-				String appName = ai.packageName;
+			LogMessage lm = new LogMessage(LogMessage.LOGMSG_TYPE_CLIENTINFO, nextSequenceNumber.getAndIncrement());
+			lm.addString(Build.MANUFACTURER + " " + Build.MODEL, LogMessage.PART_KEY_CLIENT_MODEL);
+			lm.addString("Android", LogMessage.PART_KEY_OS_NAME);
+			lm.addString(Build.VERSION.RELEASE, LogMessage.PART_KEY_OS_VERSION);
+			lm.addString(Secure.getString(currentContext.getContentResolver(), Secure.ANDROID_ID), LogMessage.PART_KEY_UNIQUEID);
+			ApplicationInfo ai = currentContext.getApplicationInfo();
+			String appName = ai.packageName;
+			if (appName == null)
+			{
+				appName = ai.processName;
 				if (appName == null)
 				{
-					appName = ai.processName;
+					appName = ai.taskAffinity;
 					if (appName == null)
-					{
-						appName = ai.taskAffinity;
-						if (appName == null)
-							appName = ai.toString();
-					}
+						appName = ai.toString();
 				}
-				lm.addString(appName, LogMessage.PART_KEY_CLIENT_NAME);
-				logs.add(0, lm);
 			}
-			catch (IOException e)
-			{
-				Log.e("NSLogger", "Exception catched in pushClientInfoToFrontOfQueue: " + e.toString());
-			}
+			lm.addString(appName, LogMessage.PART_KEY_CLIENT_NAME);
+			logs.add(0, lm);
 			clientInfoAdded = true;
 		}
 
@@ -1284,10 +1275,9 @@ public class NSLoggerClient
 			{
 				try
 				{
-					writeStream.write(
-										 incompleteSend,
-										 incompleteSendOffset,
-										 incompleteSend.length - incompleteSendOffset);
+					writeStream.write(incompleteSend,
+									  incompleteSendOffset,
+									  incompleteSend.length - incompleteSendOffset);
 					incompleteSend = null;
 					incompleteSendOffset = 0;
 				}
