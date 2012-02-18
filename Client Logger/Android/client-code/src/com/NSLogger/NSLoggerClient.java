@@ -1,7 +1,7 @@
 /*
  * NSLoggerClient.java
  *
- * version 1.0b3 2012-01-11
+ * Android version 1.0b4 2012-02-18
  *
  * Android port of the NSLogger client code
  * https://github.com/fpillet/NSLogger
@@ -640,9 +640,6 @@ public class NSLoggerClient
 		 */
 		byte[] getBytes()
 		{
-			if (dataUsed == data.length)
-				return data;
-
 			int size = dataUsed - 4;
 			data[0] = (byte) (size >> 24);
 			data[1] = (byte) (size >> 16);
@@ -694,7 +691,7 @@ public class NSLoggerClient
 			addString(s, PART_KEY_THREAD_ID);
 		}
 
-		private void need(int nBytes)
+		private void grow(int nBytes)
 		{
 			final int n = data.length;
 			if (n >= dataUsed + nBytes)
@@ -707,44 +704,44 @@ public class NSLoggerClient
 
 		public void addInt16(int value, int key)
 		{
-			need(4);
+			grow(4);
 			int n = dataUsed;
 			data[n++] = (byte)key;
 			data[n++] = (byte)PART_TYPE_INT16;
-			data[n++] = (byte)((value >> 8) & 0xff);
-			data[n++] = (byte)(value & 0xff);
+			data[n++] = (byte)(value >> 8);
+			data[n++] = (byte)value;
 			dataUsed = n;
 			numParts++;
 		}
 
 		public void addInt32(int value, int key)
 		{
-			need(6);
+			grow(6);
 			int n = dataUsed;
 			data[n++] = (byte)key;
 			data[n++] = (byte)PART_TYPE_INT32;
-			data[n++] = (byte)((value >> 24) & 0xff);
-			data[n++] = (byte)((value >> 16) & 0xff);
-			data[n++] = (byte)((value >> 8) & 0xff);
-			data[n++] = (byte)(value & 0xff);
+			data[n++] = (byte)(value >> 24);
+			data[n++] = (byte)(value >> 16);
+			data[n++] = (byte)(value >> 8);
+			data[n++] = (byte)value;
 			dataUsed = n;
 			numParts++;
 		}
 
 		public void addInt64(long value, int key)
 		{
-			need(10);
+			grow(10);
 			int n = dataUsed;
 			data[n++] = (byte)key;
 			data[n++] = (byte)PART_TYPE_INT64;
-			data[n++] = (byte)((value >> 56) & 0xff);
-			data[n++] = (byte)((value >> 48) & 0xff);
-			data[n++] = (byte)((value >> 40) & 0xff);
-			data[n++] = (byte)((value >> 32) & 0xff);
-			data[n++] = (byte)((value >> 24) & 0xff);
-			data[n++] = (byte)((value >> 16) & 0xff);
-			data[n++] = (byte)((value >> 8) & 0xff);
-			data[n++] = (byte)(value & 0xff);
+			data[n++] = (byte)(value >> 56);
+			data[n++] = (byte)(value >> 48);
+			data[n++] = (byte)(value >> 40);
+			data[n++] = (byte)(value >> 32);
+			data[n++] = (byte)(value >> 24);
+			data[n++] = (byte)(value >> 16);
+			data[n++] = (byte)(value >> 8);
+			data[n++] = (byte)value;
 			dataUsed = n;
 			numParts++;
 		}
@@ -752,14 +749,14 @@ public class NSLoggerClient
 		public void addBytes(int key, int type, byte[] bytes)
 		{
 			final int l = bytes.length;
-			need(l + 6);
+			grow(l + 6);
 			int n = dataUsed;
 			data[n++] = (byte)key;
 			data[n++] = (byte)type;
-			data[n++] = (byte)((l >> 24) & 0xff);
-			data[n++] = (byte)((l >> 16) & 0xff);
-			data[n++] = (byte)((l >> 8) & 0xff);
-			data[n++] = (byte)(l & 0xff);
+			data[n++] = (byte)(l >> 24);
+			data[n++] = (byte)(l >> 16);
+			data[n++] = (byte)(l >> 8);
+			data[n++] = (byte)l;
 			System.arraycopy(bytes, 0, data, n, l);
 			dataUsed = n + l;
 			numParts++;
