@@ -271,7 +271,7 @@
 
 	if ([typeName isEqualToString:@"NSLogger Data"])
 	{
-		id logs = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		id logs = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 		if ([logs isKindOfClass:[LoggerConnection class]])
 			[attachedLogs addObject:logs];
 		else
