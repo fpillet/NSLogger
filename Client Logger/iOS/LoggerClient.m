@@ -1911,6 +1911,7 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 			CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 		}
 		pthread_mutex_unlock(&logger->logQueueMutex);
+		pthread_cond_broadcast(&logger->logQueueEmpty);		// in case other threads are waiting for a flush
 	}
 }
 
