@@ -1829,7 +1829,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		{
 			AUTORELEASE_POOL_BEGIN
 			UIDevice *device = [UIDevice currentDevice];
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.uniqueIdentifier, PART_KEY_UNIQUEID);
+			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.name, PART_KEY_UNIQUEID);
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemVersion, PART_KEY_OS_VERSION);
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemName, PART_KEY_OS_NAME);
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.model, PART_KEY_CLIENT_MODEL);
