@@ -616,7 +616,11 @@ static void LoggerLogToConsole(CFDataRef data)
 	// Decode and log a message to the console. Doing this from the worker thread
 	// allow us to serialize logging, which is a benefit that NSLog() doesn't have.
 	// Only drawback is that we have to decode our own message, but that is a minor hassle.
-
+	if (data == NULL)
+	{
+		CFShow(CFSTR("LoggerLogToConsole: data is NULL"));
+		return;
+	}
 	struct timeval timestamp;
 	bzero(&timestamp, sizeof(timestamp));
 	int type = LOGMSG_TYPE_LOG, contentsType = PART_TYPE_STRING;
@@ -1747,7 +1751,8 @@ static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, i
 
 static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType)
 {
-	if ( theData != nil ){
+	if (theData != NULL)
+	{
 		uint8_t keyAndType[2] = {(uint8_t)key, (uint8_t)partType};
 		CFIndex dataLength = CFDataGetLength(theData);
 		uint32_t partSize = htonl(dataLength);
