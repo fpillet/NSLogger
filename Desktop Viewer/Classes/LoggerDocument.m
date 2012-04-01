@@ -57,7 +57,7 @@
 
 - (id)initWithConnection:(LoggerConnection *)aConnection
 {
-	if (self = [super init])
+	if ((self = [super init]) != nil)
 	{
 		attachedLogs = [[NSMutableArray alloc] init];
 		aConnection.delegate = self;
