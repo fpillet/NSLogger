@@ -58,6 +58,7 @@
 @end
 
 static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLoggerFilter";
+static NSArray *sXcodeFileExtensions = nil;
 
 @implementation LoggerWindowController
 
@@ -112,6 +113,12 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 - (void)windowDidLoad
 {
+    if (sXcodeFileExtensions == nil) {
+        sXcodeFileExtensions = [[NSArray alloc] initWithObjects:
+                                @"m", @"mm", @"h", @"c", @"cp", @"cpp", @"hpp",
+                                nil];
+    }
+    
 	if ([[self window] respondsToSelector:@selector(setRestorable:)])
 		[[self window] setRestorable:NO];
 
@@ -121,7 +128,7 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 
 	[logTable setIntercellSpacing:NSMakeSize(0,0)];
 	[logTable setTarget:self];
-	[logTable setDoubleAction:@selector(openDetailsWindow:)];
+	[logTable setDoubleAction:@selector(logCellDoubleClicked:)];
 
 	[logTable registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeString]];
 	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
@@ -754,6 +761,68 @@ static NSString * const kNSLoggerFilterPasteboardType = @"com.florentpillet.NSLo
 	}
 	[detailsWindowController setMessages:[displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]]];
 	[detailsWindowController showWindow:self];
+}
+
+- (void)xedFile:(NSString *)path line:(NSString *)line { 
+    id args = [NSArray arrayWithObjects:
+               @"-l",
+               line,
+               path,
+               nil];
+    // NSLog(@"Args %@", args);
+    [NSTask launchedTaskWithLaunchPath:[[NSBundle mainBundle] pathForResource:@"xedReplacement.sh" ofType:nil]
+                             arguments:args];
+}
+
+- (void)logCellDoubleClicked:(id)sender
+{
+	// Added in v1.1: alt-double click opens the source file if it was defined in the log
+	// and the file is found
+	NSEvent *event = [NSApp currentEvent];
+	if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
+	{
+		NSInteger row = [logTable selectedRow];
+		if (row >= 0 && row < [displayedMessages count])
+		{
+			LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+			NSString *filename = msg.filename;
+			if ([filename length])
+			{
+				NSFileManager *fm = [[NSFileManager alloc] init];
+				if ([fm fileExistsAtPath:filename])
+				{
+					// If the file is .h, .m, .c, .cpp, .h, .hpp: open the file
+					// using xed. Otherwise, open the file with the Finder. We really don't
+					// know which IDE the user is running if it's not Xcode
+					// (when logging from Android, could be IntelliJ or Eclipse)
+					NSString *extension = [filename pathExtension];
+					BOOL useXcode = NO;
+                    //if ([fm fileExistsAtPath:@"/usr/bin/xed"])
+                    //{
+                    for (NSString *ext in sXcodeFileExtensions)
+                    {
+                        if ([ext caseInsensitiveCompare:extension] == NSOrderedSame)
+                        {
+                            useXcode = YES;
+                            break;
+                        }
+                    }
+                    //}
+					if (useXcode)
+					{                        
+                        [self xedFile:filename 
+                                 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber) + 1]];
+					}
+					else
+					{
+						[[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:filename]];
+					}
+				}
+			}
+		}
+		return;
+	}
+	[self openDetailsWindow:sender];
 }
 
 // -----------------------------------------------------------------------------
