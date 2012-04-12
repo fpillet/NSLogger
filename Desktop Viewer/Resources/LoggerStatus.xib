@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
-		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10K549</string>
-		<string key="IBDocument.InterfaceBuilderVersion">1864</string>
-		<string key="IBDocument.AppKitVersion">1038.36</string>
-		<string key="IBDocument.HIToolboxVersion">461.00</string>
+		<int key="IBDocument.SystemTarget">1070</int>
+		<string key="IBDocument.SystemVersion">11D50</string>
+		<string key="IBDocument.InterfaceBuilderVersion">2182</string>
+		<string key="IBDocument.AppKitVersion">1138.32</string>
+		<string key="IBDocument.HIToolboxVersion">568.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">1864</string>
+			<string key="NS.object.0">2182</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSView</string>
@@ -45,6 +45,7 @@
 				<string key="NSWindowTitle">Logger Status</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<nil key="NSUserInterfaceItemIdentifier"/>
 				<string key="NSWindowContentMinSize">{340, 130}</string>
 				<object class="NSView" key="NSWindowView" id="948701384">
 					<reference key="NSNextResponder"/>
@@ -63,6 +64,7 @@
 											<int key="NSvFlags">274</int>
 											<string key="NSFrameSize">{416, 230}</string>
 											<reference key="NSSuperview" ref="903680331"/>
+											<reference key="NSWindow"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="_NSCornerView" key="NSCornerView">
 												<nil key="NSNextResponder"/>
@@ -133,7 +135,7 @@
 												<bytes key="NSWhite">MSAwLjEyAA</bytes>
 											</object>
 											<double key="NSRowHeight">40</double>
-											<int key="NSTvFlags">37748736</int>
+											<int key="NSTvFlags">574619648</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
 											<int key="NSGridStyleMask">2</int>
@@ -142,10 +144,12 @@
 											<int key="NSDraggingSourceMaskForNonLocal">0</int>
 											<bool key="NSAllowsTypeSelect">NO</bool>
 											<int key="NSTableViewDraggingDestinationStyle">0</int>
+											<int key="NSTableViewGroupRowStyle">1</int>
 										</object>
 									</array>
 									<string key="NSFrameSize">{416, 230}</string>
 									<reference key="NSSuperview" ref="714613892"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="484395050"/>
 									<reference key="NSDocView" ref="484395050"/>
 									<object class="NSColor" key="NSBGColor">
@@ -159,6 +163,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{224, 17}, {15, 102}}</string>
 									<reference key="NSSuperview" ref="714613892"/>
+									<reference key="NSWindow"/>
 									<reference key="NSTarget" ref="714613892"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSCurValue">0.095652173913043467</double>
@@ -169,6 +174,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{1, 119}, {223, 15}}</string>
 									<reference key="NSSuperview" ref="714613892"/>
+									<reference key="NSWindow"/>
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="714613892"/>
 									<string key="NSAction">_doScroller:</string>
@@ -178,8 +184,9 @@
 							</array>
 							<string key="NSFrame">{{-1, -1}, {416, 230}}</string>
 							<reference key="NSSuperview" ref="948701384"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="903680331"/>
-							<int key="NSsFlags">560</int>
+							<int key="NSsFlags">133680</int>
 							<reference key="NSVScroller" ref="780767002"/>
 							<reference key="NSHScroller" ref="1062427898"/>
 							<reference key="NSContentView" ref="903680331"/>
@@ -188,11 +195,13 @@
 					</array>
 					<string key="NSFrameSize">{414, 228}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMinSize">{340, 149}</string>
-				<string key="NSMaxSize">{1e+13, 1e+13}</string>
+				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">loggerStatusWindow</string>
+				<bool key="NSWindowIsRestorable">YES</bool>
 			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -336,7 +345,29 @@
 			<nil key="sourceID"/>
 			<int key="maxID">29</int>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">LoggerStatusWindowController</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">statusTable</string>
+						<string key="NS.object.0">NSTableView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">statusTable</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">statusTable</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/LoggerStatusWindowController.h</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
