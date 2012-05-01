@@ -103,7 +103,15 @@ static NSArray *sXcodeFileExtensions = nil;
 	[markerCell release];
 	if (lastTilingGroup)
 		dispatch_release(lastTilingGroup);
-	[super dealloc];
+
+    logTable.delegate = nil;
+    logTable.dataSource = nil;
+	filterSetsTable.delegate = nil;
+    filterSetsTable.dataSource = nil;
+	filterTable.delegate = nil;
+    filterTable.dataSource = nil;
+    
+    [super dealloc];
 }
 
 - (NSUndoManager *)undoManager
