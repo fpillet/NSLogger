@@ -1567,6 +1567,10 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 			else
 				LoggerTryConnect(logger);
 			break;
+        // avoid warnings when building; cover all enum cases.
+        case kCFStreamEventNone:
+        case kCFStreamEventHasBytesAvailable:
+            break;
 	}
 }
 
