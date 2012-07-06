@@ -191,16 +191,16 @@ extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
 extern void LogMessageCompat(NSString *format, ...);
 
 // Log a message. domain can be nil if default domain.
-extern void LogMessage(NSString *domain, int level, NSString *format, ...);
-extern void LogMessageF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...);
-extern void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format, ...);
-extern void LogMessageToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...);
+extern void LogMessage(NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
+extern void LogMessageF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(6,7);
+extern void LogMessageTo(Logger *logger, NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(4,5);
+extern void LogMessageToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(7,8);
 
 // Log a message. domain can be nil if default domain (versions with va_list format args instead of ...)
-extern void LogMessage_va(NSString *domain, int level, NSString *format, va_list args);
-extern void LogMessageF_va(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args);
-extern void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args);
-extern void LogMessageToF_va(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args);
+extern void LogMessage_va(NSString *domain, int level, NSString *format, va_list args) NS_FORMAT_FUNCTION(3,0);
+extern void LogMessageF_va(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args) NS_FORMAT_FUNCTION(6,0);
+extern void LogMessageTo_va(Logger *logger, NSString *domain, int level, NSString *format, va_list args) NS_FORMAT_FUNCTION(4,0);
+extern void LogMessageToF_va(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *format, va_list args) NS_FORMAT_FUNCTION(7,0);
 
 // Send binary data to remote logger
 extern void LogData(NSString *domain, int level, NSData *data);
@@ -215,8 +215,8 @@ extern void LogImageDataTo(Logger *logger, NSString *domain, int level, int widt
 extern void LogImageDataToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, int width, int height, NSData *data);
 
 // Mark the start of a block. This allows the remote logger to group blocks together
-extern void LogStartBlock(NSString *format, ...);
-extern void LogStartBlockTo(Logger *logger, NSString *format, ...);
+extern void LogStartBlock(NSString *format, ...) NS_FORMAT_FUNCTION(1,2);
+extern void LogStartBlockTo(Logger *logger, NSString *format, ...) NS_FORMAT_FUNCTION(2,3);
 
 // Mark the end of a block
 extern void LogEndBlock(void);
