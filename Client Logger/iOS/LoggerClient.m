@@ -1820,10 +1820,16 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			AUTORELEASE_POOL_END
 		}
 #elif TARGET_OS_MAC
-		SInt32 versionMajor, versionMinor, versionFix;
-		Gestalt(gestaltSystemVersionMajor, &versionMajor);
-		Gestalt(gestaltSystemVersionMinor, &versionMinor);
-		Gestalt(gestaltSystemVersionBugFix, &versionFix);
+		NSInteger versionMajor = 10;
+		NSInteger versionMinor = 8;
+		NSInteger versionFix = 0;
+		@autoreleasepool {
+			NSString* versionString = [[NSDictionary dictionaryWithContentsOfFile: @"/System/Library/CoreServices/SystemVersion.plist"] objectForKey: @"ProductVersion"];
+			NSArray* versionStrings = [versionString componentsSeparatedByString: @"."];
+			if ( versionStrings.count >= 1 ) versionMajor = [[versionStrings objectAtIndex: 0] integerValue];
+			if ( versionStrings.count >= 2 ) versionMinor = [[versionStrings objectAtIndex: 1] integerValue];
+			if ( versionStrings.count >= 3 ) versionFix = [[versionStrings objectAtIndex: 2] integerValue];
+		}
 		CFStringRef osVersion = CFStringCreateWithFormat(NULL, NULL, CFSTR("%d.%d.%d"), versionMajor, versionMinor, versionFix);
 		LoggerMessageAddString(encoder, osVersion, PART_KEY_OS_VERSION);
 		CFRelease(osVersion);
