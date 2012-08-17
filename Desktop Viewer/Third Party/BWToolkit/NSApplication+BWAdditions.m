@@ -12,9 +12,15 @@
 
 + (BOOL)bwIsOnLeopard 
 {
-	SInt32 minorVersion, majorVersion;
-	Gestalt(gestaltSystemVersionMajor, &majorVersion);
-	Gestalt(gestaltSystemVersionMinor, &minorVersion);
+	NSInteger majorVersion = 10;
+	NSInteger minorVersion = 8;
+	@autoreleasepool {
+		NSString* versionString = [[NSDictionary dictionaryWithContentsOfFile: @"/System/Library/CoreServices/SystemVersion.plist"] objectForKey: @"ProductVersion"];
+		NSArray* versionStrings = [versionString componentsSeparatedByString: @"."];
+		if ( versionStrings.count >= 1 ) majorVersion = [[versionStrings objectAtIndex: 0] integerValue];
+		if ( versionStrings.count >= 2 ) minorVersion = [[versionStrings objectAtIndex: 1] integerValue];
+	}
+
 	return majorVersion == 10 && minorVersion == 5;
 }
 
