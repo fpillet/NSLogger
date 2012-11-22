@@ -29,6 +29,7 @@
  * 
  */
 #import "LoggerTableView.h"
+#import "LoggerMessageCell.h"
 
 @implementation LoggerTableView
 
@@ -58,7 +59,15 @@
 	// Don't understand why I have to override this method, but it's the only
 	// way I could get dragging from table to work. Tried various additional
 	// things with no luck...
-	return NO;
+    
+    if([self columnAtPoint:mouseDownPoint] > -1 && [self rowAtPoint:mouseDownPoint] > -1)
+    {
+        NSCell *clickedCell = [self preparedCellAtColumn:[self columnAtPoint:mouseDownPoint] row:[self rowAtPoint:mouseDownPoint]];
+        if([clickedCell respondsToSelector:@selector(isColumnResizingHotPoint:inView:)]) // LoggerMessageCell 
+            return ( ! [(LoggerMessageCell*)clickedCell isColumnResizingHotPoint:mouseDownPoint inView:self] );
+    }
+    
+	return YES;
 }
 
 @end

@@ -60,6 +60,8 @@
 + (CGFloat)threadColumnWidth;
 + (void)setThreadColumnWidth:(CGFloat)aWidth;
 
+- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView;
+
 @end
 
 extern NSString * const kMessageAttributesChangedNotification;

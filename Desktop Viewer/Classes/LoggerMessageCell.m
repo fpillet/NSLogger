@@ -931,13 +931,24 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	}
 }
 
+- (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView
+{
+    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+    // converting the startPoint in the cell coordinates is not that easy!
+
+    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 5.))
+        return YES;
+
+    return NO;
+}
+
 - (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView
 {
     // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
     // converting the startPoint in the cell coordinates is not that easy!
     
     // if clicking around the thread / message separator, then track
-    if(startPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] - 5.) && startPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 5.))
+    if([self isColumnResizingHotPoint:startPoint inView:controlView])
     {
         [[NSCursor resizeLeftRightCursor] push];
         self.modifyingThreadColumnWidth = YES;
@@ -954,8 +965,12 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
         CGFloat currentColWidth = [[self class] threadColumnWidth];
         CGFloat difference = currentPoint.x - lastPoint.x;
         
-        [[self class] setThreadColumnWidth:currentColWidth + difference];
-        [controlView setNeedsDisplay:YES];
+        if(currentColWidth + difference > 20.) // avoids tiny column
+        {
+            [[self class] setThreadColumnWidth:currentColWidth + difference];
+            [controlView setNeedsDisplay:YES];
+        }
+        
         return YES;
     }
     
