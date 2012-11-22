@@ -39,24 +39,33 @@
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
 #define TIMESTAMP_COLUMN_WIDTH		85.0f
-#define	THREAD_COLUMN_WIDTH			85.0f
+#define	DEFAULT_THREAD_COLUMN_WIDTH	85.0f
 
 static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
+static CGFloat sThreadColumnWidth = 0;
 
 NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
 NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
 
 @implementation LoggerMessageCell
 
-@synthesize message, previousMessage, messageAttributes;
+@synthesize message, previousMessage, messageAttributes, modifyingThreadColumnWidth;
 @synthesize shouldShowFunctionNames;
 
 // -----------------------------------------------------------------------------
 // Class methods
 // -----------------------------------------------------------------------------
+
++(void)initialize
+{
+    if(self == [LoggerMessageCell class])
+    {
+        [self setThreadColumnWidth:DEFAULT_THREAD_COLUMN_WIDTH];
+    }
+}
 
 #pragma mark -
 #pragma mark Colors and text attributes
@@ -331,6 +340,16 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	return sMinimumHeightForCell;
 }
 
++ (CGFloat)threadColumnWidth
+{
+    return sThreadColumnWidth;
+}
+
++ (void)setThreadColumnWidth:(CGFloat)aWidth
+{
+    sThreadColumnWidth = aWidth;
+}
+
 + (CGFloat)heightForFileLineFunction
 {
 	if (sDefaultFileLineFunctionHeight == 0)
@@ -357,7 +376,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 8;
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + [self threadColumnWidth] + 8;
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
@@ -412,6 +431,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 #pragma mark -
 #pragma mark Instance methods
 // -----------------------------------------------------------------------------
+
 - (id)copyWithZone:(NSZone *)zone
 {
 	LoggerMessageCell *c = [super copyWithZone:zone];
@@ -575,7 +595,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
-			tagSize = [tag boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(drawRect) - NSHeight(r))
+			tagSize = [tag boundingRectWithSize:NSMakeSize([[self class] threadColumnWidth], NSHeight(drawRect) - NSHeight(r))
 										options:NSStringDrawingUsesLineFragmentOrigin
 									 attributes:[self tagAttributes]].size;
 			tagSize.width += 4;
@@ -584,7 +604,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		if (level)
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
-			levelSize = [levelString boundingRectWithSize:NSMakeSize(THREAD_COLUMN_WIDTH, NSHeight(drawRect) - NSHeight(r))
+			levelSize = [levelString boundingRectWithSize:NSMakeSize([[self class] threadColumnWidth], NSHeight(drawRect) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
 											   attributes:[self levelAttributes]].size;
 			levelSize.width += 4;
@@ -865,10 +885,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
 	
 	// thread/message separator
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]), floorf(NSMaxY(cellFrame)-1));
 	CGContextStrokePath(ctx);
-	
+    
 	// restore antialiasing
 	CGContextSetShouldAntialias(ctx, true);
 	
@@ -882,14 +902,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw thread ID and tag
 	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH,
 				   NSMinY(cellFrame),
-				   THREAD_COLUMN_WIDTH,
+				   [[self class] threadColumnWidth],
 				   NSHeight(cellFrame));
 	[self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
 	
 	// Draw message
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 3,
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 3,
 				   NSMinY(cellFrame),
-				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH) - 6,
+				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]) - 6,
 				   NSHeight(cellFrame));
 	CGFloat fileLineFunctionHeight = 0;
 	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
@@ -903,12 +923,54 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw File / Line / Function
 	if (fileLineFunctionHeight)
 	{
-		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH + 1,
+		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 1,
 					   NSMinY(cellFrame),
-					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + THREAD_COLUMN_WIDTH),
+					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]),
 					   fileLineFunctionHeight);
 		[self drawFileLineFunctionInRect:r highlightedTextColor:highlightedTextColor mouseOver:NO];
 	}
+}
+
+- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView
+{
+    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+    // converting the startPoint in the cell coordinates is not that easy!
+    
+    // if clicking around the thread / message separator, then track
+    if(startPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] - 5.) && startPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 5.))
+    {
+        [[NSCursor resizeLeftRightCursor] push];
+        self.modifyingThreadColumnWidth = YES;
+        return YES;
+    }
+
+    return [super startTrackingAt:startPoint inView:controlView];
+}
+
+- (BOOL)continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView
+{
+    if(self.modifyingThreadColumnWidth == YES)
+    {
+        CGFloat currentColWidth = [[self class] threadColumnWidth];
+        CGFloat difference = currentPoint.x - lastPoint.x;
+        
+        [[self class] setThreadColumnWidth:currentColWidth + difference];
+        [controlView setNeedsDisplay:YES];
+        return YES;
+    }
+    
+    return [super continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView];
+}
+
+- (void)stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag
+{
+    if(self.modifyingThreadColumnWidth == YES)
+    {
+        self.modifyingThreadColumnWidth = NO;
+        [[NSCursor resizeLeftRightCursor] pop];
+    }
+    
+    [super stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag];
 }
 
 #pragma mark -

@@ -58,7 +58,7 @@
 	// Don't understand why I have to override this method, but it's the only
 	// way I could get dragging from table to work. Tried various additional
 	// things with no luck...
-	return YES;
+	return NO;
 }
 
 @end
