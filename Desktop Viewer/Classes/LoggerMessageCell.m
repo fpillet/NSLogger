@@ -32,6 +32,7 @@
 #import "LoggerMessageCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
+#import "LoggerWindowController.h"
 
 #define MAX_DATA_LINES				16				// max number of data lines to show
 
@@ -39,13 +40,11 @@
 #define INDENTATION_TAB_WIDTH		10.0f			// in pixels
 
 #define TIMESTAMP_COLUMN_WIDTH		85.0f
-#define	DEFAULT_THREAD_COLUMN_WIDTH	85.0f
 
 static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
-static CGFloat sThreadColumnWidth = 0;
 
 NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
 NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
@@ -58,14 +57,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 // -----------------------------------------------------------------------------
 // Class methods
 // -----------------------------------------------------------------------------
-
-+(void)initialize
-{
-    if(self == [LoggerMessageCell class])
-    {
-        [self setThreadColumnWidth:DEFAULT_THREAD_COLUMN_WIDTH];
-    }
-}
 
 #pragma mark -
 #pragma mark Colors and text attributes
@@ -340,16 +331,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	return sMinimumHeightForCell;
 }
 
-+ (CGFloat)threadColumnWidth
-{
-    return sThreadColumnWidth;
-}
-
-+ (void)setThreadColumnWidth:(CGFloat)aWidth
-{
-    sThreadColumnWidth = aWidth;
-}
-
 + (CGFloat)heightForFileLineFunction
 {
 	if (sDefaultFileLineFunctionHeight == 0)
@@ -362,7 +343,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	return sDefaultFileLineFunctionHeight;
 }
 
-+ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames
++ (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames
 {
 	// return cached cell height if possible
 	CGFloat minimumHeight = [self minimumHeightForCell];
@@ -376,7 +357,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
 
-	sz.width -= TIMESTAMP_COLUMN_WIDTH + [self threadColumnWidth] + 8;
+	sz.width -= TIMESTAMP_COLUMN_WIDTH + threadColumWidth + 8;
 	sz.height -= 4;
 
 	switch (aMessage.contentsType)
@@ -595,7 +576,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
-			tagSize = [tag boundingRectWithSize:NSMakeSize([[self class] threadColumnWidth], NSHeight(drawRect) - NSHeight(r))
+            LoggerWindowController *wc = [[[self controlView] window] windowController];
+            CGFloat threadColumnWidth = wc.threadColumnWidth;
+			tagSize = [tag boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
 										options:NSStringDrawingUsesLineFragmentOrigin
 									 attributes:[self tagAttributes]].size;
 			tagSize.width += 4;
@@ -604,7 +587,11 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		if (level)
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
-			levelSize = [levelString boundingRectWithSize:NSMakeSize([[self class] threadColumnWidth], NSHeight(drawRect) - NSHeight(r))
+            
+            LoggerWindowController *wc = [[[self controlView] window] windowController];
+            CGFloat threadColumnWidth = wc.threadColumnWidth;
+
+			levelSize = [levelString boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
 											   attributes:[self levelAttributes]].size;
 			levelSize.width += 4;
@@ -885,8 +872,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
 	
 	// thread/message separator
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]), floorf(NSMaxY(cellFrame)-1));
+    LoggerWindowController *wc = [[[self controlView] window] windowController];
+    CGFloat threadColumnWidth = wc.threadColumnWidth;
+	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), floorf(NSMaxY(cellFrame)-1));
 	CGContextStrokePath(ctx);
     
 	// restore antialiasing
@@ -902,14 +891,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw thread ID and tag
 	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH,
 				   NSMinY(cellFrame),
-				   [[self class] threadColumnWidth],
+				   threadColumnWidth,
 				   NSHeight(cellFrame));
 	[self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
 	
 	// Draw message
-	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 3,
+	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 3,
 				   NSMinY(cellFrame),
-				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]) - 6,
+				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + threadColumnWidth) - 6,
 				   NSHeight(cellFrame));
 	CGFloat fileLineFunctionHeight = 0;
 	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
@@ -923,9 +912,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw File / Line / Function
 	if (fileLineFunctionHeight)
 	{
-		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 1,
+		r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 1,
 					   NSMinY(cellFrame),
-					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth]),
+					   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + threadColumnWidth),
 					   fileLineFunctionHeight);
 		[self drawFileLineFunctionInRect:r highlightedTextColor:highlightedTextColor mouseOver:NO];
 	}
@@ -936,7 +925,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
     // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
     // converting the startPoint in the cell coordinates is not that easy!
 
-    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + [[self class] threadColumnWidth] + 5.))
+    LoggerWindowController *wc = [[[self controlView] window] windowController];
+    CGFloat threadColumnWidth = wc.threadColumnWidth;
+    
+    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.))
         return YES;
 
     return NO;
@@ -962,12 +954,15 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 {
     if(self.modifyingThreadColumnWidth == YES)
     {
-        CGFloat currentColWidth = [[self class] threadColumnWidth];
+        LoggerWindowController *wc = [[[self controlView] window] windowController];
+        CGFloat threadColumnWidth = wc.threadColumnWidth;
+
+        CGFloat currentColWidth = threadColumnWidth;
         CGFloat difference = currentPoint.x - lastPoint.x;
         
         if(currentColWidth + difference > 20.) // avoids tiny column
         {
-            [[self class] setThreadColumnWidth:currentColWidth + difference];
+            wc.threadColumnWidth = currentColWidth + difference;
             [controlView setNeedsDisplay:YES];
         }
         
