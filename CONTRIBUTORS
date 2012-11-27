@@ -2,6 +2,8 @@ Florent Pillet (https://github.com/fpillet) - NSLogger design, architecture, cod
 
 Guillaume Cerquant (https://github.com/gcerquant) - Fixes and improvements to the Desktop Viewer code
 Arne Harren (https://github.com/aharren) - LibComponentLogging-NSLogger backend, improvements
-Peter Steinberger (https://github.com/steipete) - NSLogger-CocoaLumberjack backend
 Louis Harboe (http://graphicpeel.com) - Designed the `Console' icon (public domain), used with permission
+Aurélien Hugelé (https://github.com/altimac) - UI improvements
 Dirk Holtwick (https://github.com/holtwick) - Found & prepared Louis Harbroe's icon for use in NSLogger
+Peter Steinberger (https://github.com/steipete) - NSLogger-CocoaLumberjack backend
+wmanth (https://github.com/wmanth) - HiDPI support for icons
