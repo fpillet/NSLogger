@@ -958,20 +958,18 @@ static void LoggerWriteMoreData(Logger *logger)
 #pragma mark -
 #pragma mark Console logging
 // -----------------------------------------------------------------------------
-static void LoggerLogFromStream( FILE * stream )
+static void LoggerLogFromFile( int fd )
 {
-    char *line = NULL;
-    size_t linecap = 0;
-    ssize_t linelen;
-    
-    if ( (linelen = getline(&line, &linecap, stream)) > 0 )
+#define BUFSIZE 1000
+    UInt8 buf[ BUFSIZE ];
+    ssize_t bytes_read = 0;
+    while ( (bytes_read = read( fd, buf, BUFSIZE )) > 0 )
     {
-        if ( line[linelen-1] == '\n' ) line[linelen-1] = 0;
+        if ( buf[bytes_read-1 ] == '\n' ) --bytes_read;
         
-        CFStringRef messageString = CFStringCreateWithCString( NULL, line, kCFStringEncodingUTF8 );
+        CFStringRef messageString = CFStringCreateWithBytes( NULL, buf, bytes_read, kCFStringEncodingASCII, false );
         if (messageString != NULL)
         {
-            CFStringRef domainString = CFStringCreateWithCString( NULL, "console", kCFStringEncodingASCII );
             pthread_mutex_lock( &consoleGrabbersMutex );
             for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
             {
@@ -979,24 +977,25 @@ static void LoggerLogFromStream( FILE * stream )
                 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-security"
-                    LogMessageTo( consoleGrabbersList[grabberIndex], (NSString *) domainString, 1, (NSString *) messageString );
+                    LogMessageTo( consoleGrabbersList[grabberIndex], @"console", 1, (NSString *) messageString );
 #pragma clang dianostic pop
                 }
             }
             pthread_mutex_unlock( &consoleGrabbersMutex );
-            CFRelease( domainString );
             CFRelease( messageString );
         }
     }
-    if ( line != NULL ) free( line );
 }
 
 static void * LoggerConsoleGrabThread(void * context)
 {
     int fdout = consolePipes[ 0 ];
-    FILE * stdoutStream = fdopen(fdout, "r");
+    int flags = fcntl(fdout, F_GETFL, 0);
+    fcntl(fdout, F_SETFL, flags | O_NONBLOCK);
+    
     int fderr = consolePipes[ 2 ];
-    FILE * stderrStream = fdopen(fderr, "r");
+    flags = fcntl(fderr, F_GETFL, 0);
+    fcntl(fderr, F_SETFL, flags | O_NONBLOCK);
 
     while ( 1 )
     {
@@ -1008,20 +1007,17 @@ static void * LoggerConsoleGrabThread(void * context)
         
         if (ret == 0) {
             // time expired without activity
-            goto stop_running;
+            return NULL;
         } else if (ret < 0) {
             // error occurred
-            goto stop_running;
+            return NULL;
         } else {
             /* Drop the message if there are no listeners. I don't know how to cancel the redirection. */
             if ( numActiveConsoleGrabbers == 0 ) continue;
-            if ( FD_ISSET( fdout, &set ) ) LoggerLogFromStream( stdoutStream );
-            if ( FD_ISSET( fderr, &set ) ) LoggerLogFromStream( stderrStream );
+            if ( FD_ISSET( fdout, &set ) ) LoggerLogFromFile( fdout );
+            if ( FD_ISSET( fderr, &set ) ) LoggerLogFromFile( fderr );
         }
     }
-stop_running:
-    fclose( stdoutStream );
-    fclose( stderrStream );
     return NULL;
 }
 
