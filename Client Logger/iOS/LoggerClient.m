@@ -191,7 +191,7 @@ static unsigned consoleGrabbersListLength;
 static unsigned numActiveConsoleGrabbers = 0;
 static pthread_mutex_t consoleGrabbersMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t consoleGrabThread;
-static int consolePipe[ 2 ] = { -1, -1 };
+static int consolePipes[ 4 ] = { -1, -1, -1, -1 };
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -958,19 +958,53 @@ static void LoggerWriteMoreData(Logger *logger)
 #pragma mark -
 #pragma mark Console logging
 // -----------------------------------------------------------------------------
-static void * LoggerConsoleGrabThread(void * context)
+static void LoggerLogFromStream( FILE * stream )
 {
-    int fd = consolePipe[ 0 ];
-    FILE * stderrStream = fdopen(fd, "r");
     char *line = NULL;
     size_t linecap = 0;
     ssize_t linelen;
+    
+    if ( (linelen = getline(&line, &linecap, stream)) > 0 )
+    {
+        if ( line[linelen-1] == '\n' ) line[linelen-1] = 0;
+        
+        CFStringRef messageString = CFStringCreateWithCString( NULL, line, kCFStringEncodingUTF8 );
+        if (messageString != NULL)
+        {
+            CFStringRef domainString = CFStringCreateWithCString( NULL, "console", kCFStringEncodingASCII );
+            pthread_mutex_lock( &consoleGrabbersMutex );
+            for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+            {
+                if ( consoleGrabbersList[grabberIndex] != NULL )
+                {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
+                    LogMessageTo( consoleGrabbersList[grabberIndex], (NSString *) domainString, 1, (NSString *) messageString );
+#pragma clang dianostic pop
+                }
+            }
+            pthread_mutex_unlock( &consoleGrabbersMutex );
+            CFRelease( domainString );
+            CFRelease( messageString );
+        }
+    }
+    if ( line != NULL ) free( line );
+}
+
+static void * LoggerConsoleGrabThread(void * context)
+{
+    int fdout = consolePipes[ 0 ];
+    FILE * stdoutStream = fdopen(fdout, "r");
+    int fderr = consolePipes[ 2 ];
+    FILE * stderrStream = fdopen(fderr, "r");
+
     while ( 1 )
     {
         fd_set set;
         FD_ZERO(&set);
-        FD_SET(fd, &set);
-        int ret = select(fd + 1, &set, NULL, NULL, NULL);
+        FD_SET(fdout, &set);
+        FD_SET(fderr, &set);
+        int ret = select(fderr + 1, &set, NULL, NULL, NULL);
         
         if (ret == 0) {
             // time expired without activity
@@ -981,46 +1015,27 @@ static void * LoggerConsoleGrabThread(void * context)
         } else {
             /* Drop the message if there are no listeners. I don't know how to cancel the redirection. */
             if ( numActiveConsoleGrabbers == 0 ) continue;
-            if ( FD_ISSET( fd, &set ) ) {
-                // there was activity on the file descriptor
-                while ((linelen = getline(&line, &linecap, stderrStream)) > 0)
-                {
-                    if ( line[linelen-1] == '\n' ) line[linelen-1] = 0;
-                    
-                    CFStringRef messageString = CFStringCreateWithCString( NULL, line, kCFStringEncodingUTF8 );
-                    if (messageString != NULL)
-                    {
-                        CFStringRef domainString = CFStringCreateWithCString( NULL, "console", kCFStringEncodingASCII );
-                        pthread_mutex_lock( &consoleGrabbersMutex );
-                        for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
-                        {
-                            if ( consoleGrabbersList[grabberIndex] != NULL )
-                            {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-security"
-                                LogMessageTo( consoleGrabbersList[grabberIndex], (NSString *) domainString, 1, (NSString *) messageString );
-#pragma clang dianostic pop
-                            }
-                        }
-                        pthread_mutex_unlock( &consoleGrabbersMutex );
-                        CFRelease( domainString );
-                        CFRelease( messageString );
-                    }
-                }
-            }
+            if ( FD_ISSET( fdout, &set ) ) LoggerLogFromStream( stdoutStream );
+            if ( FD_ISSET( fderr, &set ) ) LoggerLogFromStream( stderrStream );
         }
     }
 stop_running:
+    fclose( stdoutStream );
     fclose( stderrStream );
-    if ( line != NULL ) free( line );
     return NULL;
 }
 
 static void LoggerStartConsoleRedirection()
 {
-    if ( consolePipe[ 0 ] != -1 ) return;   /* Already redirected */
-    if ( -1 == pipe( consolePipe ) ) return;
-    dup2( consolePipe[ 1 ], 2 /*stderr*/ );
+    if ( consolePipes[ 0 ] == -1 )
+    {
+        if ( -1 != pipe( consolePipes ) ) dup2( consolePipes[ 1 ], 1 /*stdout*/ );
+    }
+
+    if ( consolePipes[ 2 ] == -1 )
+    {
+        if ( -1 != pipe( consolePipes + 2 ) ) dup2( consolePipes[ 3 ], 2 /*stderr*/ );
+    }
     
     pthread_create( &consoleGrabThread, NULL, (void *(*)(void *))&LoggerConsoleGrabThread, NULL );
 }
