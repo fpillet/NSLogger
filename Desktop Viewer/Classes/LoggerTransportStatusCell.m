@@ -45,11 +45,11 @@
 	// Display status image
 	NSString *imgName;
 	if (transport.ready)
-		imgName = @"status_ready_connected.png";
+		imgName = NSImageNameStatusAvailable;
 	else if (transport.failed)
-		imgName = @"status_error.png";
+		imgName = NSImageNameStatusUnavailable;
 	else
-		imgName = @"status_disconnected.png";
+		imgName = NSImageNameStatusNone;
 	
 	NSImage *img = [NSImage imageNamed:imgName];
 	NSImage *sslImg = [NSImage imageNamed:@"ssl_badge.png"];
