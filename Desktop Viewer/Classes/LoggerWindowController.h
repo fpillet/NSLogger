@@ -61,6 +61,7 @@
 	LoggerMessageCell *messageCell;
 	LoggerClientInfoCell *clientInfoCell;
 	LoggerMarkerCell *markerCell;
+    CGFloat threadColumnWidth;
 
 	NSString *info;
 	NSMutableArray *displayedMessages;
@@ -87,6 +88,7 @@
 @property (nonatomic, assign) BOOL messagesSelected;
 @property (nonatomic, assign) BOOL hasQuickFilter;
 @property (nonatomic, assign) NSNumber* showFunctionNames;
+@property (nonatomic, assign) CGFloat threadColumnWidth;
 
 - (IBAction)openDetailsWindow:(id)sender;
 
