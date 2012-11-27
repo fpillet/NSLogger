@@ -40,6 +40,8 @@
 #import "LoggerCommon.h"
 #import "LoggerDocument.h"
 
+#define	DEFAULT_THREAD_COLUMN_WIDTH	85.0f
+
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
 @property (nonatomic, retain) NSString *filterString;
@@ -65,6 +67,7 @@ static NSArray *sXcodeFileExtensions = nil;
 @synthesize info, filterString, filterTag;
 @synthesize attachedConnection;
 @synthesize messagesSelected, hasQuickFilter;
+@synthesize threadColumnWidth;
 @dynamic showFunctionNames;
 
 // -----------------------------------------------------------------------------
@@ -79,6 +82,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		displayedMessages = [[NSMutableArray alloc] initWithCapacity:4096];
 		tags = [[NSMutableSet alloc] init];
 		[self setShouldCloseDocument:YES];
+        threadColumnWidth = DEFAULT_THREAD_COLUMN_WIDTH;
 	}
 	return self;
 }
@@ -227,14 +231,14 @@ static NSArray *sXcodeFileExtensions = nil;
 				case LOGMSG_TYPE_LOG:
 				case LOGMSG_TYPE_BLOCKSTART:
 				case LOGMSG_TYPE_BLOCKEND:
-					newHeight = [LoggerMessageCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_CLIENTINFO:
 				case LOGMSG_TYPE_DISCONNECT:
-					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_MARK:
-					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
 					break;
 			}
 			if (newHeight != cachedHeight)
