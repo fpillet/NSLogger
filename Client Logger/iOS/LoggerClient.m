@@ -183,6 +183,16 @@ static uint32_t LoggerMessageGetSeq(CFDataRef message);
 static Logger* volatile sDefaultLogger = NULL;
 static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
 
+// Console logging
+static void LoggerStartGrabbingConsoleTo(Logger *logger);
+static void LoggerStopGrabbingConsoleTo(Logger *logger);
+static Logger ** consoleGrabbersList = NULL;
+static unsigned consoleGrabbersListLength;
+static unsigned numActiveConsoleGrabbers = 0;
+static pthread_mutex_t consoleGrabbersMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t consoleGrabThread;
+static int consolePipe[ 2 ] = { -1, -1 };
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Default logger
@@ -334,6 +344,12 @@ void LoggerStart(Logger *logger)
 
 	if (logger->workerThread == NULL)
 	{
+        // Grab console output if required
+        if (logger->options & kLoggerOption_ConsoleLog)
+        {
+            LoggerStartGrabbingConsoleTo(logger);
+        }
+
 		// Start the work thread which performs the Bonjour search,
 		// connects to the logging service and forwards the logs
 		LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
@@ -357,6 +373,7 @@ void LoggerStop(Logger *logger)
 	{
 		if (logger->workerThread != NULL)
 		{
+            LoggerStopGrabbingConsoleTo(logger);
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
 		}
@@ -935,6 +952,118 @@ static void LoggerWriteMoreData(Logger *logger)
 		if (remainingMsgs == 0)
 			pthread_cond_broadcast(&logger->logQueueEmpty);
 	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Console logging
+// -----------------------------------------------------------------------------
+static void * LoggerConsoleGrabThread(void * context)
+{
+    int fd = consolePipe[ 0 ];
+    FILE * stderrStream = fdopen(fd, "r");
+    char *line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    while ( 1 )
+    {
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(fd, &set);
+        int ret = select(fd + 1, &set, NULL, NULL, NULL);
+        
+        if (ret == 0) {
+            // time expired without activity
+            goto stop_running;
+        } else if (ret < 0) {
+            // error occurred
+            goto stop_running;
+        } else {
+            /* Drop the message if there are no listeners. I don't know how to cancel the redirection. */
+            if ( numActiveConsoleGrabbers == 0 ) continue;
+            if ( FD_ISSET( fd, &set ) ) {
+                // there was activity on the file descriptor
+                while ((linelen = getline(&line, &linecap, stderrStream)) > 0)
+                {
+                    if ( line[linelen-1] == '\n' ) line[linelen-1] = 0;
+                    
+                    CFStringRef messageString = CFStringCreateWithCString( NULL, line, kCFStringEncodingUTF8 );
+                    if (messageString != NULL)
+                    {
+                        CFStringRef domainString = CFStringCreateWithCString( NULL, "console", kCFStringEncodingASCII );
+                        pthread_mutex_lock( &consoleGrabbersMutex );
+                        for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+                        {
+                            if ( consoleGrabbersList[grabberIndex] != NULL )
+                            {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
+                                LogMessageTo( consoleGrabbersList[grabberIndex], (NSString *) domainString, 1, (NSString *) messageString );
+#pragma clang dianostic pop
+                            }
+                        }
+                        pthread_mutex_unlock( &consoleGrabbersMutex );
+                        CFRelease( domainString );
+                        CFRelease( messageString );
+                    }
+                }
+            }
+        }
+    }
+stop_running:
+    fclose( stderrStream );
+    if ( line != NULL ) free( line );
+    return NULL;
+}
+
+static void LoggerStartConsoleRedirection()
+{
+    if ( consolePipe[ 0 ] != -1 ) return;   /* Already redirected */
+    if ( -1 == pipe( consolePipe ) ) return;
+    dup2( consolePipe[ 1 ], 2 /*stderr*/ );
+    
+    pthread_create( &consoleGrabThread, NULL, (void *(*)(void *))&LoggerConsoleGrabThread, NULL );
+}
+
+static void LoggerStartGrabbingConsoleTo(Logger *logger)
+{
+    if ( ! logger->options & kLoggerOption_ConsoleLog ) return;
+    
+    pthread_mutex_lock( &consoleGrabbersMutex );
+
+    consoleGrabbersList = realloc( consoleGrabbersList, ++consoleGrabbersListLength * sizeof(Logger *) );
+    consoleGrabbersList[numActiveConsoleGrabbers++] = logger;
+    
+    pthread_mutex_unlock( &consoleGrabbersMutex );
+
+    /* Start redirection if necessary */
+    LoggerStartConsoleRedirection();
+}
+
+static void LoggerStopGrabbingConsoleTo(Logger *logger)
+{
+    if ( numActiveConsoleGrabbers == 0 ) return;
+    if ( ! logger->options & kLoggerOption_ConsoleLog ) return;
+
+    pthread_mutex_lock( &consoleGrabbersMutex );
+    
+    if ( --numActiveConsoleGrabbers == 0 )
+    {
+        consoleGrabbersListLength = 0;
+        free( consoleGrabbersList );
+        consoleGrabbersList = NULL;
+    } else {
+        for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+        {
+            if ( consoleGrabbersList[grabberIndex] == logger )
+            {
+                consoleGrabbersList[grabberIndex] = NULL;
+                break;
+            }
+        }
+    }
+    
+    pthread_mutex_unlock( &consoleGrabbersMutex );
 }
 
 // -----------------------------------------------------------------------------
