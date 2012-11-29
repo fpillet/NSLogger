@@ -35,12 +35,10 @@
 #import "LoggerClientInfoCell.h"
 #import "LoggerMarkerCell.h"
 #import "LoggerMessage.h"
-#import "LoggerUtils.h"
 #import "LoggerAppDelegate.h"
 #import "LoggerCommon.h"
 #import "LoggerDocument.h"
-
-#define	DEFAULT_THREAD_COLUMN_WIDTH	85.0f
+#import "LoggerSplitView.h"
 
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;

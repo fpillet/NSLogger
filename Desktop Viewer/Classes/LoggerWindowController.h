@@ -127,3 +127,6 @@
 }
 @end
 
+#define	DEFAULT_THREAD_COLUMN_WIDTH	85.0f
+
+

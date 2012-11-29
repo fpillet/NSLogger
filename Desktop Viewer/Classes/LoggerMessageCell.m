@@ -570,14 +570,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	int level = message.level;
 	if ([tag length] || level)
 	{
+		LoggerWindowController *wc = [[[self controlView] window] windowController];
+		CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
 		NSSize tagSize = NSZeroSize;
 		NSSize levelSize = NSZeroSize;
 		NSString *levelString = nil;
 		r.origin.y += NSHeight(r);
 		if ([tag length])
 		{
-            LoggerWindowController *wc = [[[self controlView] window] windowController];
-            CGFloat threadColumnWidth = wc.threadColumnWidth;
 			tagSize = [tag boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
 										options:NSStringDrawingUsesLineFragmentOrigin
 									 attributes:[self tagAttributes]].size;
@@ -588,9 +588,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
             
-            LoggerWindowController *wc = [[[self controlView] window] windowController];
-            CGFloat threadColumnWidth = wc.threadColumnWidth;
-
 			levelSize = [levelString boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
 											   attributes:[self levelAttributes]].size;
@@ -873,7 +870,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	
 	// thread/message separator
     LoggerWindowController *wc = [[[self controlView] window] windowController];
-    CGFloat threadColumnWidth = wc.threadColumnWidth;
+	CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
 	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), NSMinY(cellFrame));
 	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), floorf(NSMaxY(cellFrame)-1));
 	CGContextStrokePath(ctx);
@@ -926,8 +923,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
     // converting the startPoint in the cell coordinates is not that easy!
 
     LoggerWindowController *wc = [[[self controlView] window] windowController];
+	if (![wc isKindOfClass:[LoggerWindowController class]])
+		return NO;		// we may be in the Preferences window fake log message display
+
     CGFloat threadColumnWidth = wc.threadColumnWidth;
-    
     if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.))
         return YES;
 
