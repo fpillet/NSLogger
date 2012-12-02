@@ -119,7 +119,8 @@
 #undef LOGGER_ARC_MACROS_DEFINED
 #if defined(__has_feature)
 	#if __has_feature(objc_arc)
-		#define CAST_TO_CFSTRING			__bridge CFStringRef
+        #define CAST_TO_CFSTRING			__bridge CFStringRef
+        #define CAST_TO_NSSTRING			__bridge NSString *
 		#define CAST_TO_CFDATA				__bridge CFDataRef
 		#define RELEASE(obj)				do{}while(0)
 		#define AUTORELEASE_POOL_BEGIN		@autoreleasepool{
@@ -129,6 +130,7 @@
 #endif
 #if !defined(LOGGER_ARC_MACROS_DEFINED)
 	#define CAST_TO_CFSTRING			CFStringRef
+    #define CAST_TO_NSSTRING			NSString *
 	#define CAST_TO_CFDATA				CFDataRef
 	#define RELEASE(obj)				[obj release]
 	#define AUTORELEASE_POOL_BEGIN		NSAutoreleasePool *__pool=[[NSAutoreleasePool alloc] init];
@@ -965,7 +967,7 @@ static void LoggerLogFromFile( int fd )
     ssize_t bytes_read = 0;
     while ( (bytes_read = read( fd, buf, BUFSIZE )) > 0 )
     {
-        if ( buf[bytes_read-1 ] == '\n' ) --bytes_read;
+        if ( buf[bytes_read-1] == '\n' ) --bytes_read;
         
         CFStringRef messageString = CFStringCreateWithBytes( NULL, buf, bytes_read, kCFStringEncodingASCII, false );
         if (messageString != NULL)
@@ -977,7 +979,7 @@ static void LoggerLogFromFile( int fd )
                 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-security"
-                    LogMessageTo( consoleGrabbersList[grabberIndex], @"console", 1, (NSString *) messageString );
+                    LogMessageTo( consoleGrabbersList[grabberIndex], @"console", 1, (CAST_TO_NSSTRING) messageString );
 #pragma clang dianostic pop
                 }
             }
