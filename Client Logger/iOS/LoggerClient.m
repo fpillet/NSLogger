@@ -223,7 +223,7 @@ Logger *LoggerInit(void)
 	Logger *logger = (Logger *)malloc(sizeof(Logger));
 	bzero(logger, sizeof(Logger));
 
-	logger->logQueue = CFArrayCreateMutable(NULL, 32, &kCFTypeArrayCallBacks);
+	logger->logQueue = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
 	pthread_mutex_init(&logger->logQueueMutex, NULL);
 	pthread_cond_init(&logger->logQueueEmpty, NULL);
 
