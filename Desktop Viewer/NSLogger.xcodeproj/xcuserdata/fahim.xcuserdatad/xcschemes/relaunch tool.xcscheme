@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
+   LastUpgradeVersion = "0450"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -13,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "53DF6901067E5B8E0090B5B0"
-               BuildableName = "All"
-               BlueprintName = "All"
-               ReferencedContainer = "container:BWToolkit.xcodeproj">
+               BlueprintIdentifier = "3DE8CE7712AE4A17005C83D0"
+               BuildableName = "relaunch"
+               BlueprintName = "relaunch tool"
+               ReferencedContainer = "container:NSLogger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -28,6 +29,15 @@
       buildConfiguration = "Debug">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "3DE8CE7712AE4A17005C83D0"
+            BuildableName = "relaunch"
+            BlueprintName = "relaunch tool"
+            ReferencedContainer = "container:NSLogger.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
@@ -38,6 +48,15 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "3DE8CE7712AE4A17005C83D0"
+            BuildableName = "relaunch"
+            BlueprintName = "relaunch tool"
+            ReferencedContainer = "container:NSLogger.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -47,6 +66,15 @@
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "3DE8CE7712AE4A17005C83D0"
+            BuildableName = "relaunch"
+            BlueprintName = "relaunch tool"
+            ReferencedContainer = "container:NSLogger.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
