@@ -20,7 +20,7 @@ Your application emits traces using the *NSLogger* [trace APIs](https://github.c
 
 Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host/port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
 
-![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
+![Desktop Viewer (main window)](https://github.com/FahimF/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
 # One-step setup #
 All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
@@ -66,8 +66,6 @@ This tool comes from a personal need for a more powerful logger. There are more 
 
 
 You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLogger/wiki/)
-
-NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
 
 NSLogger is Copyright (c) 2010-2011 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
