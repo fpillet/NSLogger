@@ -34,8 +34,6 @@
 		3D8E078113097D6E0024917B /* ssl_badge.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E078013097D6E0024917B /* ssl_badge.png */; };
 		3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA319AA12E37088003F68E6 /* LoggerTableView.m */; };
 		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
-		3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */; };
-		3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
@@ -140,10 +138,6 @@
 		3DA319AA12E37088003F68E6 /* LoggerTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTableView.m; path = Classes/LoggerTableView.m; sourceTree = "<group>"; };
 		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
 		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
-		3DAC10DF13ED5A7E00D5E6BA /* SSSelectableToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSSelectableToolbar.h; path = "Third Party/SSSelectableToolbar/SSSelectableToolbar.h"; sourceTree = "<group>"; };
-		3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSSelectableToolbar.m; path = "Third Party/SSSelectableToolbar/SSSelectableToolbar.m"; sourceTree = "<group>"; };
-		3DAC10E113ED5A7E00D5E6BA /* SSSelectableToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSSelectableToolbarItem.h; path = "Third Party/SSSelectableToolbar/SSSelectableToolbarItem.h"; sourceTree = "<group>"; };
-		3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSSelectableToolbarItem.m; path = "Third Party/SSSelectableToolbar/SSSelectableToolbarItem.m"; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
 		3DADCB9F125FC3B200807A7D /* ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ValueTransformers.m; path = Classes/ValueTransformers.m; sourceTree = "<group>"; };
 		3DBB562512829BCC004F729D /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMarkerCell.h; path = Classes/LoggerMarkerCell.h; sourceTree = "<group>"; };
@@ -247,7 +241,6 @@
 			isa = PBXGroup;
 			children = (
 				439F14BB1531A185006A5CE3 /* xedReplacement.sh */,
-				3D65635B13EDA75800004DB6 /* Third Party */,
 				3D65635C13EDA78600004DB6 /* Shared */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
@@ -319,14 +312,6 @@
 			name = "Views & Cells";
 			sourceTree = "<group>";
 		};
-		3D65635B13EDA75800004DB6 /* Third Party */ = {
-			isa = PBXGroup;
-			children = (
-				3DAC10DE13ED5A6D00D5E6BA /* SSSelectableToolbar */,
-			);
-			name = "Third Party";
-			sourceTree = "<group>";
-		};
 		3D65635C13EDA78600004DB6 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -346,17 +331,6 @@
 				3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */,
 			);
 			name = "Native log format";
-			sourceTree = "<group>";
-		};
-		3DAC10DE13ED5A6D00D5E6BA /* SSSelectableToolbar */ = {
-			isa = PBXGroup;
-			children = (
-				3DAC10DF13ED5A7E00D5E6BA /* SSSelectableToolbar.h */,
-				3DAC10E013ED5A7E00D5E6BA /* SSSelectableToolbar.m */,
-				3DAC10E113ED5A7E00D5E6BA /* SSSelectableToolbarItem.h */,
-				3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */,
-			);
-			name = SSSelectableToolbar;
 			sourceTree = "<group>";
 		};
 		3DDAE1570F405CD4001B1408 /* Model */ = {
@@ -529,8 +503,6 @@
 				3DEE27B712B773D8009ADA67 /* LoggerNativeTransport.m in Sources */,
 				3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */,
 				3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */,
-				3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */,
-				3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */,
 				3D65635513ED9C6800004DB6 /* LoggerDocumentController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
