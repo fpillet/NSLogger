@@ -75,14 +75,14 @@
 	BOOL attachedToWindow;
 }
 
-@property (retain) id <LoggerConnectionDelegate> delegate;
+@property (strong) id <LoggerConnectionDelegate> delegate;
 
-@property (nonatomic, retain) NSString *clientName;
-@property (nonatomic, retain) NSString *clientVersion;
-@property (nonatomic, retain) NSString *clientOSName;
-@property (nonatomic, retain) NSString *clientOSVersion;
-@property (nonatomic, retain) NSString *clientDevice;
-@property (nonatomic, retain) NSString *clientUDID;
+@property (nonatomic, strong) NSString *clientName;
+@property (nonatomic, strong) NSString *clientVersion;
+@property (nonatomic, strong) NSString *clientOSName;
+@property (nonatomic, strong) NSString *clientOSVersion;
+@property (nonatomic, strong) NSString *clientDevice;
+@property (nonatomic, strong) NSString *clientUDID;
 
 @property (nonatomic, readonly) NSData *clientAddress;
 @property (nonatomic, readonly) NSMutableSet *filenames;

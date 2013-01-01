@@ -46,9 +46,9 @@
     BOOL modifyingThreadColumnWidth;
 }
 
-@property (nonatomic, retain) LoggerMessage *message;
-@property (nonatomic, retain) LoggerMessage *previousMessage;
-@property (nonatomic, retain) NSDictionary *messageAttributes;
+@property (nonatomic, strong) LoggerMessage *message;
+@property (nonatomic, strong) LoggerMessage *previousMessage;
+@property (nonatomic, strong) NSDictionary *messageAttributes;
 @property (nonatomic, assign) BOOL shouldShowFunctionNames;
 @property (nonatomic, assign) BOOL modifyingThreadColumnWidth;
 

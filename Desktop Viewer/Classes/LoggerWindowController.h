@@ -82,10 +82,10 @@
 	BOOL clientAppSettingsRestored;
 }
 
-@property (nonatomic, retain) LoggerConnection *attachedConnection;
+@property (nonatomic, strong) LoggerConnection *attachedConnection;
 @property (nonatomic, assign) BOOL messagesSelected;
 @property (nonatomic, assign) BOOL hasQuickFilter;
-@property (nonatomic, assign) NSNumber* showFunctionNames;
+@property (nonatomic, unsafe_unretained) NSNumber* showFunctionNames;
 @property (nonatomic, assign) CGFloat threadColumnWidth;
 
 - (IBAction)openDetailsWindow:(id)sender;

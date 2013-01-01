@@ -49,9 +49,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)dealloc
 {
 	[listenerThread cancel];
-	[bonjourService release];
-	[bonjourServiceName release];
-	[super dealloc];
 }
 
 - (NSString *)transportInfoString
@@ -174,7 +171,6 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	// stop Bonjour service
 	[bonjourService setDelegate:nil];
 	[bonjourService stop];
-	[bonjourService release];
 	bonjourService = nil;
 
 	// close listener sockets (removing input sources)
@@ -193,7 +189,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 	// shutdown all connections
 	while ([connections count])
-		[self removeConnection:[connections objectAtIndex:0]];
+		[self removeConnection:connections[0]];
 	
 	[listenerThread cancel];
 	
@@ -220,7 +216,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 {
 	@try
 	{
-		CFSocketContext context = {0, self, NULL, NULL, NULL};
+		CFSocketContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 		
 		// create sockets
 		listenerSocket_ipv4 = CFSocketCreate(kCFAllocatorDefault,
@@ -260,7 +256,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		addr4.sin_addr.s_addr = htonl(INADDR_ANY);
 		NSData *address4 = [NSData dataWithBytes:&addr4 length:sizeof(addr4)];
 		
-	    if (CFSocketSetAddress(listenerSocket_ipv4, (CFDataRef)address4) != kCFSocketSuccess)
+	    if (CFSocketSetAddress(listenerSocket_ipv4, CFBridgingRetain(address4)) != kCFSocketSuccess)
 		{
 			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
 										   reason:NSLocalizedString(@"Failed setting IPv4 socket address", @"")
@@ -271,7 +267,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		{
 			// now that the binding was successful, we get the port number 
 			// -- we will need it for the v6 endpoint and for NSNetService
-			NSData *addr = [(NSData *)CFSocketCopyAddress(listenerSocket_ipv4) autorelease];
+			NSData *addr = (NSData *)CFBridgingRelease(CFSocketCopyAddress(listenerSocket_ipv4));
 			memcpy(&addr4, [addr bytes], [addr length]);
 			listenerPort = ntohs(addr4.sin_port);
 		}
@@ -285,8 +281,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		memcpy(&(addr6.sin6_addr), &in6addr_any, sizeof(addr6.sin6_addr));
 		NSData *address6 = [NSData dataWithBytes:&addr6 length:sizeof(addr6)];
 		
-		if (CFSocketSetAddress(listenerSocket_ipv6, (CFDataRef)address6) != kCFSocketSuccess)
-		{
+		if (CFSocketSetAddress(listenerSocket_ipv6, CFBridgingRetain(address6)) != kCFSocketSuccess) {
 			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
 										   reason:NSLocalizedString(@"Failed setting IPv6 socket address", @"")
 										 userInfo:nil];
@@ -316,8 +311,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			if (serviceName == nil || ![serviceName isKindOfClass:[NSString class]])
 				serviceName = @"";
 
-			[bonjourServiceName release];
-			bonjourServiceName = [serviceName retain];
+			bonjourServiceName = serviceName;
 
 			bonjourService = [[NSNetService alloc] initWithDomain:@""
 															 type:(NSString *)serviceType
@@ -366,38 +360,37 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)listenerThread
 {
 	listenerThread = [NSThread currentThread];
-	[[listenerThread threadDictionary] setObject:[NSRunLoop currentRunLoop] forKey:@"runLoop"];
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	[listenerThread threadDictionary][@"runLoop"] = [NSRunLoop currentRunLoop];
+	@autoreleasepool {
 #ifdef DEBUG
-	NSString *description = [self description];
-	NSLog(@"Entering listenerThread for transport %@", description);
+		NSString *description = [self description];
+		NSLog(@"Entering listenerThread for transport %@", description);
 #endif
-	@try
-	{
-		if ([self setup])
+		@try
 		{
-			while (![listenerThread isCancelled])
+			if ([self setup])
 			{
-				NSDate *next = [[NSDate alloc] initWithTimeIntervalSinceNow:0.10];
-				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:next];
-				[next release];
+				while (![listenerThread isCancelled])
+				{
+					NSDate *next = [[NSDate alloc] initWithTimeIntervalSinceNow:0.10];
+					[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:next];
+				}
 			}
 		}
-	}
-	@catch (NSException * e)
-	{
+		@catch (NSException * e)
+		{
 #ifdef DEBUG
-		NSLog(@"listenerThread catched exception %@", e);
+			NSLog(@"listenerThread catched exception %@", e);
 #endif
-	}
-	@finally
-	{
+		}
+		@finally
+		{
 #ifdef DEBUG
-		NSLog(@"Exiting listenerThread for transport %@", description);
+			NSLog(@"Exiting listenerThread for transport %@", description);
 #endif
-		[pool release];
-		listenerThread = nil;
-		active = NO;
+			listenerThread = nil;
+			active = NO;
+		}
 	}
 }
 
@@ -422,7 +415,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+		int i, b = sprintf(buffer," %04lx: ", offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
@@ -445,29 +438,27 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		
 		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
 		[s appendString:str];
-		[str release];
 		
 		dataLen -= i;
 		offset += i;
 	}
 	NSLog(@"Received bytes:\n%@", s);
-	[s release];
 }
 #endif
 
 - (NSString *)clientInfoStringForMessage:(LoggerMessage *)message
 {
 	NSDictionary *parts = message.parts;
-	NSString *clientName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
-	NSString *clientVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+	NSString *clientName = parts[@PART_KEY_CLIENT_NAME];
+	NSString *clientVersion = parts[@PART_KEY_CLIENT_VERSION];
 	NSString *clientAppInfo = @"";
 	if ([clientName length])
 		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"Client connected: %@ %@", @""),
 						 clientName,
 						 clientVersion ? clientVersion : @""];
 
-	NSString *osName = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
-	NSString *osVersion = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+	NSString *osName = parts[@PART_KEY_OS_NAME];
+	NSString *osVersion = parts[@PART_KEY_OS_VERSION];
 	NSString *osInfo = @"";
 	if ([osName length])
 		osInfo = [NSString stringWithFormat:NSLocalizedString(@"%@ (%@ %@)", @""),
@@ -475,12 +466,12 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				  osName,
 				  osVersion ? osVersion : @""];
 
-	NSString *hardware = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+	NSString *hardware = parts[@PART_KEY_CLIENT_MODEL];
 	NSString *hardwareInfo = @"";
 	if ([hardware length])
 		hardwareInfo = [NSString stringWithFormat:NSLocalizedString(@"\nHardware: %@", @""), hardware];
 	
-	NSString *uniqueID = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+	NSString *uniqueID = parts[@PART_KEY_UNIQUEID];
 	NSString *uniqueIDString = @"";
 	if ([uniqueID length])
 		uniqueIDString = [NSString stringWithFormat:NSLocalizedString(@"\nUDID: %@", @""), uniqueID];
@@ -542,136 +533,126 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 // -----------------------------------------------------------------------------
 - (void)stream:(NSStream *)theStream handleEvent:(NSStreamEvent)streamEvent
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	@try
-	{
-		// Locate the connection to which this stream is attached
-		LoggerNativeConnection *cnx = nil;
-		for (cnx in connections)
+	@autoreleasepool {
+		@try
 		{
-			if (cnx.readStream == theStream)
-				break;
-			cnx = nil;
-		}
-		if (cnx == nil)
-			return;
-		
-		NSInteger numBytes;
-
-		switch(streamEvent)
-		{
-			case NSStreamEventHasBytesAvailable:
-				while ([cnx.readStream hasBytesAvailable])
-				{
-					// read bytes
-					numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize];
-					if (numBytes <= 0)
-						break;
-
-					// append data to the data buffer
-					NSMutableArray *msgs = [[NSMutableArray alloc] init];
-					//[self dumpBytes:cnx.tmpBuf length:numBytes];
-					[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
-					NSUInteger bufferLength = [cnx.buffer length];
-					while (bufferLength > 4)
+			// Locate the connection to which this stream is attached
+			LoggerNativeConnection *cnx = nil;
+			for (cnx in connections)
+			{
+				if (cnx.readStream == theStream)
+					break;
+				cnx = nil;
+			}
+			if (cnx == nil)
+				return;
+			
+			NSInteger numBytes;
+			
+			switch(streamEvent)
+			{
+				case NSStreamEventHasBytesAvailable:
+					while ([cnx.readStream hasBytesAvailable])
 					{
-						// check whether we have a full message
-						uint32_t length;
-						[cnx.buffer getBytes:&length length:4];
-						length = ntohl(length);
-						if (bufferLength < (length + 4))
+						// read bytes
+						numBytes = [cnx.readStream read:cnx.tmpBuf maxLength:cnx.tmpBufSize];
+						if (numBytes <= 0)
 							break;
-
-						// get one message
-						CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-																	   (unsigned char *)[cnx.buffer bytes] + 4,
-																	   length,
-																	   kCFAllocatorNull);
-						if (subset != NULL)
+						
+						// append data to the data buffer
+						NSMutableArray *msgs = [[NSMutableArray alloc] init];
+						//[self dumpBytes:cnx.tmpBuf length:numBytes];
+						[cnx.buffer appendBytes:cnx.tmpBuf length:numBytes];
+						NSUInteger bufferLength = [cnx.buffer length];
+						while (bufferLength > 4)
 						{
-							// we receive a ClientInfo message only when the client connects. Once we get this message,
-							// the connection is considered being "live" (we need to wait a bit to let SSL negotiation to
-							// take place, and not open a window if it fails).
-							LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:cnx];
-							CFRelease(subset);
-							if (message.type == LOGMSG_TYPE_CLIENTINFO)
+							// check whether we have a full message
+							uint32_t length;
+							[cnx.buffer getBytes:&length length:4];
+							length = ntohl(length);
+							if (bufferLength < (length + 4))
+								break;
+							
+							// get one message
+							CFDataRef subset = CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
+																		   (unsigned char *)[cnx.buffer bytes] + 4,
+																		   length,
+																		   kCFAllocatorNull);
+							if (subset != NULL)
 							{
-								message.message = [self clientInfoStringForMessage:message];
-								message.threadID = @"";
-								[cnx clientInfoReceived:message];
-								[self attachConnectionToWindow:cnx];
+								// we receive a ClientInfo message only when the client connects. Once we get this message,
+								// the connection is considered being "live" (we need to wait a bit to let SSL negotiation to
+								// take place, and not open a window if it fails).
+								LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(__bridge NSData *)subset connection:cnx];
+								CFRelease(subset);
+								if (message.type == LOGMSG_TYPE_CLIENTINFO)
+								{
+									message.message = [self clientInfoStringForMessage:message];
+									message.threadID = @"";
+									[cnx clientInfoReceived:message];
+									[self attachConnectionToWindow:cnx];
+								}
+								else
+								{
+									[msgs addObject:message];
+								}
 							}
-							else
-							{
-								[msgs addObject:message];
-							}
-							[message release];
+							[cnx.buffer replaceBytesInRange:NSMakeRange(0, length+4) withBytes:NULL length:0];
+							bufferLength = [cnx.buffer length];
 						}
-						[cnx.buffer replaceBytesInRange:NSMakeRange(0, length+4) withBytes:NULL length:0];
-						bufferLength = [cnx.buffer length];
+						
+						if ([msgs count])
+							[cnx messagesReceived:msgs];
 					}
-
-					if ([msgs count])
-						[cnx messagesReceived:msgs];
-					[msgs release];
+					break;
+					
+				case NSStreamEventErrorOccurred: {
+					NSLog(@"Stream error occurred: stream=%@ self=%@ error=%@", theStream, self, [theStream streamError]);
+					NSError *error = [theStream streamError];
+					NSInteger errCode = [error code];
+					if (errCode == errSSLDecryptionFail || errCode == errSSLBadRecordMac)
+					{
+						// SSL failure due to the application not being codesigned
+						// See https://devforums.apple.com/thread/77848?tstart=0
+						dispatch_async(dispatch_get_main_queue(), ^{
+							NSDictionary *dict = @{NSLocalizedDescriptionKey: NSLocalizedString(@"NSLogger SSL authentication failure", @""),
+												  NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Your NSLogger build may not be codesigned. As a result, a conflict between Firewall and Keychain tagging of your viewer requires that you restart NSLogger to complete the SSL certificate authorization.\n\nRestart NSLogger now to fix the issue.", @""),
+												  NSUnderlyingErrorKey: [NSString stringWithFormat:@"CFStream error %ld", errCode],
+												  NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Click the Restart button to restart NSLogger now.", @""),
+												  NSLocalizedRecoveryOptionsErrorKey: @[NSLocalizedString(@"Restart", @"")],
+												  NSRecoveryAttempterErrorKey: [NSApp delegate]};
+							[NSApp presentError:[NSError errorWithDomain:@"NSLogger"
+																	code:errCode
+																userInfo:dict]];
+						});
+					}
+					break;
 				}
-				break;
-				
-			case NSStreamEventErrorOccurred: {
-				NSLog(@"Stream error occurred: stream=%@ self=%@ error=%@", theStream, self, [theStream streamError]);
-				NSError *error = [theStream streamError];
-				NSInteger errCode = [error code];
-				if (errCode == errSSLDecryptionFail || errCode == errSSLBadRecordMac)
-				{
-					// SSL failure due to the application not being codesigned
-					// See https://devforums.apple.com/thread/77848?tstart=0
-					dispatch_async(dispatch_get_main_queue(), ^{
-						NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-											  NSLocalizedString(@"NSLogger SSL authentication failure", @""), NSLocalizedDescriptionKey,
-											  NSLocalizedString(@"Your NSLogger build may not be codesigned. As a result, a conflict between Firewall and Keychain tagging of your viewer requires that you restart NSLogger to complete the SSL certificate authorization.\n\nRestart NSLogger now to fix the issue.", @""), NSLocalizedRecoverySuggestionErrorKey,
-											  [NSString stringWithFormat:@"CFStream error %d", errCode], NSUnderlyingErrorKey,
-											  NSLocalizedString(@"Click the Restart button to restart NSLogger now.", @""), NSLocalizedRecoverySuggestionErrorKey,
-											  [NSArray arrayWithObject:NSLocalizedString(@"Restart", @"")],  NSLocalizedRecoveryOptionsErrorKey,
-											  [NSApp delegate], NSRecoveryAttempterErrorKey,
-											  nil];
-						[NSApp presentError:[NSError errorWithDomain:@"NSLogger"
-																code:errCode
-															userInfo:dict]];
-					});
+					// fall through
+				case NSStreamEventEndEncountered: {
+					// Append a disconnect message for only one of the two streams
+					struct timeval t;
+					gettimeofday(&t, NULL);
+					LoggerMessage *msg = [[LoggerMessage alloc] init];
+					msg.timestamp = t;
+					msg.type = LOGMSG_TYPE_DISCONNECT;
+					msg.message = NSLocalizedString(@"Client disconnected", @"");
+					[cnx messagesReceived:@[msg]];
+					cnx.connected = NO;
+					[cnx.buffer setLength:0];
+					break;
 				}
-				break;
+					
+				case NSStreamEventOpenCompleted:
+					cnx.connected = YES;
+					break;
+					
+				default:
+					break;
 			}
-				// fall through
-			case NSStreamEventEndEncountered: {
-				// Append a disconnect message for only one of the two streams
-				struct timeval t;
-				gettimeofday(&t, NULL);
-				LoggerMessage *msg = [[LoggerMessage alloc] init];
-				msg.timestamp = t;
-				msg.type = LOGMSG_TYPE_DISCONNECT;
-				msg.message = NSLocalizedString(@"Client disconnected", @"");
-				[cnx messagesReceived:[NSArray arrayWithObject:msg]];
-				[msg release];
-				cnx.connected = NO;
-				[cnx.buffer setLength:0];
-				break;
-			}
-				
-			case NSStreamEventOpenCompleted:
-				cnx.connected = YES;
-				break;
-				
-			default:
-				break;
+		} @catch (NSException * e) {
 		}
 	}
-	@catch (NSException * e)
-	{
-	}
-	@finally
-	{
-		[pool release];
-	}	
 }
 
 // -----------------------------------------------------------------------------
@@ -681,7 +662,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 {
 	[self shutdown];
 	
-	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
+	int errorCode = [errorDict[NSNetServicesErrorCode] integerValue];
 	if (errorCode == NSNetServicesCollisionError)
 		self.failureReason = NSLocalizedString(@"Duplicate Bonjour service name on your network", @"");
 	else if (errorCode == NSNetServicesBadArgumentError)
@@ -706,82 +687,75 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CFDataRef address, const void *data, void *info)
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	@try
-	{
-		if (type == kCFSocketAcceptCallBack)
+	@autoreleasepool {
+		@try
 		{
-			// we have a new incoming connection with a child socket
-			// reenable accept callback
-			CFSocketEnableCallBacks(sock, kCFSocketAcceptCallBack);
-
-			// Get the native socket handle for the new incoming connection
-			CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
-
-			LoggerNativeTransport *myself = (LoggerNativeTransport *)info;
-			if (myself.secure && ![myself canDoSSL])
+			if (type == kCFSocketAcceptCallBack)
 			{
-				// should enable SSL but loading or authorization failed
-				close(nativeSocketHandle);
-			}
-			else
-			{
-				int addrSize;
-				BOOL ipv6 = (sock == myself.listenerSocket_ipv6);
-				if (!ipv6)
-					addrSize = sizeof(struct sockaddr_in);
-				else
-					addrSize = sizeof(struct sockaddr_in6);
+				// we have a new incoming connection with a child socket
+				// reenable accept callback
+				CFSocketEnableCallBacks(sock, kCFSocketAcceptCallBack);
 				
-				if (CFDataGetLength(address) == addrSize)
+				// Get the native socket handle for the new incoming connection
+				CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
+				
+				LoggerNativeTransport *myself = (__bridge LoggerNativeTransport *)info;
+				if (myself.secure && ![myself canDoSSL])
 				{
-					// create the input and output streams. We don't need an output stream,
-					// except for SSL negotiation.
-					CFReadStreamRef readStream = NULL;
-					CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
-					if (readStream != NULL)
+					// should enable SSL but loading or authorization failed
+					close(nativeSocketHandle);
+				}
+				else
+				{
+					int addrSize;
+					BOOL ipv6 = (sock == myself.listenerSocket_ipv6);
+					if (!ipv6)
+						addrSize = sizeof(struct sockaddr_in);
+					else
+						addrSize = sizeof(struct sockaddr_in6);
+					
+					if (CFDataGetLength(address) == addrSize)
 					{
-						// although this is implied, just want to make sure
-						CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
-						if (myself.secure)
-							[myself setupSSLForStream:(NSInputStream *)readStream];
-						
-						// Create the connection instance
-						LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(NSInputStream *)readStream
-																							clientAddress:(NSData *)address];
-						[myself addConnection:cnx];
-						
-						// Schedule & open stream
-						[(NSInputStream *)readStream setDelegate:myself];
-						[(NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-						
-						[(NSInputStream *)readStream open];
-						[(NSInputStream *)readStream release];
-						
-						[cnx release];
+						// create the input and output streams. We don't need an output stream,
+						// except for SSL negotiation.
+						CFReadStreamRef readStream = NULL;
+						CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
+						if (readStream != NULL)
+						{
+							// although this is implied, just want to make sure
+							CFReadStreamSetProperty(readStream, kCFStreamPropertyShouldCloseNativeSocket, kCFBooleanTrue);
+							if (myself.secure)
+								[myself setupSSLForStream:(__bridge NSInputStream *)readStream];
+							
+							// Create the connection instance
+							LoggerNativeConnection *cnx = [[LoggerNativeConnection alloc] initWithInputStream:(__bridge NSInputStream *)readStream
+																								clientAddress:(__bridge NSData *)address];
+							[myself addConnection:cnx];
+							
+							// Schedule & open stream
+							[(__bridge NSInputStream *)readStream setDelegate:myself];
+							[(__bridge NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+							
+							[(__bridge NSInputStream *)readStream open];
+							
+						}
+						else
+						{
+							// immediately close the child socket, we can't use it anymore
+							close(nativeSocketHandle);
+						}
 					}
 					else
 					{
-						// immediately close the child socket, we can't use it anymore
+						// no valid address?
 						close(nativeSocketHandle);
 					}
 				}
-				else
-				{
-					// no valid address?
-					close(nativeSocketHandle);
-				}
 			}
-		}
-	}
-	@catch (NSException * e)
-	{
+		} @catch (NSException * e) {
 #ifdef DEBUG
-		NSLog(@"LoggerNativeTransport %p: exception catched in AcceptSocketCallback: %@", info, e);
+			NSLog(@"LoggerNativeTransport %p: exception catched in AcceptSocketCallback: %@", info, e);
 #endif
-	}
-	@finally
-	{
-		[pool release];
+		}
 	}
 }

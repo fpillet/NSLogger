@@ -39,7 +39,6 @@
 - (void)dealloc
 {
 	dispatch_release(detailsQueue);
-	[super dealloc];
 }
 
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
@@ -73,8 +72,8 @@
 	[progressIndicator setHidden:NO];
 	[progressIndicator startAnimation:self];
 
-	NSDictionary *textAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"text"];
-	NSDictionary *dataAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"data"];
+	NSDictionary *textAttributes = [LoggerMessageCell defaultAttributes][@"text"];
+	NSDictionary *dataAttributes = [LoggerMessageCell defaultAttributes][@"data"];
 
 	NSUInteger i = 0;
 	while (i < numMessages)
@@ -94,7 +93,6 @@
 				NSAttributedString *as = [[NSAttributedString alloc] initWithString:[msg textRepresentation]
 																		 attributes:(msg.contentsType == kMessageString) ? textAttributes : dataAttributes];
 				[strings addObject:as];
-				[as release];
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[storage beginEditing];
@@ -107,7 +105,6 @@
 					[progressIndicator setHidden:YES];
 				}
 			});
-			[strings release];
 		});
 	}
 }

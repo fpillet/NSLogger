@@ -41,9 +41,9 @@
 #import "LoggerSplitView.h"
 
 @interface LoggerWindowController ()
-@property (nonatomic, retain) NSString *info;
-@property (nonatomic, retain) NSString *filterString;
-@property (nonatomic, retain) NSString *filterTag;
+@property (nonatomic, strong) NSString *info;
+@property (nonatomic, strong) NSString *filterString;
+@property (nonatomic, strong) NSString *filterTag;
 -(void)rebuildQuickFilterPopup;
 -(void)updateClientInfo;
 -(void)updateFilterPredicate;
@@ -84,22 +84,11 @@ static NSArray *sXcodeFileExtensions = nil;
 }
 
 -(void)dealloc {
-	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
 	[filterSetsListController removeObserver:self forKeyPath:@"selectedObjects"];
 	[filterListController removeObserver:self forKeyPath:@"selectedObjects"];
 	dispatch_release(messageFilteringQueue);
-	[attachedConnection release];
-	[info release];
-	[filterString release];
-	[filterTag release];
-	[filterPredicate release];
-	[displayedMessages release];
-	[tags release];
-	[messageCell release];
-	[clientInfoCell release];
-	[markerCell release];
 	if (lastTilingGroup) {
 		dispatch_release(lastTilingGroup);
 	}
@@ -111,7 +100,6 @@ static NSArray *sXcodeFileExtensions = nil;
 	filterTable.delegate = nil;
 	filterTable.dataSource = nil;
 
-	[super dealloc];
 }
 
 -(NSUndoManager *)undoManager {
@@ -120,9 +108,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 -(void)windowDidLoad {
 	if (sXcodeFileExtensions == nil) {
-		sXcodeFileExtensions = [[NSArray alloc] initWithObjects:
-								@"m", @"mm", @"h", @"c", @"cp", @"cpp", @"hpp",
-								nil];
+		sXcodeFileExtensions = @[@"m", @"mm", @"h", @"c", @"cp", @"cpp", @"hpp"];
 	}
 
 	if ([[self window] respondsToSelector:@selector(setRestorable:)]) {
@@ -137,14 +123,14 @@ static NSArray *sXcodeFileExtensions = nil;
 	[logTable setTarget:self];
 	[logTable setDoubleAction:@selector(logCellDoubleClicked:)];
 
-	[logTable registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeString]];
+	[logTable registerForDraggedTypes:@[NSPasteboardTypeString]];
 	[logTable setDraggingSourceOperationMask:NSDragOperationNone forLocal:YES];
 	[logTable setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 
-	[filterSetsTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
+	[filterSetsTable registerForDraggedTypes:@[kNSLoggerFilterPasteboardType]];
 	[filterSetsTable setIntercellSpacing:NSMakeSize(0, 0)];
 
-	[filterTable registerForDraggedTypes:[NSArray arrayWithObject:kNSLoggerFilterPasteboardType]];
+	[filterTable registerForDraggedTypes:@[kNSLoggerFilterPasteboardType]];
 	[filterTable setVerticalMotionCanBeginDrag:YES];
 	[filterTable setTarget:self];
 	[filterTable setIntercellSpacing:NSMakeSize(0, 0)];
@@ -252,11 +238,9 @@ static NSArray *sXcodeFileExtensions = nil;
 							   }
 							   if ([set count])
 								   [logTable noteHeightOfRowsWithIndexesChanged:set];
-							   [set release];
 						   }
 					   });
 	}
-	[updatedMessages release];
 }
 
 -(void)tileLogTable:(BOOL)forceUpdate {
@@ -337,7 +321,6 @@ static NSArray *sXcodeFileExtensions = nil;
 		[runItem setTag:i++];
 		[runItem setTarget:self];
 		[menu addItem:runItem];
-		[runItem release];
 	}
 }
 
@@ -349,11 +332,10 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSMenuItem *dummyItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Run Log", @"") action:nil keyEquivalent:@""];
 	[dummyItem setEnabled:NO];
 	[menu addItem:dummyItem];
-	[dummyItem release];
 }
 
 -(void)selectRun:(NSMenuItem *)anItem {
-	((LoggerDocument *)self.document).indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[anItem tag]];
+	((LoggerDocument *)self.document).indexOfCurrentVisibleLog = @([anItem tag]);
 }
 
 // -----------------------------------------------------------------------------
@@ -384,10 +366,8 @@ static NSArray *sXcodeFileExtensions = nil;
 	}
 	if ([notPredicates count] && [anyAllPredicates count]) {
 		return [NSCompoundPredicate andPredicateWithSubpredicates:
-				[NSArray arrayWithObjects:
-				 [NSCompoundPredicate andPredicateWithSubpredicates:notPredicates],
-				 [NSCompoundPredicate orPredicateWithSubpredicates:anyAllPredicates],
-				 nil]];
+				@[[NSCompoundPredicate andPredicateWithSubpredicates:notPredicates],
+				 [NSCompoundPredicate orPredicateWithSubpredicates:anyAllPredicates]]];
 	}
 	if ([notPredicates count]) {
 		return [NSCompoundPredicate andPredicateWithSubpredicates:notPredicates];
@@ -398,9 +378,9 @@ static NSArray *sXcodeFileExtensions = nil;
 -(NSPredicate *)alwaysVisibleEntriesPredicate {
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
 	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSSet setWithObjects:
-																  [NSNumber numberWithInteger:LOGMSG_TYPE_MARK],
-																  [NSNumber numberWithInteger:LOGMSG_TYPE_CLIENTINFO],
-																  [NSNumber numberWithInteger:LOGMSG_TYPE_DISCONNECT],
+																  @LOGMSG_TYPE_MARK,
+																  @LOGMSG_TYPE_CLIENTINFO,
+																  @LOGMSG_TYPE_DISCONNECT,
 																  nil]];
 
 	return [NSComparisonPredicate predicateWithLeftExpression:lhs
@@ -416,7 +396,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSMutableArray *andPredicates = [[NSMutableArray alloc] initWithCapacity:3];
 	if (logLevel) {
 		NSExpression *lhs = [NSExpression expressionForKeyPath:@"level"];
-		NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:logLevel]];
+		NSExpression *rhs = [NSExpression expressionForConstantValue:@(logLevel)];
 		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
 								  rightExpression:rhs
 								  modifier:NSDirectPredicateModifier
@@ -449,7 +429,7 @@ static NSArray *sXcodeFileExtensions = nil;
 										  options:NSCaseInsensitivePredicateOption];
 
 		[andPredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:
-								  [NSArray arrayWithObjects:messagePredicate, functionPredicate, nil]]];
+								  @[messagePredicate, functionPredicate]]];
 	}
 	if ([andPredicates count]) {
 		if (p != nil) {
@@ -460,16 +440,14 @@ static NSArray *sXcodeFileExtensions = nil;
 	if (p == nil) {
 		p = [NSPredicate predicateWithValue:YES];
 	} else {
-		p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
+		p = [NSCompoundPredicate orPredicateWithSubpredicates:@[[self alwaysVisibleEntriesPredicate], p]];
 	}
-	[filterPredicate autorelease];
-	filterPredicate = [p retain];
-	[andPredicates release];
+	filterPredicate = p;
 }
 
 -(void)refreshMessagesIfPredicateChanged {
 	assert([NSThread isMainThread]);
-	NSPredicate *currentPredicate = [[filterPredicate retain] autorelease];
+	NSPredicate *currentPredicate = filterPredicate;
 	[self updateFilterPredicate];
 	if (![filterPredicate isEqual:currentPredicate]) {
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshAllMessages:)object:nil];
@@ -491,12 +469,12 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	NSDictionary *clientSettings = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefClientApplicationSettings];
 	if (clientSettings == nil) {
-		return [NSDictionary dictionary];
+		return @{};
 	}
 
-	NSDictionary *appSettings = [clientSettings objectForKey:clientAppIdentifier];
+	NSDictionary *appSettings = clientSettings[clientAppIdentifier];
 	if (appSettings == nil) {
-		return [NSDictionary dictionary];
+		return @{};
 	}
 	return appSettings;
 }
@@ -508,20 +486,19 @@ static NSArray *sXcodeFileExtensions = nil;
 		return;
 	}
 	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-	NSMutableDictionary *clientSettings = [[[ud objectForKey:kPrefClientApplicationSettings] mutableCopy] autorelease];
+	NSMutableDictionary *clientSettings = [[ud objectForKey:kPrefClientApplicationSettings] mutableCopy];
 	if (clientSettings == nil) {
 		clientSettings = [NSMutableDictionary dictionary];
 	}
-	[clientSettings setObject:newSettings forKey:clientAppIdentifier];
+	clientSettings[clientAppIdentifier] = newSettings;
 	[ud setObject:clientSettings forKey:kPrefClientApplicationSettings];
 }
 
 -(void)setSettingForClientApplication:(id)aValue forKey:(NSString *)aKey {
 	NSMutableDictionary *dict = [[self settingsForClientApplication] mutableCopy];
 
-	[dict setObject:aValue forKey:aKey];
+	dict[aKey] = aValue;
 	[self saveSettingsForClientApplication:dict];
-	[dict release];
 }
 
 -(void)rememberFiltersSelection {
@@ -531,7 +508,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSDictionary *filterSet = [[filterSetsListController selectedObjects] lastObject];
 
 	if (filterSet != nil) {
-		[self setSettingForClientApplication:[filterSet objectForKey:@"uid"] forKey:@"selectedFilterSet"];
+		[self setSettingForClientApplication:filterSet[@"uid"] forKey:@"selectedFilterSet"];
 	}
 }
 
@@ -546,7 +523,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	// when an application connects, we restore some saved settings so the user
 	// comes back to about the same configuration she was using the last time
-	id showFuncs = [clientAppSettings objectForKey:@"showFunctionNames"];
+	id showFuncs = clientAppSettings[@"showFunctionNames"];
 	if (showFuncs != nil) {
 		[self setShowFunctionNames:showFuncs];
 	}
@@ -555,7 +532,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	// selected for this application. Usually, you have a filter set per application
 	// (this is how it is intended to be used), so it makes sense to preselect it
 	// when the application connects.
-	NSNumber *filterSetUID = [clientAppSettings objectForKey:@"selectedFilterSet"];
+	NSNumber *filterSetUID = clientAppSettings[@"selectedFilterSet"];
 	if (filterSetUID != nil) {
 		// try retrieving the filter set
 		NSArray *matchingFilters = [[filterSetsListController arrangedObjects] filteredArrayUsingPredicate:
@@ -655,7 +632,6 @@ static NSArray *sXcodeFileExtensions = nil;
 			[item setState:NSOnState];
 		}
 		[menu addItem:item];
-		[item release];
 	}
 
 	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", levelTitle, tagTitle]];
@@ -693,9 +669,7 @@ static NSArray *sXcodeFileExtensions = nil;
 }
 
 -(IBAction)resetQuickFilter:(id)sender {
-	[filterString release];
 	filterString = @"";
-	[filterTag release];
 	filterTag = nil;
 	logLevel = 0;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged)object:nil];
@@ -747,11 +721,9 @@ static NSArray *sXcodeFileExtensions = nil;
 }
 
 -(void)xedFile:(NSString *)path line:(NSString *)line {
-	id args = [NSArray arrayWithObjects:
-			   @"-l",
+	id args = @[@"-l",
 			   line,
-			   path,
-			   nil];
+			   path];
 
 	// NSLog(@"Args %@", args);
 	[NSTask launchedTaskWithLaunchPath:[[NSBundle mainBundle] pathForResource:@"xedReplacement.sh" ofType:nil]
@@ -766,7 +738,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0) {
 		NSInteger row = [logTable selectedRow];
 		if (row >= 0 && row < [displayedMessages count]) {
-			LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+			LoggerMessage *msg = displayedMessages[row];
 			NSString *filename = msg.filename;
 			if ([filename length]) {
 				NSFileManager *fm = [[NSFileManager alloc] init];
@@ -808,7 +780,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	assert([NSThread isMainThread]);
 	@synchronized(attachedConnection.messages) {
 		BOOL quickFilterWasFirstResponder = ([[self window] firstResponder] == [quickFilterTextField currentEditor]);
-		id messageToMakeVisible = [selectedMessages objectAtIndex:0];
+		id messageToMakeVisible = selectedMessages[0];
 
 		if (messageToMakeVisible == nil) {
 			// Remember the currently selected messages
@@ -822,9 +794,9 @@ static NSArray *sXcodeFileExtensions = nil;
 			if (visibleRows.length != 0) {
 				NSIndexSet *selectedVisible = [selectedRows indexesInRange:visibleRows options:0 passingTest:^(NSUInteger idx, BOOL * stop){ return YES; }];
 				if ([selectedVisible count])
-					messageToMakeVisible = [displayedMessages objectAtIndex:[selectedVisible firstIndex]];
+					messageToMakeVisible = displayedMessages[[selectedVisible firstIndex]];
 				else
-					messageToMakeVisible = [displayedMessages objectAtIndex:visibleRows.location];
+					messageToMakeVisible = displayedMessages[visibleRows.location];
 			}
 		}
 
@@ -884,7 +856,6 @@ static NSArray *sXcodeFileExtensions = nil;
 															if (!quickFilterWasFirstResponder)
 																[[self window] makeFirstResponder:logTable];
 														}
-														[newSelectionIndexes release];
 													}
 
 													if (messageToMakeVisible != nil) {
@@ -902,7 +873,7 @@ static NSArray *sXcodeFileExtensions = nil;
 																	msgIndex = 0;
 																	break;
 																} else
-																	msg = [attachedConnection.messages objectAtIndex:where - 1];
+																	msg = (attachedConnection.messages)[where - 1];
 															}
 															if (msgIndex != NSNotFound)
 																[logTable scrollRowToVisible:msgIndex];
@@ -980,11 +951,10 @@ static NSArray *sXcodeFileExtensions = nil;
 
 		// Detach previous connection
 		attachedConnection.attachedToWindow = NO;
-		[attachedConnection release];
 		attachedConnection = nil;
 	}
 	if (aConnection != nil) {
-		attachedConnection = [aConnection retain];
+		attachedConnection = aConnection;
 		attachedConnection.attachedToWindow = YES;
 		//dispatch_async(dispatch_get_main_queue(), ^{
 		initialRefreshDone = NO;
@@ -1013,7 +983,6 @@ static NSArray *sXcodeFileExtensions = nil;
 	}
 
 	if (newString != filterString && ![filterString isEqualToString:newString]) {
-		[filterString autorelease];
 		filterString = [newString copy];
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged)object:nil];
 		[self performSelector:@selector(refreshMessagesIfPredicateChanged)withObject:nil afterDelay:0];
@@ -1040,7 +1009,7 @@ static NSArray *sXcodeFileExtensions = nil;
 }
 
 -(NSNumber *)showFunctionNames {
-	return [NSNumber numberWithBool:showFunctionNames];
+	return @(showFunctionNames);
 }
 
 // -----------------------------------------------------------------------------
@@ -1099,7 +1068,7 @@ static NSArray *sXcodeFileExtensions = nil;
 // -----------------------------------------------------------------------------
 -(NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
 	if (tableView == logTable && row >= 0 && row < [displayedMessages count]) {
-		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		LoggerMessage *msg = displayedMessages[row];
 		switch (msg.type) {
 			case LOGMSG_TYPE_LOG:
 			case LOGMSG_TYPE_BLOCKSTART:
@@ -1125,7 +1094,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	if (aTableView == logTable && rowIndex >= 0 && rowIndex < [displayedMessages count]) {
 		// Set up the message to be displayed
 		LoggerMessageCell *cell = (LoggerMessageCell *)aCell;
-		cell.message = [displayedMessages objectAtIndex:rowIndex];
+		cell.message = displayedMessages[rowIndex];
 		cell.shouldShowFunctionNames = showFunctionNames;
 		
 		// if previous message is a Mark, go back a bit more to get the real previous message
@@ -1133,7 +1102,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		NSInteger idx = rowIndex - 1;
 		LoggerMessage *prev = nil;
 		while (prev == nil && idx >= 0) {
-			prev = [displayedMessages objectAtIndex:idx--];
+			prev = displayedMessages[idx--];
 			if (prev.type == LOGMSG_TYPE_CLIENTINFO || prev.type == LOGMSG_TYPE_MARK) {
 				prev = nil;
 			}
@@ -1144,8 +1113,8 @@ static NSArray *sXcodeFileExtensions = nil;
 		NSArray *filterSetsList = [filterSetsListController arrangedObjects];
 		if (rowIndex >= 0 && rowIndex < [filterSetsList count]) {
 			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
-			NSDictionary *filterSet = [filterSetsList objectAtIndex:rowIndex];
-			if ([[filterSet objectForKey:@"uid"] integerValue] == 1) {
+			NSDictionary *filterSet = filterSetsList[rowIndex];
+			if ([filterSet[@"uid"] integerValue] == 1) {
 				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
 			} else {
 				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -1156,8 +1125,8 @@ static NSArray *sXcodeFileExtensions = nil;
 		NSArray *filterList = [filterListController arrangedObjects];
 		if (rowIndex >= 0 && rowIndex < [filterList count]) {
 			NSTextFieldCell *tc = (NSTextFieldCell *)aCell;
-			NSDictionary *filter = [filterList objectAtIndex:rowIndex];
-			if ([[filter objectForKey:@"uid"] integerValue] == 1) {
+			NSDictionary *filter = filterList[rowIndex];
+			if ([filter[@"uid"] integerValue] == 1) {
 				[tc setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
 			} else {
 				[tc setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -1170,7 +1139,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	assert([NSThread isMainThread]);
 	if (tableView == logTable && row >= 0 && row < [displayedMessages count]) {
 		// use only cached sizes
-		LoggerMessage *message = [displayedMessages objectAtIndex:row];
+		LoggerMessage *message = displayedMessages[row];
 		NSSize cachedSize = message.cachedCellSize;
 		if (cachedSize.height) {
 			return cachedSize.height;
@@ -1198,7 +1167,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 -(id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
 	if (rowIndex >= 0 && rowIndex < [displayedMessages count]) {
-		return [displayedMessages objectAtIndex:rowIndex];
+		return displayedMessages[rowIndex];
 	}
 	return nil;
 }
@@ -1210,16 +1179,14 @@ static NSArray *sXcodeFileExtensions = nil;
 		for (LoggerMessage *msg in draggedMessages) {
 			[string appendString:[msg textRepresentation]];
 		}
-		[pboard writeObjects:[NSArray arrayWithObject:string]];
-		[string release];
+		[pboard writeObjects:@[string]];
 		return YES;
 	}
 	if (tv == filterTable) {
 		NSPasteboardItem *item = [[NSPasteboardItem alloc] init];
 		NSArray *filters = [[filterListController arrangedObjects] objectsAtIndexes:rowIndexes];
 		[item setData:[NSKeyedArchiver archivedDataWithRootObject:filters] forType:kNSLoggerFilterPasteboardType];
-		[pboard writeObjects:[NSArray arrayWithObject:item]];
-		[item release];
+		[pboard writeObjects:@[item]];
 		return YES;
 	}
 	return NO;
@@ -1253,7 +1220,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	if (tv == filterSetsTable) {
 		// Only add those filters which don't exist yet
 		NSArray *filterSets = [filterSetsListController arrangedObjects];
-		NSMutableDictionary *filterSet = [filterSets objectAtIndex:row];
+		NSMutableDictionary *filterSet = filterSets[row];
 		NSMutableArray *existingFilters = [filterSet mutableArrayValueForKey:@"filters"];
 		for (NSMutableDictionary *filter in newFilters) {
 			if ([existingFilters indexOfObject:filter] == NSNotFound) {
@@ -1261,7 +1228,7 @@ static NSArray *sXcodeFileExtensions = nil;
 				added = YES;
 			}
 		}
-		[filterSetsListController setSelectedObjects:[NSArray arrayWithObject:filterSet]];
+		[filterSetsListController setSelectedObjects:@[filterSet]];
 	} else if (tv == filterTable)   {
 		NSMutableArray *addedFilters = [[NSMutableArray alloc] init];
 		for (NSMutableDictionary *filter in newFilters) {
@@ -1274,7 +1241,6 @@ static NSArray *sXcodeFileExtensions = nil;
 		if (added) {
 			[filterListController setSelectedObjects:addedFilters];
 		}
-		[addedFilters release];
 	}
 	if (added) {
 		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
@@ -1336,16 +1302,16 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSMutableDictionary *previousFilter = nil;
 
 	for (NSMutableDictionary *dict in [filterListController content]) {
-		if ([[dict objectForKey:@"uid"] isEqual:[filter objectForKey:@"uid"]]) {
+		if ([dict[@"uid"] isEqual:filter[@"uid"]]) {
 			previousFilter = dict;
 			break;
 		}
 	}
 	assert(previousFilter != nil);
-	[[self undoManager] registerUndoWithTarget:self selector:_cmd object:[[previousFilter mutableCopy] autorelease]];
+	[[self undoManager] registerUndoWithTarget:self selector:_cmd object:[previousFilter mutableCopy]];
 	[[self undoManager] setActionName:NSLocalizedString(@"Modify Filter", @"")];
 	[previousFilter addEntriesFromDictionary:filter];
-	[filterListController setSelectedObjects:[NSArray arrayWithObject:previousFilter]];
+	[filterListController setSelectedObjects:@[previousFilter]];
 }
 
 -(void)undoableCreateFilter:(NSDictionary *)filter {
@@ -1357,7 +1323,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		[filterListController removeObject:filter];
 	} else {
 		[filterListController addObject:filter];
-		[filterListController setSelectedObjects:[NSArray arrayWithObject:filter]];
+		[filterListController setSelectedObjects:@[filter]];
 	}
 }
 
@@ -1375,31 +1341,27 @@ static NSArray *sXcodeFileExtensions = nil;
 }
 
 -(void)openFilterEditSheet:(NSDictionary *)dict {
-	[filterName setStringValue:[dict objectForKey:@"title"]];
-	NSPredicate *predicate = [dict objectForKey:@"predicate"];
-	[filterEditor setObjectValue:[[predicate copy] autorelease]];
+	[filterName setStringValue:dict[@"title"]];
+	NSPredicate *predicate = dict[@"predicate"];
+	[filterEditor setObjectValue:[predicate copy]];
 
-	[NSApp beginSheet:filterEditorWindow
-	 modalForWindow:[self window]
-	 modalDelegate:self
-	 didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
-	 contextInfo:[dict retain]];
+	[NSApp beginSheet:filterEditorWindow modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:) contextInfo:(__bridge void *)(dict)];
 }
 
 -(void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo {
 	if (returnCode) {
-		NSMutableDictionary *dict = [[(NSDictionary *) contextInfo mutableCopy] autorelease];
-		BOOL exists = [[filterListController content] containsObject:(id)contextInfo];
+		NSMutableDictionary *dict = [(__bridge NSDictionary *) contextInfo mutableCopy];
+		BOOL exists = [[filterListController content] containsObject:(__bridge id)contextInfo];
 
 		NSPredicate *predicate = [filterEditor predicate];
 		if (predicate == nil) {
-			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
+			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:@[]];
 		}
-		[dict setObject:predicate forKey:@"predicate"];
+		dict[@"predicate"] = predicate;
 
 		NSString *title = [[filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 		if ([title length]) {
-			[dict setObject:title forKey:@"title"];
+			dict[@"title"] = title;
 		}
 
 		if (exists) {
@@ -1408,11 +1370,10 @@ static NSArray *sXcodeFileExtensions = nil;
 			[self undoableCreateFilter:dict];
 		}
 
-		[filterListController setSelectedObjects:[NSArray arrayWithObject:dict]];
+		[filterListController setSelectedObjects:@[dict]];
 
 		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
 	}
-	[(id) contextInfo release];
 	[filterEditorWindow orderOut:self];
 }
 
@@ -1425,9 +1386,9 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	assert(filterSet != nil);
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
 						  NSLocalizedString(@"New filter", @""), @"title",
-						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
+						  [NSCompoundPredicate andPredicateWithSubpredicates:@[]], @"predicate",
 						  nil];
 	[self openFilterEditSheet:dict];
 	[filterEditor addRow:self];
@@ -1438,7 +1399,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	// or when trying to edit the "All Logs" entry which is immutable
 	NSDictionary *dict = [[filterListController selectedObjects] lastObject];
 
-	if (dict == nil || [[dict objectForKey:@"uid"] integerValue] == 1) {
+	if (dict == nil || [dict[@"uid"] integerValue] == 1) {
 		return;
 	}
 	[self openFilterEditSheet:dict];
@@ -1476,7 +1437,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	}
 
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
+						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
 						  newFilterTitle, @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
 						  nil];
@@ -1490,7 +1451,7 @@ static NSArray *sXcodeFileExtensions = nil;
 -(void)rebuildMarksSubmenu {
 	NSMenuItem *marksSubmenu = [[[[NSApp mainMenu] itemWithTag:TOOLS_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_JUMP_TO_MARK_TAG];
 	NSExpression *lhs = [NSExpression expressionForKeyPath:@"type"];
-	NSExpression *rhs = [NSExpression expressionForConstantValue:[NSNumber numberWithInteger:LOGMSG_TYPE_MARK]];
+	NSExpression *rhs = [NSExpression expressionForConstantValue:@LOGMSG_TYPE_MARK];
 	NSPredicate *predicate = [NSComparisonPredicate predicateWithLeftExpression:lhs
 							  rightExpression:rhs
 							  modifier:NSDirectPredicateModifier
@@ -1506,7 +1467,6 @@ static NSArray *sXcodeFileExtensions = nil;
 								  keyEquivalent:@""];
 		[noMarkItem setEnabled:NO];
 		[menu addItem:noMarkItem];
-		[noMarkItem release];
 	} else { for (LoggerMessage *mark in marks)     {
 				 NSMenuItem *markItem = [[NSMenuItem alloc] initWithTitle:mark.message
 										 action:@selector(jumpToMark:)
@@ -1514,7 +1474,6 @@ static NSArray *sXcodeFileExtensions = nil;
 				 [markItem setRepresentedObject:mark];
 				 [markItem setTarget:self];
 				 [menu addItem:markItem];
-				 [markItem release];
 			 }
 	}
 }
@@ -1527,7 +1486,6 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSMenuItem *dummyItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Mark", @"") action:nil keyEquivalent:@""];
 	[dummyItem setEnabled:NO];
 	[menu addItem:dummyItem];
-	[dummyItem release];
 }
 
 -(void)jumpToMark:(NSMenuItem *)markMenuItem {
@@ -1581,12 +1539,11 @@ static NSArray *sXcodeFileExtensions = nil;
 										   }
 										   dispatch_async (dispatch_get_main_queue (), ^{
 															   [[self document] updateChangeCount:NSChangeDone];
-															   [self refreshAllMessages:[NSArray arrayWithObjects:mark, beforeMessage, nil]];
+															   [self refreshAllMessages:@[mark, beforeMessage]];
 														   });
 									   });
 				   });
 
-	[mark release];
 }
 
 -(void)addMarkWithTitleBeforeMessage:(LoggerMessage *)aMessage {
@@ -1597,11 +1554,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	[markTitleField setStringValue:s];
 
-	[NSApp beginSheet:markTitleWindow
-	 modalForWindow:[self window]
-	 modalDelegate:self
-	 didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:)
-	 contextInfo:[aMessage retain]];
+	[NSApp beginSheet:markTitleWindow modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:) contextInfo:(__bridge  void*)aMessage];
 }
 
 -(IBAction)addMark:(id)sender {
@@ -1616,7 +1569,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSInteger rowIndex = [logTable selectedRow];
 
 	if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count]) {
-		[self addMarkWithTitleBeforeMessage:[displayedMessages objectAtIndex:(NSUInteger)rowIndex]];
+		[self addMarkWithTitleBeforeMessage:displayedMessages[(NSUInteger)rowIndex]];
 	}
 }
 
@@ -1624,7 +1577,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	NSInteger rowIndex = [logTable selectedRow];
 
 	if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count]) {
-		LoggerMessage *markMessage = [displayedMessages objectAtIndex:(NSUInteger)rowIndex];
+		LoggerMessage *markMessage = displayedMessages[(NSUInteger)rowIndex];
 		assert(markMessage.type == LOGMSG_TYPE_MARK);
 		[displayedMessages removeObjectAtIndex:(NSUInteger)rowIndex];
 		[logTable reloadData];
@@ -1654,10 +1607,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 -(void)addMarkSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo {
 	if (returnCode) {
-		[self addMarkWithTitleString:[markTitleField stringValue] beforeMessage:(LoggerMessage *)contextInfo];
-	}
-	if (contextInfo != NULL) {
-		[(id) contextInfo release];
+		[self addMarkWithTitleString:[markTitleField stringValue] beforeMessage:(__bridge LoggerMessage *)contextInfo];
 	}
 	[markTitleWindow orderOut:self];
 }
@@ -1672,7 +1622,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	if (action == @selector(deleteMark:)) {
 		NSInteger rowIndex = [logTable selectedRow];
 		if (rowIndex >= 0 && rowIndex < (NSInteger)[displayedMessages count]) {
-			LoggerMessage *markMessage = [displayedMessages objectAtIndex:(NSUInteger)rowIndex];
+			LoggerMessage *markMessage = displayedMessages[(NSUInteger)rowIndex];
 			return markMessage.type == LOGMSG_TYPE_MARK;
 		}
 		return NO;
@@ -1715,15 +1665,15 @@ static NSArray *sXcodeFileExtensions = nil;
 #pragma mark - Collapsing Taskbar
 
 -(IBAction)collapseTaskbar:(id)sender {
-	NSMenuItem *hideShowButton = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_HIDE_SHOW_TOOLBAR];
-
+//	NSMenuItem *hideShowButton = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_HIDE_SHOW_TOOLBAR];
+/*
 	if (![splitView collapsibleSubviewCollapsed]) {
 		[hideShowButton setTitle:NSLocalizedString(@"Show Taskbar", @"Show Taskbar")];
 	} else {
 		[hideShowButton setTitle:NSLocalizedString(@"Hide Taskbar", @"Hide Taskbar")];
 	}
-
-	[splitView toggleCollapse:nil];
+*/
+//	[splitView toggleCollapse:nil];
 }
 
 @end

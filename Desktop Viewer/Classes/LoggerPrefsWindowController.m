@@ -80,18 +80,11 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 		// make a deep copy of default attributes by going back and forth with
 		// an archiver
 		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributes]];
-		attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		attributes = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 	}
 	return self;
 }
 
-- (void)dealloc
-{
-	[fakeConnection release];
-	[attributes release];
-	[networkPrefs release];
-	[super dealloc];
-}
 
 - (NSMutableDictionary *)copyNetworkPrefs
 {
@@ -139,8 +132,6 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	cell.previousMessage = prevMsg;
 	cell.shouldShowFunctionNames = YES;
 	[sampleMessage setCell:cell];
-	[cell release];
-	[msg release];
 
 	uint8_t bytes[32];
 	for (int i = 0; i < sizeof(bytes); i++)
@@ -158,9 +149,6 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	cell.message = msg;
 	cell.previousMessage = prevMsg;
 	[sampleDataMessage setCell:cell];
-	[cell release];
-	[msg release];
-	[prevMsg release];
 
 	[self updateUI];
 	[sampleMessage setNeedsDisplay];
@@ -172,7 +160,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	// Check whether attributes or network settings have changed
 	for (NSString *key in networkPrefs)
 	{
-		if (![[[NSUserDefaults standardUserDefaults] objectForKey:key] isEqual:[networkPrefs objectForKey:key]])
+		if (![[[NSUserDefaults standardUserDefaults] objectForKey:key] isEqual:networkPrefs[key]])
 			return YES;
 	}
 	return NO;
@@ -202,7 +190,6 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 						  modalDelegate:self
 						 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
 							contextInfo:NULL];
-		[alert release];
 		return NO;
 	}
 	return YES;
@@ -242,8 +229,8 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	NSDictionary *dict = [LoggerAppDelegate defaultPreferences];
 	for (NSString *key in dict)
 	{
-		if ([networkPrefs objectForKey:key] != nil)
-			[[networkDefaultsController selection] setValue:[dict objectForKey:key] forKey:key];
+		if (networkPrefs[key] != nil)
+			[[networkDefaultsController selection] setValue:dict[key] forKey:key];
 	}
 }
 
@@ -253,7 +240,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	{
 		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 		for (NSString *key in [networkPrefs allKeys])
-			[ud setObject:[networkPrefs objectForKey:key] forKey:key];
+			[ud setObject:networkPrefs[key] forKey:key];
 		[ud synchronize];
 		[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
 	}
@@ -272,9 +259,8 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 - (IBAction)restoreFontDefaults:(id)sender
 {
-	[attributes release];
 	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributesDictionary]];
-	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+	attributes = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
 	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
 	[sampleMessage setNeedsDisplay];
@@ -288,22 +274,22 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	switch (currentFontSelection)
 	{
 		case kTimestampFont:
-			font = [[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName];
+			font = attributes[@"timestamp"][NSFontAttributeName];
 			break;
 		case kThreadIDFont:
-			font = [[attributes objectForKey:@"threadID"] objectForKey:NSFontAttributeName];
+			font = attributes[@"threadID"][NSFontAttributeName];
 			break;
 		case kTagAndLevelFont:
-			font = [[attributes objectForKey:@"tag"] objectForKey:NSFontAttributeName];
+			font = attributes[@"tag"][NSFontAttributeName];
 			break;
 		case kDataFont:
-			font = [[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName];
+			font = attributes[@"data"][NSFontAttributeName];
 			break;
 		case kFileFunctionFont:
-			font = [[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName];
+			font = attributes[@"fileLineFunction"][NSFontAttributeName];
 			break;
 		default:
-			font = [[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName];
+			font = attributes[@"text"][NSFontAttributeName];
 			break;
 	}
 	return font;	
@@ -343,9 +329,9 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	}
 	if (dictName != nil)
 	{
-		[[attributes objectForKey:dictName] setObject:[sender color] forKey:attrName];
+		attributes[dictName][attrName] = [sender color];
 		if (dictName2 != nil)
-			[[attributes objectForKey:dictName2] setObject:[sender color] forKey:attrName];
+			attributes[dictName2][attrName] = [sender color];
 		((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
 		((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
 		[sampleMessage setNeedsDisplay];
@@ -359,25 +345,25 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	switch (currentFontSelection)
 	{
 		case kTimestampFont:
-			[[attributes objectForKey:@"timestamp"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"timedelta"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"timestamp"][NSFontAttributeName] = newFont;
+			attributes[@"timedelta"][NSFontAttributeName] = newFont;
 			break;
 		case kThreadIDFont:
-			[[attributes objectForKey:@"threadID"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"threadID"][NSFontAttributeName] = newFont;
 			break;
 		case kTagAndLevelFont:
-			[[attributes objectForKey:@"tag"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"level"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"tag"][NSFontAttributeName] = newFont;
+			attributes[@"level"][NSFontAttributeName] = newFont;
 			break;
 		case kDataFont:
-			[[attributes objectForKey:@"data"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"data"][NSFontAttributeName] = newFont;
 			break;
 		case kFileFunctionFont:
-			[[attributes objectForKey:@"fileLineFunction"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"fileLineFunction"][NSFontAttributeName] = newFont;
 			break;
 		default: {
-			[[attributes objectForKey:@"text"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"mark"] setObject:newFont forKey:NSFontAttributeName];
+			attributes[@"text"][NSFontAttributeName] = newFont;
+			attributes[@"mark"][NSFontAttributeName] = newFont;
 			break;
 		}
 	}
@@ -395,7 +381,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 - (void)updateColor:(NSColorWell *)well ofDict:(NSString *)dictName attribute:(NSString *)attrName
 {
-	NSColor *color = [[attributes objectForKey:dictName] objectForKey:attrName];
+	NSColor *color = attributes[dictName][attrName];
 	if (color == nil)
 	{
 		if ([attrName isEqualToString:NSForegroundColorAttributeName])
@@ -408,12 +394,12 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 - (void)updateUI
 {
-	[timestampFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName]]];
-	[threadIDFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"threadID"] objectForKey:NSFontAttributeName]]];
-	[tagFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"tag"] objectForKey:NSFontAttributeName]]];
-	[textFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName]]];
-	[dataFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName]]];
-	[fileFunctionFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName]]];
+	[timestampFontName setStringValue:[self fontNameForFont:attributes[@"timestamp"][NSFontAttributeName]]];
+	[threadIDFontName setStringValue:[self fontNameForFont:attributes[@"threadID"][NSFontAttributeName]]];
+	[tagFontName setStringValue:[self fontNameForFont:attributes[@"tag"][NSFontAttributeName]]];
+	[textFontName setStringValue:[self fontNameForFont:attributes[@"text"][NSFontAttributeName]]];
+	[dataFontName setStringValue:[self fontNameForFont:attributes[@"data"][NSFontAttributeName]]];
+	[fileFunctionFontName setStringValue:[self fontNameForFont:attributes[@"fileLineFunction"][NSFontAttributeName]]];
 
 	[self updateColor:timestampForegroundColor ofDict:@"timestamp" attribute:NSForegroundColorAttributeName];
 	[self updateColor:threadIDForegroundColor ofDict:@"threadID" attribute:NSForegroundColorAttributeName];
