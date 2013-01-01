@@ -35,13 +35,7 @@
 @interface LoggerMessageCell : NSTextFieldCell {
 	LoggerMessage *message;
 	LoggerMessage *previousMessage;
-	
 	NSDictionary *messageAttributes;
-
-	// unused
-//	CGFloat timestampColumnWidth;
-//	CGFloat threadIDColumnWidth;
-	
 	BOOL shouldShowFunctionNames;
     BOOL modifyingThreadColumnWidth;
 }

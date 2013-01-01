@@ -33,7 +33,7 @@
 #import "LoggerConnection.h"
 #import "LoggerMessage.h"
 #import "LoggerCommon.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerStatusWindowController.h"
 
 char sConnectionAssociatedObjectKey = 1;

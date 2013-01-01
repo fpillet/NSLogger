@@ -35,7 +35,7 @@
 #import "LoggerClientInfoCell.h"
 #import "LoggerMarkerCell.h"
 #import "LoggerMessage.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerCommon.h"
 #import "LoggerDocument.h"
 #import "LoggerSplitView.h"
@@ -1055,7 +1055,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		if ([keyPath isEqualToString:@"arrangedObjects"]) {
 			// we'll be called when arrangedObjects change, that is when a filter set is added,
 			// removed or renamed. Use this occasion to save the filters definition.
-			[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+			[(AppDelegate *)[NSApp delegate] saveFiltersDefinition];
 		} else if ([keyPath isEqualToString:@"selectedObjects"])   {
 			[self rememberFiltersSelection];
 		}
@@ -1243,7 +1243,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		}
 	}
 	if (added) {
-		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+		[(AppDelegate *)[NSApp delegate] saveFiltersDefinition];
 	}
 	return added;
 }
@@ -1282,9 +1282,9 @@ static NSArray *sXcodeFileExtensions = nil;
 
 -(IBAction)addFilterSet:(id)sender {
 	id dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-			   [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
+			   [(AppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSetsListController arrangedObjects]], @"uid",
 			   NSLocalizedString(@"New App. Set", @""), @"title",
-			   [(LoggerAppDelegate *)[NSApp delegate] defaultFilters], @"filters",
+			   [(AppDelegate *)[NSApp delegate] defaultFilters], @"filters",
 			   nil];
 
 	[self undoableAddFilterSet:dict];
@@ -1372,7 +1372,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 		[filterListController setSelectedObjects:@[dict]];
 
-		[(LoggerAppDelegate *)[NSApp delegate] saveFiltersDefinition];
+		[(AppDelegate *)[NSApp delegate] saveFiltersDefinition];
 	}
 	[filterEditorWindow orderOut:self];
 }
@@ -1386,7 +1386,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	assert(filterSet != nil);
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
+						  [(AppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
 						  NSLocalizedString(@"New filter", @""), @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:@[]], @"predicate",
 						  nil];
@@ -1437,7 +1437,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	}
 
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
+						  [(AppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:filterSet[@"filters"]], @"uid",
 						  newFilterTitle, @"title",
 						  [NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
 						  nil];

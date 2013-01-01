@@ -30,14 +30,14 @@
  */
 
 #import "LoggerTransportStatusCell.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerTransport.h"
 
 @implementation LoggerTransportStatusCell
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
+	NSArray *transports = ((AppDelegate *)[NSApp delegate]).transports;
 	LoggerTransport *transport = transports[[[self objectValue] integerValue]];
 
 	BOOL highlighted = [self isHighlighted];

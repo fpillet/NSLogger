@@ -34,7 +34,7 @@
 #import "LoggerCommon.h"
 #import "LoggerConnection.h"
 #import "LoggerNativeMessage.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 
 @implementation LoggerDocument
 
@@ -185,7 +185,7 @@
 	for (LoggerConnection *connection in attachedLogs)
 	{
 		// close the connection (if not already done) and make sure it is removed from transport
-		for (LoggerTransport *t in ((LoggerAppDelegate *)[NSApp	delegate]).transports)
+		for (LoggerTransport *t in ((AppDelegate *)[NSApp	delegate]).transports)
 			[t removeConnection:connection];
 	}
 }

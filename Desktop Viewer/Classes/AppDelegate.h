@@ -32,8 +32,7 @@
 
 @class LoggerConnection, LoggerTransport, LoggerStatusWindowController, LoggerPrefsWindowController;
 
-@interface LoggerAppDelegate : NSObject
-{
+@interface AppDelegate: NSObject {
 	CFArrayRef serverCerts;
 	BOOL serverCertsLoadAttempted;
 	NSMutableArray *transports;
@@ -49,20 +48,24 @@
 @property (nonatomic, readonly) NSMutableArray *filterSets;
 @property (nonatomic, strong) NSArray *filtersSortDescriptors;
 @property (nonatomic, readonly) LoggerStatusWindowController *statusController;
+@property (nonatomic, strong) NSMutableArray *cellColours;
 
-+ (NSDictionary *)defaultPreferences;
++(NSDictionary *)defaultPreferences;
 
-- (void)newConnection:(LoggerConnection *)aConnection fromTransport:(LoggerTransport *)aTransport;
+-(void)newConnection:(LoggerConnection *)aConnection fromTransport:(LoggerTransport *)aTransport;
 
-- (NSMutableArray *)defaultFilters;
-- (NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters;
-- (void)saveFiltersDefinition;
+-(NSMutableArray *)defaultFilters;
+-(NSNumber *)nextUniqueFilterIdentifier:(NSArray *)filters;
+-(void)saveFiltersDefinition;
+-(void)saveCellColours;
 
 - (IBAction)showPreferences:(id)sender;
 
 - (BOOL)loadEncryptionCertificate:(NSError **)outError;
 
 @end
+
+extern AppDelegate *app;
 
 extern NSString * const kPrefKeepMultipleRuns;
 

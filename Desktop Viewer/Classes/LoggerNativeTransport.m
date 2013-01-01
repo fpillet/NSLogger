@@ -36,7 +36,7 @@
 #import "LoggerNativeConnection.h"
 #import "LoggerNativeMessage.h"
 #import "LoggerStatusWindowController.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 
 /* Local prototypes */
 static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CFDataRef address, const void *data, void *info);
@@ -484,7 +484,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (BOOL)canDoSSL
 {
 	// This method can BLOCK THE CURRENT THREAD and run security dialog UI from the main thread
-	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
+	AppDelegate *appDelegate = (AppDelegate *)[[NSApplication sharedApplication] delegate];
 	if (!appDelegate.serverCertsLoadAttempted)
 	{
 		dispatch_sync(dispatch_get_main_queue(), ^{
@@ -500,7 +500,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (BOOL)setupSSLForStream:(NSInputStream *)readStream
 {
-	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
+	AppDelegate *appDelegate = (AppDelegate *)[[NSApplication sharedApplication] delegate];
 #ifdef DEBUG
 	NSLog(@"setupSSLForStream, stream=%@ self=%@ serverCerts=%@", readStream, self, appDelegate.serverCerts);
 #endif

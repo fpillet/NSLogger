@@ -33,6 +33,7 @@
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerWindowController.h"
+#import "AppDelegate.h"
 
 #define MAX_DATA_LINES			  16                                            // max number of data lines to show
 
@@ -788,17 +789,9 @@ NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsC
 
 	// Draw cell background
 	if (!highlighted) {
-		CGColorRef cellBgColor;
-		if (self.message.level == 0) {
-			cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
-		} else if (self.message.level < 3) {
-			cellBgColor = CGColorCreateGenericRGB(1.000, 0.800, 0.028, 1.000);
-		} else {
-			cellBgColor = CGColorCreateGenericRGB(1.000, 0.358, 0.252, 1.000);
-		}
-		CGContextSetFillColorWithColor(ctx, cellBgColor);
+		NSColor *c = app.cellColours[self.message.level];
+		CGContextSetFillColorWithColor(ctx, c.CGColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
-		CGColorRelease(cellBgColor);
 	}
 
 	// turn antialiasing off

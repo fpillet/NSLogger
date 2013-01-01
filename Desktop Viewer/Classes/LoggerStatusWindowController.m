@@ -29,7 +29,7 @@
  * 
  */
 #import "LoggerStatusWindowController.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerTransport.h"
 #import "LoggerConnection.h"
 #import "LoggerTransportStatusCell.h"
@@ -68,7 +68,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 // -----------------------------------------------------------------------------
 - (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-	if (row < [((LoggerAppDelegate *)[NSApp delegate]).transports count])
+	if (row < [((AppDelegate *)[NSApp delegate]).transports count])
 		return transportStatusCell;
 	return nil;
 }
@@ -83,11 +83,11 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 #pragma mark NSTableDataSource
 // -----------------------------------------------------------------------------
 -(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-	return [((LoggerAppDelegate *)[NSApp delegate]).transports count];
+	return [((AppDelegate *)[NSApp delegate]).transports count];
 }
 
 -(id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
-	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
+	NSArray *transports = ((AppDelegate *)[NSApp delegate]).transports;
 	if (rowIndex >= 0 && rowIndex < [transports count])
 		return @(rowIndex);
 	return nil;

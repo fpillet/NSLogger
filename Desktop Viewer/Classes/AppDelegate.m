@@ -29,13 +29,15 @@
  * 
  */
 #import <Security/SecItem.h>
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerNativeTransport.h"
 #import "LoggerWindowController.h"
 #import "LoggerDocument.h"
 #import "LoggerDocumentController.h"
 #import "LoggerStatusWindowController.h"
 #import "LoggerPrefsWindowController.h"
+
+AppDelegate *app;
 
 NSString * const kPrefKeepMultipleRuns = @"keepMultipleRuns";
 
@@ -47,15 +49,13 @@ NSString * const kPrefClientApplicationSettings = @"clientApplicationSettings";
 
 NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
-@implementation LoggerAppDelegate
+@implementation AppDelegate
 @synthesize transports, filterSets, filtersSortDescriptors, statusController;
 @synthesize serverCerts, serverCertsLoadAttempted;
 
-+ (NSDictionary *)defaultPreferences
-{
++(NSDictionary *)defaultPreferences {
 	static NSDictionary *sDefaultPrefs = nil;
-	if (sDefaultPrefs == nil)
-	{
+	if (sDefaultPrefs == nil) {
 		@autoreleasepool {
 			sDefaultPrefs = @{kPrefPublishesBonjourService: @YES,
 							 kPrefHasDirectTCPIPResponder: @NO,
@@ -66,47 +66,38 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	return sDefaultPrefs;
 }
 
-+ (void)load
-{
++(void)load {
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[self defaultPreferences]];
 }
 
-- (id) init
-{
-	if ((self = [super init]) != nil)
-	{
+-(id)init {
+	if ((self = [super init]) != nil) {
+		app = self;
 		transports = [[NSMutableArray alloc] init];
 
 		// default filter ordering. The first sort descriptor ensures that the object with
 		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
 		// items are ordered by title.
-		self.filtersSortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES
-																	comparator:
-										^(id uid1, id uid2)
-		{
+		self.filtersSortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:^(id uid1, id uid2) {
 			if ([uid1 integerValue] == 1)
 				return (NSComparisonResult)NSOrderedAscending;
 			if ([uid2 integerValue] == 1)
 				return (NSComparisonResult)NSOrderedDescending;
 			return (NSComparisonResult)NSOrderedSame;
-		}],
-									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES]];
+		}], [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES]];
 		
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSData *filterSetsData = [defaults objectForKey:@"filterSets"];
-		if (filterSetsData != nil)
-		{
+		if (filterSetsData != nil) {
 			filterSets = [NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData];
-			if (![filterSets isKindOfClass:[NSMutableArray class]])
-			{
+			if (![filterSets isKindOfClass:[NSMutableArray class]]) {
 				filterSets = nil;
 			}
 		}
 		if (filterSets == nil)
 			filterSets = [[NSMutableArray alloc] init];
-		if (![filterSets count])
-		{
+		if (![filterSets count]) {
 			NSMutableArray *filters = nil;
 
 			// Try to reload pre-1.0b4 filters (will remove this code soon)
@@ -132,43 +123,62 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 		
 		// fix for issue found by Stefan Neumärker: default filters in versions 1.0b7 were immutable,
 		// leading to a crash if the user tried to edit them
-		for (NSDictionary *dict in filterSets)
-		{
+		for (NSDictionary *dict in filterSets) {
 			NSMutableArray *filters = dict[@"filters"];
-			for (NSUInteger i = 0; i < [filters count]; i++)
-			{
-				if (![filters[i] isMemberOfClass:[NSMutableDictionary class]])
-				{
+			for (NSUInteger i = 0; i < [filters count]; i++) {
+				if (![filters[i] isMemberOfClass:[NSMutableDictionary class]]) {
 					filters[i] = [filters[i] mutableCopy];
 				}
+			}
+		}
+		
+		// Level colours - 5 items
+		self.cellColours = [[NSMutableArray alloc] initWithCapacity:5];
+		NSArray *arr = [defaults objectForKey:@"LevelColours"];
+		if (!arr) {
+			[_cellColours addObject:[NSColor colorWithDeviceWhite:0.97f alpha:1.0f]];
+			[_cellColours addObject:[NSColor colorWithDeviceWhite:0.97f alpha:1.0f]];
+			[_cellColours addObject:[NSColor colorWithDeviceWhite:0.97f alpha:1.0f]];
+			[_cellColours addObject:[NSColor colorWithDeviceWhite:0.97f alpha:1.0f]];
+			[_cellColours addObject:[NSColor colorWithDeviceWhite:0.97f alpha:1.0f]];
+			[self saveCellColours];
+		} else {
+			for (NSData *d in arr) {
+				NSColor *c = [NSUnarchiver unarchiveObjectWithData:d];
+				[self.cellColours addObject:c];
 			}
 		}
 	}
 	return self;
 }
 
-- (void)dealloc
-{
+-(void)dealloc {
 	if (serverCerts != NULL)
 		CFRelease(serverCerts);
 }
 
-- (void)saveFiltersDefinition
-{
-	@try
-	{
+-(void)saveFiltersDefinition {
+	@try {
 		NSData *filterSetsData = [NSKeyedArchiver archivedDataWithRootObject:filterSets];
-		if (filterSetsData != nil)
-		{
+		if (filterSetsData != nil) {
 			[[NSUserDefaults standardUserDefaults] setObject:filterSetsData forKey:@"filterSets"];
 			// remove pre-1.0b4 filters
 			[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"filters"];
 		}
-	}
-	@catch (NSException * e)
-	{
+	} @catch (NSException * e) {
 		NSLog(@"Catched exception while trying to archive filters: %@", e);
 	}
+}
+
+-(void)saveCellColours {
+	NSUserDefaults *def = [NSUserDefaults standardUserDefaults];
+	NSMutableArray *arr = [[NSMutableArray alloc] initWithCapacity:5];
+	for (NSColor *c in _cellColours) {
+		NSData *d = [NSArchiver archivedDataWithRootObject:c];
+		[arr addObject:d];
+	}
+	[def setObject:arr forKey:@"LevelColours"];
+	[def synchronize];
 }
 
 - (void)prefsChangeNotification:(NSNotification *)note

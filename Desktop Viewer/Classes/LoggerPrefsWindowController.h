@@ -32,44 +32,14 @@
 
 @class LoggerConnection;
 
-@interface LoggerPrefsWindowController : NSWindowController <NSWindowDelegate>
-{
+@interface LoggerPrefsWindowController: NSWindowController <NSWindowDelegate> {
 	IBOutlet NSObjectController *networkDefaultsController;
-
-	IBOutlet NSControl *sampleMessage;
-	IBOutlet NSControl *sampleDataMessage;
 	
-	IBOutlet NSTextField *timestampFontName;
-	IBOutlet NSTextField *threadIDFontName;
-	IBOutlet NSTextField *tagFontName;
-	IBOutlet NSTextField *textFontName;
-	IBOutlet NSTextField *dataFontName;
-	IBOutlet NSTextField *fileFunctionFontName;
-	
-	IBOutlet NSColorWell *timestampForegroundColor;
-	IBOutlet NSColorWell *threadIDForegroundColor;
-	IBOutlet NSColorWell *tagLevelForegroundColor;
-	IBOutlet NSColorWell *textForegroundColor;
-	IBOutlet NSColorWell *dataForegroundColor;
-	IBOutlet NSColorWell *fileFunctionForegroundColor;
-	IBOutlet NSColorWell *fileFunctionBackgroundColor;
-
 	LoggerConnection *fakeConnection;
-	
 	int currentFontSelection;
 	NSDictionary *attributes;
-
 	NSMutableDictionary *networkPrefs;
 }
-
-- (IBAction)selectFont:(id)sender;
-- (IBAction)selectColor:(id)sender;
-
-- (IBAction)applyNetworkChanges:(id)sender;
-- (IBAction)restoreNetworkDefaults:(id)sender;
-
-- (IBAction)applyFontChanges:(id)sender;
-- (IBAction)restoreFontDefaults:(id)sender;
 
 @end
 

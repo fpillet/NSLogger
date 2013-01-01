@@ -33,7 +33,7 @@
 		3D8E06241306C06A0024917B /* LoggerTransportStatusCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8E06231306C06A0024917B /* LoggerTransportStatusCell.m */; };
 		3D8E078113097D6E0024917B /* ssl_badge.png in Resources */ = {isa = PBXBuildFile; fileRef = 3D8E078013097D6E0024917B /* ssl_badge.png */; };
 		3DA319AB12E37088003F68E6 /* LoggerTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA319AA12E37088003F68E6 /* LoggerTableView.m */; };
-		3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */; };
+		3DAB6E2E0F2FA0BA00BB3236 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB6E2D0F2FA0BA00BB3236 /* AppDelegate.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
@@ -136,8 +136,8 @@
 		3D8E078013097D6E0024917B /* ssl_badge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssl_badge.png; path = Resources/ssl_badge.png; sourceTree = "<group>"; };
 		3DA319A912E37088003F68E6 /* LoggerTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerTableView.h; path = Classes/LoggerTableView.h; sourceTree = "<group>"; };
 		3DA319AA12E37088003F68E6 /* LoggerTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTableView.m; path = Classes/LoggerTableView.m; sourceTree = "<group>"; };
-		3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerAppDelegate.h; path = Classes/LoggerAppDelegate.h; sourceTree = "<group>"; };
-		3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerAppDelegate.m; path = Classes/LoggerAppDelegate.m; sourceTree = "<group>"; };
+		3DAB6E2C0F2FA0BA00BB3236 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Classes/AppDelegate.h; sourceTree = "<group>"; };
+		3DAB6E2D0F2FA0BA00BB3236 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Classes/AppDelegate.m; sourceTree = "<group>"; };
 		3DADCB9E125FC3B200807A7D /* ValueTransformers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ValueTransformers.h; path = Classes/ValueTransformers.h; sourceTree = "<group>"; };
 		3DADCB9F125FC3B200807A7D /* ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ValueTransformers.m; path = Classes/ValueTransformers.m; sourceTree = "<group>"; };
 		3DBB562512829BCC004F729D /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMarkerCell.h; path = Classes/LoggerMarkerCell.h; sourceTree = "<group>"; };
@@ -184,8 +184,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				3DAB6E2C0F2FA0BA00BB3236 /* LoggerAppDelegate.h */,
-				3DAB6E2D0F2FA0BA00BB3236 /* LoggerAppDelegate.m */,
+				3DAB6E2C0F2FA0BA00BB3236 /* AppDelegate.h */,
+				3DAB6E2D0F2FA0BA00BB3236 /* AppDelegate.m */,
 				3D6A37C31263998A00D0EC3A /* LoggerStatusWindowController.h */,
 				3D6A37C41263998A00D0EC3A /* LoggerStatusWindowController.m */,
 				3D6A34681262F60400D0EC3A /* LoggerDocument.h */,
@@ -404,7 +404,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = "Florent Pillet";
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLogger" */;
@@ -482,7 +482,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				3DAB6E2E0F2FA0BA00BB3236 /* LoggerAppDelegate.m in Sources */,
+				3DAB6E2E0F2FA0BA00BB3236 /* AppDelegate.m in Sources */,
 				3D4EA0580F3768EA00DF81E6 /* LoggerMessage.m in Sources */,
 				3D4EA05B0F3769B000DF81E6 /* LoggerNativeMessage.m in Sources */,
 				3D4EA1E10F3854C300DF81E6 /* LoggerWindowController.m in Sources */,
@@ -565,6 +565,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_LOCATION = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -588,6 +589,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEPLOYMENT_LOCATION = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
