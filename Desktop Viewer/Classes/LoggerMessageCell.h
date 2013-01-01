@@ -32,8 +32,7 @@
 
 @class LoggerMessage;
 
-@interface LoggerMessageCell : NSCell
-{
+@interface LoggerMessageCell : NSTextFieldCell {
 	LoggerMessage *message;
 	LoggerMessage *previousMessage;
 	

@@ -1354,6 +1354,7 @@
 																		<string key="NSContents">Text Cell</string>
 																		<reference key="NSSupport" ref="4432246"/>
 																		<reference key="NSControlView" ref="522308002"/>
+																		<bool key="NSDrawsBackground">YES</bool>
 																		<reference key="NSBackgroundColor" ref="95618980"/>
 																		<reference key="NSTextColor" ref="474791504"/>
 																	</object>
@@ -5443,7 +5444,7 @@
 						</object>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
-						<string key="buttonBar">BWAnchoredButtonBar</string>
+						<string key="buttonBar">NSView</string>
 						<string key="filterEditor">NSPredicateEditor</string>
 						<string key="filterEditorWindow">NSWindow</string>
 						<string key="filterListController">NSArrayController</string>
@@ -5462,7 +5463,7 @@
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
 						<object class="IBToOneOutletInfo" key="buttonBar">
 							<string key="name">buttonBar</string>
-							<string key="candidateClassName">BWAnchoredButtonBar</string>
+							<string key="candidateClassName">NSView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="filterEditor">
 							<string key="name">filterEditor</string>
