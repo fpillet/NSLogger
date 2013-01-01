@@ -38,6 +38,8 @@
 #define LOGGING_HOST			CFSTR("127.0.0.1")
 #define LOGGING_PORT			50007
 
+#define LEVEL_COUNT 5
+
 @implementation NSLoggerMacClientTestAppDelegate
 
 @synthesize window;
@@ -102,21 +104,21 @@
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
 		int what = (arc4random() % 4);
 		if (what == 0)
-			LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+			LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % LEVEL_COUNT, s);
 		else if (what == 1)
 		{
 			// log full origin info
-			LogMessageF(__FILE__, __LINE__, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+			LogMessageF(__FILE__, __LINE__, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % LEVEL_COUNT, s);
 		}
 		else if (what == 2)
 		{
 			// just log __FUNCTION__
-			LogMessageF(NULL, 0, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+			LogMessageF(NULL, 0, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % LEVEL_COUNT, s);
 		}
 		else
 		{
 			// just log __FILE__ __LINE__
-			LogMessageF(__FILE__, __LINE__, NULL, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+			LogMessageF(__FILE__, __LINE__, NULL, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % LEVEL_COUNT, s);
 		}
 	}
 	else if (phase == 1)
