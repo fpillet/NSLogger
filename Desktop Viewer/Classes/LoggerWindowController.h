@@ -29,20 +29,18 @@
  * 
  */
 #import "LoggerConnection.h"
-#import "BWToolkitFramework.h"
 
 @class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView, LoggerSplitView;
 @class LoggerDetailsWindowController;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
-{
+@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate> {
 	IBOutlet LoggerTableView *logTable;
 	IBOutlet NSTableView *filterSetsTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet NSButton *showFunctionNamesButton;
 	IBOutlet NSSearchField *quickFilterTextField;
-	IBOutlet BWAnchoredButtonBar *buttonBar;
+	IBOutlet NSView *buttonBar;
 
 	IBOutlet NSArrayController *filterSetsListController;
 	IBOutlet NSArrayController *filterListController;
@@ -84,10 +82,10 @@
 	BOOL clientAppSettingsRestored;
 }
 
-@property (nonatomic, retain) LoggerConnection *attachedConnection;
+@property (nonatomic, strong) LoggerConnection *attachedConnection;
 @property (nonatomic, assign) BOOL messagesSelected;
 @property (nonatomic, assign) BOOL hasQuickFilter;
-@property (nonatomic, assign) NSNumber* showFunctionNames;
+@property (nonatomic, unsafe_unretained) NSNumber* showFunctionNames;
 @property (nonatomic, assign) CGFloat threadColumnWidth;
 
 - (IBAction)openDetailsWindow:(id)sender;

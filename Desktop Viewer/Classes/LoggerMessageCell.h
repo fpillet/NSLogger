@@ -32,24 +32,17 @@
 
 @class LoggerMessage;
 
-@interface LoggerMessageCell : NSCell
-{
+@interface LoggerMessageCell : NSTextFieldCell {
 	LoggerMessage *message;
 	LoggerMessage *previousMessage;
-	
 	NSDictionary *messageAttributes;
-
-	// unused
-//	CGFloat timestampColumnWidth;
-//	CGFloat threadIDColumnWidth;
-	
 	BOOL shouldShowFunctionNames;
     BOOL modifyingThreadColumnWidth;
 }
 
-@property (nonatomic, retain) LoggerMessage *message;
-@property (nonatomic, retain) LoggerMessage *previousMessage;
-@property (nonatomic, retain) NSDictionary *messageAttributes;
+@property (nonatomic, strong) LoggerMessage *message;
+@property (nonatomic, strong) LoggerMessage *previousMessage;
+@property (nonatomic, strong) NSDictionary *messageAttributes;
 @property (nonatomic, assign) BOOL shouldShowFunctionNames;
 @property (nonatomic, assign) BOOL modifyingThreadColumnWidth;
 

@@ -53,15 +53,6 @@ static NSMutableArray *sTags = nil;
 	return self;
 }
 
-- (void)dealloc
-{
-	// remember that tag is non-retained
-	[parts release];
-	[message release];
-	[image release];
-	[threadID release];
-	[super dealloc];
-}
 
 - (NSImage *)image
 {
@@ -128,7 +119,7 @@ static NSMutableArray *sTags = nil;
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+		int i, b = sprintf(buffer," %04lx: ", offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
@@ -151,13 +142,12 @@ static NSMutableArray *sTags = nil;
 		
 		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
 		[s appendString:str];
-		[str release];
 		
 		dataLen -= i;
 		offset += i;
 		q += i;
 	}
-	return [s autorelease];
+	return s;
 }
 
 // -----------------------------------------------------------------------------
@@ -170,10 +160,10 @@ static NSMutableArray *sTags = nil;
 	{
 		timestamp.tv_sec = [decoder decodeInt64ForKey:@"s"];
 		timestamp.tv_usec = [decoder decodeInt64ForKey:@"us"];
-		parts = [[decoder decodeObjectForKey:@"p"] retain];
-		message = [[decoder decodeObjectForKey:@"m"] retain];
+		parts = [decoder decodeObjectForKey:@"p"];
+		message = [decoder decodeObjectForKey:@"m"];
 		sequence = [decoder decodeIntForKey:@"n"];
-		threadID = [[decoder decodeObjectForKey:@"t"] retain];
+		threadID = [decoder decodeObjectForKey:@"t"];
 		level = [decoder decodeIntForKey:@"l"];
 		type = [decoder decodeIntForKey:@"mt"];
 		contentsType = [decoder decodeIntForKey:@"ct"];
@@ -234,7 +224,7 @@ static NSMutableArray *sTags = nil;
 - (id)copyWithZone:(NSZone *)zone
 {
 	// Used only for displaying, we can afford not providing a real copy here
-    return [self retain];
+    return self;
 }
 
 // -----------------------------------------------------------------------------
@@ -276,7 +266,7 @@ static NSMutableArray *sTags = nil;
 		tag = aTag;
 	}
 	else
-		tag = [sTags objectAtIndex:pos];
+		tag = sTags[pos];
 }
 
 - (void)setFilename:(NSString *)aFilename connection:(LoggerConnection *)aConnection
@@ -325,13 +315,13 @@ static NSMutableArray *sTags = nil;
 							@"Unknown");
 	NSString *desc;
 	if (contentsType == kMessageData)
-		desc = [NSString stringWithFormat:@"{data %u bytes}", [message length]];
+		desc = [NSString stringWithFormat:@"{data %lu bytes}", [message length]];
 	else if (contentsType == kMessageImage)
-		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", [self imageSize].width, [self imageSize].height];
+		desc = [NSString stringWithFormat:@"{image w=%f h=%f}", [self imageSize].width, [self imageSize].height];
 	else
 		desc = (NSString *)message;
 	
-	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d message=%@>",
+	return [NSString stringWithFormat:@"<%@ %p seq=%ld type=%@ thread=%@ tag=%@ level=%d message=%@>",
 			[self class], self, sequence, typeString, threadID, tag, (int)level, desc];
 }
 #endif

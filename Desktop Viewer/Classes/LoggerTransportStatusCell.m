@@ -30,15 +30,15 @@
  */
 
 #import "LoggerTransportStatusCell.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerTransport.h"
 
 @implementation LoggerTransportStatusCell
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
-	LoggerTransport *transport = [transports objectAtIndex:[[self objectValue] integerValue]];
+	NSArray *transports = ((AppDelegate *)[NSApp delegate]).transports;
+	LoggerTransport *transport = transports[[[self objectValue] integerValue]];
 
 	BOOL highlighted = [self isHighlighted];
 
@@ -96,11 +96,9 @@
 	NSFont *statusFont = [NSFont systemFontOfSize:[NSFont systemFontSize] - 2];
 	
 	NSColor *textColor = (highlighted ? [NSColor grayColor] : [NSColor whiteColor]);
-	NSDictionary *descAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-							   descFont, NSFontAttributeName,
-							   textColor, NSForegroundColorAttributeName,
-							   [NSColor clearColor], NSBackgroundColorAttributeName,
-							   nil];
+	NSDictionary *descAttrs = @{NSFontAttributeName: descFont,
+							   NSForegroundColorAttributeName: textColor,
+							   NSBackgroundColorAttributeName: [NSColor clearColor]};
 	
 	if (!highlighted)
 	{
@@ -109,11 +107,9 @@
 		else
 			textColor = [NSColor grayColor];
 	}
-	NSDictionary *statusAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-								 statusFont, NSFontAttributeName,
-								 textColor, NSForegroundColorAttributeName,
-								 [NSColor clearColor], NSBackgroundColorAttributeName,
-								 nil];
+	NSDictionary *statusAttrs = @{NSFontAttributeName: statusFont,
+								 NSForegroundColorAttributeName: textColor,
+								 NSBackgroundColorAttributeName: [NSColor clearColor]};
 	
 	NSSize descSize = [desc sizeWithAttributes:descAttrs];
 	NSSize statusSize = [status sizeWithAttributes:statusAttrs];

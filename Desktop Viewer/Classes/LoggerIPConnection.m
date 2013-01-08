@@ -55,7 +55,7 @@
 	[clientAddress getBytes:&addr4 length:sizeof(addr4)];
 	char *inetname = inet_ntoa(addr4.sin_addr);
 	if (inetname != NULL)
-		return [NSString stringWithCString:inetname encoding:NSASCIIStringEncoding];
+		return @(inetname);
 
 	return nil;
 }

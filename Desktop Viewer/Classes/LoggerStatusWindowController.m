@@ -29,7 +29,7 @@
  * 
  */
 #import "LoggerStatusWindowController.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerTransport.h"
 #import "LoggerConnection.h"
 #import "LoggerTransportStatusCell.h"
@@ -40,9 +40,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 
 - (void)dealloc
 {
-	[transportStatusCell release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[super dealloc];
 }
 
 - (void)windowDidLoad
@@ -57,8 +55,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 	[[self window] setLevel:NSNormalWindowLevel];
 }
 
-- (void)showStatus:(NSNotification *)notification
-{
+-(void)showStatus:(NSNotification *)notification {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[statusTable reloadData];
 	});
@@ -71,7 +68,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 // -----------------------------------------------------------------------------
 - (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-	if (row < [((LoggerAppDelegate *)[NSApp delegate]).transports count])
+	if (row < [((AppDelegate *)[NSApp delegate]).transports count])
 		return transportStatusCell;
 	return nil;
 }
@@ -85,16 +82,14 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 #pragma mark -
 #pragma mark NSTableDataSource
 // -----------------------------------------------------------------------------
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
-{
-	return [((LoggerAppDelegate *)[NSApp delegate]).transports count];
+-(NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
+	return [((AppDelegate *)[NSApp delegate]).transports count];
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(int)rowIndex
-{
-	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
+-(id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
+	NSArray *transports = ((AppDelegate *)[NSApp delegate]).transports;
 	if (rowIndex >= 0 && rowIndex < [transports count])
-		return [NSNumber numberWithInteger:rowIndex];
+		return @(rowIndex);
 	return nil;
 }
 

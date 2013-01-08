@@ -30,7 +30,7 @@
  */
 #import "LoggerTransport.h"
 #import "LoggerConnection.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerStatusWindowController.h"
 
 @implementation LoggerTransport
@@ -47,12 +47,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[failureReason release];
-	[connections release];
-	[super dealloc];
-}
 
 - (void)addConnection:(LoggerConnection *)aConnection
 {
@@ -74,7 +68,7 @@
 	// the ClientInfo message) or reuse an existing document if this is a reconnection
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		if (!aConnection.attachedToWindow)
-			[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection fromTransport:self];
+			[(AppDelegate *)[NSApp delegate] newConnection:aConnection fromTransport:self];
 	});
 }
 

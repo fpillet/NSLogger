@@ -35,11 +35,11 @@
 
 + (NSDictionary *)markAttributes:(BOOL)highlighted
 {
-	NSMutableDictionary *attrs = [[self defaultAttributes] objectForKey:@"mark"];
+	NSMutableDictionary *attrs = [self defaultAttributes][@"mark"];
 	if (highlighted)
 	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+		attrs = [attrs mutableCopy];
+		attrs[NSForegroundColorAttributeName] = [NSColor whiteColor];
 	}
 	return attrs;
 }

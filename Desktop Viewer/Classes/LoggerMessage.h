@@ -38,8 +38,8 @@
 	struct timeval timestamp;	// seconds and microseconds
 
 	NSString *tag;				// non-retained (we use a global pool for domains)
-	NSString *filename;			// non-retained (we use a connection-attached pool for filenames)
-	NSString *functionName;		// non-retained (we use a connection-attached pool for function names)
+	NSString *__unsafe_unretained filename;			// non-retained (we use a connection-attached pool for filenames)
+	NSString *__unsafe_unretained functionName;		// non-retained (we use a connection-attached pool for function names)
 	NSMutableDictionary *parts;	// for non-standard parts transmitted by the clients, store the data in this dictionary
 	id message;					// NSString, NSData or image data
 	NSImage *image;				// if the message is an image, the image gets decoded once it's being accessed
@@ -60,18 +60,18 @@
 }
 
 @property (nonatomic, assign) short contentsType;
-@property (nonatomic, retain) NSDictionary *parts;
+@property (nonatomic, strong) NSDictionary *parts;
 @property (nonatomic, assign) struct timeval timestamp;	// full timestamp (seconds & microseconds)
-@property (nonatomic, retain) NSString *tag;
-@property (nonatomic, retain) id message;
+@property (nonatomic, strong) NSString *tag;
+@property (nonatomic, strong) id message;
 @property (nonatomic, assign) short type;
 @property (nonatomic, assign) short level;
-@property (nonatomic, retain) NSString *threadID;
+@property (nonatomic, strong) NSString *threadID;
 @property (nonatomic, readonly) NSSize imageSize;
 @property (nonatomic, assign) NSSize cachedCellSize;
-@property (nonatomic, retain) NSImage *image;
-@property (nonatomic, readonly, assign) NSString *filename;
-@property (nonatomic, readonly, assign) NSString *functionName;
+@property (nonatomic, strong) NSImage *image;
+@property (nonatomic, readonly, unsafe_unretained) NSString *filename;
+@property (nonatomic, readonly, unsafe_unretained) NSString *functionName;
 @property (nonatomic, assign) int lineNumber;
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage;

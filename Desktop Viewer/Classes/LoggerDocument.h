@@ -39,7 +39,7 @@
 }
 
 @property (nonatomic, readonly) NSArray *attachedLogs;
-@property (nonatomic, retain) NSNumber *indexOfCurrentVisibleLog;
+@property (nonatomic, strong) NSNumber *indexOfCurrentVisibleLog;
 
 - (id)initWithConnection:(LoggerConnection *)aConnection;
 - (LoggerWindowController *)mainWindowController;

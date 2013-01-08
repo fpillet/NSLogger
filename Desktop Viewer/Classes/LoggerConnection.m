@@ -33,7 +33,7 @@
 #import "LoggerConnection.h"
 #import "LoggerMessage.h"
 #import "LoggerCommon.h"
-#import "LoggerAppDelegate.h"
+#import "AppDelegate.h"
 #import "LoggerStatusWindowController.h"
 
 char sConnectionAssociatedObjectKey = 1;
@@ -77,18 +77,6 @@ char sConnectionAssociatedObjectKey = 1;
 - (void)dealloc
 {
 	dispatch_release(messageProcessingQueue);
-	[messages release];
-	[parentIndexesStack release];
-	[clientName release];
-	[clientVersion release];
-	[clientOSName release];
-	[clientOSVersion release];
-	[clientDevice release];
-	[clientAddress release];
-	[clientUDID release];
-	[filenames release];
-	[functionNames release];
-	[super dealloc];
 }
 
 - (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection
@@ -229,7 +217,7 @@ char sConnectionAssociatedObjectKey = 1;
 		return;
 
 	// Locate the clientInfo message
-	if (((LoggerMessage *)[messages objectAtIndex:0]).type == LOGMSG_TYPE_CLIENTINFO)
+	if (((LoggerMessage *)messages[0]).type == LOGMSG_TYPE_CLIENTINFO)
 		[messages removeObjectsInRange:NSMakeRange(1, [messages count]-1)];
 	else
 		[messages removeAllObjects];
@@ -244,7 +232,7 @@ char sConnectionAssociatedObjectKey = 1;
 	dispatch_async(messageProcessingQueue, ^{
 		@synchronized (messages)
 		{
-			if ([messages count] == 0 || ((LoggerMessage *)[messages objectAtIndex:0]).type != LOGMSG_TYPE_CLIENTINFO)
+			if ([messages count] == 0 || ((LoggerMessage *)messages[0]).type != LOGMSG_TYPE_CLIENTINFO)
 				[messages insertObject:message atIndex:0];
 		}
 	});
@@ -253,22 +241,22 @@ char sConnectionAssociatedObjectKey = 1;
 	// while the UI reads them
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSDictionary *parts = message.parts;
-		id value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
+		id value = parts[@PART_KEY_CLIENT_NAME];
 		if (value != nil)
 			self.clientName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+		value = parts[@PART_KEY_CLIENT_VERSION];
 		if (value != nil)
 			self.clientVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+		value = parts[@PART_KEY_OS_NAME];
 		if (value != nil)
 			self.clientOSName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+		value = parts[@PART_KEY_OS_VERSION];
 		if (value != nil)
 			self.clientOSVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+		value = parts[@PART_KEY_CLIENT_MODEL];
 		if (value != nil)
 			self.clientDevice = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+		value = parts[@PART_KEY_UNIQUEID];
 		if (value != nil)
 			self.clientUDID = value;
 
@@ -281,7 +269,7 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	// enforce thread safety (only on main thread)
 	assert([NSThread isMainThread]);
-	NSMutableString *s = [[[NSMutableString alloc] init] autorelease];
+	NSMutableString *s = [[NSMutableString alloc] init];
 	if (clientName != nil)
 		[s appendString:clientName];
 	if (clientVersion != nil)
@@ -322,9 +310,9 @@ char sConnectionAssociatedObjectKey = 1;
 		return [NSString stringWithFormat:format, [self clientDescription]];
 	__block NSString *status;
 	dispatch_sync(dispatch_get_main_queue(), ^{
-		status = [[NSString stringWithFormat:format, [self clientDescription]] retain];
+		status = [NSString stringWithFormat:format, [self clientDescription]];
 	});
-	return [status autorelease];
+	return status;
 }
 
 - (void)setConnected:(BOOL)newConnected
@@ -354,21 +342,21 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	if ((self = [super init]) != nil)
 	{
-		clientName = [[aDecoder decodeObjectForKey:@"clientName"] retain];
-		clientVersion = [[aDecoder decodeObjectForKey:@"clientVersion"] retain];
-		clientOSName = [[aDecoder decodeObjectForKey:@"clientOSName"] retain];
-		clientOSVersion = [[aDecoder decodeObjectForKey:@"clientOSVersion"] retain];
-		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
-		clientUDID = [[aDecoder decodeObjectForKey:@"clientUDID"] retain];
-		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
-		filenames = [[aDecoder decodeObjectForKey:@"filenames"] retain];
+		clientName = [aDecoder decodeObjectForKey:@"clientName"];
+		clientVersion = [aDecoder decodeObjectForKey:@"clientVersion"];
+		clientOSName = [aDecoder decodeObjectForKey:@"clientOSName"];
+		clientOSVersion = [aDecoder decodeObjectForKey:@"clientOSVersion"];
+		clientDevice = [aDecoder decodeObjectForKey:@"clientDevice"];
+		clientUDID = [aDecoder decodeObjectForKey:@"clientUDID"];
+		parentIndexesStack = [aDecoder decodeObjectForKey:@"parentIndexes"];
+		filenames = [aDecoder decodeObjectForKey:@"filenames"];
 		if (filenames == nil)
 			filenames = [[NSMutableSet alloc] init];
-		functionNames = [[aDecoder decodeObjectForKey:@"functionNames"] retain];
+		functionNames = [aDecoder decodeObjectForKey:@"functionNames"];
 		if (functionNames == nil)
 			functionNames = [[NSMutableSet alloc] init];
 		objc_setAssociatedObject(aDecoder, &sConnectionAssociatedObjectKey, self, OBJC_ASSOCIATION_ASSIGN);
-		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
+		messages = [aDecoder decodeObjectForKey:@"messages"];
 		reconnectionCount = [aDecoder decodeIntForKey:@"reconnectionCount"];
 		restoredFromSave = YES;
 		
