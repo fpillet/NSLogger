@@ -119,7 +119,8 @@
 #undef LOGGER_ARC_MACROS_DEFINED
 #if defined(__has_feature)
 	#if __has_feature(objc_arc)
-		#define CAST_TO_CFSTRING			__bridge CFStringRef
+        #define CAST_TO_CFSTRING			__bridge CFStringRef
+        #define CAST_TO_NSSTRING			__bridge NSString *
 		#define CAST_TO_CFDATA				__bridge CFDataRef
 		#define RELEASE(obj)				do{}while(0)
 		#define AUTORELEASE_POOL_BEGIN		@autoreleasepool{
@@ -129,6 +130,7 @@
 #endif
 #if !defined(LOGGER_ARC_MACROS_DEFINED)
 	#define CAST_TO_CFSTRING			CFStringRef
+    #define CAST_TO_NSSTRING			NSString *
 	#define CAST_TO_CFDATA				CFDataRef
 	#define RELEASE(obj)				[obj release]
 	#define AUTORELEASE_POOL_BEGIN		NSAutoreleasePool *__pool=[[NSAutoreleasePool alloc] init];
@@ -182,6 +184,16 @@ static uint32_t LoggerMessageGetSeq(CFDataRef message);
 /* Static objects */
 static Logger* volatile sDefaultLogger = NULL;
 static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Console logging
+static void LoggerStartGrabbingConsoleTo(Logger *logger);
+static void LoggerStopGrabbingConsoleTo(Logger *logger);
+static Logger ** consoleGrabbersList = NULL;
+static unsigned consoleGrabbersListLength;
+static unsigned numActiveConsoleGrabbers = 0;
+static pthread_mutex_t consoleGrabbersMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t consoleGrabThread;
+static int consolePipes[ 4 ] = { -1, -1, -1, -1 };
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -335,6 +347,12 @@ void LoggerStart(Logger *logger)
     if (logger) {
         if (logger->workerThread == NULL)
         {
+	    	// Grab console output if required
+        	if (logger->options & kLoggerOption_ConsoleLog)
+        	{
+            	LoggerStartGrabbingConsoleTo(logger);
+        	}
+
             // Start the work thread which performs the Bonjour search,
             // connects to the logging service and forwards the logs
             LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
@@ -363,6 +381,7 @@ void LoggerStop(Logger *logger)
 	{
 		if (logger->workerThread != NULL)
 		{
+            LoggerStopGrabbingConsoleTo(logger);
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
 		}
@@ -941,6 +960,129 @@ static void LoggerWriteMoreData(Logger *logger)
 		if (remainingMsgs == 0)
 			pthread_cond_broadcast(&logger->logQueueEmpty);
 	}
+}
+
+// -----------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Console logging
+// -----------------------------------------------------------------------------
+static void LoggerLogFromFile( int fd )
+{
+#define BUFSIZE 1000
+    UInt8 buf[ BUFSIZE ];
+    ssize_t bytes_read = 0;
+    while ( (bytes_read = read( fd, buf, BUFSIZE )) > 0 )
+    {
+        if ( buf[bytes_read-1] == '\n' ) --bytes_read;
+        
+        CFStringRef messageString = CFStringCreateWithBytes( NULL, buf, bytes_read, kCFStringEncodingASCII, false );
+        if (messageString != NULL)
+        {
+            pthread_mutex_lock( &consoleGrabbersMutex );
+            for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+            {
+                if ( consoleGrabbersList[grabberIndex] != NULL )
+                {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
+                    LogMessageTo( consoleGrabbersList[grabberIndex], @"console", 1, (CAST_TO_NSSTRING) messageString );
+#pragma clang dianostic pop
+                }
+            }
+            pthread_mutex_unlock( &consoleGrabbersMutex );
+            CFRelease( messageString );
+        }
+    }
+}
+
+static void * LoggerConsoleGrabThread(void * context)
+{
+    int fdout = consolePipes[ 0 ];
+    int flags = fcntl(fdout, F_GETFL, 0);
+    fcntl(fdout, F_SETFL, flags | O_NONBLOCK);
+    
+    int fderr = consolePipes[ 2 ];
+    flags = fcntl(fderr, F_GETFL, 0);
+    fcntl(fderr, F_SETFL, flags | O_NONBLOCK);
+
+    while ( 1 )
+    {
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(fdout, &set);
+        FD_SET(fderr, &set);
+        int ret = select(fderr + 1, &set, NULL, NULL, NULL);
+        
+        if (ret == 0) {
+            // time expired without activity
+            return NULL;
+        } else if (ret < 0) {
+            // error occurred
+            return NULL;
+        } else {
+            /* Drop the message if there are no listeners. I don't know how to cancel the redirection. */
+            if ( numActiveConsoleGrabbers == 0 ) continue;
+            if ( FD_ISSET( fdout, &set ) ) LoggerLogFromFile( fdout );
+            if ( FD_ISSET( fderr, &set ) ) LoggerLogFromFile( fderr );
+        }
+    }
+    return NULL;
+}
+
+static void LoggerStartConsoleRedirection()
+{
+    if ( consolePipes[ 0 ] == -1 )
+    {
+        if ( -1 != pipe( consolePipes ) ) dup2( consolePipes[ 1 ], 1 /*stdout*/ );
+    }
+
+    if ( consolePipes[ 2 ] == -1 )
+    {
+        if ( -1 != pipe( consolePipes + 2 ) ) dup2( consolePipes[ 3 ], 2 /*stderr*/ );
+    }
+    
+    pthread_create( &consoleGrabThread, NULL, (void *(*)(void *))&LoggerConsoleGrabThread, NULL );
+}
+
+static void LoggerStartGrabbingConsoleTo(Logger *logger)
+{
+    if ( ! logger->options & kLoggerOption_ConsoleLog ) return;
+    
+    pthread_mutex_lock( &consoleGrabbersMutex );
+
+    consoleGrabbersList = realloc( consoleGrabbersList, ++consoleGrabbersListLength * sizeof(Logger *) );
+    consoleGrabbersList[numActiveConsoleGrabbers++] = logger;
+    
+    pthread_mutex_unlock( &consoleGrabbersMutex );
+
+    /* Start redirection if necessary */
+    LoggerStartConsoleRedirection();
+}
+
+static void LoggerStopGrabbingConsoleTo(Logger *logger)
+{
+    if ( numActiveConsoleGrabbers == 0 ) return;
+    if ( ! logger->options & kLoggerOption_ConsoleLog ) return;
+
+    pthread_mutex_lock( &consoleGrabbersMutex );
+    
+    if ( --numActiveConsoleGrabbers == 0 )
+    {
+        consoleGrabbersListLength = 0;
+        free( consoleGrabbersList );
+        consoleGrabbersList = NULL;
+    } else {
+        for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+        {
+            if ( consoleGrabbersList[grabberIndex] == logger )
+            {
+                consoleGrabbersList[grabberIndex] = NULL;
+                break;
+            }
+        }
+    }
+    
+    pthread_mutex_unlock( &consoleGrabbersMutex );
 }
 
 // -----------------------------------------------------------------------------

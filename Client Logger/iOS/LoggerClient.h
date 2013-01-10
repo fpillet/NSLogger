@@ -64,7 +64,8 @@ enum {
 	kLoggerOption_BufferLogsUntilConnection			= 0x02,
 	kLoggerOption_BrowseBonjour						= 0x04,
 	kLoggerOption_BrowseOnlyLocalDomain				= 0x08,
-	kLoggerOption_UseSSL							= 0x10
+	kLoggerOption_UseSSL							= 0x10,
+	kLoggerOption_ConsoleLog						= 0x20
 };
 
 #define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
