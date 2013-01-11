@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.1 2012-03-31
+ * version 1.2 10-JAN-2013
  *
  * Definitions common to NSLogger Viewer and NSLoggerClient
  * for the binary messages format
@@ -9,7 +9,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2012 Florent Pillet All Rights Reserved.
+ * Copyright (c) 2010-2013 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
