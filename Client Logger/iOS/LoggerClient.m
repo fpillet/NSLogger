@@ -1772,13 +1772,22 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 				name = @"Main thread";
 			else
 			{
-				name = [thread description];
-				NSRange range = [name rangeOfString:@"num = "];
-				if (range.location != NSNotFound)
+				// use the thread dictionary to store and retrieve the computed thread name
+				NSMutableDictionary *threadDict = [thread threadDictionary];
+				name = [threadDict objectForKey:@"__$NSLoggerThreadName$__"];
+				if (name == nil)
 				{
-					name = [NSString stringWithFormat:@"Thread %@",
-							[name substringWithRange:NSMakeRange(range.location + range.length,
-																 [name length] - range.location - range.length - 1)]];
+					// optimize CPU use by computing the thread name once and storing it back
+					// in the thread dictionary
+					name = [thread description];
+					NSRange range = [name rangeOfString:@"num = "];
+					if (range.location != NSNotFound)
+					{
+						name = [NSString stringWithFormat:@"Thread %@",
+								[name substringWithRange:NSMakeRange(range.location + range.length,
+																	 [name length] - range.location - range.length - 1)]];
+						[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
+					}
 				}
 			}
 		}
