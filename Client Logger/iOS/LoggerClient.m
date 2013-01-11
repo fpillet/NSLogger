@@ -338,7 +338,7 @@ void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 	}
 }
 
-void LoggerStart(Logger *logger)
+Logger *LoggerStart(Logger *logger)
 {
 	// will do nothing if logger is already started
 	if (logger == NULL)
@@ -363,6 +363,7 @@ void LoggerStart(Logger *logger)
     {
         LOGGERDBG2(CFSTR("-> could not create logger"));
     }
+	return logger;
 }
 
 void LoggerStop(Logger *logger)
@@ -790,11 +791,11 @@ static void LoggerLogToConsole(CFDataRef data)
 	CFStringAppendFormat(s, NULL, CFSTR(".%04d %s%@ | %@"),
 						 (int)(timestamp.tv_usec / 1000),
 						 threadNamePadding, (thread == NULL) ? CFSTR("") : thread,
-						 message ? message : CFSTR(""));
+						 (message != NULL) ? message : CFSTR(""));
 
 	if (thread != NULL)
 		CFRelease(thread);
-	if (message)
+	if (message != NULL)
 		CFRelease(message);
 
 	if (type == LOGMSG_TYPE_LOG || type == LOGMSG_TYPE_MARK)
@@ -2081,13 +2082,9 @@ static void LogMessageTo_internal(Logger *logger,
 								  NSString *format,
 								  va_list args)
 {
-	if (logger == NULL)
+	logger = LoggerStart(logger);	// start if needed
+    if (logger != NULL)
 	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
-
-    if (logger) {
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
@@ -2133,10 +2130,6 @@ static void LogMessageTo_internal(Logger *logger,
             LOGGERDBG2(CFSTR("-> failed creating encoder"));
         }
     }
-    else
-    {
-        LOGGERDBG2(CFSTR("-> failed creating logger"));
-    }
 }
 
 static void LogImageTo_internal(Logger *logger,
@@ -2149,44 +2142,42 @@ static void LogImageTo_internal(Logger *logger,
 								int height,
 								NSData *data)
 {
-	if (logger == NULL)
+	logger = LoggerStart(logger);		// start if needed
+	if (logger != NULL)
 	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
+		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+		LOGGERDBG2(CFSTR("%ld LogImage"), seq);
 
-	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG2(CFSTR("%ld LogImage"), seq);
-
-	CFMutableDataRef encoder = LoggerMessageCreate();
-	if (encoder != NULL)
-	{
-		LoggerMessageAddTimestampAndThreadID(encoder);
-		LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-		LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
-		if (domain != nil && [domain length])
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
-		if (level)
-			LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
-		if (width && height)
+		CFMutableDataRef encoder = LoggerMessageCreate();
+		if (encoder != NULL)
 		{
-			LoggerMessageAddInt32(encoder, width, PART_KEY_IMAGE_WIDTH);
-			LoggerMessageAddInt32(encoder, height, PART_KEY_IMAGE_HEIGHT);
-		}
-		if (filename != NULL)
-			LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
-		if (lineNumber)
-			LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
-		if (functionName != NULL)
-			LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
-		LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
+			LoggerMessageAddTimestampAndThreadID(encoder);
+			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+			if (domain != nil && [domain length])
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
+			if (level)
+				LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
+			if (width && height)
+			{
+				LoggerMessageAddInt32(encoder, width, PART_KEY_IMAGE_WIDTH);
+				LoggerMessageAddInt32(encoder, height, PART_KEY_IMAGE_HEIGHT);
+			}
+			if (filename != NULL)
+				LoggerMessageAddCString(encoder, filename, PART_KEY_FILENAME);
+			if (lineNumber)
+				LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
+			if (functionName != NULL)
+				LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
+			LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
 
-		LoggerPushMessageToQueue(logger, encoder);
-		CFRelease(encoder);
-	}
-	else
-	{
-		LOGGERDBG2(CFSTR("-> failed creating encoder"));
+			LoggerPushMessageToQueue(logger, encoder);
+			CFRelease(encoder);
+		}
+		else
+		{
+			LOGGERDBG2(CFSTR("-> failed creating encoder"));
+		}
 	}
 }
 
@@ -2197,13 +2188,8 @@ static void LogDataTo_internal(Logger *logger,
 							   NSString *domain,
 							   int level, NSData *data)
 {
-	if (logger == NULL)
-	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
-
-    if (logger)
+	logger = LoggerStart(logger);		// start if needed
+    if (logger != NULL)
     {
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogData"), seq);
@@ -2234,20 +2220,11 @@ static void LogDataTo_internal(Logger *logger,
             LOGGERDBG2(CFSTR("-> failed creating encoder"));
         }
     }
-    else
-    {
-        LOGGERDBG2(CFSTR("-> failed creating logger"));
-    }
 }
 
 static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list args)
 {
-	if (logger == NULL)
-	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
-	
+	logger = LoggerStart(logger);		// start if needed
 	if (logger)
 	{
 		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
@@ -2273,10 +2250,6 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 			LoggerPushMessageToQueue(logger, encoder);
 			CFRelease(encoder);
 		}
-	}
-	else
-	{
-		LOGGERDBG2(CFSTR("-> failed creating logger"));
 	}
 }
 
@@ -2402,12 +2375,7 @@ void LogStartBlockTo(Logger *logger, NSString *format, ...)
 
 void LogEndBlockTo(Logger *logger)
 {
-	if (logger == NULL)
-	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
-
+	logger = LoggerStart(logger);
     if (logger)
     {
         if (logger->options & kLoggerOption_LogToConsole)
@@ -2430,10 +2398,6 @@ void LogEndBlockTo(Logger *logger)
             LOGGERDBG2(CFSTR("-> failed creating encoder"));
         }
     }
-    else
-    {
-        LOGGERDBG2(CFSTR("-> failed creating logger"));
-    }
 }
 
 void LogEndBlock(void)
@@ -2443,39 +2407,37 @@ void LogEndBlock(void)
 
 void LogMarkerTo(Logger *logger, NSString *text)
 {
-	if (logger == NULL)
+	logger = LoggerStart(logger);		// start if needed
+	if (logger != NULL)
 	{
-		logger = LoggerGetDefaultLogger();
-		LoggerStart(logger);
-	}
-	
-	int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
-	LOGGERDBG2(CFSTR("%ld LogMarker"), seq);
-	
-	CFMutableDataRef encoder = LoggerMessageCreate();
-	if (encoder != NULL)
-	{
-		LoggerMessageAddTimestampAndThreadID(encoder);
-		LoggerMessageAddInt32(encoder, LOGMSG_TYPE_MARK, PART_KEY_MESSAGE_TYPE);
-		if (text == nil)
+		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+		LOGGERDBG2(CFSTR("%ld LogMarker"), seq);
+
+		CFMutableDataRef encoder = LoggerMessageCreate();
+		if (encoder != NULL)
 		{
-			CFDateFormatterRef df = CFDateFormatterCreate(NULL, NULL, kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
-			CFStringRef str = CFDateFormatterCreateStringWithAbsoluteTime(NULL, df, CFAbsoluteTimeGetCurrent());
-			CFRelease(df);
-			LoggerMessageAddString(encoder, str, PART_KEY_MESSAGE);
-			CFRelease(str);
+			LoggerMessageAddTimestampAndThreadID(encoder);
+			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_MARK, PART_KEY_MESSAGE_TYPE);
+			if (text == nil)
+			{
+				CFDateFormatterRef df = CFDateFormatterCreate(NULL, NULL, kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
+				CFStringRef str = CFDateFormatterCreateStringWithAbsoluteTime(NULL, df, CFAbsoluteTimeGetCurrent());
+				CFRelease(df);
+				LoggerMessageAddString(encoder, str, PART_KEY_MESSAGE);
+				CFRelease(str);
+			}
+			else
+			{
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)text, PART_KEY_MESSAGE);
+			}
+			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+			LoggerPushMessageToQueue(logger, encoder);
+			CFRelease(encoder);
 		}
 		else
 		{
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)text, PART_KEY_MESSAGE);
+			LOGGERDBG2(CFSTR("-> failed creating encoder"));
 		}
-		LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
-		LoggerPushMessageToQueue(logger, encoder);
-		CFRelease(encoder);
-	}
-	else
-	{
-		LOGGERDBG2(CFSTR("-> failed creating encoder"));
 	}
 }
 
