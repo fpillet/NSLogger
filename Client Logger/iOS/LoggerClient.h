@@ -65,13 +65,14 @@ enum {
 	kLoggerOption_BrowseBonjour						= 0x04,
 	kLoggerOption_BrowseOnlyLocalDomain				= 0x08,
 	kLoggerOption_UseSSL							= 0x10,
-	kLoggerOption_ConsoleLog						= 0x20
+	kLoggerOption_CaptureSystemConsole				= 0x20
 };
 
 #define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
 								 kLoggerOption_BrowseBonjour |				\
 								 kLoggerOption_BrowseOnlyLocalDomain |		\
-								 kLoggerOption_UseSSL)
+								 kLoggerOption_UseSSL |						\
+								 kLoggerOption_CaptureSystemConsole)
 
 /* -----------------------------------------------------------------
  * Structure defining a Logger
@@ -163,8 +164,9 @@ extern void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 por
 //   buffer file WON'T be transferred to the new file in this case.
 extern void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath);
 
-// Activate the logger, try connecting
-extern void LoggerStart(Logger *logger);
+// Activate the logger, try connecting. You can pass NULL to start the default logger,
+// it will return a pointer to it.
+extern Logger* LoggerStart(Logger *logger);
 
 //extern void LoggerConnectToHost(CFDataRef address, int port);
 
