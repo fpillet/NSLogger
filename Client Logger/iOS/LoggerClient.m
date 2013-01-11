@@ -1447,7 +1447,7 @@ static void LoggerStopReachabilityChecking(Logger *logger)
 	{
 		LOGGERDBG(CFSTR("Stopping SCNetworkReachability"));
 		SCNetworkReachabilityUnscheduleFromRunLoop(logger->reachability, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		CFRelease(logger->reachability);
+		CFRelease((CFTypeRef)logger->reachability);
 		logger->reachability = NULL;
 	}
 	if (logger->checkHostTimer != NULL)
@@ -1887,7 +1887,7 @@ static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, i
 	CFIndex bytesLength = stringLength * 4;
 	if (stringLength)
 	{
-		bytes = (uint8_t *)malloc(stringLength * 4 + 4);
+		bytes = (uint8_t *)malloc((size_t)stringLength * 4 + 4);
 		CFStringGetBytes(aString, CFRangeMake(0, stringLength), kCFStringEncodingUTF8, '?', false, bytes, bytesLength, &bytesLength);
 		partSize = htonl(bytesLength);
 	}
