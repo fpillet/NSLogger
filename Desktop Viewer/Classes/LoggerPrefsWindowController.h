@@ -60,7 +60,14 @@
 	NSDictionary *attributes;
 
 	NSMutableDictionary *networkPrefs;
+    NSMutableArray *_advancedColors;
+    NSArrayController *advancedColorsArrayController;
+    NSTableView *advancedColorsTableView;
 }
+
+@property(nonatomic, retain) NSMutableArray *advancedColors;
+@property (assign) IBOutlet NSArrayController *advancedColorsArrayController;
+@property (assign) IBOutlet NSTableView *advancedColorsTableView;
 
 - (IBAction)selectFont:(id)sender;
 - (IBAction)selectColor:(id)sender;
@@ -70,6 +77,9 @@
 
 - (IBAction)applyFontChanges:(id)sender;
 - (IBAction)restoreFontDefaults:(id)sender;
+
+- (IBAction)advancedColorsAdd:(id)sender;
+- (IBAction)advancedColorsDel:(id)sender;
 
 @end
 
