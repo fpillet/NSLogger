@@ -298,12 +298,14 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 - (IBAction)advancedColorsAdd:(id)sender {
     [self.advancedColors addObject:[self _blankAdvancedColor]];
     [self.advancedColorsArrayController rearrangeObjects];
+    [self commitAdvancedColorsChanges];
 }
 
 - (IBAction)advancedColorsDel:(id)sender {
     NSArray *selection = [self.advancedColorsArrayController selectedObjects];
     [self.advancedColors removeObjectsInArray:selection];
     [self.advancedColorsArrayController rearrangeObjects];
+    [self commitAdvancedColorsChanges];
 }
 
 - (NSFont *)fontForCurrentFontSelection
@@ -448,7 +450,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	[self updateColor:fileFunctionBackgroundColor ofDict:@"fileLineFunction" attribute:NSBackgroundColorAttributeName];
 }
 
-- (void)editingDidEnd:(NSNotification *)notification
+- (void)commitAdvancedColorsChanges
 {
     if ([self.advancedColorsArrayController commitEditing]) {
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
@@ -456,6 +458,11 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
         [ud synchronize];
         [[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
     }
+}
+
+- (void)editingDidEnd:(NSNotification *)notification
+{
+    [self commitAdvancedColorsChanges];
 }
 
 @end
