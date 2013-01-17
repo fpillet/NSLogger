@@ -33,6 +33,7 @@
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerWindowController.h"
+#import "NSColor+NSLogger.h"
 
 #define MAX_DATA_LINES				16				// max number of data lines to show
 
@@ -284,6 +285,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
     NSError *error = nil;
     NSRegularExpression *regexp;
     NSColor *color;
+    BOOL isBold;
     for(NSDictionary *colorSpec in advancedColorsPrefs) {
         regexp = [[NSRegularExpression alloc] initWithPattern:[colorSpec objectForKey:@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
         if (! regexp) {
@@ -291,6 +293,11 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             continue;
         }
         NSString *colorName = [[colorSpec objectForKey:@"colors"] lowercaseString];
+        isBold = NO;
+        if ([colorName hasPrefix:@"bold"]) {
+            colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
+            isBold = YES;
+        }
         if ([colorName hasPrefix:@"#"]) {
             color = [self colorFromHexRGB:colorName];
         } else if ([colorName hasPrefix:@"blue"]) {
@@ -311,6 +318,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             NSLog(@"** Warning: unexpected color spec '%@'", colorName);
             continue;
         }
+        color.bold = isBold;
         [advancedColors setObject:color forKey:regexp];
     }
 }
@@ -765,6 +773,11 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             if (color) {
                 attrs = [[attrs mutableCopy] autorelease];
                 [attrs setObject:color forKey:NSForegroundColorAttributeName];
+                if (color.isBold) {
+                    NSFont *font = [attrs objectForKey:NSFontAttributeName];
+                    font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSFontBoldTrait];
+                    [attrs setObject:font forKey:NSFontAttributeName];
+                }
             }
         }
 		
