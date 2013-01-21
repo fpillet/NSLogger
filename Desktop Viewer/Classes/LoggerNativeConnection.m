@@ -39,7 +39,7 @@
 {
 	if ((self = [super initWithAddress:anAddress]) != nil)
 	{
-		readStream = [anInputStream retain];
+		readStream = anInputStream;
 
 		tmpBufSize = TMP_BUF_SIZE;
 		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
@@ -54,10 +54,8 @@
 - (void)dealloc
 {
 	assert(readStream == nil);
-	[buffer release];
 	if (tmpBuf != NULL)
 		free(tmpBuf);
-	[super dealloc];
 }
 
 - (void)shutdown
@@ -67,7 +65,6 @@
 		[readStream close];
 		[readStream setDelegate:nil];
 		[readStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-		[readStream release];
 		readStream = nil;
 	}
 	[buffer setLength:0];

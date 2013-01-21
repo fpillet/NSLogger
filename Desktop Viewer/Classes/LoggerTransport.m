@@ -47,12 +47,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[failureReason release];
-	[connections release];
-	[super dealloc];
-}
 
 - (void)addConnection:(LoggerConnection *)aConnection
 {

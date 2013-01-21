@@ -56,15 +56,12 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	static NSDictionary *sDefaultPrefs = nil;
 	if (sDefaultPrefs == nil)
 	{
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		sDefaultPrefs = [[NSDictionary alloc] initWithObjectsAndKeys:
-						 //						 [NSNumber numberWithBool:NO], k
-						 [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
-						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
-						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
-						 @"", kPrefBonjourServiceName,
-						 nil];
-		[pool release];
+		@autoreleasepool {
+			sDefaultPrefs = @{kPrefPublishesBonjourService: @YES,
+							 kPrefHasDirectTCPIPResponder: @NO,
+							 kPrefDirectTCPIPResponderPort: @50000,
+							 kPrefBonjourServiceName: @""};
+		}
 	}
 	return sDefaultPrefs;
 }
@@ -83,8 +80,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 		// default filter ordering. The first sort descriptor ensures that the object with
 		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
 		// items are ordered by title.
-		self.filtersSortDescriptors = [NSArray arrayWithObjects:
-									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES
+		self.filtersSortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES
 																	comparator:
 										^(id uid1, id uid2)
 		{
@@ -94,18 +90,16 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				return (NSComparisonResult)NSOrderedDescending;
 			return (NSComparisonResult)NSOrderedSame;
 		}],
-									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
-									   nil];
+									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES]];
 		
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSData *filterSetsData = [defaults objectForKey:@"filterSets"];
 		if (filterSetsData != nil)
 		{
-			filterSets = [[NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData] retain];
+			filterSets = [NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData];
 			if (![filterSets isKindOfClass:[NSMutableArray class]])
 			{
-				[filterSets release];
 				filterSets = nil;
 			}
 		}
@@ -130,24 +124,22 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			}
 			NSMutableDictionary *defaultSet = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
 											   NSLocalizedString(@"Default Set", @""), @"title",
-											   [NSNumber numberWithInteger:1], @"uid",
+											   @1, @"uid",
 											   filters, @"filters",
 											   nil];
 			[filterSets addObject:defaultSet];
-			[defaultSet release];
 		}
 		
 		// fix for issue found by Stefan Neumärker: default filters in versions 1.0b7 were immutable,
 		// leading to a crash if the user tried to edit them
 		for (NSDictionary *dict in filterSets)
 		{
-			NSMutableArray *filters = [dict objectForKey:@"filters"];
+			NSMutableArray *filters = dict[@"filters"];
 			for (NSUInteger i = 0; i < [filters count]; i++)
 			{
-				if (![[filters objectAtIndex:i] isMemberOfClass:[NSMutableDictionary class]])
+				if (![filters[i] isMemberOfClass:[NSMutableDictionary class]])
 				{
-					[filters replaceObjectAtIndex:i
-									   withObject:[[[filters objectAtIndex:i] mutableCopy] autorelease]];
+					filters[i] = [filters[i] mutableCopy];
 				}
 			}
 		}
@@ -159,8 +151,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 {
 	if (serverCerts != NULL)
 		CFRelease(serverCerts);
-	[transports release];
-	[super dealloc];
 }
 
 - (void)saveFiltersDefinition
@@ -237,21 +227,18 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	t.publishBonjourService = YES;
 	t.secure = NO;
 	[transports addObject:t];
-	[t release];
 
 	// SSL Bonjour service
 	t = [[LoggerNativeTransport alloc] init];
 	t.publishBonjourService = YES;
 	t.secure = YES;
 	[transports addObject:t];
-	[t release];
 
 	// Direct TCP/IP service (SSL mandatory)
 	t = [[LoggerNativeTransport alloc] init];
 	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
 	t.secure = YES;
 	[transports addObject:t];
-	[t release];
 
 	// start transports
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
@@ -301,31 +288,28 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	[docController addDocument:doc];
 	[doc makeWindowControllers];
 	[doc showWindows];
-	[doc release];
 }
 
 - (NSMutableArray *)defaultFilters
 {
 	NSMutableArray *filters = [NSMutableArray arrayWithCapacity:4];
-	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						[NSNumber numberWithInteger:1], @"uid",
-						NSLocalizedString(@"All logs", @""), @"title",
-						[NSPredicate predicateWithValue:YES], @"predicate",
-						nil]];
+	[filters addObject:@{@"uid": @1,
+						@"title": NSLocalizedString(@"All logs", @""),
+						@"predicate": [NSPredicate predicateWithValue:YES]}];
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
-						[NSNumber numberWithInteger:2], @"uid",
+						@2, @"uid",
 						NSLocalizedString(@"Text messages", @""), @"title",
-						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
+						[NSCompoundPredicate andPredicateWithSubpredicates:@[[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
 						nil]];
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
-						[NSNumber numberWithInteger:3], @"uid",
+						@3, @"uid",
 						NSLocalizedString(@"Images", @""), @"title",
-						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
+						[NSCompoundPredicate andPredicateWithSubpredicates:@[[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
 						nil]];
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
-						[NSNumber numberWithInteger:4], @"uid",
+						@4, @"uid",
 						NSLocalizedString(@"Data blocks", @""), @"title",
-						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
+						[NSCompoundPredicate andPredicateWithSubpredicates:@[[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
 						nil]];
 	return filters;
 }
@@ -335,7 +319,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	// since we're using basic NSDictionary to store filters, we add a filter
 	// identifier number so that no two filters are strictly identical -- makes
 	// things much easier wih NSArrayController
-	return [NSNumber numberWithInteger:[[filters valueForKeyPath:@"@max.uid"] integerValue] + 1];
+	return @([[filters valueForKeyPath:@"@max.uid"] integerValue] + 1);
 }
 
 - (IBAction)showPreferences:(id)sender
@@ -350,10 +334,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	NSString *appToRelaunch = [[NSBundle mainBundle] bundlePath];
 	NSString *relaunchToolPath = [[[NSBundle mainBundle] sharedSupportPath] stringByAppendingPathComponent:@"relaunch"];
 	[NSTask launchedTaskWithLaunchPath:relaunchToolPath
-							 arguments:[NSArray arrayWithObjects:
-										appToRelaunch,
-										[NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]],
-										nil]];
+							 arguments:@[appToRelaunch,
+										[NSString stringWithFormat:@"%d", [[NSProcessInfo processInfo] processIdentifier]]]];
 	exit(0);	
 }
 
@@ -435,8 +417,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 			[fm removeItemAtPath:pemFilePath error:nil];
 			
 			// Generate a private certificate
-			NSArray *args = [NSArray arrayWithObjects:
-							 @"req",
+			NSArray *args = @[@"req",
 							 @"-x509",
 							 @"-nodes",
 							 @"-days", @"3650",
@@ -444,10 +425,9 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 							 @"-newkey", @"rsa:1024",
 							 @"-keyout", pemFileName,
 							 @"-out", pemFileName,
-							 @"-batch",
-							 nil];
+							 @"-batch"];
 			
-			NSTask *certTask = [[[NSTask alloc] init] autorelease];
+			NSTask *certTask = [[NSTask alloc] init];
 			[certTask setLaunchPath:@"/usr/bin/openssl"];
 			[certTask setCurrentDirectoryPath:tempDir];
 			[certTask setArguments:args];
@@ -474,8 +454,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				SecExternalFormat inputFormat = kSecFormatPEMSequence;
 				SecExternalItemType itemType = kSecItemTypeAggregate;
 				failurePoint = NSLocalizedString(@"Failed importing self-signed certificate", @"");
-				status = SecKeychainItemImport((CFDataRef)certData,
-											   (CFStringRef)pemFileName,
+				status = SecKeychainItemImport((__bridge CFDataRef)certData,
+											   (__bridge CFStringRef)pemFileName,
 											   &inputFormat,
 											   &itemType,
 											   0,				// flags are unused
@@ -499,11 +479,9 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 		
 		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain
 										code:status
-									userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											  NSLocalizedString(@"NSLogger won't be able to accept SSL connections", @""), NSLocalizedDescriptionKey,
-											  errMsg, NSLocalizedFailureReasonErrorKey,
-											  NSLocalizedString(@"Please contact the application developers", @""), NSLocalizedRecoverySuggestionErrorKey,
-											  nil]];
+									userInfo:@{NSLocalizedDescriptionKey: NSLocalizedString(@"NSLogger won't be able to accept SSL connections", @""),
+											  NSLocalizedFailureReasonErrorKey: errMsg,
+											  NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Please contact the application developers", @"")}];
 	}
 
 	return (serverCerts != NULL);

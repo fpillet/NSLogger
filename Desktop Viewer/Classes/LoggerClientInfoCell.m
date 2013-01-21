@@ -36,13 +36,12 @@
 
 + (NSDictionary *)clientInfoAttributes:(BOOL)highlighted
 {
-	NSMutableDictionary *attrs = [[[[self defaultAttributes] objectForKey:@"text"] mutableCopy] autorelease];
-	NSMutableParagraphStyle *style = [[attrs objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	NSMutableDictionary *attrs = [[self defaultAttributes][@"text"] mutableCopy];
+	NSMutableParagraphStyle *style = [attrs[NSParagraphStyleAttributeName] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
-	[attrs setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
+	attrs[NSParagraphStyleAttributeName] = style;
 	if (highlighted)
-		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+		attrs[NSForegroundColorAttributeName] = [NSColor whiteColor];
 	return attrs;
 }
 

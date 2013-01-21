@@ -101,7 +101,6 @@
 		3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = NSLoggerCertReq.conf; path = Resources/NSLoggerCertReq.conf; sourceTree = "<group>"; };
 		3D18EF9F0F553B3800EC6DCC /* LoggerUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerUtils.h; path = Classes/LoggerUtils.h; sourceTree = "<group>"; };
 		3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerUtils.m; path = Classes/LoggerUtils.m; sourceTree = "<group>"; };
-		3D24C36912560C1700435837 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/iOS/LoggerCommon.h"; sourceTree = SOURCE_ROOT; };
 		3D369CB61290009800462E79 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		3D4EA0560F3768EA00DF81E6 /* LoggerMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMessage.h; path = Classes/LoggerMessage.h; sourceTree = "<group>"; };
 		3D4EA0570F3768EA00DF81E6 /* LoggerMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMessage.m; path = Classes/LoggerMessage.m; sourceTree = "<group>"; };
@@ -156,6 +155,7 @@
 		3DE8CE7312AE49E7005C83D0 /* relaunch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = relaunch.m; path = Classes/relaunch.m; sourceTree = "<group>"; };
 		3DE8CE7812AE4A17005C83D0 /* relaunch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = relaunch; sourceTree = BUILT_PRODUCTS_DIR; };
 		439F14BB1531A185006A5CE3 /* xedReplacement.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = xedReplacement.sh; sourceTree = "<group>"; };
+		4824008B16ADCCFD00C4A5F8 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerCommon.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD5E59D21691BFE600CE49AA /* ToolbarItemFonts.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = ToolbarItemFonts.tiff; path = Resources/ToolbarItemFonts.tiff; sourceTree = "<group>"; };
@@ -315,7 +315,7 @@
 		3D65635C13EDA78600004DB6 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				3D24C36912560C1700435837 /* LoggerCommon.h */,
+				4824008B16ADCCFD00C4A5F8 /* LoggerCommon.h */,
 			);
 			name = Shared;
 			sourceTree = "<group>";
@@ -563,6 +563,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
@@ -575,6 +576,7 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 				PRODUCT_NAME = NSLogger;
 				PROVISIONING_PROFILE = "";
 			};
@@ -584,6 +586,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -594,6 +597,7 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.6.8;
 				PRODUCT_NAME = NSLogger;
 				PROVISIONING_PROFILE = "";
 			};

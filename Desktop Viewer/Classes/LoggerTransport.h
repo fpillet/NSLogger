@@ -47,7 +47,7 @@
 @property (nonatomic, readonly) BOOL failed;
 @property (nonatomic, readonly) BOOL ready;
 @property (nonatomic, readonly) NSMutableArray *connections;
-@property (nonatomic, retain) NSString *failureReason;
+@property (nonatomic, strong) NSString *failureReason;
 
 - (void)startup;
 - (void)shutdown;

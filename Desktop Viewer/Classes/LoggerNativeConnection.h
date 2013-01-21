@@ -39,7 +39,7 @@
 	NSUInteger tmpBufSize;
 }
 
-@property (nonatomic, retain) NSInputStream *readStream;
+@property (nonatomic, strong) NSInputStream *readStream;
 @property (nonatomic, readonly) NSMutableData *buffer;
 @property (nonatomic, readonly) uint8_t *tmpBuf;
 @property (nonatomic, readonly) NSUInteger tmpBufSize;

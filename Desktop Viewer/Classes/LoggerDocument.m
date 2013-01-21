@@ -80,7 +80,7 @@
 		return;
 	if (runIndex < 0 || runIndex >= [attachedLogs count])
 		runIndex = [attachedLogs count] - 1;
-	currentConnection = [attachedLogs objectAtIndex:runIndex];
+	currentConnection = attachedLogs[runIndex];
 }
 
 - (NSArray *)attachedLogsPopupNames
@@ -116,7 +116,7 @@
 		currentConnection = newConnection;
 
 		// switch the document's associated main window to show this new connection
-		self.indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[attachedLogs indexOfObjectIdenticalTo:newConnection]];
+		self.indexOfCurrentVisibleLog = @([attachedLogs indexOfObjectIdenticalTo:newConnection]);
 	});
 }
 
@@ -150,7 +150,7 @@
 	assert(idx != NSNotFound || currentConnection == nil);
 	if (idx == NSNotFound)
 		idx = [attachedLogs count] - 1;
-	return [NSNumber numberWithInteger:idx];
+	return @(idx);
 }
 
 - (void)setIndexOfCurrentVisibleLog:(NSNumber *)anIndex
@@ -188,8 +188,6 @@
 		for (LoggerTransport *t in ((LoggerAppDelegate *)[NSApp	delegate]).transports)
 			[t removeConnection:connection];
 	}
-	[attachedLogs release];
-	[super dealloc];
 }
 
 - (BOOL)writeToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
@@ -207,7 +205,7 @@
 		// changing while we're processing it
 		NSInteger connectionIndex = [[self indexOfCurrentVisibleLog] integerValue];
 		assert(connectionIndex != NSNotFound);
-		LoggerConnection *connection = [attachedLogs objectAtIndex:connectionIndex];
+		LoggerConnection *connection = attachedLogs[connectionIndex];
 		__block NSArray *allMessages = nil;
 		dispatch_sync(connection.messageProcessingQueue , ^{
 			allMessages = [[NSArray alloc] initWithArray:connection.messages];
@@ -235,30 +233,25 @@
 			NSMutableData *data = [[NSMutableData alloc] initWithCapacity:bufferCapacity];
 			uint8_t bom[3] = {0xEF, 0xBB, 0xBF};
 			[data appendBytes:bom length:3];
-			NSAutoreleasePool *pool = nil;
-			result = YES;
-			[stream open];
-			for (LoggerMessage *message in allMessages)
-			{
-				[data appendData:[[message textRepresentation] dataUsingEncoding:NSUTF8StringEncoding]];
-				if ([data length] >= bufferCapacity)
+			@autoreleasepool {
+				result = YES;
+				[stream open];
+				for (LoggerMessage *message in allMessages)
 				{
-					// periodic flush to reduce memory use while exporting
-					result = flushData(stream, data);
-					[pool release];
-					pool = [[NSAutoreleasePool alloc] init];
-					if (!result)
-						break;
+					[data appendData:[[message textRepresentation] dataUsingEncoding:NSUTF8StringEncoding]];
+					if ([data length] >= bufferCapacity)
+					{
+						// periodic flush to reduce memory use while exporting
+						result = flushData(stream, data);
+						if (!result)
+							break;
+					}
 				}
+				if (result)
+					result = flushData(stream, data);
+				[stream close];
 			}
-			if (result)
-				result = flushData(stream, data);
-			[stream close];
-			[pool release];
-			[data release];
-			[stream release];
 		}
-		[allMessages release];
 		return result;
 	}
 	return NO;
@@ -279,7 +272,7 @@
 	}
 	else if ([typeName isEqualToString:@"NSLogger Raw Data"])
 	{
-		LoggerConnection *connection = [[[LoggerConnection alloc] init] autorelease];
+		LoggerConnection *connection = [[LoggerConnection alloc] init];
 		[attachedLogs addObject:connection];
 
 		NSMutableArray *msgs = [[NSMutableArray alloc] init];
@@ -301,12 +294,11 @@
 														   kCFAllocatorNull);
 			if (subset != NULL)
 			{
-				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *)subset connection:connection];
+				LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(__bridge NSData *)subset connection:connection];
 				if (message.type == LOGMSG_TYPE_CLIENTINFO)
 					[connection clientInfoReceived:message];
 				else
 					[msgs addObject:message];
-				[message release];
 				CFRelease(subset);
 			}
 			dataLength -= length + 4;
@@ -314,7 +306,6 @@
 		}
 		if ([msgs count])
 			[connection messagesReceived:msgs];
-		[msgs release];
 	}
 	currentConnection = [attachedLogs lastObject];
 	return ([attachedLogs count] != previousLogs);
@@ -324,10 +315,9 @@
 {
 	LoggerWindowController *controller = [[LoggerWindowController alloc] initWithWindowNibName:@"LoggerWindow"];
 	[self addWindowController:controller];
-	[controller release];
 
 	// force assignment of the current connection to the main window
-	self.indexOfCurrentVisibleLog = [NSNumber numberWithInteger:[attachedLogs indexOfObjectIdenticalTo:currentConnection]];
+	self.indexOfCurrentVisibleLog = @([attachedLogs indexOfObjectIdenticalTo:currentConnection]);
 }
 
 - (BOOL)prepareSavePanel:(NSSavePanel *)sp

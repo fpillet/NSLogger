@@ -47,7 +47,7 @@
 @property (nonatomic, readonly) BOOL serverCertsLoadAttempted;
 @property (nonatomic, readonly) NSMutableArray *transports;
 @property (nonatomic, readonly) NSMutableArray *filterSets;
-@property (nonatomic, retain) NSArray *filtersSortDescriptors;
+@property (nonatomic, strong) NSArray *filtersSortDescriptors;
 @property (nonatomic, readonly) LoggerStatusWindowController *statusController;
 
 + (NSDictionary *)defaultPreferences;
