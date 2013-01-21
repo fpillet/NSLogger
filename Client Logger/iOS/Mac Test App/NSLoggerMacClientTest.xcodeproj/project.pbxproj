@@ -27,7 +27,6 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		3D8B619C126AFE0D00659751 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = ../LoggerCommon.h; sourceTree = SOURCE_ROOT; };
 		3D8B619D126AFE0D00659751 /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = ../LoggerClient.h; sourceTree = SOURCE_ROOT; };
 		3D8B619E126AFE0D00659751 /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../LoggerClient.m; sourceTree = SOURCE_ROOT; };
 		3DB964DA1274D4B30054F72D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -128,7 +127,6 @@
 		3D8B619B126AFE0D00659751 /* Logger Client */ = {
 			isa = PBXGroup;
 			children = (
-				3D8B619C126AFE0D00659751 /* LoggerCommon.h */,
 				3D8B619D126AFE0D00659751 /* LoggerClient.h */,
 				3D8B619E126AFE0D00659751 /* LoggerClient.m */,
 			);
