@@ -44,7 +44,7 @@
 	[self performSelector:@selector(sendTableRetileNotification)
 			   withObject:nil
 			   afterDelay:0
-				  inModes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
+				  inModes:@[NSDefaultRunLoopMode]];
 	[super mouseDown:theEvent];
 }
 

@@ -111,7 +111,7 @@
 					else if (partType == PART_TYPE_INT64)
 						threadID = [[NSString alloc] initWithFormat:@"Thread 0x%qx", value64];
 					else if (partType == PART_TYPE_STRING)
-						threadID = [part retain];
+						threadID = part;
 					else
 						threadID = @"";
 					break;
@@ -160,18 +160,16 @@
 					// all other keys are automatically added to the parts dictionary
 					if (parts == nil)
 						parts = [[NSMutableDictionary alloc] init];
-					NSNumber *partKeyNumber = [[NSNumber alloc] initWithUnsignedInteger:partKey];
+					NSNumber *partKeyNumber = @(partKey);
 					if (partType == PART_TYPE_INT32)
-						part = [[NSNumber alloc] initWithInteger:value32];
+						part = @(value32);
 					else if (partType == PART_TYPE_INT64)
-						part = [[NSNumber alloc] initWithUnsignedLongLong:value64];
+						part = @(value64);
 					if (part != nil)
-						[parts setObject:part forKey:partKeyNumber];
-					[partKeyNumber release];
+						parts[partKeyNumber] = part;
 					break;
 				}
 			}
-			[part release];
 		}
 	}
 #if 0
