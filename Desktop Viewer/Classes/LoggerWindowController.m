@@ -157,7 +157,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	[filterSetsListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
-	buttonBar.splitViewDelegate = self;
+//	buttonBar.splitViewDelegate = self;
 
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate];

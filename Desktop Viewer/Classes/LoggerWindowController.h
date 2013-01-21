@@ -29,20 +29,18 @@
  * 
  */
 #import "LoggerConnection.h"
-#import "BWToolkitFramework.h"
 
 @class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView, LoggerSplitView;
 @class LoggerDetailsWindowController;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
-{
+@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate> {
 	IBOutlet LoggerTableView *logTable;
 	IBOutlet NSTableView *filterSetsTable;
 	IBOutlet NSTableView *filterTable;
 	IBOutlet NSPopUpButton *quickFilter;
 	IBOutlet NSButton *showFunctionNamesButton;
 	IBOutlet NSSearchField *quickFilterTextField;
-	IBOutlet BWAnchoredButtonBar *buttonBar;
+	IBOutlet NSView *buttonBar;
 
 	IBOutlet NSArrayController *filterSetsListController;
 	IBOutlet NSArrayController *filterListController;
