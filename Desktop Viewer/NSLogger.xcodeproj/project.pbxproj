@@ -55,6 +55,7 @@
 		439F14BD1531A492006A5CE3 /* xedReplacement.sh in Resources */ = {isa = PBXBuildFile; fileRef = 439F14BB1531A185006A5CE3 /* xedReplacement.sh */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		B9C3CDBB16A86473005484D4 /* NSColor+NSLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -183,6 +184,8 @@
 		439F14BB1531A185006A5CE3 /* xedReplacement.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = xedReplacement.sh; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor+NSLogger.h"; sourceTree = "<group>"; };
+		B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor+NSLogger.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +230,8 @@
 				3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */,
 				3DADCB9E125FC3B200807A7D /* ValueTransformers.h */,
 				3DADCB9F125FC3B200807A7D /* ValueTransformers.m */,
+				B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */,
+				B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */,
 				3D0D601B0F4068A100EDB93B /* Views & Cells */,
 				3DDAE1570F405CD4001B1408 /* Model */,
 				3DE8CE6E12AE49C7005C83D0 /* Relaunch */,
@@ -577,6 +582,7 @@
 				3DAC10E313ED5A7E00D5E6BA /* SSSelectableToolbar.m in Sources */,
 				3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */,
 				3D65635513ED9C6800004DB6 /* LoggerDocumentController.m in Sources */,
+				B9C3CDBB16A86473005484D4 /* NSColor+NSLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

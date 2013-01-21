@@ -33,6 +33,7 @@
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerWindowController.h"
+#import "NSColor+NSLogger.h"
 
 #define MAX_DATA_LINES				16				// max number of data lines to show
 
@@ -45,6 +46,7 @@ static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
+static NSMutableDictionary *advancedColors = nil;
 
 NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
 NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
@@ -248,10 +250,107 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	return sDefaultTagAndLevelColor;
 }
 
++ (NSColor *)colorFromHexRGB:(NSString *)colorString
+{
+	NSColor *result = nil;
+	unsigned int colorCode = 0;
+	unsigned char redByte, greenByte, blueByte;
+	
+    if ([colorString hasPrefix:@"#"]) {
+        colorString = [colorString substringFromIndex:1];
+    }
+	if (nil != colorString)
+	{
+		NSScanner *scanner = [NSScanner scannerWithString:colorString];
+		(void) [scanner scanHexInt:&colorCode];	// ignore error
+	}
+	redByte		= (unsigned char) (colorCode >> 16);
+	greenByte	= (unsigned char) (colorCode >> 8);
+	blueByte	= (unsigned char) (colorCode);	// masks off high bits
+	result = [NSColor
+              colorWithCalibratedRed:		(float)redByte	/ 0xff
+              green:	(float)greenByte/ 0xff
+              blue:	(float)blueByte	/ 0xff
+              alpha:1.0];
+	return result;
+}
+
++ (void)loadAdvancedColors
+{
+    NSArray *advancedColorsPrefs = [[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"];
+    if (advancedColors) {
+        [advancedColors release];
+    }
+    advancedColors = [[NSMutableDictionary alloc] initWithCapacity:[advancedColorsPrefs count]];
+    NSError *error = nil;
+    NSRegularExpression *regexp;
+    NSColor *color;
+    BOOL isBold;
+    for(NSDictionary *colorSpec in advancedColorsPrefs) {
+        regexp = [[NSRegularExpression alloc] initWithPattern:[colorSpec objectForKey:@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
+        if (! regexp) {
+            NSLog(@"** Warning: invalid regular expression '%@': %@", [colorSpec objectForKey:@"regexp"], error);
+            continue;
+        }
+        NSString *colorName = [[colorSpec objectForKey:@"colors"] lowercaseString];
+        isBold = NO;
+        if ([colorName hasPrefix:@"bold"]) {
+            colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
+            isBold = YES;
+        }
+        if ([colorName hasPrefix:@"#"]) {
+            color = [self colorFromHexRGB:colorName];
+        } else if ([colorName hasPrefix:@"blue"]) {
+            color = [self colorFromHexRGB:@"#0047AB"];
+        } else if ([colorName hasPrefix:@"red"]) {
+            color = [self colorFromHexRGB:@"#DC143C"];
+            color = [NSColor redColor];
+        } else if ([colorName hasPrefix:@"green"]) {
+            color = [self colorFromHexRGB:@"#008000"];
+        } else {
+            NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
+            SEL colorSelector = NSSelectorFromString(selectorName);
+            if ([NSColor respondsToSelector:colorSelector]) {
+                color = [NSColor performSelector:colorSelector];
+            }
+        }
+        if (! color) {
+            NSLog(@"** Warning: unexpected color spec '%@'", colorName);
+            continue;
+        }
+        color.bold = isBold;
+        [advancedColors setObject:color forKey:regexp];
+    }
+}
+
++ (NSColor *)colorForString:(NSString *)string
+{
+    if (!advancedColors) {
+        [self loadAdvancedColors];
+    }
+    NSRegularExpression *regexp;
+    for(regexp in [advancedColors allKeys]) {
+        NSArray* chunks = [regexp matchesInString:string options:0 range:NSMakeRange(0, [string length])];
+        if ([chunks count] > 0) {
+            return [advancedColors objectForKey:regexp];
+        }
+    }
+    return nil;
+}
+
 + (NSColor *)colorForTag:(NSString *)tag
 {
-	// @@@ TODO: tag color customization mechanism
-	return [self defaultTagAndLevelColor];
+    NSColor *color = [self colorForString:[NSString stringWithFormat:@"tag=%@", tag]];
+    if (! color ){
+        color = [self defaultTagAndLevelColor];
+    }
+    return color;
+}
+
++ (NSColor *)colorForMessage:(LoggerMessage *)message
+{
+    /* `description` is supposed to be used just for debugging...exactly the main purpose of NSLogger */
+    return [self colorForString:[message description]];
 }
 
 #pragma mark -
@@ -649,12 +748,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (message.contentsType == kMessageString)
 	{
 		attrs = [self messageTextAttributes];
-		if (highlightedTextColor != nil)
-		{
-			attrs = [[attrs mutableCopy] autorelease];
-			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-		}
-		
 		// in case the message text is empty, use the function name as message text
 		// this is typically used to record a waypoint in the code flow
 		NSString *s = message.message;
@@ -670,6 +763,23 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			truncated = YES;
 			s = [s substringToIndex:2048];
 		}
+        
+		if (highlightedTextColor != nil)
+		{
+			attrs = [[attrs mutableCopy] autorelease];
+			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+		} else {
+            NSColor *color = [[self class] colorForMessage:self.message];
+            if (color) {
+                attrs = [[attrs mutableCopy] autorelease];
+                [attrs setObject:color forKey:NSForegroundColorAttributeName];
+                if (color.isBold) {
+                    NSFont *font = [attrs objectForKey:NSFontAttributeName];
+                    font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSFontBoldTrait];
+                    [attrs setObject:font forKey:NSFontAttributeName];
+                }
+            }
+        }
 		
 		// compute display string size, limit to cell height
 		NSRect lr = [s boundingRectWithSize:r.size

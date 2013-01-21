@@ -36,6 +36,7 @@
 #import "LoggerDocumentController.h"
 #import "LoggerStatusWindowController.h"
 #import "LoggerPrefsWindowController.h"
+#import "LoggerMessageCell.h"
 
 NSString * const kPrefKeepMultipleRuns = @"keepMultipleRuns";
 
@@ -184,6 +185,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 - (void)prefsChangeNotification:(NSNotification *)note
 {
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
+    [LoggerMessageCell loadAdvancedColors];
 }
 
 - (void)startStopTransports
