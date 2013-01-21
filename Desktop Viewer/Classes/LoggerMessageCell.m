@@ -251,7 +251,12 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (NSColor *)colorForTag:(NSString *)tag
 {
 	// @@@ TODO: tag color customization mechanism
-	return [self defaultTagAndLevelColor];
+  NSUInteger hash = [tag hash];
+  float hue = (float)(hash % 1024)/1024.0;
+  hash = hash/1024;
+  float saturation = 0.4 + 0.6 * (float)(hash / 256)/256.0;
+  float brightness = 0.8;
+  return [NSColor colorWithCalibratedHue:hue saturation:saturation brightness:brightness alpha:1.0];
 }
 
 #pragma mark -
