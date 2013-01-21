@@ -245,26 +245,9 @@
 mach_error_t mach_override_ptr(void *originalFunctionAddress,
 							   const void *overrideFunctionAddress,
 							   void **originalFunctionReentryIsland);
-
-void (*internal_NSLog)(NSString *fmt, ...) = NULL;
-void LogMessageCompat_NSLog(NSString *fmt, ...) {
-#if NSLOG_OVERRIDE_CONSOLE
-	internal_NSLog(fmt);
-#endif
-    LogMessageCompat(fmt);
-}
-
-void (*internal_NSLogv)(NSString *fmt, va_list args) = NULL;
-void LogMessageCompat_NSLogv(NSString *fmt, va_list args) {
-#if NSLOG_OVERRIDE_CONSOLE
-	internal_NSLogv(fmt, args);
-#endif
-    LogMessageCompat_va(fmt, args);
-}
-
 __attribute__((constructor)) static void replace_NSLog() {
-	mach_override_ptr((void *)&NSLog, (void *)&LogMessageCompat_NSLog, (void **)&internal_NSLog);
-	mach_override_ptr((void *)&NSLogv, (void *)&LogMessageCompat_NSLogv, (void **)&internal_NSLogv);
+	mach_override_ptr((void *)&NSLog, (void *)&LogMessageCompat, NULL);
+	mach_override_ptr((void *)&NSLogv, (void *)&LogMessageCompat_va, NULL);
 }
 #endif
 

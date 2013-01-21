@@ -56,11 +56,8 @@
 #define	ALLOW_COCOA_USE			1
 
 // This define allows the use of mach_override to dynamically replace NSLog() with
-// LogMessageCompat() and NSLogv() with LogMessageCompat_va(). Optionally, with the
-// second flag, NSLog() and NSLogv() are reinjected, allowing for NSLogger and console
-// logging to happen at the same time. Warning: NSLogger should not be used in release code.
+// LogMessageCompat() and NSLogv() with LogMessageCompat_va().
 #define NSLOG_OVERRIDE			1
-#define NSLOG_OVERRIDE_CONSOLE	1
 
 /* -----------------------------------------------------------------
  * Logger option flags & default options
