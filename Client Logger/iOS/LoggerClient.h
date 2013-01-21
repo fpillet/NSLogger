@@ -55,6 +55,10 @@
 // use of -[NSString stringWithFormat:arguments:]
 #define	ALLOW_COCOA_USE			1
 
+// This define allows the use of mach_override to dynamically replace NSLog() with
+// LogMessageCompat() and NSLogv() with LogMessageCompat_va().
+#define NSLOG_OVERRIDE			1
+
 /* -----------------------------------------------------------------
  * Logger option flags & default options
  * -----------------------------------------------------------------
@@ -190,8 +194,9 @@ extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
  *
  */
 
-// Log a message, calling format compatible with NSLog
+// Log a message, calling format compatible with NSLog and NSLogv
 extern void LogMessageCompat(NSString *format, ...);
+extern void LogMessageCompat_va(NSString *format, va_list args);
 
 // Log a message. domain can be nil if default domain.
 extern void LogMessage(NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
