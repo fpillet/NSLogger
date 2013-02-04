@@ -58,6 +58,7 @@
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes;
 + (CGFloat)heightForCellWithMessage:(LoggerMessage *)aMessage threadColumnWidth:(CGFloat)threadColumWidth maxSize:(NSSize)sz showFunctionNames:(BOOL)showFunctionNames;
 + (CGFloat)minimumHeightForCell;
++ (void)loadAdvancedColors;
 
 - (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView;
 

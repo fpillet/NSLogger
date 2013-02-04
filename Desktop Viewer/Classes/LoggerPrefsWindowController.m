@@ -55,6 +55,7 @@ enum {
 };
 
 NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
+void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDidChange;
 
 @implementation SampleMessageControl
 - (BOOL)isFlipped
@@ -70,6 +71,10 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 
 @implementation LoggerPrefsWindowController
 
+@synthesize advancedColors = _advancedColors;
+@synthesize advancedColorsArrayController;
+@synthesize advancedColorsTableView;
+
 - (id)initWithWindowNibName:(NSString *)windowNibName
 {
 	if ((self = [super initWithWindowNibName:windowNibName]) != nil)
@@ -81,6 +86,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 		// an archiver
 		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributes]];
 		attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+        _advancedColors = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"]];
 	}
 	return self;
 }
@@ -90,6 +96,7 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[fakeConnection release];
 	[attributes release];
 	[networkPrefs release];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSControlTextDidEndEditingNotification object:nil];
 	[super dealloc];
 }
 
@@ -165,6 +172,8 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[self updateUI];
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(editingDidEnd:) name:NSControlTextDidEndEditingNotification object:nil];
 }
 
 - (BOOL)hasNetworkChanges
@@ -280,6 +289,23 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[sampleMessage setNeedsDisplay];
 	[sampleDataMessage setNeedsDisplay];
 	[self updateUI];
+}
+
+- (NSMutableDictionary *)_blankAdvancedColor {
+    return [[[NSMutableDictionary alloc] initWithObjects:@[@"Any line", @"^.+$", @"black"] forKeys:@[@"comment", @"regexp", @"colors"]] autorelease];
+}
+
+- (IBAction)advancedColorsAdd:(id)sender {
+    [self.advancedColors addObject:[self _blankAdvancedColor]];
+    [self.advancedColorsArrayController rearrangeObjects];
+    [self commitAdvancedColorsChanges];
+}
+
+- (IBAction)advancedColorsDel:(id)sender {
+    NSArray *selection = [self.advancedColorsArrayController selectedObjects];
+    [self.advancedColors removeObjectsInArray:selection];
+    [self.advancedColorsArrayController rearrangeObjects];
+    [self commitAdvancedColorsChanges];
 }
 
 - (NSFont *)fontForCurrentFontSelection
@@ -422,6 +448,21 @@ NSString * const kPrefsChangedNotification = @"PrefsChangedNotification";
 	[self updateColor:dataForegroundColor ofDict:@"data" attribute:NSForegroundColorAttributeName];
 	[self updateColor:fileFunctionForegroundColor ofDict:@"fileLineFunction" attribute:NSForegroundColorAttributeName];
 	[self updateColor:fileFunctionBackgroundColor ofDict:@"fileLineFunction" attribute:NSBackgroundColorAttributeName];
+}
+
+- (void)commitAdvancedColorsChanges
+{
+    if ([self.advancedColorsArrayController commitEditing]) {
+        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+        [ud setObject:self.advancedColors forKey:@"advancedColors"];
+        [ud synchronize];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
+    }
+}
+
+- (void)editingDidEnd:(NSNotification *)notification
+{
+    [self commitAdvancedColorsChanges];
 }
 
 @end
