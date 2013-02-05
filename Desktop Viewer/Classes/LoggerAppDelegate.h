@@ -65,6 +65,7 @@
 @end
 
 extern NSString * const kPrefKeepMultipleRuns;
+extern NSString * const kPrefCloseWithoutSaving;
 
 extern NSString * const kPrefPublishesBonjourService;
 extern NSString * const kPrefHasDirectTCPIPResponder;

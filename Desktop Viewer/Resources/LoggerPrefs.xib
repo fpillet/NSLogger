@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1080</int>
-		<string key="IBDocument.SystemVersion">12C60</string>
+		<string key="IBDocument.SystemVersion">12C2034</string>
 		<string key="IBDocument.InterfaceBuilderVersion">3083</string>
 		<string key="IBDocument.AppKitVersion">1187.34</string>
 		<string key="IBDocument.HIToolboxVersion">625.00</string>
@@ -1385,6 +1385,31 @@
 				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<array class="NSMutableArray" key="NSSubviews">
+					<object class="NSButton" id="405235473">
+						<reference key="NSNextResponder" ref="577394396"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{18, 63}, {451, 49}}</string>
+						<reference key="NSSuperview" ref="577394396"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="139454693">
+							<int key="NSCellFlags">-2080374784</int>
+							<int key="NSCellFlags2">0</int>
+							<string key="NSContents">Close without saving</string>
+							<reference key="NSSupport" ref="817525701"/>
+							<reference key="NSControlView" ref="405235473"/>
+							<int key="NSButtonFlags">1211912448</int>
+							<int key="NSButtonFlags2">2</int>
+							<reference key="NSNormalImage" ref="601664498"/>
+							<reference key="NSAlternateImage" ref="506062008"/>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
 					<object class="NSButton" id="672941453">
 						<reference key="NSNextResponder" ref="577394396"/>
 						<int key="NSvFlags">268</int>
@@ -1413,10 +1438,10 @@
 					<object class="NSTextField" id="879821504">
 						<reference key="NSNextResponder" ref="577394396"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{37, 96}, {438, 56}}</string>
+						<string key="NSFrame">{{37, 118}, {438, 34}}</string>
 						<reference key="NSSuperview" ref="577394396"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
+						<reference key="NSNextKeyView" ref="405235473"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="99014989">
 							<int key="NSCellFlags">67108864</int>
@@ -1996,6 +2021,26 @@
 					</object>
 					<int key="connectionID">505</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: values.closeWithoutSaving</string>
+						<reference key="source" ref="405235473"/>
+						<reference key="destination" ref="344685702"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="405235473"/>
+							<reference key="NSDestination" ref="344685702"/>
+							<string key="NSLabel">value: values.closeWithoutSaving</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">values.closeWithoutSaving</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSValidatesImmediately</string>
+								<boolean value="YES" key="NS.object.0"/>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">522</int>
+				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<array key="orderedObjects">
@@ -2567,6 +2612,7 @@
 						<array class="NSMutableArray" key="children">
 							<reference ref="879821504"/>
 							<reference ref="672941453"/>
+							<reference ref="405235473"/>
 						</array>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">General Prefs Panel</string>
@@ -2719,6 +2765,20 @@
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Advanced Colors Array Controller</string>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">519</int>
+						<reference key="object" ref="405235473"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="139454693"/>
+						</array>
+						<reference key="parent" ref="577394396"/>
+						<string key="objectName">Check Box</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">520</int>
+						<reference key="object" ref="139454693"/>
+						<reference key="parent" ref="405235473"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -2870,12 +2930,14 @@
 				<string key="501.CustomClassName">SSSelectableToolbarItem</string>
 				<string key="501.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="503.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="519.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="520.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">518</int>
+			<int key="maxID">522</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
