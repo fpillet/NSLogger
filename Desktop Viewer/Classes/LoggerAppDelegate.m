@@ -39,6 +39,7 @@
 #import "LoggerMessageCell.h"
 
 NSString * const kPrefKeepMultipleRuns = @"keepMultipleRuns";
+NSString * const kPrefCloseWithoutSaving = @"closeWithoutSaving";
 
 NSString * const kPrefPublishesBonjourService = @"publishesBonjourService";
 NSString * const kPrefHasDirectTCPIPResponder = @"hasDirectTCPIPResponder";
