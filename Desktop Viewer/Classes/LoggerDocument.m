@@ -74,6 +74,14 @@
 	[super close];
 }
 
+- (BOOL)isDocumentEdited {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:kPrefCloseWithoutSaving]) {
+        /* Don't bother asking, I don't want to save the logs 99% of the time. */
+        return NO;
+    }
+    return [super isDocumentEdited];
+}
+
 - (void)selectRun:(NSInteger)runIndex
 {
 	if (![attachedLogs count])
