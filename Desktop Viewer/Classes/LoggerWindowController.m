@@ -338,6 +338,13 @@ static NSArray *sXcodeFileExtensions = nil;
 	[logTable reloadData];
 }
 
+#pragma mark Target Action
+
+- (IBAction)performFindPanelAction:(id)sender {
+    [self.window makeFirstResponder:quickFilterTextField];
+}
+
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Support for multiple runs in same window
