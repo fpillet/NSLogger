@@ -160,6 +160,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
 	buttonBar.splitViewDelegate = self;
+    splitView.delegate = self;
 
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate];
@@ -592,6 +593,25 @@ static NSArray *sXcodeFileExtensions = nil;
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
 //	tableNeedsTiling = YES;
+}
+
+- (void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize {
+    if (sender == splitView) {
+        NSSize newSize = sender.bounds.size;
+        
+        NSView *mainDisplay = [[sender subviews] objectAtIndex:1];
+        NSRect frame = mainDisplay.frame;
+        frame.size.width += newSize.width - oldSize.width;
+        frame.size.height += newSize.height - oldSize.height;
+        [mainDisplay setFrame:frame];
+        
+        NSView *sidebar = [[sender subviews] objectAtIndex:0];
+        NSRect sidebarFrame = sidebar.frame;
+        sidebarFrame.size.height = newSize.height;
+        [sidebar setFrame:sidebarFrame];
+    } else {
+        [sender adjustSubviews];
+    }
 }
 
 // -----------------------------------------------------------------------------
