@@ -804,8 +804,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
 			if (highlightedTextColor == nil)
 				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
-			
-			hint = NSLocalizedString(@"Double-click to see all text...", @"");
+            NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+            [style setAlignment:NSRightTextAlignment];
+            [hintAttrs setObject:style forKey:NSParagraphStyleAttributeName];
+			hint = NSLocalizedString(@"See all...", @"");
 			hintHeight = [hint boundingRectWithSize:r.size
 											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 										 attributes:hintAttrs].size.height;
