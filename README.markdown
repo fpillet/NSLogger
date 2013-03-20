@@ -1,7 +1,7 @@
 # NSLogger #
 ![Icon](https://github.com/fpillet/NSLogger/raw/master/Screenshots/icon_small.png "Icon")
 
-*NSLogger* is a high perfomance logging utility which displays traces emitted by client applications running on **Mac OS X** or **iOS (iPhone OS)**. It replaces your usual *NSLog()*-based traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
+*NSLogger* is a high perfomance logging utility which displays traces emitted by client applications running on **Mac OS X**, **iOS** and **Android**. It replaces traditional console logging (*NSLog()*, Java *Log*) traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
 
 *NSLogger* feature summary:
 
@@ -64,8 +64,8 @@ Apply colors to tags and messages using regular expressions.
 # Work in progress - Current status #
 This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
 
- * Log entry colorization
  * Search and search term highlight in Details window
+ * Rewrite of the details window
  * Support time-based filtering (filter clause based on the time lapse between a previous trace)
  * Pause (buffer logs) and resume sending logs to the logger, in order to eliminate NSLogger's network load from the equation when testing networking code
 
@@ -74,5 +74,5 @@ You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLo
 
 NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
 
-NSLogger is Copyright (c) 2010-2011 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
+NSLogger is Copyright (c) 2010-2013 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
