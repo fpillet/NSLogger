@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.2 10-JAN-2013
+ * version 1.5-beta 27-MAR-2013
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
@@ -95,19 +95,21 @@ typedef struct
 	pthread_t workerThread;							// The worker thread responsible for Bonjour resolution, connection and logs transmission
 	CFRunLoopSourceRef messagePushedSource;			// A message source that fires on the worker thread when messages are available for send
 	CFRunLoopSourceRef bufferFileChangedSource;		// A message source that fires on the worker thread when the buffer file configuration changes
+	CFRunLoopSourceRef remoteOptionsChangedSource;	// A message source that fires when option changes imply a networking strategy change (switch to/from Bonjour, direct host or file streaming)
 
 	CFWriteStreamRef logStream;						// The connected stream we're writing to
 	CFWriteStreamRef bufferWriteStream;				// If bufferFile not NULL and we're not connected, points to a stream for writing log data
 	CFReadStreamRef bufferReadStream;				// If bufferFile not NULL, points to a read stream that will be emptied prior to sending the rest of in-memory messages
 	
 	SCNetworkReachabilityRef reachability;			// The reachability object we use to determine when the target host becomes reachable
-	CFRunLoopTimerRef checkHostTimer;				// A timer to regularly check connection to the defined host, along with reachability for added reliability
+	SCNetworkReachabilityFlags reachabilityFlags;	// Last known reachability flags - we use these to detect network transitions without network loss
+	CFRunLoopTimerRef reconnectTimer;				// A timer to regularly check connection to the defined host, along with reachability for added reliability
 
 	uint8_t *sendBuffer;							// data waiting to be sent
 	NSUInteger sendBufferSize;
 	NSUInteger sendBufferUsed;						// number of bytes of the send buffer currently in use
 	NSUInteger sendBufferOffset;					// offset in sendBuffer to start sending at
-	
+
 	int32_t messageSeq;								// sequential message number (added to each message sent)
 
 	// settings
@@ -116,6 +118,7 @@ typedef struct
 	CFStringRef bonjourServiceName;					// leave NULL to use the first one available
 
 	// internal state
+	BOOL targetReachable;							// Set to YES when the Reachability target (host or internet) is deemed reachable
 	BOOL connected;									// Set to YES once the write stream declares the connection open
 	volatile BOOL quit;								// Set to YES to terminate the logger worker thread's runloop
 	BOOL incompleteSendOfFirstItem;					// set to YES if we are sending the first item in the queue and it's bigger than what the buffer can hold
@@ -192,6 +195,11 @@ extern void LoggerFlush(Logger *logger, BOOL waitForConnection);
 
 // Log a message, calling format compatible with NSLog
 extern void LogMessageCompat(NSString *format, ...);
+
+// Log a message without any formatting (just log the given string)
+extern void LogMessageRaw(NSString *message);
+extern void LogMessageRawF(const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *message);
+extern void LogMessageRawToF(Logger *logger, const char *filename, int lineNumber, const char *functionName, NSString *domain, int level, NSString *message);
 
 // Log a message. domain can be nil if default domain.
 extern void LogMessage(NSString *domain, int level, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
