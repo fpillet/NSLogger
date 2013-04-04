@@ -1003,10 +1003,7 @@ static void LoggerLogFromFile(int fd)
 			{
 				if ( consoleGrabbersList[grabberIndex] != NULL )
 				{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-security"
-					LogMessageTo(consoleGrabbersList[grabberIndex], @"console", 1, (CAST_TO_NSSTRING) messageString );
-#pragma clang diagnostic pop
+					LogMessageTo(consoleGrabbersList[grabberIndex], @"console", 1, @"%@", messageString );
 				}
 			}
 			pthread_mutex_unlock( &consoleGrabbersMutex );
@@ -1713,10 +1710,8 @@ static void LoggerTryConnect(Logger *logger)
 	}
 
 	// If there are discovered Bonjour services, try them now
-	BOOL hadFoundBonjourServices = NO;
 	while (CFArrayGetCount(logger->bonjourServices))
 	{
-		hadFoundBonjourServices = YES;
 		CFNetServiceRef service = (CFNetServiceRef)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
 		LOGGERDBG(CFSTR("-> Trying to open write stream to service %@"), service);
 		CFStreamCreatePairWithSocketToNetService(NULL, service, NULL, &logger->logStream);
