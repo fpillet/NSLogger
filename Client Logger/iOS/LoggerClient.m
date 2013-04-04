@@ -2295,7 +2295,13 @@ static void LogMessageTo_internal(Logger *logger,
 
 #if ALLOW_COCOA_USE
             // Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
-            NSString *msgString = [[NSString alloc] initWithFormat:format arguments:args];
+            NSString *msgString = nil;
+            if (*args == '\0')
+            {
+                msgString = format;
+            } else {
+                msgString = [[NSString alloc] initWithFormat:format arguments:args];
+            }
             if (msgString != nil)
             {
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)msgString, PART_KEY_MESSAGE);
