@@ -1699,10 +1699,8 @@ static void LoggerTryConnect(Logger *logger)
 	}
 
 	// If there are discovered Bonjour services, try them now
-	BOOL hadFoundBonjourServices = NO;
 	while (CFArrayGetCount(logger->bonjourServices))
 	{
-		hadFoundBonjourServices = YES;
 		CFNetServiceRef service = (CFNetServiceRef)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
 		LOGGERDBG(CFSTR("-> Trying to open write stream to service %@"), service);
 		CFStreamCreatePairWithSocketToNetService(NULL, service, NULL, &logger->logStream);
