@@ -997,10 +997,7 @@ static void LoggerLogFromFile(int fd)
 			{
 				if ( consoleGrabbersList[grabberIndex] != NULL )
 				{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-security"
-					LogMessageTo(consoleGrabbersList[grabberIndex], @"console", 1, (CAST_TO_NSSTRING) messageString );
-#pragma clang dianostic pop
+					LogMessageTo(consoleGrabbersList[grabberIndex], @"console", 1, @"%@", messageString);
 				}
 			}
 			pthread_mutex_unlock( &consoleGrabbersMutex );
