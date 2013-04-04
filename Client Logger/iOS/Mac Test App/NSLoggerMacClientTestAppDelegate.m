@@ -49,6 +49,7 @@
 #if TEST_CONSOLE_LOGGING
 	LoggerSetOptions(NULL, kLoggerOption_LogToConsole);
 #else
+	LoggerSetOptions(NULL, kLoggerOption_BrowseBonjour | kLoggerOption_CaptureSystemConsole | kLoggerOption_BufferLogsUntilConnection);
  #if TEST_FILE_BUFFERING
 	LoggerSetBufferFile(NULL, CFSTR("/tmp/NSLoggerTempData_MacOSX.rawnsloggerdata"));
  #endif
