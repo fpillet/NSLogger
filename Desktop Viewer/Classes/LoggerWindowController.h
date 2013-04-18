@@ -34,7 +34,7 @@
 @class LoggerMessageCell, LoggerClientInfoCell, LoggerMarkerCell, LoggerTableView, LoggerSplitView;
 @class LoggerDetailsWindowController;
 
-@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate>
+@interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate, NSSplitViewDelegate>
 {
 	IBOutlet LoggerTableView *logTable;
 	IBOutlet NSTableView *filterSetsTable;

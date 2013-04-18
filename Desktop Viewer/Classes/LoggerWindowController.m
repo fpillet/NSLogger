@@ -40,6 +40,8 @@
 #import "LoggerDocument.h"
 #import "LoggerSplitView.h"
 
+#define kMaxTableRowHeight @"maxTableRowHeight"
+
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
 @property (nonatomic, retain) NSString *filterString;
@@ -158,6 +160,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	[filterListController addObserver:self forKeyPath:@"selectedObjects" options:0 context:NULL];
 
 	buttonBar.splitViewDelegate = self;
+    splitView.delegate = self;
 
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate];
@@ -171,6 +174,8 @@ static NSArray *sXcodeFileExtensions = nil;
 											 selector:@selector(tileLogTableNotification:)
 												 name:@"TileLogTableNotification"
 											   object:nil];
+    
+    [[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:kMaxTableRowHeight options:0 context:NULL];
 }
 
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
@@ -210,6 +215,11 @@ static NSArray *sXcodeFileExtensions = nil;
 					   group:(dispatch_group_t)group
 {
 	NSMutableArray *updatedMessages = [[NSMutableArray alloc] initWithCapacity:[messages count]];
+    NSSize maxCellSize = tableSize;
+    NSInteger maxRowHeight = [[NSUserDefaults standardUserDefaults] integerForKey:kMaxTableRowHeight];
+    if (maxRowHeight >= 30 && maxCellSize.height > maxRowHeight)
+        maxCellSize.height = maxRowHeight;
+    
 	for (LoggerMessage *msg in messages)
 	{
 		// detect cancellation
@@ -229,14 +239,14 @@ static NSArray *sXcodeFileExtensions = nil;
 				case LOGMSG_TYPE_LOG:
 				case LOGMSG_TYPE_BLOCKSTART:
 				case LOGMSG_TYPE_BLOCKEND:
-					newHeight = [LoggerMessageCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerMessageCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:maxCellSize showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_CLIENTINFO:
 				case LOGMSG_TYPE_DISCONNECT:
-					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerClientInfoCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:maxCellSize showFunctionNames:showFunctionNames];
 					break;
 				case LOGMSG_TYPE_MARK:
-					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:tableSize showFunctionNames:showFunctionNames];
+					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg threadColumnWidth:threadColumnWidth maxSize:maxCellSize showFunctionNames:showFunctionNames];
 					break;
 			}
 			if (newHeight != cachedHeight)
@@ -327,6 +337,13 @@ static NSArray *sXcodeFileExtensions = nil;
 	[self tileLogTable:YES];
 	[logTable reloadData];
 }
+
+#pragma mark Target Action
+
+- (IBAction)performFindPanelAction:(id)sender {
+    [self.window makeFirstResponder:quickFilterTextField];
+}
+
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -583,6 +600,25 @@ static NSArray *sXcodeFileExtensions = nil;
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
 //	tableNeedsTiling = YES;
+}
+
+- (void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize {
+    if (sender == splitView) {
+        NSSize newSize = sender.bounds.size;
+        
+        NSView *mainDisplay = [[sender subviews] objectAtIndex:1];
+        NSRect frame = mainDisplay.frame;
+        frame.size.width += newSize.width - oldSize.width;
+        frame.size.height += newSize.height - oldSize.height;
+        [mainDisplay setFrame:frame];
+        
+        NSView *sidebar = [[sender subviews] objectAtIndex:0];
+        NSRect sidebarFrame = sidebar.frame;
+        sidebarFrame.size.height = newSize.height;
+        [sidebar setFrame:sidebarFrame];
+    } else {
+        [sender adjustSubviews];
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -1160,7 +1196,13 @@ didReceiveMessages:(NSArray *)theMessages
 		{
 			[self rememberFiltersSelection];
 		}
-	}
+	} else if (object == [NSUserDefaults standardUserDefaults])
+    {
+        if ([keyPath isEqualToString:kMaxTableRowHeight])
+        {
+            [self tileLogTable:YES];
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
