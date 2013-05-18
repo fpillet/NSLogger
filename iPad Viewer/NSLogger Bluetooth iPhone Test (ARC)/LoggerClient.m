@@ -39,6 +39,7 @@
 #if !TARGET_OS_IPHONE
 	#import <sys/types.h>
 	#import <sys/sysctl.h>
+	#import <sys/utsname.h>
 	#import <dlfcn.h>
 #elif ALLOW_COCOA_USE
 	#import <UIKit/UIKit.h>
@@ -2579,15 +2580,44 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			AUTORELEASE_POOL_END
 		}
 #elif TARGET_OS_MAC
-		SInt32 versionMajor, versionMinor, versionFix;
-		Gestalt(gestaltSystemVersionMajor, &versionMajor);
-		Gestalt(gestaltSystemVersionMinor, &versionMinor);
-		Gestalt(gestaltSystemVersionBugFix, &versionFix);
-		CFStringRef osVersion = CFStringCreateWithFormat(NULL, NULL, CFSTR("%d.%d.%d"), versionMajor, versionMinor, versionFix);
+		CFStringRef osName = NULL, osVersion = NULL;
+	#if ALLOW_COCOA_USE
+		// Read the OS version without using deprecated Gestalt calls
+		AUTORELEASE_POOL_BEGIN
+		@try
+		{
+			NSString* versionString = [[NSDictionary dictionaryWithContentsOfFile: @"/System/Library/CoreServices/SystemVersion.plist"] objectForKey: @"ProductVersion"];
+			if ([versionString length])
+			{
+				osName = CFSTR("Mac OS X");
+				osVersion = CFRetain((CFStringRef)versionString);
+			}
+		}
+		@catch (NSException *exc)
+		{
+		}
+		AUTORELEASE_POOL_END
+	#endif
+		if @(osVersion == NULL)
+		{
+			// Not allowed to call into Cocoa ? use the Darwin version string
+			struct utsname u;
+			if (uname(&u) == 0)
+			{
+				osName = CFStringCreateWithCString(NULL, u.sysname, kCFStringEncodingUTF8);
+				osVersion = CFStringCreateWithCString(NULL, u.release, kCFStringEncodingUTF8);
+			}
+			else
+			{
+				osName = CFSTR("Mac OS X");
+				osVersion = CFSTR("");
+			}
+		}
 		LoggerMessageAddString(encoder, osVersion, PART_KEY_OS_VERSION);
+		LoggerMessageAddString(encoder, osName, PART_KEY_OS_NAME);
 		CFRelease(osVersion);
-		LoggerMessageAddString(encoder, CFSTR("Mac OS X"), PART_KEY_OS_NAME);
-
+		CFRelease(osName);
+		
 		char buf[64];
 		size_t len;
 		int ncpu = 0;
