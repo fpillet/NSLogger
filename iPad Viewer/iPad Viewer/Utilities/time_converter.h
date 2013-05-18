@@ -39,23 +39,17 @@
  */
 
 #include <sys/time.h>
+#import <sys/_structs.h>
 
 static inline
 uint64_t timetoint64(struct timeval *tm)
 {
-	uint64_t time = 0;
-	time = tm->tv_sec;
-	time <<= 32;
-	time |= tm->tv_usec;
-	return time;
+	return (((uint64_t)tm->tv_sec) << 32) | tm->tv_usec;
 }
 
 static inline
 struct timeval int64totime(uint64_t tm)
 {
-	uint32_t tv_sec = (uint32_t)(tm >> 32);
-	uint32_t tv_usec = (uint32_t)tm;
-	struct timeval time = {tv_sec,tv_usec};
-
-	return time;
+	struct timeval tv = {(uint32_t)(tm >> 32), (uint32_t)tm};
+	return tv;
 }
