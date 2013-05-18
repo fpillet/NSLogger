@@ -131,13 +131,13 @@
 						contentsType = kMessageImage;
 					break;
 				case PART_KEY_IMAGE_WIDTH:
-					if (partType == PART_TYPE_INT32)
+					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
 						imageSize.width = value32;
 					else if (partType == PART_TYPE_INT64)
 						imageSize.width = value64;
 					break;
 				case PART_KEY_IMAGE_HEIGHT:
-					if (partType == PART_TYPE_INT32)
+					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
 						imageSize.height = value32;
 					else if (partType == PART_TYPE_INT64)
 						imageSize.height = value64;
@@ -151,10 +151,10 @@
 						[self setFunctionName:part];
 					break;
 				case PART_KEY_LINENUMBER:
-					if (partType == PART_TYPE_INT32)
+					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
 						lineNumber = value32;
-					else
-						lineNumber = value64;
+					else if (partType == PART_TYPE_INT64)
+						lineNumber = (int)value64;
 					break;
 				default: {
 					// all other keys are automatically added to the parts dictionary
