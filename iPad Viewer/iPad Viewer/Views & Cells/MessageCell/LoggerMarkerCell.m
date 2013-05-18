@@ -110,8 +110,6 @@ extern UIFont *displayMonospacedFont;
 	 withFont:displayMonospacedFont
 	 lineBreakMode:NSLineBreakByWordWrapping
 	 alignment:NSTextAlignmentCenter];
-	
-	CGContextRestoreGState(context);
 }
 
 @end
