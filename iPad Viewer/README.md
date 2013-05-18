@@ -21,11 +21,11 @@ UI : Preference/Multi-Window/Search
 
 ##Screen Shots 
 ### iPhone Client (13/04/27)
-<img width="320" src="https://raw.github.com/fpillet/NSLogger/tree/master/Screenshots/iphone_bluetooth_13_04_27.png" />
+<img width="320" src="https://raw.github.com/fpillet/NSLogger/master/Screenshots/iphone_bluetooth_13_04_27.png" />
 
 ###iPad Viwer (13/05/11)
-<img width="576" src="https://raw.github.com/fpillet/NSLogger/tree/master/ScreenShots/ipad_viewer_13_05_11.png" />
+<img width="576" src="https://raw.github.com/fpillet/NSLogger/master/Screenshots/ipad_viewer_13_05_11.png" />
 
 ##License
-[Modified BSD license](https://github.com/fpillet/NSLogger/master/iPad Viewer/iPad Viewer/LICENSE)   
+[Modified BSD license](https://github.com/fpillet/NSLogger/blob/master/iPad%20Viewer/iPad%20Viewer/LICENSE)   
 _Updated : May 18, 2013_
