@@ -472,8 +472,6 @@ UIColor *defaultTagAndLevelColor = nil;
 			if (isTruncated)
 			{
 				// draw text frame
-				textDrawRect = (CGRect){aDrawRect.origin,textDrawSize};
-				
 				NSString *hint = NSLocalizedString(kBottomHintText, nil);
 				CGSize hintDrawSize = CGSizeFromString([self.messageData portraitHintSize]);
 				CGRect hintDrawRect = \

@@ -226,9 +226,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerDataManager,sharedDataManager
 
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator
 {
-	NSPersistentStore *store __attribute__((unused)) = nil;
-	//#pragma unused(store)
-
 	if (_persistentStoreCoordinator != nil)
 	{
 		return _persistentStoreCoordinator;
@@ -248,15 +245,14 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerDataManager,sharedDataManager
 		,NSReadOnlyPersistentStoreOption:[NSNumber numberWithBool:NO]};
 	
 	NSError *error;
-	
-	store = \
-		[_persistentStoreCoordinator
-		 addPersistentStoreWithType:NSSQLiteStoreType
-		 configuration:nil
-		 URL:[NSURL fileURLWithPath:storePath]
-		 options:options
-		 error:&error];
-	
+
+	[_persistentStoreCoordinator
+		addPersistentStoreWithType:NSSQLiteStoreType
+					 configuration:nil
+							   URL:[NSURL fileURLWithPath:storePath]
+						   options:options
+							 error:&error];
+
 	return _persistentStoreCoordinator;
 }
 

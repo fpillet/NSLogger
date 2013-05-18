@@ -136,8 +136,9 @@
 			threadID = nil;
 			_truncated = NO;
 
-			CGSize size __attribute__((unused)) = [self portraitMessageSize];
-			size = [self landscapeMessageSize];
+			// initially compute sizes before storage in CoreData
+			[self portraitMessageSize];
+			[self landscapeMessageSize];
 			break;
 		}
 
@@ -155,8 +156,9 @@
 			threadID = nil;
 			_truncated = NO;
 			
-			CGSize size __attribute__((unused)) = [self portraitMessageSize];
-			size = [self landscapeMessageSize];
+			// initially compute sizes before storage in CoreData
+			[self portraitMessageSize];
+			[self landscapeMessageSize];
 			break;
 		}
 			
@@ -174,16 +176,17 @@
 			
 			// in case image message, preload image
 			if(contentsType == kMessageImage){
-				UIImage *formattedImage __attribute__((unused)) = [self image];
+				[self image];
 			}
 
-			CGSize size __attribute__((unused)) = [self portraitMessageSize];
-			size = [self landscapeMessageSize];
+			// initially compute sizes before storage in CoreData
+			[self portraitMessageSize];
+			[self landscapeMessageSize];
 
 			if(_truncated)
 			{
-				size = [self portraitHintSize];
-				size = [self landscapeHintSize];
+				[self portraitHintSize];
+				[self landscapeHintSize];
 			}
 			
 			break;
@@ -253,28 +256,31 @@
 		{
 			case LOGMSG_TYPE_LOG:
 			case LOGMSG_TYPE_BLOCKSTART:
-			case LOGMSG_TYPE_BLOCKEND:{
+			case LOGMSG_TYPE_BLOCKEND:
 				size = [LoggerMessageSize
 						sizeOfMessage:self
 						maxWidth:maxWidth
 						maxHeight:maxHeight];
 				break;
-			}
+
 			case LOGMSG_TYPE_CLIENTINFO:
-			case LOGMSG_TYPE_DISCONNECT:{
+			case LOGMSG_TYPE_DISCONNECT:
 				size = [LoggerClientSize
 						sizeOfMessage:self
 						maxWidth:maxWidth
 						maxHeight:maxHeight];
 				break;
-			}
-			case LOGMSG_TYPE_MARK:{
+
+			case LOGMSG_TYPE_MARK:
 				size = [LoggerMarkerSize
 						sizeOfMessage:self
 						maxWidth:maxWidth
 						maxHeight:maxHeight];
 				break;
-			}
+
+			default:
+				size = CGSizeZero;
+				break;
 		}
 
 		_portraitMessageSize = size;
@@ -305,6 +311,7 @@
 				break;
 			}
 			default:
+				size = CGSizeZero;
 				break;
 		}
 		
@@ -373,6 +380,10 @@
 						maxHeight:maxHeight];
 				break;
 			}
+
+			default:
+				size = CGSizeZero;
+				break;
 		}
 
 		_landscapeMessageSize = size;
