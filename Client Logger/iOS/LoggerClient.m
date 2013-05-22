@@ -2161,7 +2161,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		}
 		AUTORELEASE_POOL_END
 	#endif
-		if @(osVersion == NULL)
+		if (osVersion == NULL)
 		{
 			// Not allowed to call into Cocoa ? use the Darwin version string
 			struct utsname u;
