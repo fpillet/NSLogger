@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-beta 27-MAR-2013
+ * version 1.5-beta 22-MAY-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -192,14 +192,16 @@ static Logger* volatile sDefaultLogger = NULL;
 static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Console logging
-static void LoggerStartGrabbingConsoleTo(Logger *logger);
-static void LoggerStopGrabbingConsoleTo(Logger *logger);
+static void LoggerStartGrabbingConsole(Logger *logger);
+static void LoggerStopGrabbingConsole(Logger *logger);
 static Logger ** consoleGrabbersList = NULL;
 static unsigned consoleGrabbersListLength;
 static unsigned numActiveConsoleGrabbers = 0;
 static pthread_mutex_t consoleGrabbersMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t consoleGrabThread;
 static int sConsolePipes[4] = { -1, -1, -1, -1 };
+static int sSTDOUT = -1, sSTDERR = -1;
+static int sSTDOUThadSIGPIPE, sSTDERRhadSIGPIPE;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -383,7 +385,7 @@ Logger *LoggerStart(Logger *logger)
 
 	    	// Grab console output if required
         	if (logger->options & kLoggerOption_CaptureSystemConsole)
-            	LoggerStartGrabbingConsoleTo(logger);
+            	LoggerStartGrabbingConsole(logger);
         }
     }
     else
@@ -409,7 +411,7 @@ void LoggerStop(Logger *logger)
 	{
 		if (logger->workerThread != NULL)
 		{
-            LoggerStopGrabbingConsoleTo(logger);
+            LoggerStopGrabbingConsole(logger);
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
 		}
@@ -986,45 +988,59 @@ static void LoggerWriteMoreData(Logger *logger)
 #pragma mark -
 #pragma mark Console logs redirection support
 // -----------------------------------------------------------------------------
-static void LoggerLogFromFile(int fd)
+static void LoggerLogFromConsole(NSString *tag, int fd, int outfd)
 {
-#define BUFSIZE 1000
-	UInt8 buf[ BUFSIZE ];
+	const int BUFSIZE = 1000;
+	UInt8 buf[BUFSIZE];
 	ssize_t bytes_read = 0;
-	while ( (bytes_read = read(fd, buf, BUFSIZE)) > 0 )
+	while ((bytes_read = read(fd, buf, BUFSIZE-1)) > 0)
 	{
+		// output received data to the original fd
+		if (outfd != -1)
+			write(outfd, buf, bytes_read);
+
 		if (buf[bytes_read-1] == '\n')
 			--bytes_read;
 
-		CFStringRef messageString = CFStringCreateWithBytes( NULL, buf, bytes_read, kCFStringEncodingASCII, false );
+		CFStringRef messageString = CFStringCreateWithBytes(NULL, buf, bytes_read, kCFStringEncodingUTF8, false);
 		if (messageString != NULL)
 		{
-			pthread_mutex_lock( &consoleGrabbersMutex );
-			for ( unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++ )
+			CFArrayRef array = CFStringCreateArrayBySeparatingStrings(NULL, messageString, CFSTR("\n"));
+			if (array != NULL)
 			{
-				if ( consoleGrabbersList[grabberIndex] != NULL )
+				pthread_mutex_lock(&consoleGrabbersMutex);
+
+				CFIndex n = CFArrayGetCount(array);
+				for (CFIndex m = 0; m < n; m++)
 				{
-					LogMessageTo(consoleGrabbersList[grabberIndex], @"console", 1, @"%@", messageString );
+					CFStringRef msg = (CFStringRef)CFArrayGetValueAtIndex(array, m);
+					for (int i = 0; i < consoleGrabbersListLength; i++)
+					{
+						if (consoleGrabbersList[i] != NULL)
+							LogMessageTo(consoleGrabbersList[i], tag, 0, @"%@", msg);
+					}
 				}
+				
+				pthread_mutex_unlock(&consoleGrabbersMutex);
+				
+				CFRelease(array);
 			}
-			pthread_mutex_unlock( &consoleGrabbersMutex );
 			CFRelease(messageString);
 		}
 	}
 }
 
-static void * LoggerConsoleGrabThread(void *context)
+static void *LoggerConsoleGrabThread(void *context)
 {
 #pragma unused (context)
-	int fdout = sConsolePipes[ 0 ];
-	int flags = fcntl(fdout, F_GETFL, 0);
-	fcntl(fdout, F_SETFL, flags | O_NONBLOCK);
 
-	int fderr = sConsolePipes[ 2 ];
-	flags = fcntl(fderr, F_GETFL, 0);
-	fcntl(fderr, F_SETFL, flags | O_NONBLOCK);
+	int fdout = sConsolePipes[0];
+	fcntl(fdout, F_SETFL, fcntl(fdout, F_GETFL, 0) | O_NONBLOCK);
 
-	while ( 1 )
+	int fderr = sConsolePipes[2];
+	fcntl(fderr, F_SETFL, fcntl(fderr, F_GETFL, 0) | O_NONBLOCK);
+
+	while (numActiveConsoleGrabbers != 0)
 	{
 		fd_set set;
 		FD_ZERO(&set);
@@ -1040,14 +1056,10 @@ static void * LoggerConsoleGrabThread(void *context)
 			break;
 		}
 
-		/* Drop the message if there are no listeners. I don't know how to cancel the redirection. */
-		if (numActiveConsoleGrabbers == 0)
-			continue;
-
 		if (FD_ISSET(fdout, &set))
-			LoggerLogFromFile(fdout);
+			LoggerLogFromConsole(@"stdout", fdout, sSTDOUT);
 		if (FD_ISSET(fderr, &set ))
-			LoggerLogFromFile(fderr);
+			LoggerLogFromConsole(@"stderr", fderr, sSTDERR);
 	}
 
 	return NULL;
@@ -1055,61 +1067,122 @@ static void * LoggerConsoleGrabThread(void *context)
 
 static void LoggerStartConsoleRedirection()
 {
+	// keep the original pipes so we can still forward everything
+	// (i.e. to the running IDE that needs to display or interpret console messages)
+	// and remember the SIGPIPE settings, as we are going to clear them to prevent
+	// the app from exiting when we close the pipes
+	if (sSTDOUT == -1)
+	{
+		sSTDOUThadSIGPIPE = fcntl(STDOUT_FILENO, F_GETNOSIGPIPE);
+		sSTDOUT = dup(STDOUT_FILENO);
+		sSTDERRhadSIGPIPE = fcntl(STDERR_FILENO, F_GETNOSIGPIPE);
+		sSTDERR = dup(STDERR_FILENO);
+	}
+
+	// create the pipes
 	if (sConsolePipes[0] == -1)
 	{
-		if (-1 != pipe(sConsolePipes))
-			dup2(sConsolePipes[1], 1 /*stdout*/);
+		if (pipe(sConsolePipes) != -1)
+		{
+			fcntl(sConsolePipes[0], F_SETNOSIGPIPE, 1);
+			fcntl(sConsolePipes[1], F_SETNOSIGPIPE, 1);
+			dup2(sConsolePipes[1], STDOUT_FILENO);
+		}
 	}
 
 	if (sConsolePipes[2] == -1)
 	{
-		if (-1 != pipe(&sConsolePipes[2]))
-			dup2(sConsolePipes[3], 2 /*stderr*/);
+		if (pipe(&sConsolePipes[2]) != -1)
+		{
+			fcntl(sConsolePipes[0], F_SETNOSIGPIPE, 1);
+			fcntl(sConsolePipes[1], F_SETNOSIGPIPE, 1);
+			dup2(sConsolePipes[3], STDERR_FILENO);
+		}
 	}
 
 	pthread_create(&consoleGrabThread, NULL, &LoggerConsoleGrabThread, NULL);
 }
 
-static void LoggerStartGrabbingConsoleTo(Logger *logger)
+static void LoggerStopConsoleRedirection()
 {
-	if (!(logger->options & kLoggerOption_CaptureSystemConsole))
-		return;
+	// close the pipes - will force exiting the console logger thread
+	// assume the console grabber mutex has been acquired
+	dup2(sSTDOUT, STDOUT_FILENO);
+	dup2(sSTDERR, STDERR_FILENO);
 
-	pthread_mutex_lock( &consoleGrabbersMutex );
+	close(sSTDOUT);
+	close(sSTDERR);
 
-	consoleGrabbersList = realloc( consoleGrabbersList, ++consoleGrabbersListLength * sizeof(Logger *) );
-	consoleGrabbersList[numActiveConsoleGrabbers++] = logger;
+	// restore sigpipe flag on standard streams
+	fcntl(STDOUT_FILENO, F_SETNOSIGPIPE, &sSTDOUThadSIGPIPE);
+	fcntl(STDERR_FILENO, F_SETNOSIGPIPE, &sSTDERRhadSIGPIPE);
 
-	pthread_mutex_unlock( &consoleGrabbersMutex );
+	// close pipes, this will trigger an error in select() and a console grab thread exit
+	if (sConsolePipes[0] != -1)
+	{
+		close(sConsolePipes[0]);
+		close(sConsolePipes[1]);
+		sConsolePipes[0] = -1;
+	}
+	if (sConsolePipes[2] != -1)
+	{
+		close(sConsolePipes[2]);
+		close(sConsolePipes[1]);
+	}
+	sConsolePipes[0] = sConsolePipes[1] = sConsolePipes[2] = sConsolePipes[3] = -1;
 
-	/* Start redirection if necessary */
-	LoggerStartConsoleRedirection();
+	pthread_join(consoleGrabThread, NULL);
 }
 
-static void LoggerStopGrabbingConsoleTo(Logger *logger)
+static void LoggerStartGrabbingConsole(Logger *logger)
 {
-	if (numActiveConsoleGrabbers == 0)
-		return;
 	if (!(logger->options & kLoggerOption_CaptureSystemConsole))
 		return;
 
 	pthread_mutex_lock(&consoleGrabbersMutex);
 
-	if (--numActiveConsoleGrabbers == 0)
+	Boolean added = FALSE;
+	for (int i = 0; i < numActiveConsoleGrabbers; i++)
 	{
-		consoleGrabbersListLength = 0;
-		free(consoleGrabbersList);
-		consoleGrabbersList = NULL;
-	}
-	else
-	{
-		for (unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++)
+		if (consoleGrabbersList[i] == NULL)
 		{
-			if (consoleGrabbersList[grabberIndex] == logger)
+			consoleGrabbersList[i] = logger;
+			numActiveConsoleGrabbers++;
+			added = TRUE;
+			break;
+		}
+	}
+	if (!added)
+	{
+		consoleGrabbersList = realloc(consoleGrabbersList, ++consoleGrabbersListLength * sizeof(Logger *));
+		consoleGrabbersList[numActiveConsoleGrabbers++] = logger;
+	}
+
+	LoggerStartConsoleRedirection(); // Start redirection if necessary
+
+	pthread_mutex_unlock( &consoleGrabbersMutex );
+}
+
+static void LoggerStopGrabbingConsole(Logger *logger)
+{
+	if (numActiveConsoleGrabbers == 0)
+		return;
+
+	pthread_mutex_lock(&consoleGrabbersMutex);
+
+	for (unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++)
+	{
+		if (consoleGrabbersList[grabberIndex] == logger)
+		{
+			consoleGrabbersList[grabberIndex] = NULL;
+			if (--numActiveConsoleGrabbers == 0)
 			{
-				consoleGrabbersList[grabberIndex] = NULL;
-				break;
+				consoleGrabbersListLength = 0;
+				free(consoleGrabbersList);
+				consoleGrabbersList = NULL;
+				LoggerStopConsoleRedirection();
 			}
+			break;
 		}
 	}
 
