@@ -46,8 +46,10 @@
 	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 	viewerHostField.text = [ud stringForKey:@"host"];
 	viewerPortField.text = [ud stringForKey:@"port"];
+	intervalField.text = [ud stringForKey:@"interval"];
 	browseBonjour.on = [ud boolForKey:@"browseBonjour"];
 	browseLocalDomainOnly.on = [ud boolForKey:@"localDomain"];
+	sendImages.on = [ud boolForKey:@"sendImages"];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(textFieldDidChange:)
@@ -73,6 +75,12 @@
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+- (IBAction)sendImagesSettingChanged
+{
+	[[NSUserDefaults standardUserDefaults] setBool:sendImages.on forKey:@"sendImages"];
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 - (IBAction)startStopSendingMessages
 {
 	if (sendTimer == nil)
@@ -88,16 +96,20 @@
 		else
 			LoggerSetViewerHost(NULL, NULL, 0);
 
+		BOOL useBonjour = browseBonjour.on;
+		BOOL onlyLocalDomain = browseLocalDomainOnly.on;
+
 		LoggerSetOptions(NULL,						// configure the default logger
 						 kLoggerOption_BufferLogsUntilConnection |
 						 kLoggerOption_UseSSL |
-						 (browseBonjour.on ? kLoggerOption_BrowseBonjour : 0) |
-						 (browseLocalDomainOnly.on ? kLoggerOption_BrowseOnlyLocalDomain : 0));
+						 kLoggerOption_CaptureSystemConsole	|
+						 (useBonjour ? kLoggerOption_BrowseBonjour : 0) |
+						 (onlyLocalDomain ? kLoggerOption_BrowseOnlyLocalDomain : 0));
 
 		// Start logging random messages
 		counter = 0;
 		imagesCounter = 0;
-		sendTimer = [NSTimer scheduledTimerWithTimeInterval:0.20f
+		sendTimer = [NSTimer scheduledTimerWithTimeInterval:0.001f * [intervalField.text integerValue]
 													  target:self
 													selector:@selector(sendTimerFired:)
 													userInfo:nil
@@ -125,7 +137,7 @@
 {
 	// we use the numbers & punct keyboard to get the Done key,
 	// in exchange we need to validate input to exclude non-number chars
-	if (textField != viewerPortField)
+	if (textField != viewerPortField && textField != intervalField)
 		return YES;
 	NSMutableString *s = [string mutableCopy];
 	NSUInteger length = [string length];
@@ -149,6 +161,7 @@
 	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 	[ud setObject:viewerHostField.text forKey:@"host"];
 	[ud setObject:viewerPortField.text forKey:@"port"];
+	[ud setObject:intervalField.text forKey:@"interval"];
 	[ud synchronize];
 }
 
@@ -162,13 +175,17 @@
 {
 	static int image = 1;
 	int phase = arc4random() % 10;
-	if (phase != 1 && phase != 5)
+	if (phase == 6)
+	{
+		printf("Some message %d to stdout\n", counter++);
+	}
+	else if (phase != 1 && phase != 5)
 	{
 		NSMutableString *s = [NSMutableString stringWithFormat:@"test log message %d - Random characters follow: ", counter++];
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, @"%@", s);
 	}
 	else if (phase == 1)
 	{
