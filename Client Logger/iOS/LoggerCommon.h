@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.5-beta 22-MAY-2013
+ * version 1.5-beta 23-MAY-2013
  *
  * Definitions common to NSLogger Viewer and NSLoggerClient
  * for the binary messages format

@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-beta 22-MAY-2013
+ * version 1.5-beta 23-MAY-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -36,6 +36,7 @@
  */
 #import <sys/time.h>
 #import <arpa/inet.h>
+#import <stdlib.h>
 #if !TARGET_OS_IPHONE
 	#import <sys/types.h>
 	#import <sys/sysctl.h>
@@ -141,6 +142,7 @@
 #undef LOGGER_ARC_MACROS_DEFINED
 
 /* Local prototypes */
+static void LoggerFlushAllOnExit(void);
 static void* LoggerWorkerThread(Logger *logger);
 static void LoggerWriteMoreData(Logger *logger);
 static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message);
@@ -188,8 +190,10 @@ static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int k
 static uint32_t LoggerMessageGetSeq(CFDataRef message);
 
 /* Static objects */
+static CFMutableArrayRef sLoggersList;
 static Logger* volatile sDefaultLogger = NULL;
-static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
+static Boolean sAtexitFunctionSet = FALSE;
+static pthread_mutex_t sLoggersListMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Console logging
 static void LoggerStartGrabbingConsole(Logger *logger);
@@ -209,27 +213,30 @@ static int sSTDOUThadSIGPIPE, sSTDERRhadSIGPIPE;
 // -----------------------------------------------------------------------------
 void LoggerSetDefaultLogger(Logger *defaultLogger)
 {
-	pthread_mutex_lock(&sDefaultLoggerMutex);
+	pthread_mutex_lock(&sLoggersListMutex);
 	sDefaultLogger = defaultLogger;
-	pthread_mutex_unlock(&sDefaultLoggerMutex);
+	pthread_mutex_unlock(&sLoggersListMutex);
 }
 
 Logger *LoggerGetDefaultLogger(void)
 {
-	if (sDefaultLogger == NULL)
+	// a tricky mechanism designed to avoid double-lock attempts
+	Logger *l = sDefaultLogger;
+	if (l == NULL)
 	{
-		pthread_mutex_lock(&sDefaultLoggerMutex);
-		Logger *logger = LoggerInit();
-		if (sDefaultLogger == NULL)
+		Logger *clear = NULL;
+		l = LoggerInit();
+		pthread_mutex_lock(&sLoggersListMutex);
+		if (l != sDefaultLogger)
 		{
-			sDefaultLogger = logger;
-			logger = NULL;
+			clear = l;
+			l = sDefaultLogger;
 		}
-		pthread_mutex_unlock(&sDefaultLoggerMutex);
-		if (logger != NULL)
-			LoggerStop(logger);
+		pthread_mutex_unlock(&sLoggersListMutex);
+		if (clear != NULL)
+			LoggerStop(clear);
 	}
-	return sDefaultLogger;
+	return l;
 }
 
 // -----------------------------------------------------------------------------
@@ -263,15 +270,28 @@ Logger *LoggerInit(void)
 #endif
 
 	logger->quit = NO;
-	
+
+	// Add logger to the list of existing loggers
 	// Set this logger as the default logger is none exist already
-	if (!pthread_mutex_trylock(&sDefaultLoggerMutex))
+	pthread_mutex_lock(&sLoggersListMutex);
+	if (sLoggersList == NULL)
 	{
-		if (sDefaultLogger == NULL)
-			sDefaultLogger = logger;
-		pthread_mutex_unlock(&sDefaultLoggerMutex);
+		CFArrayCallBacks callbacks;
+		bzero(&callbacks, sizeof(callbacks));
+		sLoggersList = CFArrayCreateMutable(NULL, 0, &callbacks);
 	}
-	
+	CFArrayAppendValue(sLoggersList, (const void *)logger);
+	if (sDefaultLogger == NULL)
+		sDefaultLogger = logger;
+
+	// Configure a low level exit() callback that will flush all connected loggers
+	if (!sAtexitFunctionSet)
+	{
+		atexit(&LoggerFlushAllOnExit);
+		sAtexitFunctionSet = TRUE;
+	}
+	pthread_mutex_unlock(&sLoggersListMutex);
+
 	return logger;
 }
 
@@ -399,13 +419,16 @@ void LoggerStop(Logger *logger)
 {
 	LOGGERDBG(CFSTR("LoggerStop"));
 
-	pthread_mutex_lock(&sDefaultLoggerMutex);
+	pthread_mutex_lock(&sLoggersListMutex);
 	if (logger == NULL || logger == sDefaultLogger)
 	{
 		logger = sDefaultLogger;
 		sDefaultLogger = NULL;
 	}
-	pthread_mutex_unlock(&sDefaultLoggerMutex);
+	CFIndex where = CFArrayGetFirstIndexOfValue(sLoggersList, CFRangeMake(0, CFArrayGetCount(sLoggersList)), (void const *)logger);
+	if (where != -1)
+		CFArrayRemoveValueAtIndex(sLoggersList, where);
+	pthread_mutex_unlock(&sLoggersListMutex);
 
 	if (logger != NULL)
 	{
@@ -428,12 +451,25 @@ void LoggerStop(Logger *logger)
 		if (logger->bonjourServiceName != NULL)
 			CFRelease(logger->bonjourServiceName);
 
-		// to make sure potential errors are catched, set the whole structure
+		// to make sure potential errors are caught, set the whole structure
 		// to a value that will make code crash if it tries using pointers to it.
 		memset(logger, 0x55, sizeof(Logger));
 
 		free(logger);
 	}
+}
+
+static void LoggerFlushAllOnExit()
+{
+	// this function is automatically configured by NSLogger to flush all connected loggers
+	// on exit. this guarantees that the developer sees the last messages issued by the application.
+	// it is configured the first time a logger is initialized, so at the time we're being called
+	// the loggers list is never NULL
+	pthread_mutex_lock(&sLoggersListMutex);
+	CFIndex numLoggers = CFArrayGetCount(sLoggersList);
+	for (CFIndex i=0; i < numLoggers; i++)
+		LoggerFlush((Logger *) CFArrayGetValueAtIndex(sLoggersList, i), NO);
+	pthread_mutex_unlock(&sLoggersListMutex);
 }
 
 void LoggerFlush(Logger *logger, BOOL waitForConnection)
@@ -445,7 +481,7 @@ void LoggerFlush(Logger *logger, BOOL waitForConnection)
 		logger = LoggerGetDefaultLogger();
 	if (logger != NULL &&
 		pthread_self() != logger->workerThread &&
-		(logger->connected || logger->bufferFile != NULL || waitForConnection))		// @@@ TODO: change this test
+		(logger->connected || logger->bufferFile != NULL || waitForConnection))		// TODO: change this test
 	{
 		pthread_mutex_lock(&logger->logQueueMutex);
 		if (CFArrayGetCount(logger->logQueue) > 0)
