@@ -15,4 +15,6 @@ Pod::Spec.new do |s|
   s.source_files = 'Client Logger/iOS/*.{h,m}'
   s.ios.frameworks   = 'CFNetwork', 'SystemConfiguration'
   s.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
+
+  s.xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => '$(inherited) NSLOGGER_WAS_HERE=1' }
 end
