@@ -1,7 +1,7 @@
 /*
  * LoggerCommon.h
  *
- * version 1.5-beta 23-MAY-2013
+ * version 1.5-beta 01-JUN-2013
  *
  * Definitions common to NSLogger Viewer and NSLoggerClient
  * for the binary messages format
@@ -41,7 +41,7 @@
  * typed chunks of data, each with a specific purpose (partKey), data type (partType)
  * and data size (partSize).
  *
- *	uint32_t	totalSize		(total size for the whole message)
+ *	uint32_t	totalSize		(total size for the whole message excluding this 4-byte count)
  *	uint16_t	partCount		(number of parts below)
  *  [repeat partCount times]:
  *		uint8_t		partKey		the part key
