@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-beta 23-MAY-2013
+ * version 1.5-beta 01-JUN-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -178,15 +178,13 @@ static void LoggerFlushQueueToBufferStream(Logger *logger, BOOL firstEntryIsClie
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger);
 static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder);
 
-static CFMutableDataRef LoggerMessageCreate();
-static void LoggerMessageUpdateDataHeader(CFMutableDataRef data);
-
-static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key);
+static CFMutableDataRef LoggerMessageCreate(int32_t seq);
+static void LoggerMessageAddInt32(CFMutableDataRef encoder, int32_t anInt, int key);
 #if __LP64__
 static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key);
 #endif
-static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, int key);
-static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType);
+static void LoggerMessageAddString(CFMutableDataRef encoder, CFStringRef aString, int key);
+static void LoggerMessageAddData(CFMutableDataRef encoder, CFDataRef theData, int key, int partType);
 static uint32_t LoggerMessageGetSeq(CFDataRef message);
 
 /* Static objects */
@@ -373,7 +371,7 @@ void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 
 	BOOL change = ((logger->bufferFile != NULL && absolutePath == NULL) ||
 				   (logger->bufferFile == NULL && absolutePath != NULL) ||
-				   (logger->bufferFile != NULL && absolutePath != NULL && CFStringCompare(logger->bufferFile, absolutePath, 0) != kCFCompareEqualTo));
+				   (logger->bufferFile != NULL && absolutePath != NULL && CFStringCompare(logger->bufferFile, absolutePath, (CFStringCompareFlags) 0) != kCFCompareEqualTo));
 	if (change)
 	{
 		if (logger->bufferFile != NULL)
@@ -836,17 +834,16 @@ static void LoggerLogToConsole(CFDataRef data)
 	if (contentsType == PART_TYPE_IMAGE)
 		message = CFStringCreateWithFormat(NULL, NULL, CFSTR("<image width=%d height=%d>"), imgWidth, imgHeight);
 
-	char threadNamePadding[20];
-	threadNamePadding[0] = 0;
+	buf[0] = 0;
 	if (thread != NULL && CFStringGetLength(thread) < 16)
 	{
 		int n = 16 - (int)CFStringGetLength(thread);
-		memset(threadNamePadding, ' ', n);
-		threadNamePadding[n] = 0;
+		memset(buf, ' ', (size_t)n);
+		buf[n] = 0;
 	}
 	CFStringAppendFormat(s, NULL, CFSTR(".%04d %s%@ | %@"),
 						 (int)(timestamp.tv_usec / 1000),
-						 threadNamePadding, (thread == NULL) ? CFSTR("") : thread,
+						 buf, (thread == NULL) ? CFSTR("") : thread,
 						 (message != NULL) ? message : CFSTR(""));
 
 	if (thread != NULL)
@@ -928,7 +925,7 @@ static void LoggerWriteMoreData(Logger *logger)
 					CFIndex dsize = CFDataGetLength(d);
 					if ((logger->sendBufferUsed + (NSUInteger)dsize) > logger->sendBufferSize)
 						break;
-					memcpy(logger->sendBuffer + logger->sendBufferUsed, CFDataGetBytePtr(d), dsize);
+					memcpy(logger->sendBuffer + logger->sendBufferUsed, CFDataGetBytePtr(d), (size_t)dsize);
 					logger->sendBufferUsed += (NSUInteger)dsize;
 					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 					logger->incompleteSendOfFirstItem = NO;
@@ -1033,7 +1030,7 @@ static void LoggerLogFromConsole(NSString *tag, int fd, int outfd)
 	{
 		// output received data to the original fd
 		if (outfd != -1)
-			write(outfd, buf, bytes_read);
+			write(outfd, buf, (size_t)bytes_read);
 
 		if (buf[bytes_read-1] == '\n')
 			--bytes_read;
@@ -1596,7 +1593,7 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 			LOGGERDBG(CFSTR("Starting SCNetworkReachability to wait for internet to be reachable"), logger->host);
 			struct sockaddr_in addr;
 			bzero(&addr, sizeof(addr));
-			addr.sin_len = sizeof(addr);
+			addr.sin_len = (__uint8_t) sizeof(addr);
 			addr.sin_family = AF_INET;
 
 			logger->reachability = SCNetworkReachabilityCreateWithAddress(NULL, (const struct sockaddr *)&addr);
@@ -1976,6 +1973,28 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 #pragma mark -
 #pragma mark Internal encoding functions
 // -----------------------------------------------------------------------------
+static uint8_t *LoggerMessagePrepareForPart(CFMutableDataRef encoder, uint32_t requiredExtraBytes)
+{
+	// Ensure a data block has the required storage capacity, update the total size and part count
+	// then return a pointer for fast storage of the data
+	uint8_t *p = CFDataGetMutableBytePtr(encoder);
+	CFIndex size = CFDataGetLength(encoder);
+	uint32_t oldSize = ntohl(*(uint32_t *)p);
+	uint32_t newSize = oldSize + requiredExtraBytes;
+	if ((newSize + 4) > size)
+	{
+		// grow by 64 bytes chunks
+		CFDataSetLength(encoder, (newSize + 4 + 64) & ~63);
+		p = CFDataGetMutableBytePtr(encoder);
+	}
+	*((uint32_t *)p) = htonl(newSize);
+	p += 4;
+	*((uint16_t *)p) = htons(ntohs(*(uint16_t *)p) + 1);
+
+	// return a pointer to where new data must be put
+	return p + oldSize;
+}
+
 static void LoggerMessageAddTimestamp(CFMutableDataRef encoder)
 {
 	struct timeval t;
@@ -2010,34 +2029,36 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 	// no direct way to get it, we have to do it sideways. Note that it can be dangerous
 	// to use any Cocoa call when in a multithreaded application that only uses non-Cocoa threads
 	// and for which Cocoa's multithreading has not been activated. We test for this case.
-	if ([NSThread isMultiThreaded] || [NSThread isMainThread])
+	BOOL inMainThread = [NSThread isMainThread];
+	if (inMainThread)
 	{
-		AUTORELEASE_POOL_BEGIN
+		hasThreadName = YES;
+		LoggerMessageAddString(encoder, CFSTR("Main thread"), PART_KEY_THREAD_ID);
+	}
+	else if ([NSThread isMultiThreaded])
+	{
 		NSThread *thread = [NSThread currentThread];
 		NSString *name = [thread name];
 		if (![name length])
 		{
-			if ([thread isMainThread])
-				name = @"Main thread";
-			else
+			// use the thread dictionary to store and retrieve the computed thread name
+			NSMutableDictionary *threadDict = [thread threadDictionary];
+			name = [threadDict objectForKey:@"__$NSLoggerThreadName$__"];
+			if (name == nil)
 			{
-				// use the thread dictionary to store and retrieve the computed thread name
-				NSMutableDictionary *threadDict = [thread threadDictionary];
-				name = [threadDict objectForKey:@"__$NSLoggerThreadName$__"];
-				if (name == nil)
+				AUTORELEASE_POOL_BEGIN
+				// optimize CPU use by computing the thread name once and storing it back
+				// in the thread dictionary
+				name = [thread description];
+				NSRange range = [name rangeOfString:@"num = "];
+				if (range.location != NSNotFound)
 				{
-					// optimize CPU use by computing the thread name once and storing it back
-					// in the thread dictionary
-					name = [thread description];
-					NSRange range = [name rangeOfString:@"num = "];
-					if (range.location != NSNotFound)
-					{
-						name = [NSString stringWithFormat:@"Thread %@",
-								[name substringWithRange:NSMakeRange(range.location + range.length,
-																	 [name length] - range.location - range.length - 1)]];
-						[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
-					}
+					name = [NSString stringWithFormat:@"Thread %@",
+							[name substringWithRange:NSMakeRange(range.location + range.length,
+																 [name length] - range.location - range.length - 1)]];
+					[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
 				}
+				AUTORELEASE_POOL_END
 			}
 		}
 		if (name != nil)
@@ -2045,7 +2066,6 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)name, PART_KEY_THREAD_ID);
 			hasThreadName = YES;
 		}
-		AUTORELEASE_POOL_END
 	}
 #endif
 	if (!hasThreadName)
@@ -2058,42 +2078,70 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 	}
 }
 
-static void LoggerMessageUpdateDataHeader(CFMutableDataRef data)
+static CFMutableDataRef LoggerMessageCreate(int32_t seq)
 {
-	// update the data header with updated part count and size
-	UInt8 *p = CFDataGetMutableBytePtr(data);
-	uint32_t size = htonl(CFDataGetLength(data) - 4);
-	uint16_t partCount = htons(ntohs(*(uint16_t *)(p + 4)) + 1);
-	memcpy(p, &size, 4);
-	memcpy(p+4, &partCount, 2);
+	CFMutableDataRef encoder = CFDataCreateMutable(NULL, 0);
+	if (encoder != NULL)
+	{
+		CFDataIncreaseLength(encoder, 64);
+		uint8_t *p = CFDataGetMutableBytePtr(encoder);
+		if (p != NULL)
+		{
+			// directly write the sequence number as first part of the message
+			// so we find it quickly when inserting new messages in the queue
+			if (seq)
+			{
+				p[3] = 8;		// size 0x00000008 in big endian
+				p[5] = 1;		// part count 0x0001
+				p[6] = (uint8_t)PART_KEY_MESSAGE_SEQ;
+				p[7] = (uint8_t)PART_TYPE_INT32;
+				*(uint32_t *)(p + 8) = htonl(seq);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+			}
+			else
+			{
+				// empty message with a 0 part count
+				p[3] = 2;
+			}
+		}
+		LoggerMessageAddTimestampAndThreadID(encoder);
+	}
+	return encoder;
 }
 
-static CFMutableDataRef LoggerMessageCreate()
+static void LoggerMessageFinalize(CFMutableDataRef encoder)
 {
-	CFMutableDataRef data = CFDataCreateMutable(NULL, 0);
-	CFDataIncreaseLength(data, 6);
-	UInt8 *p = CFDataGetMutableBytePtr(data);
-	p[3] = 2;		// size 0x00000002 in big endian
-	return data;
+	// Finalize a message by reducing the CFData size to the actual used size
+	if (encoder != NULL)
+	{
+		uint32_t *p = (uint32_t *)CFDataGetBytePtr(encoder);
+		if (p != NULL)
+			CFDataSetLength(encoder, ntohl(*p) + 4);
+	}
 }
 
-static void LoggerMessageAddInt32(CFMutableDataRef data, int32_t anInt, int key)
+static void LoggerMessageAddInt32(CFMutableDataRef encoder, int32_t anInt, int key)
 {
-	uint32_t partData = htonl(anInt);
-	uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_INT32};
-	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-	CFDataAppendBytes(data, (const UInt8 *)&partData, 4);
-	LoggerMessageUpdateDataHeader(data);
+	uint8_t *p = LoggerMessagePrepareForPart(encoder, 6);
+	if (p != NULL)
+	{
+		*p++ = (uint8_t)key;
+		*p++ = (uint8_t)PART_TYPE_INT32;
+		*(uint32_t *)p = htonl(anInt);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+	}
 }
 
 #if __LP64__
-static void LoggerMessageAddInt64(CFMutableDataRef data, int64_t anInt, int key)
+static void LoggerMessageAddInt64(CFMutableDataRef encoder, int64_t anInt, int key)
 {
-	uint32_t partData[2] = {htonl((uint32_t)(anInt >> 32)), htonl((uint32_t)anInt)};
-	uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_INT64};
-	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-	CFDataAppendBytes(data, (const UInt8 *)&partData, 8);
-	LoggerMessageUpdateDataHeader(data);
+	uint8_t *p = LoggerMessagePrepareForPart(encoder, 10);
+	if (p != NULL)
+	{
+		*p++ = (uint8_t)key;
+		*p++ = (uint8_t)PART_TYPE_INT64;
+		uint32_t *q = (uint32_t *)p;
+		*q++ = htonl((uint32_t)(anInt >> 32));	// ARMv6 and later, x86 processors do just fine with unaligned accesses
+		*q = htonl((uint32_t)anInt);
+	}
 }
 #endif
 
@@ -2120,24 +2168,25 @@ static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, 
 		}
 		if (n)
 		{
-			uint32_t partSize = htonl(n);
-			uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_STRING};
-			CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-			CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
-			CFDataAppendBytes(data, buf, n);
-			LoggerMessageUpdateDataHeader(data);
+			uint8_t *p = LoggerMessagePrepareForPart(data, (uint32_t)n+6);
+			if (p != NULL)
+			{
+				*p++ = (uint8_t)key;
+				*p++ = (uint8_t)PART_TYPE_STRING;
+				*(uint32_t *)p = htonl(n);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+				memcpy(p + 4, buf, (size_t)n);
+			}
 		}
 		free(buf);
 	}
 }
 
-static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, int key)
+static void LoggerMessageAddString(CFMutableDataRef encoder, CFStringRef aString, int key)
 {
 	if (aString == NULL)
 		aString = CFSTR("");
 
 	// All strings are UTF-8 encoded
-	uint8_t keyAndType[2] = {(uint8_t)key, PART_TYPE_STRING};
 	uint32_t partSize = 0;
 	uint8_t *bytes = NULL;
 	
@@ -2145,33 +2194,42 @@ static void LoggerMessageAddString(CFMutableDataRef data, CFStringRef aString, i
 	CFIndex bytesLength = stringLength * 4;
 	if (stringLength)
 	{
-		bytes = (uint8_t *)malloc((size_t)stringLength * 4 + 4);
-		CFStringGetBytes(aString, CFRangeMake(0, stringLength), kCFStringEncodingUTF8, '?', false, bytes, bytesLength, &bytesLength);
-		partSize = htonl(bytesLength);
+		bytes = (uint8_t *)malloc((size_t)bytesLength + 4);
+		if (bytes != NULL)
+		{
+			CFStringGetBytes(aString, CFRangeMake(0, stringLength), kCFStringEncodingUTF8, '?', false, bytes, bytesLength, &bytesLength);
+			partSize = (uint32_t)bytesLength;
+		}
 	}
-	
-	CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-	CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
-	if (partSize)
-		CFDataAppendBytes(data, bytes, bytesLength);
-	
+
+	uint8_t *p = LoggerMessagePrepareForPart(encoder, 6 + partSize);
+	if (p != NULL)
+	{
+		*p++ = (uint8_t)key;
+		*p++ = (uint8_t)PART_TYPE_STRING;
+		*(uint32_t *)p = htonl(partSize);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+		if (partSize)
+			memcpy(p + 4, bytes, (size_t)partSize);
+	}
+
 	if (bytes != NULL)
 		free(bytes);
-	LoggerMessageUpdateDataHeader(data);
 }
 
-static void LoggerMessageAddData(CFMutableDataRef data, CFDataRef theData, int key, int partType)
+static void LoggerMessageAddData(CFMutableDataRef encoder, CFDataRef theData, int key, int partType)
 {
 	if (theData != NULL)
 	{
-		uint8_t keyAndType[2] = {(uint8_t)key, (uint8_t)partType};
 		CFIndex dataLength = CFDataGetLength(theData);
-		uint32_t partSize = htonl(dataLength);
-		CFDataAppendBytes(data, (const UInt8 *)&keyAndType, 2);
-		CFDataAppendBytes(data, (const UInt8 *)&partSize, 4);
-		if (partSize)
-			CFDataAppendBytes(data, CFDataGetBytePtr(theData), dataLength);
-		LoggerMessageUpdateDataHeader(data);
+		uint8_t *p = LoggerMessagePrepareForPart(encoder, (uint32_t)dataLength + 6);
+		if (p != NULL)
+		{
+			*p++ = (uint8_t)key;
+			*p++ = (uint8_t)partType;
+			*((uint32_t *)p) = htonl(dataLength);	// ARMv6 and later, x86 processors do just fine with unaligned accesses
+			if (dataLength)
+				memcpy(p + 4, CFDataGetBytePtr(theData), (size_t)dataLength);
+		}
 	}
 }
 
@@ -2179,38 +2237,16 @@ static uint32_t LoggerMessageGetSeq(CFDataRef message)
 {
 	// Extract the sequence number from a message. When pushing messages to the queue,
 	// we use this to guarantee the logging order according to the seq#
-	uint32_t seq = 0;
+	// Since we now store the seq as first component, we only have to check whether
+	// the first part is the sequence number, and extract it.
 	uint8_t *p = (uint8_t *)CFDataGetBytePtr(message) + 4;
-	uint16_t partCount;
-	memcpy(&partCount, p, 2);
-	partCount = ntohs(partCount);
-	p += 2;
-	while (partCount--)
+	uint16_t partCount = ntohs(*(uint16_t *)p);
+	if (partCount)
 	{
-		uint8_t partKey = *p++;
-		uint8_t partType = *p++;
-		uint32_t partSize;
-		if (partType == PART_TYPE_INT16)
-			partSize = 2;
-		else if (partType == PART_TYPE_INT32)
-			partSize = 4;
-		else if (partType == PART_TYPE_INT64)
-			partSize = 8;
-		else
-		{
-			memcpy(&partSize, p, 4);
-			p += 4;
-			partSize = ntohl(partSize);
-		}
-		if (partKey == PART_KEY_MESSAGE_SEQ)
-		{
-			memcpy(&seq, p, sizeof(uint32_t));
-			seq = ntohl(seq);
-			break;
-		}
-		p += partSize;
+		if (p[2] == PART_KEY_MESSAGE_SEQ)
+			return ntohl(*(uint32_t *)(p+4));		// ARMv6 and later, x86 processors do just fine with unaligned accesses
 	}
-	return seq;
+	return 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -2220,17 +2256,16 @@ static uint32_t LoggerMessageGetSeq(CFDataRef message)
 static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 {
 	// Extract client information from the main bundle, as well as platform info,
-	// and assmble it to a message that will be put in front of the queue
+	// and assemble it to a message that will be put in front of the queue
 	// Helps desktop viewer display who's talking to it
 	// Note that we must be called from the logger work thread, as we don't
 	// run through the message port to transmit this message to the queue
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	if (bundle == NULL)
 		return;
-	CFMutableDataRef encoder = LoggerMessageCreate();
+	CFMutableDataRef encoder = LoggerMessageCreate(0);
 	if (encoder != NULL)
 	{
-		LoggerMessageAddTimestamp(encoder);
 		LoggerMessageAddInt32(encoder, LOGMSG_TYPE_CLIENTINFO, PART_KEY_MESSAGE_TYPE);
 
 		CFStringRef version = (CFStringRef)CFBundleGetValueForInfoDictionaryKey(bundle, kCFBundleVersionKey);
@@ -2306,6 +2341,8 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		LoggerMessageAddString(encoder, s, PART_KEY_CLIENT_MODEL);
 		CFRelease(s);
 #endif
+		LoggerMessageFinalize(encoder);
+
 		pthread_mutex_lock(&logger->logQueueMutex);
 		CFArrayInsertValueAtIndex(logger->logQueue, logger->incompleteSendOfFirstItem ? 1 : 0, encoder);
 		pthread_mutex_unlock(&logger->logQueueMutex);
@@ -2375,12 +2412,10 @@ static void LogMessageRawTo_internal(Logger *logger,
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
-        CFMutableDataRef encoder = LoggerMessageCreate();
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
         if (encoder != NULL)
         {
-            LoggerMessageAddTimestampAndThreadID(encoder);
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-            LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
             if (domain != nil && [domain length])
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
             if (level)
@@ -2396,6 +2431,7 @@ static void LogMessageRawTo_internal(Logger *logger,
 			else
 				LoggerMessageAddString(encoder, CFSTR(""), PART_KEY_MESSAGE);
 
+			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
             CFRelease(encoder);
         }
@@ -2421,12 +2457,10 @@ static void LogMessageTo_internal(Logger *logger,
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
-        CFMutableDataRef encoder = LoggerMessageCreate();
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
         if (encoder != NULL)
         {
-            LoggerMessageAddTimestampAndThreadID(encoder);
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-            LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
             if (domain != nil && [domain length])
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
             if (level)
@@ -2454,7 +2488,8 @@ static void LogMessageTo_internal(Logger *logger,
                 CFRelease(msgString);
             }
 #endif
-            
+
+			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
             CFRelease(encoder);
         }
@@ -2481,12 +2516,10 @@ static void LogImageTo_internal(Logger *logger,
 		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
 		LOGGERDBG2(CFSTR("%ld LogImage"), seq);
 
-		CFMutableDataRef encoder = LoggerMessageCreate();
+		CFMutableDataRef encoder = LoggerMessageCreate(seq);
 		if (encoder != NULL)
 		{
-			LoggerMessageAddTimestampAndThreadID(encoder);
 			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
 			if (domain != nil && [domain length])
 				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
 			if (level)
@@ -2504,6 +2537,7 @@ static void LogImageTo_internal(Logger *logger,
 				LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
 			LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
 
+			LoggerMessageFinalize(encoder);
 			LoggerPushMessageToQueue(logger, encoder);
 			CFRelease(encoder);
 		}
@@ -2527,12 +2561,10 @@ static void LogDataTo_internal(Logger *logger,
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogData"), seq);
 
-        CFMutableDataRef encoder = LoggerMessageCreate();
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
         if (encoder != NULL)
         {
-            LoggerMessageAddTimestampAndThreadID(encoder);
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
-            LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
             if (domain != nil && [domain length])
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
             if (level)
@@ -2544,7 +2576,8 @@ static void LogDataTo_internal(Logger *logger,
             if (functionName != NULL)
                 LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
             LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
-            
+
+			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
             CFRelease(encoder);
         }
@@ -2563,13 +2596,10 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
 		LOGGERDBG2(CFSTR("%ld LogStartBlock"), seq);
 
-		CFMutableDataRef encoder = LoggerMessageCreate();
+		CFMutableDataRef encoder = LoggerMessageCreate(seq);
 		if (encoder != NULL)
 		{
-			LoggerMessageAddTimestampAndThreadID(encoder);
 			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_BLOCKSTART, PART_KEY_MESSAGE_TYPE);
-			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
-
 			if (format != nil)
 			{
 				CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CAST_TO_CFSTRING)format, args);
@@ -2580,6 +2610,7 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 				}
 			}
 		
+			LoggerMessageFinalize(encoder);
 			LoggerPushMessageToQueue(logger, encoder);
 			CFRelease(encoder);
 		}
@@ -2732,12 +2763,11 @@ void LogEndBlockTo(Logger *logger)
         int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
         LOGGERDBG2(CFSTR("%ld LogEndBlock"), seq);
 
-        CFMutableDataRef encoder = LoggerMessageCreate();
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
         if (encoder != NULL)
         {
-            LoggerMessageAddTimestampAndThreadID(encoder);
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_BLOCKEND, PART_KEY_MESSAGE_TYPE);
-            LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
             CFRelease(encoder);
         }
@@ -2761,24 +2791,26 @@ void LogMarkerTo(Logger *logger, NSString *text)
 		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
 		LOGGERDBG2(CFSTR("%ld LogMarker"), seq);
 
-		CFMutableDataRef encoder = LoggerMessageCreate();
+		CFMutableDataRef encoder = LoggerMessageCreate(seq);
 		if (encoder != NULL)
 		{
-			LoggerMessageAddTimestampAndThreadID(encoder);
 			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_MARK, PART_KEY_MESSAGE_TYPE);
 			if (text == nil)
 			{
 				CFDateFormatterRef df = CFDateFormatterCreate(NULL, NULL, kCFDateFormatterShortStyle, kCFDateFormatterMediumStyle);
 				CFStringRef str = CFDateFormatterCreateStringWithAbsoluteTime(NULL, df, CFAbsoluteTimeGetCurrent());
 				CFRelease(df);
-				LoggerMessageAddString(encoder, str, PART_KEY_MESSAGE);
-				CFRelease(str);
+				if (str != NULL)
+				{
+					LoggerMessageAddString(encoder, str, PART_KEY_MESSAGE);
+					CFRelease(str);
+				}
 			}
 			else
 			{
 				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)text, PART_KEY_MESSAGE);
 			}
-			LoggerMessageAddInt32(encoder, seq, PART_KEY_MESSAGE_SEQ);
+			LoggerMessageFinalize(encoder);
 			LoggerPushMessageToQueue(logger, encoder);
 			CFRelease(encoder);
 		}
