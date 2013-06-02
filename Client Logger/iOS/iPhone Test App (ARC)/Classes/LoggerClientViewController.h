@@ -47,7 +47,7 @@
 	NSTimer *sendTimer;
 	NSArray *tagsArray;
 	int counter;
-	int imagesCounter;
+	volatile int imagesCounter;
 }
 
 - (IBAction)startStopSendingMessages;

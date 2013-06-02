@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		256AC3DA0F4B6AC300CF3369 /* NSLoggerMacClientTestAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 256AC3D90F4B6AC300CF3369 /* NSLoggerMacClientTestAppDelegate.m */; };
-		3D8B619F126AFE0D00659751 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B619E126AFE0D00659751 /* LoggerClient.m */; };
 		3D8B61FB126B029100659751 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58150DA1D0A300B32029 /* MainMenu.xib */; };
 		3D8B61FC126B029B00659751 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165DFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		3DB964DB1274D4B30054F72D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DB964DA1274D4B30054F72D /* SystemConfiguration.framework */; };
+		3DC4A4BD175A54FC004A3A34 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC4A4BB175A54FC004A3A34 /* LoggerClient.m */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -27,10 +27,10 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		3D8B619C126AFE0D00659751 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = ../LoggerCommon.h; sourceTree = SOURCE_ROOT; };
-		3D8B619D126AFE0D00659751 /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = ../LoggerClient.h; sourceTree = SOURCE_ROOT; };
-		3D8B619E126AFE0D00659751 /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../LoggerClient.m; sourceTree = SOURCE_ROOT; };
 		3DB964DA1274D4B30054F72D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		3DC4A4BA175A54FC004A3A34 /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = ../../LoggerClient.h; sourceTree = "<group>"; };
+		3DC4A4BB175A54FC004A3A34 /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../../LoggerClient.m; sourceTree = "<group>"; };
+		3DC4A4BC175A54FC004A3A34 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = ../../LoggerCommon.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* NSLoggerMacClientTest-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "NSLoggerMacClientTest-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLoggerMacClientTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerMacClientTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -128,9 +128,9 @@
 		3D8B619B126AFE0D00659751 /* Logger Client */ = {
 			isa = PBXGroup;
 			children = (
-				3D8B619C126AFE0D00659751 /* LoggerCommon.h */,
-				3D8B619D126AFE0D00659751 /* LoggerClient.h */,
-				3D8B619E126AFE0D00659751 /* LoggerClient.m */,
+				3DC4A4BA175A54FC004A3A34 /* LoggerClient.h */,
+				3DC4A4BB175A54FC004A3A34 /* LoggerClient.m */,
+				3DC4A4BC175A54FC004A3A34 /* LoggerCommon.h */,
 			);
 			name = "Logger Client";
 			path = "../iPhone Test App/Classes";
@@ -200,7 +200,7 @@
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				256AC3DA0F4B6AC300CF3369 /* NSLoggerMacClientTestAppDelegate.m in Sources */,
-				3D8B619F126AFE0D00659751 /* LoggerClient.m in Sources */,
+				3DC4A4BD175A54FC004A3A34 /* LoggerClient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
