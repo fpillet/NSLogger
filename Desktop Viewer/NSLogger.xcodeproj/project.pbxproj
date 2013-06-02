@@ -41,6 +41,9 @@
 		3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
+		3DC4A4C4175BC1DF004A3A34 /* HockeySDK.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */; };
+		3DC4A4C5175BC1E1004A3A34 /* HockeySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */; };
+		3DC4A4C7175BC3EF004A3A34 /* HockeyConf.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3DC4A4C6175BC3EF004A3A34 /* HockeyConf.plist */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
 		3DD2EB9314334BA8004EEB19 /* logfile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3DD2EB9114334BA8004EEB19 /* logfile.icns */; };
 		3DD2EB9414334BA8004EEB19 /* rawlogfile.icns in Resources */ = {isa = PBXBuildFile; fileRef = 3DD2EB9214334BA8004EEB19 /* rawlogfile.icns */; };
@@ -90,6 +93,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */,
+				3DC4A4C4175BC1DF004A3A34 /* HockeySDK.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +172,8 @@
 		3DADCB9F125FC3B200807A7D /* ValueTransformers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ValueTransformers.m; path = Classes/ValueTransformers.m; sourceTree = "<group>"; };
 		3DBB562512829BCC004F729D /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMarkerCell.h; path = Classes/LoggerMarkerCell.h; sourceTree = "<group>"; };
 		3DBB562612829BCC004F729D /* LoggerMarkerCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMarkerCell.m; path = Classes/LoggerMarkerCell.m; sourceTree = "<group>"; };
+		3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HockeySDK.framework; path = "Third Party/HockeySDK-Mac/HockeySDK.framework"; sourceTree = "<group>"; };
+		3DC4A4C6175BC3EF004A3A34 /* HockeyConf.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = HockeyConf.plist; path = Resources/HockeyConf.plist; sourceTree = "<group>"; };
 		3DC55EF10F436BBA005C61FD /* LoggerMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMessageCell.h; path = Classes/LoggerMessageCell.h; sourceTree = "<group>"; };
 		3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMessageCell.m; path = Classes/LoggerMessageCell.m; sourceTree = "<group>"; };
 		3DD2EB9114334BA8004EEB19 /* logfile.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = logfile.icns; path = Resources/Icon/logfile.icns; sourceTree = "<group>"; };
@@ -203,6 +209,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				3D369CB71290009800462E79 /* Security.framework in Frameworks */,
 				3D24C40C125638A500435837 /* BWToolkitFramework.framework in Frameworks */,
+				3DC4A4C5175BC1E1004A3A34 /* HockeySDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,23 +246,24 @@
 			name = Classes;
 			sourceTree = "<group>";
 		};
-		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
-				3D369CB61290009800462E79 /* Security.framework */,
-			);
-			name = "Linked Frameworks";
-			sourceTree = "<group>";
-		};
-		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+		1058C7A0FEA54F0111CA2CBB /* System Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				13E42FB307B3F0F600E4EEF1 /* CoreData.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+				3D369CB61290009800462E79 /* Security.framework */,
 			);
-			name = "Other Frameworks";
+			name = "System Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Vendor Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */,
+			);
+			name = "Vendor Frameworks";
 			sourceTree = "<group>";
 		};
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
@@ -304,6 +312,7 @@
 				3DD2EB9214334BA8004EEB19 /* rawlogfile.icns */,
 				3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
+				3DC4A4C6175BC3EF004A3A34 /* HockeyConf.plist */,
 				3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */,
 				3D6A34A71262FD5500D0EC3A /* MainMenu.xib */,
 				3D6A37C8126399D700D0EC3A /* LoggerStatus.xib */,
@@ -319,8 +328,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
-				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+				1058C7A0FEA54F0111CA2CBB /* System Frameworks */,
+				1058C7A2FEA54F0111CA2CBB /* Vendor Frameworks */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -523,6 +532,7 @@
 				3DD2EB9314334BA8004EEB19 /* logfile.icns in Resources */,
 				3DD2EB9414334BA8004EEB19 /* rawlogfile.icns in Resources */,
 				439F14BD1531A492006A5CE3 /* xedReplacement.sh in Resources */,
+				3DC4A4C7175BC3EF004A3A34 /* HockeyConf.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -650,6 +660,10 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Third Party/HockeySDK-Mac\"",
+				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -671,6 +685,10 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Third Party/HockeySDK-Mac\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NSLogger_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
