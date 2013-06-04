@@ -210,6 +210,8 @@ Logger *LoggerGetDefaultLogger(void)
 		pthread_mutex_unlock(&sDefaultLoggerMutex);
 		if (logger != NULL)
 			LoggerStop(logger);
+
+		assert(sDefaultLogger != NULL);
 	}
 	return sDefaultLogger;
 }
