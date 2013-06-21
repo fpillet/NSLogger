@@ -2208,7 +2208,7 @@ static void LoggerMessageAddString(CFMutableDataRef encoder, CFStringRef aString
 		*p++ = (uint8_t)key;
 		*p++ = (uint8_t)PART_TYPE_STRING;
 		*(uint32_t *)p = htonl(partSize);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
-		if (partSize)
+		if (partSize && bytes != NULL)
 			memcpy(p + 4, bytes, (size_t)partSize);
 	}
 
