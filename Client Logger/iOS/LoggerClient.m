@@ -297,12 +297,10 @@ void LoggerSetOptions(Logger *logger, uint32_t options)
 {
 	LOGGERDBG(CFSTR("LoggerSetOptions options=0x%08lx"), options);
 
-	// If we choose to log to system console (instead of logging to a remote viewer),
+	// If we choose to log to system console
 	// make sure we are not configured to capture the system console
 	// When debugging NSLogger itself, we never capture the system console either
-#if !LOGGER_DEBUG
 	if (options & kLoggerOption_LogToConsole)
-#endif
 		options &= (uint32_t)~kLoggerOption_CaptureSystemConsole;
 
 	if (logger == NULL)
@@ -859,9 +857,11 @@ static void LoggerLogToConsole(CFDataRef data)
 
 static void LoggerWriteMoreData(Logger *logger)
 {
+	int logToConsole = (logger->options & kLoggerOption_LogToConsole);
+	
 	if (!logger->connected)
 	{
-		if (logger->options & kLoggerOption_LogToConsole)
+		if (logToConsole)
 		{
 			pthread_mutex_lock(&logger->logQueueMutex);
 			while (CFArrayGetCount(logger->logQueue))
@@ -927,6 +927,8 @@ static void LoggerWriteMoreData(Logger *logger)
 						break;
 					memcpy(logger->sendBuffer + logger->sendBufferUsed, CFDataGetBytePtr(d), (size_t)dsize);
 					logger->sendBufferUsed += (NSUInteger)dsize;
+					if (logToConsole)
+						LoggerLogToConsole(d);
 					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 					logger->incompleteSendOfFirstItem = NO;
 				}
