@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-beta 01-JUN-2013
+ * version 1.5-beta 01-JUL-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -857,7 +857,7 @@ static void LoggerLogToConsole(CFDataRef data)
 
 static void LoggerWriteMoreData(Logger *logger)
 {
-	int logToConsole = (logger->options & kLoggerOption_LogToConsole);
+	uint32_t logToConsole = (logger->options & kLoggerOption_LogToConsole);
 	
 	if (!logger->connected)
 	{
