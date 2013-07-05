@@ -822,10 +822,15 @@ static NSArray *sXcodeFileExtensions = nil;
 
 - (void)logCellDoubleClicked:(id)sender
 {
-	// Added in v1.1: alt-double click opens the source file if it was defined in the log
-	// and the file is found
+	// double click opens the source file if it was defined in the log
+	// and the file is found (using alt can mess with the results of the AppleScript)
 	NSEvent *event = [NSApp currentEvent];
-	if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
+    // alt + double click opens the detail view
+    if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
+    {
+        [self openDetailsWindow:sender];
+    }
+    else if ([event clickCount] > 1)
 	{
 		NSInteger row = [logTable selectedRow];
 		if (row >= 0 && row < [displayedMessages count])
@@ -857,7 +862,7 @@ static NSArray *sXcodeFileExtensions = nil;
 					if (useXcode)
 					{                        
                         [self xedFile:filename 
-                                 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber) + 1]];
+                                 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber)]];
 					}
 					else
 					{
@@ -868,8 +873,14 @@ static NSArray *sXcodeFileExtensions = nil;
 		}
 		return;
 	}
-	[self openDetailsWindow:sender];
 }
+
+#pragma mark Target Action
+
+- (IBAction)performFindPanelAction:(id)sender {
+    [self.window makeFirstResponder:quickFilterTextField];
+}
+
 
 // -----------------------------------------------------------------------------
 #pragma mark -
