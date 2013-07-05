@@ -8,19 +8,15 @@ else
     file=$1
 fi
 
+echo -n "${file##*/}:$line" | pbcopy
+
 osascript &>/dev/null <<EOF
     tell application "Xcode"
-        open "$file"
         activate
         tell application "System Events"
-            tell process "Xcode"
-                keystroke "l" using command down
-                repeat until window "Jump" exists
-                end repeat
-                click text field 1 of window "Jump"
-                set value of text field 1 of window "Jump" to "$line"
-                keystroke return
-            end tell
+            keystroke "o" using {command down, shift down}
+            keystroke "v" using {command down}
+            keystroke return
         end tell
     end tell
 EOF
