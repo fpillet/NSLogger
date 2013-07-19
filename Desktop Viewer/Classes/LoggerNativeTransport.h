@@ -1,14 +1,9 @@
 /*
  * LoggerNativeTransport.h
  *
- * Default transport for NSLogger messages, publishes a Bonjour service,
- * and can listen on a specific port (or by default on a port attributed by
- * the OS). In case we listen on a specific, user-defined port, the Bonjour
- * service name will be suffixed
- *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2013 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -33,22 +28,21 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+
+/*
+ * Default transport for NSLogger messages, publishes a Bonjour service,
+ * and can listen on a specific port (or by default on a port attributed by
+ * the OS). In case we listen on a specific, user-defined port, the Bonjour
+ * service name will be suffixed
+ */
+
+#import "LoggerTCPTransport.h"
 #import "LoggerTransport.h"
 
-@interface LoggerNativeTransport : LoggerTransport <NSNetServiceDelegate, NSStreamDelegate>
-{
-	NSThread *listenerThread;
-	NSNetService *bonjourService;
-	CFSocketRef listenerSocket_ipv4;
-	CFSocketRef listenerSocket_ipv6;
-	NSString *bonjourServiceName;
-	int listenerPort;
-	BOOL publishBonjourService;
-}
+@class LoggerMessage;
 
-@property (nonatomic, assign) int listenerPort;
-@property (nonatomic, assign) BOOL publishBonjourService;
-@property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;
-@property (nonatomic, readonly) CFSocketRef listenerSocket_ipv6;
+@interface LoggerNativeTransport : LoggerTCPTransport
+{
+}
 
 @end
