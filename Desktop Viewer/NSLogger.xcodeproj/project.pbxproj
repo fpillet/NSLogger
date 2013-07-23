@@ -59,6 +59,7 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B9C3CDBB16A86473005484D4 /* NSColor+NSLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */; };
 		D8D4B74D6609726C15D19B13 /* LoggerTCPTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B0F9DF2208FDCE15754B /* LoggerTCPTransport.m */; };
+		D8D4BD23F3908C5EC17401F5 /* LoggerJSONMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B2864A6FBBFAB33FDF76 /* LoggerJSONMessage.m */; };
 		D8D4BDA48335FB53DDEE39C2 /* LoggerTCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D8D4BE2C91A1C3A56F55BC8A /* LoggerTCPConnection.m */; };
 /* End PBXBuildFile section */
 
@@ -192,8 +193,10 @@
 		B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor+NSLogger.h"; sourceTree = "<group>"; };
 		B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor+NSLogger.m"; sourceTree = "<group>"; };
 		D8D4B0F9DF2208FDCE15754B /* LoggerTCPTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerTCPTransport.m; sourceTree = "<group>"; };
+		D8D4B2864A6FBBFAB33FDF76 /* LoggerJSONMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerJSONMessage.m; sourceTree = "<group>"; };
 		D8D4B5AF19B9866951954508 /* LoggerTCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerTCPConnection.h; sourceTree = "<group>"; };
 		D8D4B63D7F21B776642E344F /* LoggerTCPTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerTCPTransport.h; sourceTree = "<group>"; };
+		D8D4B6B8008C70054ADEB345 /* LoggerJSONMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerJSONMessage.h; sourceTree = "<group>"; };
 		D8D4BE2C91A1C3A56F55BC8A /* LoggerTCPConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerTCPConnection.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -434,6 +437,8 @@
 		D8D4B43E16C6E76466816769 /* JSON log format */ = {
 			isa = PBXGroup;
 			children = (
+				D8D4B2864A6FBBFAB33FDF76 /* LoggerJSONMessage.m */,
+				D8D4B6B8008C70054ADEB345 /* LoggerJSONMessage.h */,
 			);
 			name = "JSON log format";
 			sourceTree = "<group>";
@@ -607,6 +612,7 @@
 				B9C3CDBB16A86473005484D4 /* NSColor+NSLogger.m in Sources */,
 				D8D4B74D6609726C15D19B13 /* LoggerTCPTransport.m in Sources */,
 				D8D4BDA48335FB53DDEE39C2 /* LoggerTCPConnection.m in Sources */,
+				D8D4BD23F3908C5EC17401F5 /* LoggerJSONMessage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
