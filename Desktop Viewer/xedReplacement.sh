@@ -9,7 +9,7 @@ else
     file=$1
 fi
 
-echo -n "${file##*/}:$line" | pbcopy
+output=`echo -n "${file##*/}:$line"`
 
 osascript &>/dev/null <<EOF
 tell application "System Events"
@@ -19,8 +19,8 @@ tell application "System Events"
 			tell process "Xcode"
 				set frontmost to true
 				perform action "AXRaise" of (windows whose title is theWindowName)
-				keystroke "o" using {command down} -- default is actually keystroke "o" using {command down, shift down}
-                keystroke "v" using {command down}
+                click menu item "Open Quickly…" of menu 1 of menu bar item "File" of menu bar 1
+                set value of (first text field of window 1 whose role description is "search text field") to "$output"
                 keystroke return
 			end tell
 		end if
