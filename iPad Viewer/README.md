@@ -28,4 +28,4 @@ UI : Preference/Multi-Window/Search
 
 ##License
 [Modified BSD license](https://github.com/fpillet/NSLogger/blob/master/iPad%20Viewer/iPad%20Viewer/LICENSE)   
-_Updated : May 18, 2013_
+_Updated : Aug 1, 2013_
