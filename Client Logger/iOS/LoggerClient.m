@@ -1049,7 +1049,7 @@ static void LoggerLogFromConsole(NSString *tag, int fd, int outfd)
 				for (CFIndex m = 0; m < n; m++)
 				{
 					CFStringRef msg = (CFStringRef)CFArrayGetValueAtIndex(array, m);
-					for (int i = 0; i < consoleGrabbersListLength; i++)
+					for (unsigned i = 0; i < consoleGrabbersListLength; i++)
 					{
 						if (consoleGrabbersList[i] != NULL)
 							LogMessageTo(consoleGrabbersList[i], tag, 0, @"%@", msg);
@@ -1177,7 +1177,7 @@ static void LoggerStartGrabbingConsole(Logger *logger)
 	pthread_mutex_lock(&consoleGrabbersMutex);
 
 	Boolean added = FALSE;
-	for (int i = 0; i < numActiveConsoleGrabbers; i++)
+	for (unsigned i = 0; i < numActiveConsoleGrabbers; i++)
 	{
 		if (consoleGrabbersList[i] == NULL)
 		{
@@ -1980,7 +1980,7 @@ static uint8_t *LoggerMessagePrepareForPart(CFMutableDataRef encoder, uint32_t r
 	// Ensure a data block has the required storage capacity, update the total size and part count
 	// then return a pointer for fast storage of the data
 	uint8_t *p = CFDataGetMutableBytePtr(encoder);
-	CFIndex size = CFDataGetLength(encoder);
+	uint32_t size = CFDataGetLength(encoder);
 	uint32_t oldSize = ntohl(*(uint32_t *)p);
 	uint32_t newSize = oldSize + requiredExtraBytes;
 	if ((newSize + 4) > size)
