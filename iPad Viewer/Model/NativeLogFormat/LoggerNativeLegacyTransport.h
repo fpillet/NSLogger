@@ -39,13 +39,13 @@
  *
  */
 
+/*
+ * stkim1 08/03/13
+ * This class handles Bonjour Service with DNS-SD for BT connectivity separated in iOS 5 & 6
+ */
 
-#import <Foundation/Foundation.h>
+#import "LoggerTCPTransport.h"
 
-@interface LoggerPreferenceManager : NSObject
-+(instancetype)sharedPrefManager;
-@property (nonatomic, readonly) BOOL		shouldPublishBonjourService;
-@property (nonatomic, readonly) BOOL		hasDirectTCPIPResponder;
-@property (nonatomic, readonly) NSInteger	directTCPIPResponderPort;
-@property (nonatomic, readonly) NSString	*bonjourServiceName;
+@interface LoggerNativeLegacyTransport : LoggerTCPTransport
+@property (nonatomic, assign) BOOL useBluetooth;
 @end

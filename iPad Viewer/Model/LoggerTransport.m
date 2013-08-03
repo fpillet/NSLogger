@@ -40,12 +40,8 @@
  */
 
 #import "LoggerTransport.h"
-#import "LoggerTransportManager.h"
 
 @implementation LoggerTransport
-@synthesize transManager;
-@synthesize prefManager;
-@synthesize certManager;
 @synthesize connections;
 @synthesize secure, active, ready, failed, failureReason;
 @synthesize tag;
@@ -61,10 +57,6 @@
 
 - (void)dealloc
 {
-	self.transManager = nil;
-	self.prefManager = nil;
-	self.certManager = nil;
-	
 	[failureReason release];
 	[connections release];
 	[super dealloc];
@@ -79,7 +71,7 @@
 {
 	if ([connections containsObject:aConnection])
 	{
-		[self.transManager transport:self removeConnection:aConnection];
+		[[LoggerTransportManager sharedTransportManager] transport:self removeConnection:aConnection];
 		
 		[aConnection shutdown];
 
@@ -89,43 +81,50 @@
 
 - (void)reportStatusToManager:(NSDictionary *)aStatusDict
 {
-	[self.transManager presentTransportStatus:aStatusDict];
+	[[LoggerTransportManager sharedTransportManager] presentTransportStatus:aStatusDict];
 }
 
 - (void)reportErrorToManager:(NSDictionary *)anErrorDict
 {
-	[self.transManager presentTransportError:anErrorDict];
+	[[LoggerTransportManager sharedTransportManager] presentTransportError:anErrorDict];
 }
 
 - (void)startup
 {
 	//  subclasses should implement this
+	assert(false);
 }
 
 - (void)shutdown
 {
 	// subclasses should implement this
+	assert(false);
 }
 
 - (void)restart
 {
 	// subclasses should implement this
+	assert(false);
 }
 
 - (NSString *)transportInfoString
 {
-	// subclasses should implement this, LoggerStatusWindowController uses it
+	// subclasses should implement this
+	assert(false);
 	return nil;
 }
 
 - (NSString *)transportStatusString
 {
-	// subclasses should implement this, LoggerStatusWindowController uses it
+	// subclasses should implement this
+	assert(false);
 	return nil;
 }
 
 - (NSDictionary *)status
 {
+	// subclasses should implement this
+	assert(false);
 	return nil;
 }
 
@@ -135,7 +134,7 @@
 - (void)connection:(LoggerConnection *)theConnection
 didEstablishWithMessage:(LoggerMessage *)theMessage
 {
-	[self.transManager
+	[[LoggerTransportManager sharedTransportManager]
 	 transport:self
 	 didEstablishConnection:theConnection
 	 clientInfo:theMessage];
@@ -146,7 +145,7 @@ didEstablishWithMessage:(LoggerMessage *)theMessage
 didReceiveMessages:(NSArray *)theMessages
 			 range:(NSRange)rangeInMessagesList
 {
-	[self.transManager
+	[[LoggerTransportManager sharedTransportManager]
 	 transport:self
 	 connection:theConnection
 	 didReceiveMessages:theMessages
@@ -156,7 +155,7 @@ didReceiveMessages:(NSArray *)theMessages
 -(void)connection:(LoggerConnection *)theConnection
 didDisconnectWithMessage:(LoggerMessage *)theMessage
 {
-	[self.transManager
+	[[LoggerTransportManager sharedTransportManager]
 	 transport:self
 	 didDisconnectRemote:theConnection
 	 lastMessage:theMessage];

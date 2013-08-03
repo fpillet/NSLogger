@@ -42,6 +42,8 @@
 #include <time.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+
+#import "LoggerCommon.h"
 #import "LoggerConstModel.h"
 
 @class LoggerConnection;

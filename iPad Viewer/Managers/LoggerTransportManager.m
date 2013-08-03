@@ -38,37 +38,38 @@
  *
  */
 
-
-#import "LoggerTransportManager.h"
-#import "LoggerCertManager.h"
-#import "LoggerNativeTransport.h"
 #import "SynthesizeSingleton.h"
-#import <zlib.h>
+#import "LoggerTransportManager.h"
+
+#import "LoggerNativeLegacyTransport.h"
+#import "LoggerConnection.h"
+
+#import "LoggerPreferenceManager.h"
+#import "LoggerDataManager.h"
 
 static NSString * const kTransportNotificationKey = @"notiKey";
 static NSString * const kTransportNotificationUserInfo = @"userInfo";
 
 @interface LoggerTransportManager()
-@property (nonatomic, retain) LoggerCertManager *certManager;
+@property (nonatomic, retain, readwrite) LoggerCertManager *certificateStorage;
 @property (nonatomic, retain) NSMutableArray	*transports;
 
 - (void)createTransports;
 - (void)destoryTransports;
 - (void)startTransports;
 - (void)stopTransports;
--(void)presentNotificationOnMainThread:(NSDictionary *)aNotiDict;
+- (void)presentNotificationOnMainThread:(NSDictionary *)aNotiDict;
 @end
 
 @implementation LoggerTransportManager
 {
-	LoggerCertManager			*_certManager;
+	LoggerCertManager			*_certificateStorage;
 	LoggerPreferenceManager		*_prefManager;
 	NSMutableArray				*_transports;
 	LoggerDataManager			*_dataManager;
-	
 }
 @synthesize prefManager = _prefManager;
-@synthesize certManager = _certManager;
+@synthesize certificateStorage = _certificateStorage;
 @synthesize transports = _transports;
 @synthesize dataManager = _dataManager;
 
@@ -79,14 +80,14 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 	self = [super init];
 	if (self)
 	{
-		if(_certManager == nil)
+		if(_certificateStorage == nil)
 		{
 			NSError *error = nil;
 			LoggerCertManager *aCertManager = [[LoggerCertManager alloc] init];
-			_certManager = aCertManager;
-			
-			// we load server cert at this point to reduce any delay might happen later
-			// in transport object.
+			_certificateStorage = aCertManager;
+
+			// we load server cert at this point to reduce any delay might happen
+			// later in transport object.
 			if(![aCertManager loadEncryptionCertificate:&error])
 			{
 				// @@@ TODO: do something when error is not nil;
@@ -106,13 +107,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 -(void)createTransports
 {
 	// unencrypted Bonjour service (for backwards compatibility)
-	LoggerNativeTransport *t;
+	LoggerNativeLegacyTransport *t;
 
 	// SSL Bonjour service
-	t = [[LoggerNativeTransport alloc] init];
-	t.transManager = self;
-	t.prefManager = [self prefManager];
-	t.certManager = self.certManager;
+	t = [[LoggerNativeLegacyTransport alloc] init];
 	t.publishBonjourService = YES;
 	t.useBluetooth = YES;
 	t.secure = YES;
@@ -121,10 +119,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 	[t release];
 	
 	// non-SSL bonjour Service
-	t = [[LoggerNativeTransport alloc] init];
-	t.transManager = self;
-	t.prefManager = [self prefManager];
-	t.certManager = self.certManager;
+	t = [[LoggerNativeLegacyTransport alloc] init];
 	t.publishBonjourService = YES;
 	t.useBluetooth = YES;
 	t.secure = NO;
@@ -133,10 +128,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 	[t release];
 
 	// Direct TCP/IP service (SSL mandatory)
-	t = [[LoggerNativeTransport alloc] init];
-	t.transManager = self;
-	t.prefManager = [self prefManager];
-	t.certManager = self.certManager;
+	t = [[LoggerNativeLegacyTransport alloc] init];
 	t.listenerPort = [self.prefManager directTCPIPResponderPort];
 	t.secure = YES;
 	t.tag = 2;
@@ -153,7 +145,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 -(void)startTransports
 {
 	// Start and stop transports as needed
-	for (LoggerNativeTransport *transport in self.transports)
+	for (LoggerNativeLegacyTransport *transport in self.transports)
 	{
 		if(!transport.active)
 		{
@@ -165,7 +157,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTransportManager,sharedTransp
 -(void)stopTransports
 {	
 	// Start and stop transports as needed
-	for (LoggerNativeTransport *transport in self.transports)
+	for (LoggerNativeLegacyTransport *transport in self.transports)
 	{
 		[transport shutdown];
 	}

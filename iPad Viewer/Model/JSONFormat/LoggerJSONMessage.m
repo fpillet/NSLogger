@@ -1,9 +1,9 @@
 /*
- * LoggerNativeConnection.m
+ * LoggerJSONMessage.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2013 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,55 +28,18 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import "LoggerJSONMessage.h"
+#import "LoggerCommon.h"
 
-#import "LoggerNativeConnection.h"
+@implementation LoggerJSONMessage
 
-#define TMP_BUF_SIZE	((size_t)32767)
-
-@implementation LoggerNativeConnection
-
-@synthesize readStream, buffer, tmpBuf, tmpBufSize;
-
-- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+- (id)initWithData:(NSData *)data connection:(LoggerConnection *)aConnection
 {
-	if ((self = [super initWithAddress:anAddress]) != nil)
+	if ((self = [super init]) != nil)
 	{
-		readStream = [anInputStream retain];
-
-		tmpBufSize = TMP_BUF_SIZE;
-		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
-		if (tmpBuf == NULL)
-			return nil;
-		
-		buffer = [[NSMutableData alloc] initWithCapacity:2048];
+		// TODO
 	}
 	return self;
-}
-
-- (void)dealloc
-{
-	assert(readStream == nil);
-	[buffer release];
-	if (tmpBuf != NULL)
-		free(tmpBuf);
-	[super dealloc];
-}
-
-- (void)shutdown
-{
-	if (readStream != nil)
-	{
-		[readStream close];
-		[readStream setDelegate:nil];
-		[readStream
-		 removeFromRunLoop:
-			[NSRunLoop currentRunLoop]
-		 forMode:NSDefaultRunLoopMode];
-		[readStream release];
-		readStream = nil;
-	}
-	[buffer setLength:0];
-	[super shutdown];
 }
 
 @end

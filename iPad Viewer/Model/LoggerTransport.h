@@ -40,50 +40,16 @@
  */
 
 #import <Foundation/Foundation.h>
-
-#import "LoggerConstApp.h"
-#import "LoggerConstController.h"
-#import "LoggerCertManager.h"
-#import "LoggerPreferenceManager.h"
 #import <CFNetwork/CFNetwork.h>
 #import <Security/SecureTransport.h>
 
-#import "LoggerConstModel.h"
+#import "LoggerPreferenceManager.h"
+#import "LoggerTransportManager.h"
+
 #import "LoggerConnection.h"
-
-@class LoggerTransportManager;
-@class LoggerTransport;
-
-@protocol LoggerTransportDelegate <NSObject>
-
-// report a new connection from transport (new connection is considered live
-// once we have received the ClientInfo message) or reuse an existing document
-// if this is a reconnection
-- (void)transport:(LoggerTransport *)theTransport
-didEstablishConnection:(LoggerConnection *)theConnection
-	   clientInfo:(LoggerMessage *)theInfoMessage;
-
-// method reporting messages to transport maanger
-- (void)transport:(LoggerTransport *)theTransport
-	   connection:(LoggerConnection *)theConnection
-didReceiveMessages:(NSArray *)theMessages
-			range:(NSRange)rangeInMessagesList;
-
-// method reporting to transport manager
-- (void)transport:(LoggerTransport *)theTransport
-didDisconnectRemote:(LoggerConnection *)theConnection
-	  lastMessage:(LoggerMessage *)theLastMessage;
-
-- (void)transport:(LoggerTransport *)theTransport
- removeConnection:(LoggerConnection *)theConnection;
-
-@end
 
 @interface LoggerTransport : NSObject <LoggerConnectionDelegate>
 {
-	LoggerTransportManager		*transManager;
-	LoggerPreferenceManager		*prefManager;
-	LoggerCertManager			*certManager;
 	NSMutableArray				*connections;
 	NSString					*failureReason;
 	
@@ -96,9 +62,6 @@ didDisconnectRemote:(LoggerConnection *)theConnection
 	// tag of transport. This is more of an unique id for views to identify
 	int32_t						tag;
 }
-@property (nonatomic, assign)	LoggerTransportManager	*transManager;
-@property (nonatomic, retain)	LoggerPreferenceManager	*prefManager;
-@property (nonatomic, retain)	LoggerCertManager		*certManager;
 @property (nonatomic, assign)	BOOL					secure;
 @property (nonatomic, readonly) BOOL					active;
 @property (nonatomic, readonly) BOOL					failed;
@@ -113,12 +76,10 @@ didDisconnectRemote:(LoggerConnection *)theConnection
 - (void)addConnection:(LoggerConnection *)aConnection;
 - (void)removeConnection:(LoggerConnection *)aConnection;
 
-- (void)reportStatusToManager:(NSDictionary *)aStatusDict;
-- (void)reportErrorToManager:(NSDictionary *)anErrorDict;
-
 - (NSString *)transportInfoString;
 - (NSString *)transportStatusString;
 
 - (NSDictionary *)status;
-
+- (void)reportStatusToManager:(NSDictionary *)aStatusDict;
+- (void)reportErrorToManager:(NSDictionary *)anErrorDict;
 @end

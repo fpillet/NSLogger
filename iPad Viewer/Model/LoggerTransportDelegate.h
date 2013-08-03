@@ -39,13 +39,31 @@
  *
  */
 
+@class LoggerTransport;
+@class LoggerConnection;
+@class LoggerMessage;
 
-#import <Foundation/Foundation.h>
+@protocol LoggerTransportDelegate <NSObject>
 
-@interface LoggerPreferenceManager : NSObject
-+(instancetype)sharedPrefManager;
-@property (nonatomic, readonly) BOOL		shouldPublishBonjourService;
-@property (nonatomic, readonly) BOOL		hasDirectTCPIPResponder;
-@property (nonatomic, readonly) NSInteger	directTCPIPResponderPort;
-@property (nonatomic, readonly) NSString	*bonjourServiceName;
+// report a new connection from transport (new connection is considered live
+// once we have received the ClientInfo message) or reuse an existing document
+// if this is a reconnection
+- (void)transport:(LoggerTransport *)theTransport
+didEstablishConnection:(LoggerConnection *)theConnection
+	   clientInfo:(LoggerMessage *)theInfoMessage;
+
+// method reporting messages to transport maanger
+- (void)transport:(LoggerTransport *)theTransport
+	   connection:(LoggerConnection *)theConnection
+didReceiveMessages:(NSArray *)theMessages
+			range:(NSRange)rangeInMessagesList;
+
+// method reporting to transport manager
+- (void)transport:(LoggerTransport *)theTransport
+didDisconnectRemote:(LoggerConnection *)theConnection
+	  lastMessage:(LoggerMessage *)theLastMessage;
+
+- (void)transport:(LoggerTransport *)theTransport
+ removeConnection:(LoggerConnection *)theConnection;
+
 @end

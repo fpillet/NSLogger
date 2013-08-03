@@ -1,9 +1,9 @@
 /*
- * LoggerNativeConnection.h
+ * LoggerJSONMessage.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2011 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2013 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,22 +28,14 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import "LoggerIPConnection.h"
+#import "LoggerMessage.h"
 
-@interface LoggerNativeConnection : LoggerIPConnection
+@class LoggerConnection;
+
+@interface LoggerJSONMessage : LoggerMessage
 {
-	NSInputStream *readStream;
-	NSMutableData *buffer;
-	
-	uint8_t *tmpBuf;
-	NSUInteger tmpBufSize;
 }
 
-@property (nonatomic, retain) NSInputStream *readStream;
-@property (nonatomic, readonly) NSMutableData *buffer;
-@property (nonatomic, readonly) uint8_t *tmpBuf;
-@property (nonatomic, readonly) NSUInteger tmpBufSize;
-
-- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+- (id)initWithData:(NSData *)data connection:(LoggerConnection *)aConnection;
 
 @end

@@ -41,12 +41,14 @@
 
 
 #import <Foundation/Foundation.h>
-#import "LoggerConstApp.h"
-#import "LoggerConstController.h"
 #import <zlib.h>
 
-@class LoggerConnection, LoggerMessage;
+#import "LoggerConstApp.h"
+#import "LoggerConstController.h"
 
+#import "LoggerMessage.h"
+
+@class LoggerConnection;
 // -----------------------------------------------------------------------------
 // LoggerConnectionDelegate protocol
 // -----------------------------------------------------------------------------

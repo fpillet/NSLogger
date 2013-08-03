@@ -1,5 +1,5 @@
 /*
- * LoggerNativeTransport.h
+ * LoggerTCPConnection.h
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -28,15 +28,22 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
+#import "LoggerIPConnection.h"
 
-/*
- * Default transport for NSLogger messages, publishes a Bonjour service,
- * and can listen on a specific port (or by default on a port attributed by
- * the OS). In case we listen on a specific, user-defined port, the Bonjour
- * service name will be suffixed
- */
+@interface LoggerTCPConnection : LoggerIPConnection
+{
+	NSInputStream *readStream;
+	NSMutableData *buffer;
+	
+	uint8_t *tmpBuf;
+	NSUInteger tmpBufSize;
+}
 
-#import "LoggerTCPTransport.h"
+@property (nonatomic, retain) NSInputStream *readStream;
+@property (nonatomic, readonly) NSMutableData *buffer;
+@property (nonatomic, readonly) uint8_t *tmpBuf;
+@property (nonatomic, readonly) NSUInteger tmpBufSize;
 
-@interface LoggerNativeTransport : LoggerTCPTransport
+- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+
 @end

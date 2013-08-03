@@ -40,19 +40,20 @@
 
 
 #import <Foundation/Foundation.h>
-#import "LoggerPreferenceManager.h"
-#import "LoggerTransport.h"
-#import "LoggerConnection.h"
-#import "LoggerDataManager.h"
 #import "AppDelegateCycleHandle.h"
+#import "LoggerTransportDelegate.h"
+#import "LoggerCertManager.h"
 
-@interface LoggerTransportManager : NSObject <LoggerTransportDelegate,AppDelegateCycleHandle>
+@class LoggerPreferenceManager;
+@class LoggerDataManager;
+
+@interface LoggerTransportManager : NSObject <AppDelegateCycleHandle,LoggerTransportDelegate>
+@property (nonatomic, retain, readonly) LoggerCertManager	*certificateStorage;
 @property (nonatomic, retain) LoggerPreferenceManager		*prefManager;
 @property (nonatomic, assign) LoggerDataManager				*dataManager;
-+ (LoggerTransportManager *)sharedTransportManager;
 
-
--(void)presentTransportStatus:(NSDictionary *)aStatusDict forKey:(NSString *)aKey;
++ (instancetype)sharedTransportManager;
+- (void)presentTransportStatus:(NSDictionary *)aStatusDict forKey:(NSString *)aKey;
 
 // presnet status of a transport to view layer
 - (void)presentTransportStatus:(NSDictionary *)aStatusDict;

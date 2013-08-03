@@ -1,5 +1,10 @@
 /*
- * LoggerNativeTransport.h
+ * LoggerTCPTransport.h
+ *
+ * Default transport for NSLogger messages, publishes a Bonjour service,
+ * and can listen on a specific port (or by default on a port attributed by
+ * the OS). In case we listen on a specific, user-defined port, the Bonjour
+ * service name will be suffixed
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -29,14 +34,36 @@
  * 
  */
 
-/*
- * Default transport for NSLogger messages, publishes a Bonjour service,
- * and can listen on a specific port (or by default on a port attributed by
- * the OS). In case we listen on a specific, user-defined port, the Bonjour
- * service name will be suffixed
- */
+#import "LoggerTransport.h"
 
-#import "LoggerTCPTransport.h"
+@class LoggerTCPConnection;
 
-@interface LoggerNativeTransport : LoggerTCPTransport
+@interface LoggerTCPTransport : LoggerTransport <NSNetServiceDelegate, NSStreamDelegate>
+{
+	NSThread			*listenerThread;
+	NSNetService		*bonjourService;
+	CFSocketRef			listenerSocket_ipv4;
+	CFSocketRef			listenerSocket_ipv6;
+	NSString			*bonjourServiceName;
+	int					listenerPort;
+	BOOL				publishBonjourService;
+}
+
+@property (nonatomic, assign) int listenerPort;
+@property (nonatomic, assign) BOOL publishBonjourService;
+@property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;
+@property (nonatomic, readonly) CFSocketRef listenerSocket_ipv6;
+
+
+// methods to override by subclasses
+- (NSString *)bonjourServiceName;
+- (NSString *)bonjourServiceType;
+- (NSInteger)tcpPort;
+- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is clientAddress:(NSData *)addr;
+- (void)processIncomingData:(LoggerTCPConnection *)cnx;
+
+// added for iPad Version
+- (void)closeSockets;
 @end
+
+extern void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CFDataRef address, const void *data, void *info);

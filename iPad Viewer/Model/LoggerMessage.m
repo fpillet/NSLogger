@@ -42,7 +42,6 @@
 #import <objc/runtime.h>
 #include <sys/time.h>
 #import "LoggerMessage.h"
-#import "LoggerCommon.h"
 #import "LoggerConnection.h"
 #import "NullStringCheck.h"
 

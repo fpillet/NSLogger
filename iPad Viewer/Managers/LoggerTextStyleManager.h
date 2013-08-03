@@ -45,7 +45,7 @@
 #import "LoggerConstView.h"
 
 @interface LoggerTextStyleManager : NSObject
-+(LoggerTextStyleManager *)sharedStyleManager;
++(instancetype)sharedStyleManager;
 
 /*
  * https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_Framework_Ref/_index.html

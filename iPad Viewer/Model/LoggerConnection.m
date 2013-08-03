@@ -42,8 +42,6 @@
 #include <netinet/in.h>
 #import <objc/runtime.h>
 #import "LoggerConnection.h"
-#import "LoggerMessage.h"
-#import "LoggerCommon.h"
 #import "NullStringCheck.h"
 
 char sConnectionAssociatedObjectKey = 1;
@@ -110,43 +108,42 @@ char sConnectionAssociatedObjectKey = 1;
 		uLong hash = adler32(0L, Z_NULL, 0);
 		
 		NSDictionary *parts = message.parts;
-		NSString *value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
-		
+		NSString *value = [parts objectForKey:@(PART_KEY_CLIENT_NAME)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientName = value;
 			hash = adler32(hash, (Bytef *)[self.clientName UTF8String], (uInt)[self.clientName length]);
 		}
 		
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+		value = [parts objectForKey:@(PART_KEY_CLIENT_VERSION)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientVersion = value;
 			hash = adler32(hash, (Bytef *)[self.clientVersion UTF8String], (uInt)[self.clientVersion length]);
 		}
-		
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+
+		value = [parts objectForKey:@(PART_KEY_OS_NAME)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientOSName = value;
 			hash = adler32(hash, (Bytef *)[self.clientOSName UTF8String], (uInt)[self.clientOSName length]);
 		}
 		
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+		value = [parts objectForKey:@(PART_KEY_OS_VERSION)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientOSVersion = value;
 			hash = adler32(hash, (Bytef *)[self.clientOSVersion UTF8String], (uInt)[self.clientOSVersion length]);
 		}
 		
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+		value = [parts objectForKey:@(PART_KEY_CLIENT_MODEL)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientDevice = value;
 			hash = adler32(hash, (Bytef *)[self.clientDevice UTF8String], (uInt)[self.clientDevice length]);
 		}
-		
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+
+		value = [parts objectForKey:@(PART_KEY_UNIQUEID)];
 		if (!IS_NULL_STRING(value))
 		{
 			self.clientUDID = value;

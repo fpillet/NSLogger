@@ -1,5 +1,5 @@
 /*
- * LoggerNativeTransport.h
+ * LoggerTCPConnection.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
@@ -27,16 +27,51 @@
  * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
- */
+ */#import "LoggerTCPConnection.h"
 
-/*
- * Default transport for NSLogger messages, publishes a Bonjour service,
- * and can listen on a specific port (or by default on a port attributed by
- * the OS). In case we listen on a specific, user-defined port, the Bonjour
- * service name will be suffixed
- */
+#define TMP_BUF_SIZE	((size_t)32767)
 
-#import "LoggerTCPTransport.h"
+@implementation LoggerTCPConnection
 
-@interface LoggerNativeTransport : LoggerTCPTransport
+@synthesize readStream, buffer, tmpBuf, tmpBufSize;
+
+- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+{
+	if ((self = [super initWithAddress:anAddress]) != nil)
+	{
+		readStream = [anInputStream retain];
+
+		tmpBufSize = TMP_BUF_SIZE;
+		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
+		if (tmpBuf == NULL)
+			return nil;
+		
+		buffer = [[NSMutableData alloc] initWithCapacity:2048];
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	assert(readStream == nil);
+	[buffer release];
+	if (tmpBuf != NULL)
+		free(tmpBuf);
+	[super dealloc];
+}
+
+- (void)shutdown
+{
+	if (readStream != nil)
+	{
+		[readStream close];
+		[readStream setDelegate:nil];
+		[readStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+		[readStream release];
+		readStream = nil;
+	}
+	[buffer setLength:0];
+	[super shutdown];
+}
+
 @end
