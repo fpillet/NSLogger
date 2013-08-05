@@ -1,8 +1,8 @@
-# NSLogger Legacy Bluetooth Client (iOS 5 &amp; 6)#
+## NSLogger Legacy Bluetooth Client (iOS 5 &amp; 6) ##
 
 <sup>*</sup> Compatible with ver 1.5-beta 01-JUL-2013
 
-## Bluetooth Connection
+### Bluetooth Connections in iOS
 There are three Bluetooth frameworks and one API publicly opened in iOS 5 &amp; 6  
 1. [CoreBluetooth](http://developer.apple.com/library/ios/#documentation/CoreBluetooth/Reference/CoreBluetooth_Framework/_index.html)  
 2. [External Accessary](http://developer.apple.com/library/ios/#documentation/ExternalAccessory/Reference/ExternalAccessoryFrameworkReference/_index.ht]ml)  
@@ -17,7 +17,7 @@ The one that is most clutter-free and provides best possible use case is, so far
 3. Start logging. Look at the Bluetooth mark on top right corner. :)  
 
 ### iPhone Client Screenshot (Apr. 27, 2013)
-<img width="320" src="https://raw.github.com/fpillet/NSLogger/bluetooth/Screenshots/iphone_bluetooth_13_04_27.png" />
+<img width="320" src="https://raw.github.com/fpillet/NSLogger/master/Screenshots/iphone_bluetooth_13_04_27.png" />
 
 NSLogger is Copyright (c) 2010-2013 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
