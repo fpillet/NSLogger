@@ -55,6 +55,25 @@
 // use of -[NSString stringWithFormat:arguments:]
 #define	ALLOW_COCOA_USE			1
 
+// It is necessary to control Bluetooth connection from a lower level api since
+// Apple has removed the capacity to control BT from CFNetService from iOS 5.0 onward.
+// http://developer.apple.com/library/ios/#qa/qa1753/_index.html#//apple_ref/doc/uid/DTS40011315
+// DNS-SD (DNS Service Discovery) is generally not a clean-cut appearch to handle
+// Bonjour connection, but it is the most clutter-free, generally available, and inexpensive
+// approach than GameKit/External Accessary/CoreBluetooth.
+// DNS-SD can further completely replace CFNetService/NSNetService since
+// CFStream is smart enough to control wirless radios (WiFi, Cellular...), we will not
+// immediately jump the gun b/c current implementation is solidly performing.
+// You can read more about https://devforums.apple.com/message/806224#806224
+// Set this to 0 if you don't want bluetooth connection at all.
+#define LOG_TO_BLUETOOTH_CONNECTION	1
+
+#if LOG_TO_BLUETOOTH_CONNECTION
+#include <dns_util.h>
+#include <dns_sd.h>
+#endif
+
+
 /* -----------------------------------------------------------------
  * Logger option flags & default options
  * -----------------------------------------------------------------
@@ -66,6 +85,9 @@ enum {
 	kLoggerOption_BrowseOnlyLocalDomain				= 0x08,
 	kLoggerOption_UseSSL							= 0x10,
 	kLoggerOption_CaptureSystemConsole				= 0x20
+#if LOG_TO_BLUETOOTH_CONNECTION
+	,kLoggerOption_LogToBluetoothConnection			= 0x40
+#endif
 };
 
 #define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
@@ -80,6 +102,30 @@ enum {
  */
 typedef struct
 {
+#if LOG_TO_BLUETOOTH_CONNECTION
+	/*--------------------------------------------------------------------------
+	 *					DNS-SD-over-Bluetooth Addition
+	 *
+	 * DNS-SD provides three functionalities for Bluetooth; publishing, browsing,
+	 * and resolving. Publishing is for NSLogger Viewer, so let's focus on browsing
+	 * and resolving for client.
+	 * We have one browser and one resolver at this moment since we Bonjour-Over-BT
+	 * only suports PANU-PANU (1:1) connection between two devices.
+	 * It might be possible to find more than one NSLogger services on Client's Bluetooth
+	 * interface. However, we will just take one service at this moment to resolve
+	 * and connect it.
+	 *------------------------------------------------------------------------*/
+	DNSServiceRef dnssdServiceBrowser;              // dns-sd browser service reference
+	CFSocketRef dnssdBrowserSocket;                 // browser service socket to tie in the current runloop
+	CFRunLoopSourceRef dnssdBrowserRunLoop;         // browser service callback runloop
+	
+	DNSServiceRef dnssdServiceResolver;             // dns-sd resolver reference
+	CFSocketRef dnssdResolverSocket;                // resolver reference socket to tie in the current runloop
+	CFRunLoopSourceRef dnssdResolverRunLoop;        // resolver service callback runloop
+
+	/*------------------------------------------------------------------------*/
+#endif
+
 	CFStringRef bufferFile;							// If non-NULL, all buffering is done to the specified file instead of in-memory
 	CFStringRef host;								// Viewer host to connect to (instead of using Bonjour)
 	UInt32 port;									// port on the viewer host

@@ -1,78 +1,23 @@
-# NSLogger #
-![Icon](https://github.com/fpillet/NSLogger/raw/master/Screenshots/icon_small.png "Icon")
+# NSLogger Legacy Bluetooth Client (iOS 5 &amp; 6)#
 
-*NSLogger* is a high perfomance logging utility which displays traces emitted by client applications running on **Mac OS X**, **iOS** and **Android**. It replaces traditional console logging (*NSLog()*, Java *Log*) traces and provides powerful additions like display filtering, image and binary logging, traces buffering, timing information, etc.
+<sup>*</sup> Compatible with ver 1.5-beta 01-JUL-2013
 
-*NSLogger* feature summary:
+## Bluetooth Connection
+There are three Bluetooth frameworks and one API publicly opened in iOS 5 &amp; 6  
+1. [CoreBluetooth](http://developer.apple.com/library/ios/#documentation/CoreBluetooth/Reference/CoreBluetooth_Framework/_index.html)  
+2. [External Accessary](http://developer.apple.com/library/ios/#documentation/ExternalAccessory/Reference/ExternalAccessoryFrameworkReference/_index.ht]ml)  
+3. [GameKit](http://developer.apple.com/library/ios/#documentation/GameKit/Reference/GameKit_Collection/_index.html)  
+4. [Bonjour over Bluetooth (DNS-SD)](http://developer.apple.com/library/ios/#qa/qa1753/_index.html#//apple_ref/doc/uid/DTS40011315)  
 
-  * View logs using the Mac OS X desktop viewer, accept connections from local network clients (using Bonjour) or remote clients connecting directly over the internet
-  * Online (application running and connected to _NSLogger_) and offline (saved logs) log viewing
-  * Buffer all traces in memory or in a file, send them over to viewer when a connection is acquired
-  * Secure logging (connections use SSL by default)
-  * Advanced log filtering options
-  * Save viewer logs to share them and/or review them later
-  * Export logs to text files
-  * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
+The one that is most clutter-free and provides best possible use case is, so far in my opinion, the last one. It requires no additional framework, library, and does not ask user to choose bluetooth connection. It simply finds the nearest possible service on Bluetooth interface and makes use of it.  
 
-**You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki/).**
+### How to run demo
+1. Run iPad Viewer with WiFi off and Bluetooth on from system setting.  
+2. Run iOS client with Bluetooth on. (It's up to use to leave WiFi or cellular on).      
+3. Start logging. Look at the Bluetooth mark on top right corner. :)  
 
-Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
-
-Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host/port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
-
-![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
-
-# One-step setup #
-All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
-
-# Using the desktop logger #
-Start the NSLogger application on Mac OS X. Your client app must run on a device that is on the same network as your Mac. When it starts logging traces, it will automatically (by default) look for the desktop NSLogger using Bonjour. As soon as traces start coming, a new window will open on your Mac. Advanced users can setup a Remote Host / Port to log from a client to a specific host).
-
-You can create custom filters to quickly switch between different views of your logs.
-
-# Evolved logging facility #
-It's very easy to log binary data or images using *NSLogger*. Use the *LogData()* and *LogImage()* calls in your application, and you're done. Advanced users can also enable remote logging to have logs sent directly from remote devices running at distant locations, or have logs be directed to a file that can later be sent to a remote server.
-
-# Powerful desktop viewer #
-The desktop viewer application provides tools like:
-
- * Filters (with [regular expression matching](https://github.com/fpillet/NSLogger/wiki/Tips-and-tricks)) that let your perform data mining in your logs
- * Timing information: each message displays the time elapsed since the previous message in the filtered display, so you can get a sense of time between events in your application.
- * Image and binary data display directly in the log window
- * [Markers](https://github.com/fpillet/NSLogger/wiki/Tips-and-tricks) (when a client is connected, place a marker at the end of a log to clearly see what happens afterwards, for example place a marker before pressing a button in your application)
- * Fast navigation in your logs
- * Display and export all your logs as text
- * Optional display of file, line and function for uncluttered display
- 
- 
-Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When logging to a file, name your log file with extension `.rawnsloggerdata` so NSLogger can reopen and process it. You can have clients remotely generating raw logger data files, then send them to you so you can investigate post-mortem.
-
-Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
-
-![Filter Editor](https://github.com/fpillet/NSLogger/raw/master/Screenshots/filtereditor.png "Filter Editor")
-
-# High performance, low overhead #
-*NSLogger* runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
-
-*NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
-
-# Advanced colors configuration #
-Apply colors to tags and messages using regular expressions.
-
-![Advanced Colors Preferences](https://github.com/djromero/NSLogger/raw/master/Screenshots/advanced_colors_prefs.png "Advanced Colors Preferences")
-
-# Work in progress - Current status #
-This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
-
- * Search and search term highlight in Details window
- * Rewrite of the details window
- * Support time-based filtering (filter clause based on the time lapse between a previous trace)
- * Pause (buffer logs) and resume sending logs to the logger, in order to eliminate NSLogger's network load from the equation when testing networking code
-
-
-You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLogger/wiki/)
-
-NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
+### iPhone Client Screenshot (Apr. 27, 2013)
+<img width="320" src="https://raw.github.com/fpillet/NSLogger/bluetooth/Screenshots/iphone_bluetooth_13_04_27.png" />
 
 NSLogger is Copyright (c) 2010-2013 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
