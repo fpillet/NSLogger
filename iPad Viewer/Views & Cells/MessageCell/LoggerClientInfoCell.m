@@ -60,7 +60,6 @@ extern UIFont *displayMonospacedFont;
 - (void)drawMessageView:(CGRect)cellFrame
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	CGContextSaveGState(context);
 
 	BOOL disconnected = ([self.messageData.type shortValue] == LOGMSG_TYPE_DISCONNECT);
 	BOOL highlighted = [self isHighlighted];
@@ -136,8 +135,6 @@ extern UIFont *displayMonospacedFont;
 	 withFont:displayMonospacedFont
 	 lineBreakMode:NSLineBreakByWordWrapping
 	 alignment:NSTextAlignmentCenter];
-
-	CGContextRestoreGState(context);
 }
 
 @end

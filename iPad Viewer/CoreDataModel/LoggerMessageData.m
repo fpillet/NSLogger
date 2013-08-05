@@ -90,16 +90,24 @@
 	size += [[self functionName] length];
 	size += [[self imageSize] length];
 	size += 4; // landscape height
+	size += [[self landscapeHintSize] length];
+	size += [[self landscapeMessageSize] length];
+	size += 4; // level
+	size += 4; // line num
+	size += [[self messageText] length];
+	size += [[self messageType] length];
+	size += 4; // portraight height
+	size += [[self portraitHintSize] length];
+	size += [[self portraitMessageSize] length];
 	size += 4; // run count
 	size += 4; // sequence
 	size += 4; // tag
+	size += [[self textRepresentation] length];
 	size += [[self threadID] length];
 	size += 8; // timestamp
+	size += [[self timestampString] length];
+	size += 4; // truncated
 	size += 2; // type;
-	size += 4; // lineNumber
-	size += [[self messageText] length];
-	size += [[self messageType] length];
-	size += [[self textRepresentation] length];
 	
 	return size;
 	

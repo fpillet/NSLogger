@@ -1,6 +1,13 @@
 #NSLogger iPad Viewer
 NSLogger iPad Viewer aims to provide an in-field logging capacity to monitor your mobile application's behavior in unfabricated, real-world environments. NSLogger iPad Viewer makes use of Bluetooth connection to transmit an application's logging traces.
 
+## Work-In-Progress
+
+Aug. 6, 2013 : CoreText draws Message text and data binary. Yet, do not stress test since CoreText Objs are instantiated in main thread at draw() call, which prevents iPad viewer from having a tight graphics loop.  
+  
+This is really bad. :(  
+
+
 ##Minimum Requirements
 4.5 <= XCode   
 5.1 <= iOS 

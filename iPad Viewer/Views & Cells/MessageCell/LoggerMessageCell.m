@@ -52,6 +52,8 @@ UIFont *displayMonospacedFont = nil;
 UIColor *defaultBackgroundColor = nil;
 UIColor *defaultTagAndLevelColor = nil;
 
+//#define USE_UIKIT_FOR_DRAWING
+
 @interface LoggerMessageView : UIView
 @end
 @implementation LoggerMessageView
@@ -459,9 +461,9 @@ UIColor *defaultTagAndLevelColor = nil;
 	{
 		case kMessageString:{
 
-			// Draw hint "Double click to see all text..." if needed
-			
 			CGRect textDrawRect = (CGRect){aDrawRect.origin,textDrawSize};
+
+#ifdef USE_UIKIT_FOR_DRAWING
 			// draw text
 			[s
 			 drawInRect:textDrawRect
@@ -469,6 +471,8 @@ UIColor *defaultTagAndLevelColor = nil;
 			 lineBreakMode:NSLineBreakByWordWrapping
 			 alignment:NSTextAlignmentLeft];
 			
+
+			// Draw hint "Double click to see all text..." if needed
 			if (isTruncated)
 			{
 				// draw text frame
@@ -484,10 +488,47 @@ UIColor *defaultTagAndLevelColor = nil;
 				 lineBreakMode:NSLineBreakByWordWrapping
 				 alignment:NSTextAlignmentLeft];
 			}
+#else
+			CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+			CGContextTranslateCTM(context, 0, self.bounds.size.height);
+			CGContextScaleCTM(context, 1.0, -1.0);
+
+			CFRange textRange = CFRangeMake(0, s.length);
 			
+			//  Create an empty mutable string big enough to hold our test
+			CFMutableAttributedStringRef as = CFAttributedStringCreateMutable(kCFAllocatorDefault, s.length);
+			
+			//  Inject our text into it
+			CFAttributedStringReplaceString(as, CFRangeMake(0, 0), (CFStringRef) s);
+
+			CTFontRef f = [[LoggerTextStyleManager sharedStyleManager] defaultFont];
+			CTParagraphStyleRef p = [[LoggerTextStyleManager sharedStyleManager] defaultParagraphStyle];
+			
+			//  Apply our font and line spacing attributes over the span
+			CFAttributedStringSetAttribute(as, textRange, kCTFontAttributeName, f);
+			CFAttributedStringSetAttribute(as, textRange, kCTParagraphStyleAttributeName, p);
+
+
+			CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
+			CGMutablePathRef path = CGPathCreateMutable();
+			CGPathAddRect(path, NULL, textDrawRect);
+
+			CTFrameRef frame = \
+				CTFramesetterCreateFrame(framesetter, CFRangeMake(0, CFAttributedStringGetLength(as)), path, NULL);
+
+			CTFrameDraw(frame, context);
+
+			CFRelease(path);
+			CFRelease(frame);
+			CFRelease(framesetter);
+			CFRelease(as);
+#endif
+
 			break;
 		}
 		case kMessageData: {
+			
+#ifdef USE_UIKIT_FOR_DRAWING
 			[s
 			 drawInRect:aDrawRect
 			 withFont:monospacedFont
@@ -509,7 +550,41 @@ UIColor *defaultTagAndLevelColor = nil;
 				 lineBreakMode:NSLineBreakByWordWrapping
 				 alignment:NSTextAlignmentLeft];
 			}
+#else
+			CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+			CGContextTranslateCTM(context, 0, self.bounds.size.height);
+			CGContextScaleCTM(context, 1.0, -1.0);
+			
+			CFRange textRange = CFRangeMake(0, s.length);
+			
+			//  Create an empty mutable string big enough to hold our test
+			CFMutableAttributedStringRef as = CFAttributedStringCreateMutable(kCFAllocatorDefault, s.length);
+			
+			//  Inject our text into it
+			CFAttributedStringReplaceString(as, CFRangeMake(0, 0), (CFStringRef) s);
+			
+			CTFontRef f = [[LoggerTextStyleManager sharedStyleManager] defaultMonospacedFont];
+			CTParagraphStyleRef p = [[LoggerTextStyleManager sharedStyleManager] defaultMonospacedStyle];
+			
+			//  Apply our font and line spacing attributes over the span
+			CFAttributedStringSetAttribute(as, textRange, kCTFontAttributeName, f);
+			CFAttributedStringSetAttribute(as, textRange, kCTParagraphStyleAttributeName, p);
+			
 
+			CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
+			CGMutablePathRef path = CGPathCreateMutable();
+			CGPathAddRect(path, NULL, aDrawRect);
+			
+			CTFrameRef frame = \
+				CTFramesetterCreateFrame(framesetter, CFRangeMake(0, CFAttributedStringGetLength(as)), path, NULL);
+			
+			CTFrameDraw(frame, context);
+			
+			CFRelease(path);
+			CFRelease(frame);
+			CFRelease(framesetter);
+			CFRelease(as);
+#endif
 			break;
 		}
 		case kMessageImage: {
@@ -538,7 +613,6 @@ UIColor *defaultTagAndLevelColor = nil;
 - (void)drawMessageView:(CGRect)cellFrame
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	CGContextSaveGState(context);
 	
 	// turn antialiasing off
 	CGContextSetShouldAntialias(context, false);
@@ -611,9 +685,6 @@ UIColor *defaultTagAndLevelColor = nil;
 				   CGRectGetWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + DEFAULT_THREAD_COLUMN_WIDTH + MSG_CELL_SIDE_PADDING),
 				   CGRectGetHeight(cellFrame) - MSG_CELL_TOP_BOTTOM_PADDING);
 		
-	[self drawMessageInRect:drawRect highlightedTextColor:nil];
-	
-	
-	CGContextRestoreGState(context);
+	[self drawMessageInRect:drawRect highlightedTextColor:nil];	
 }
 @end

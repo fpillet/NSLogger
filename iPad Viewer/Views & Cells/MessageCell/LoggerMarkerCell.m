@@ -59,8 +59,6 @@ extern UIFont *displayMonospacedFont;
 - (void)drawMessageView:(CGRect)cellFrame
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	CGContextSaveGState(context);
-
 	BOOL highlighted = NO;
 	
 	UIColor *separatorColor =
@@ -111,8 +109,6 @@ extern UIFont *displayMonospacedFont;
 	 withFont:displayMonospacedFont
 	 lineBreakMode:NSLineBreakByWordWrapping
 	 alignment:NSTextAlignmentCenter];
-
-	CGContextRestoreGState(context);
 }
 
 @end

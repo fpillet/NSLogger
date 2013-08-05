@@ -48,6 +48,8 @@
 #import "UIColorRGBA.h"
 #import "time_converter.h"
 #import "LoggerUtils.h"
+#import <CoreText/CoreText.h>
+#import "LoggerTextStyleManager.h"
 
 extern NSString * const kMessageCellReuseID;
 #define DEAFULT_BACKGROUND_GRAY_VALUE	0.98f

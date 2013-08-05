@@ -178,6 +178,7 @@
 		048444B616D29AA600FBAA6B /* LoggerDataEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerDataEntry.m; sourceTree = "<group>"; };
 		048444B716D29AA600FBAA6B /* LoggerDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerDataStorage.h; sourceTree = "<group>"; };
 		048444B816D29AA600FBAA6B /* LoggerDataStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerDataStorage.m; sourceTree = "<group>"; };
+		04910B6617B002DA00825C39 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/iOS/LoggerCommon.h"; sourceTree = "<group>"; };
 		04A4EED51738001E00479F0E /* LoggerClientInfoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerClientInfoCell.h; sourceTree = "<group>"; };
 		04A4EED61738001E00479F0E /* LoggerClientInfoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerClientInfoCell.m; sourceTree = "<group>"; };
 		04A4EED71738001E00479F0E /* LoggerMarkerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerMarkerCell.h; sourceTree = "<group>"; };
@@ -195,7 +196,6 @@
 		04D13F5716B56B17004FDB3A /* LoggerConnectionStatusData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerConnectionStatusData.m; sourceTree = "<group>"; };
 		04D13F5A16B56B2A004FDB3A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		04E405E717A6BDF70013FD63 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
-		04F42DC717ACE4850046CB13 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/iOS/LoggerCommon.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,7 +305,7 @@
 		044FEF0C16AC49810067FA53 = {
 			isa = PBXGroup;
 			children = (
-				04F42DC717ACE4850046CB13 /* LoggerCommon.h */,
+				04910B6617B002DA00825C39 /* LoggerCommon.h */,
 				040AD41B16ACF5F60072DFAD /* Views & Cells */,
 				044FEF8A16AC4A810067FA53 /* ViewController */,
 				044FEF5916AC4A810067FA53 /* Managers */,

@@ -181,7 +181,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 		NSString *fontPath =
 			[NSString stringWithFormat:@"%@/%@"
 			 ,[[NSBundle mainBundle] bundlePath]
-			 ,@"NSLoggerResource.bundle/fonts/digital-7 (italic).ttf"];
+			 ,@"NSLoggerResource.bundle/fonts/Inconsolata.ttf"];
 		
 		CGDataProviderRef fontProvider = CGDataProviderCreateWithFilename([fontPath UTF8String]);
 		CGFontRef cgFont = CGFontCreateWithDataProvider(fontProvider);

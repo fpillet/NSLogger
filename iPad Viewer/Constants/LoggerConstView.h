@@ -71,12 +71,12 @@ extern NSString * const kBottomHintText;
 extern NSString * const kBottomHintData;
 
 extern NSString * const kDefaultFontName;
-#define DEFAULT_FONT_SIZE				11.f
+#define DEFAULT_FONT_SIZE				12.f
 
 extern NSString * const kTagAndLevelFontName;
 #define DEFAULT_TAG_LEVEL_SIZE			11.f
 
 extern NSString * const kMonospacedFontName;
-#define DEFAULT_MONOSPACED_SIZE			11.f
+#define DEFAULT_MONOSPACED_SIZE			12.f
 
 extern NSString * const kMessageAttributesChangedNotification;
