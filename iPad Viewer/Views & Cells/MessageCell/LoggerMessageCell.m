@@ -64,6 +64,9 @@ UIColor *defaultTagAndLevelColor = nil;
 @end
 
 @implementation LoggerMessageCell
+{
+	CTFrameRef _messageframe;
+}
 @synthesize hostTableView = _hostTableView;
 @synthesize messageData = _messageData;
 @synthesize imageData = _imageData;
@@ -245,69 +248,48 @@ UIColor *defaultTagAndLevelColor = nil;
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSaveGState(context);
 	
-	// set text color
-	[[UIColor blackColor] set];
+	// flip context vertically
+	CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+	CGContextTranslateCTM(context, 0, self.bounds.size.height);
+	CGContextScaleCTM(context, 1.0, -1.0);
 
+	// clip context
 	CGContextClipToRect(context, aDrawRect);
-	CGRect tr = CGRectInset(aDrawRect, 2, 0);
+	CGRect tr = CGRectInset(aDrawRect, 2, 2);
 	
-	// Prepare time delta between this message and the previous displayed (filtered) message
-
-	struct timeval tv = int64totime([self.messageData.timestamp unsignedLongLongValue]);
-
-	//struct timeval td;
-
-#ifdef USE_TM_COMPARISON
-	if (previousMessage != nil)
-		[message computeTimeDelta:&td since:previousMessage];
-#endif
-
-	time_t sec = tv.tv_sec;
-	struct tm *t = localtime(&sec);
-
-	NSString *timestampStr;
-	if (tv.tv_usec == 0)
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec];
-	else
-		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000];
-
-#ifdef USE_TM_COMPARISON
-	NSString *timeDeltaStr = nil;
-	if (previousMessage != nil)
-		timeDeltaStr = StringWithTimeDelta(&td);
-#endif
 	
-	CGSize bounds = [timestampStr
-					 sizeWithFont:displayDefaultFont
-					 forWidth:tr.size.width
-					 lineBreakMode:NSLineBreakByWordWrapping];
-	CGRect timeRect = CGRectMake(CGRectGetMinX(tr), CGRectGetMinY(tr), CGRectGetWidth(tr), bounds.height);
-	//CGRect deltaRect = CGRectMake(CGRectGetMinY(tr), CGRectGetMaxY(timeRect)+1, CGRectGetWidth(tr), tr.size.height - bounds.height - 1);
-
-/* will be added for ios6 support
-	if (aHighlightedTextColor)
-	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-	}
-*/
-	[timestampStr
-	 drawInRect:timeRect
-	 withFont:displayDefaultFont
-	 lineBreakMode:NSLineBreakByWordWrapping
-	 alignment:NSTextAlignmentLeft];
-/*
-	attrs = [self timedeltaAttributes];
-	if (highlightedTextColor)
-	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-	}
-	[timeDeltaStr drawWithRect:deltaRect
-					   options:NSStringDrawingUsesLineFragmentOrigin
-					attributes:attrs];
-*/
-
+	NSString *s = self.messageData.timestampString;
+	CFRange textRange = CFRangeMake(0, s.length);
+	
+	//  Create an empty mutable string big enough to hold our test
+	CFMutableAttributedStringRef as = CFAttributedStringCreateMutable(kCFAllocatorDefault, s.length);
+	
+	//  Inject our text into it
+	CFAttributedStringReplaceString(as, CFRangeMake(0, 0), (CFStringRef) s);
+	
+	CTFontRef f = [[LoggerTextStyleManager sharedStyleManager] defaultFont];
+	CTParagraphStyleRef p = [[LoggerTextStyleManager sharedStyleManager] defaultParagraphStyle];
+	
+	//  Apply our font and line spacing attributes over the span
+	CFAttributedStringSetAttribute(as, textRange, kCTFontAttributeName, f);
+	CFAttributedStringSetAttribute(as, textRange, kCTParagraphStyleAttributeName, p);
+	
+	
+	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
+	CGMutablePathRef path = CGPathCreateMutable();
+	CGPathAddRect(path, NULL, tr);
+	
+	CTFrameRef frame = \
+	CTFramesetterCreateFrame(framesetter, CFRangeMake(0, CFAttributedStringGetLength(as)), path, NULL);
+	
+	CFRelease(path);
+	CFRelease(framesetter);
+	CFRelease(as);
+	
+	
+	CTFrameDraw(frame, context);
+	CFRelease(frame);
+	
 	CGContextRestoreGState(context);
 }
 
@@ -449,46 +431,13 @@ UIColor *defaultTagAndLevelColor = nil;
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSaveGState(context);
-	
-	[[UIColor blackColor] set];
-	
-	UIFont *monospacedFont = displayMonospacedFont;
-	CGSize textDrawSize = CGSizeFromString([self.messageData portraitMessageSize]);
-	BOOL isTruncated = [self.messageData.truncated boolValue];
+
 	NSString *s = [self.messageData textRepresentation];
 
 	switch([self.messageData dataType])
 	{
 		case kMessageString:{
 
-			CGRect textDrawRect = (CGRect){aDrawRect.origin,textDrawSize};
-
-#ifdef USE_UIKIT_FOR_DRAWING
-			// draw text
-			[s
-			 drawInRect:textDrawRect
-			 withFont:monospacedFont
-			 lineBreakMode:NSLineBreakByWordWrapping
-			 alignment:NSTextAlignmentLeft];
-			
-
-			// Draw hint "Double click to see all text..." if needed
-			if (isTruncated)
-			{
-				// draw text frame
-				NSString *hint = NSLocalizedString(kBottomHintText, nil);
-				CGSize hintDrawSize = CGSizeFromString([self.messageData portraitHintSize]);
-				CGRect hintDrawRect = \
-					(CGRect){{CGRectGetMinX(aDrawRect),CGRectGetMinY(aDrawRect) + textDrawSize.height},hintDrawSize};
-
-				// draw hint first
-				[hint
-				 drawInRect:hintDrawRect
-				 withFont:monospacedFont
-				 lineBreakMode:NSLineBreakByWordWrapping
-				 alignment:NSTextAlignmentLeft];
-			}
-#else
 			CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 			CGContextTranslateCTM(context, 0, self.bounds.size.height);
 			CGContextScaleCTM(context, 1.0, -1.0);
@@ -511,46 +460,22 @@ UIColor *defaultTagAndLevelColor = nil;
 
 			CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
 			CGMutablePathRef path = CGPathCreateMutable();
-			CGPathAddRect(path, NULL, textDrawRect);
+			CGPathAddRect(path, NULL, aDrawRect);
 
 			CTFrameRef frame = \
 				CTFramesetterCreateFrame(framesetter, CFRangeMake(0, CFAttributedStringGetLength(as)), path, NULL);
-
-			CTFrameDraw(frame, context);
-
+			
 			CFRelease(path);
-			CFRelease(frame);
 			CFRelease(framesetter);
 			CFRelease(as);
-#endif
+
+			CTFrameDraw(frame, context);
+			CFRelease(frame);
 
 			break;
 		}
 		case kMessageData: {
 			
-#ifdef USE_UIKIT_FOR_DRAWING
-			[s
-			 drawInRect:aDrawRect
-			 withFont:monospacedFont
-			 lineBreakMode:NSLineBreakByWordWrapping
-			 alignment:NSTextAlignmentLeft];
-
-			// Draw hint "Double click to see all text..." if needed
-			if (isTruncated)
-			{
-				NSString *hint = NSLocalizedString(kBottomHintData, nil);
-				CGSize hintDrawSize = CGSizeFromString([self.messageData portraitHintSize]);
-
-				CGRect hintDrawRect = \
-					(CGRect){{CGRectGetMinX(aDrawRect),CGRectGetMinY(aDrawRect) + textDrawSize.height},hintDrawSize};
-
-				[hint
-				 drawInRect:hintDrawRect
-				 withFont:monospacedFont
-				 lineBreakMode:NSLineBreakByWordWrapping
-				 alignment:NSTextAlignmentLeft];
-			}
-#else
 			CGContextSetTextMatrix(context, CGAffineTransformIdentity);
 			CGContextTranslateCTM(context, 0, self.bounds.size.height);
 			CGContextScaleCTM(context, 1.0, -1.0);
@@ -570,7 +495,6 @@ UIColor *defaultTagAndLevelColor = nil;
 			CFAttributedStringSetAttribute(as, textRange, kCTFontAttributeName, f);
 			CFAttributedStringSetAttribute(as, textRange, kCTParagraphStyleAttributeName, p);
 			
-
 			CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
 			CGMutablePathRef path = CGPathCreateMutable();
 			CGPathAddRect(path, NULL, aDrawRect);
@@ -584,13 +508,13 @@ UIColor *defaultTagAndLevelColor = nil;
 			CFRelease(frame);
 			CFRelease(framesetter);
 			CFRelease(as);
-#endif
+
 			break;
 		}
 		case kMessageImage: {
 			if(_imageData != nil)
 			{
-				
+				//TODO:: drawing UIImage takes too much CPU time. find a way to fix it.
 				CGRect r = CGRectInset(aDrawRect, 0, 1);
 				CGSize srcSize = [_imageData size];
 				CGFloat ratio = fmaxf(1.0f, fmaxf(srcSize.width / CGRectGetWidth(r), srcSize.height / CGRectGetHeight(r)));
@@ -598,6 +522,7 @@ UIColor *defaultTagAndLevelColor = nil;
 				//CGRect imageRect = (CGRect){{CGRectGetMinX(r),CGRectGetMinY(r) + CGRectGetHeight(r)},newSize};
 				CGRect imageRect = (CGRect){{CGRectGetMinX(r),CGRectGetMinY(r)},newSize};
 				[self.imageData drawInRect:imageRect];
+				
 				self.imageData = nil;
 			}
 			break;
@@ -620,6 +545,9 @@ UIColor *defaultTagAndLevelColor = nil;
 	//fill background with generic gray in value of 0.97f
 	UIColor *backgroundColor = defaultBackgroundColor;
 	[backgroundColor set];
+	
+	
+	//TODO:: this single call represent 2% of CPU time. find a way to replace it.
 	CGContextFillRect(context, cellFrame);
 	
 	
