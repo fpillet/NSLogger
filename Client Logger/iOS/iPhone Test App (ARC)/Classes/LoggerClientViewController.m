@@ -220,10 +220,15 @@ void logRandomImage(int numImage)
 			}
 			else if (phase == 6)
 			{
-				printf("Some message %d to stdout\n", counter++);
+				fprintf(stdout, "Some message %d to stdout\n", counter++);
 				fflush(stdout);		// required for stdout to be flushed when not connected to Xcode debugger
 			}
-			else if (phase != 1 && phase != 5)
+			else if (phase == 5)
+			{
+				fprintf(stderr, "Some message %d to stderr\n", counter++);
+				fflush(stderr);
+			}
+			else if (phase != 1)
 			{
 				NSMutableString *s = [NSMutableString stringWithFormat:@"test log message %d - Random characters follow: ", counter++];
 				int nadd = 1 + arc4random() % 150;
