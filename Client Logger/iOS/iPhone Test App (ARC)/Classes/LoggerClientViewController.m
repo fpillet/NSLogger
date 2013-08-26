@@ -221,6 +221,7 @@ void logRandomImage(int numImage)
 			else if (phase == 6)
 			{
 				printf("Some message %d to stdout\n", counter++);
+				fflush(stdout);		// required for stdout to be flushed when not connected to Xcode debugger
 			}
 			else if (phase != 1 && phase != 5)
 			{
