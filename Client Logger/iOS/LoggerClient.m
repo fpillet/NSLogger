@@ -192,6 +192,7 @@ static CFMutableArrayRef sLoggersList;
 static Logger* volatile sDefaultLogger = NULL;
 static Boolean sAtexitFunctionSet = FALSE;
 static pthread_mutex_t sLoggersListMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t sDefaultLoggerMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Console logging
 static void LoggerStartGrabbingConsole(Logger *logger);
@@ -211,28 +212,21 @@ static int sSTDOUThadSIGPIPE, sSTDERRhadSIGPIPE;
 // -----------------------------------------------------------------------------
 void LoggerSetDefaultLogger(Logger *defaultLogger)
 {
-	pthread_mutex_lock(&sLoggersListMutex);
+	pthread_mutex_lock(&sDefaultLoggerMutex);
 	sDefaultLogger = defaultLogger;
-	pthread_mutex_unlock(&sLoggersListMutex);
+	pthread_mutex_unlock(&sDefaultLoggerMutex);
 }
 
 Logger *LoggerGetDefaultLogger(void)
 {
-	// a tricky mechanism designed to avoid double-lock attempts
 	Logger *l = sDefaultLogger;
 	if (l == NULL)
 	{
-		Logger *clear = NULL;
-		l = LoggerInit();
-		pthread_mutex_lock(&sLoggersListMutex);
-		if (l != sDefaultLogger)
-		{
-			clear = l;
-			l = sDefaultLogger;
-		}
-		pthread_mutex_unlock(&sLoggersListMutex);
-		if (clear != NULL)
-			LoggerStop(clear);
+		pthread_mutex_lock(&sDefaultLoggerMutex);
+		l = sDefaultLogger;
+		if (l == NULL)
+			l = LoggerInit();
+		pthread_mutex_unlock(&sDefaultLoggerMutex);
 	}
 	return l;
 }
@@ -392,16 +386,18 @@ Logger *LoggerStart(Logger *logger)
 
     if (logger != NULL)
 	{
-        if (logger->workerThread == NULL)
+		if (logger->workerThread == NULL)
         {
-            // Start the work thread which performs the Bonjour search,
-            // connects to the logging service and forwards the logs
-            LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
-            pthread_create(&logger->workerThread, NULL, (void *(*)(void *))&LoggerWorkerThread, logger);
-
-	    	// Grab console output if required
-        	if (logger->options & kLoggerOption_CaptureSystemConsole)
-            	LoggerStartGrabbingConsole(logger);
+			dispatch_once(&logger->workerThreadInit, ^{
+				// Start the work thread which performs the Bonjour search,
+				// connects to the logging service and forwards the logs
+				LOGGERDBG(CFSTR("LoggerStart logger=%p"), logger);
+				pthread_create(&logger->workerThread, NULL, (void *(*)(void *))&LoggerWorkerThread, logger);
+				
+				// Grab console output if required
+				if (logger->options & kLoggerOption_CaptureSystemConsole)
+					LoggerStartGrabbingConsole(logger);
+			});
         }
     }
     else
@@ -635,6 +631,8 @@ static void *LoggerWorkerThread(Logger *logger)
 	// go to console
 	logger->options |= kLoggerOption_LogToConsole;
 	logger->workerThread = NULL;
+	
+	LOGGERDBG(CFSTR("Stop LoggerWorkerThread"));
 	return NULL;
 }
 

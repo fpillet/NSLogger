@@ -35,6 +35,7 @@
  */
 #import <unistd.h>
 #import <pthread.h>
+#import <dispatch/once.h>
 #import <libkern/OSAtomic.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
@@ -92,6 +93,7 @@ typedef struct
 	pthread_mutex_t logQueueMutex;
 	pthread_cond_t logQueueEmpty;
 	
+	dispatch_once_t workerThreadInit;				// Use this to ensure creation of the worker thread is ever done only once for a given logger
 	pthread_t workerThread;							// The worker thread responsible for Bonjour resolution, connection and logs transmission
 	CFRunLoopSourceRef messagePushedSource;			// A message source that fires on the worker thread when messages are available for send
 	CFRunLoopSourceRef bufferFileChangedSource;		// A message source that fires on the worker thread when the buffer file configuration changes
