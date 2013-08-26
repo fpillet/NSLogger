@@ -214,11 +214,15 @@ void logRandomImage(int numImage)
 	{
 		dispatch_async(loggingQueues[q], ^{
 			int phase = arc4random() % 10;
-			if (phase == 6)
+			if (phase == 7)
+			{
+				NSLog(@"Some message %d to NSLog", counter++);
+			}
+			else if (phase == 6)
 			{
 				printf("Some message %d to stdout\n", counter++);
 			}
-			else if (phase != 1 && phase != 5 && phase != 6 && phase != 7)
+			else if (phase != 1 && phase != 5)
 			{
 				NSMutableString *s = [NSMutableString stringWithFormat:@"test log message %d - Random characters follow: ", counter++];
 				int nadd = 1 + arc4random() % 150;
@@ -234,7 +238,7 @@ void logRandomImage(int numImage)
 					buf[i] = (unsigned char)arc4random();
 				LogData(@"main", 1, [[NSData alloc] initWithBytesNoCopy:buf length:n]);
 			}
-			else if (phase == 5 || phase == 6 || phase == 7)
+			else if (phase == 5)
 			{
 				logRandomImage(++imagesCounter);
 			}
