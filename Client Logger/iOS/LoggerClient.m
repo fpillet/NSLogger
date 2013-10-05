@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-beta 01-JUL-2013
+ * version 1.5-RC 06-OCT-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -76,7 +76,7 @@
  * optionally connect to a remote logger identified by an IP address / port
  * or a Host Name / port.
  *
- * The logger can optionally output its log to the console, like NSLog().
+ * The logger can optionally output its logs to the console, like NSLog().
  *
  * The logger can optionally buffer its logs to a file for which you specify the
  * full path. Upon connection to the desktop viewer, the file contents are
@@ -85,7 +85,12 @@
  *
  * Multiple loggers can coexist at the same time. You can perfectly use a
  * logger for your debug traces, and another that connects remotely to help
- * diagnostic issues while the application runs on your user's device.
+ * diagnose issues while the application runs on your user's device.
+ *
+ * The logger can optionally capture stdout and stderr. When running an
+ * application from the IDE, this will automatically capture everything that
+ * goes into the debugger console log, and insert it in the stream of logs
+ * sent to the viewer.
  *
  * Using the logger's flexible packet format, you can customize logging by
  * creating your own log types, and customize the desktop viewer to display
