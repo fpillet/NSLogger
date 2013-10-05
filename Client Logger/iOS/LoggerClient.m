@@ -126,8 +126,6 @@
         #define CAST_TO_NSSTRING			__bridge NSString *
 		#define CAST_TO_CFDATA				__bridge CFDataRef
 		#define RELEASE(obj)				do{}while(0)
-		#define AUTORELEASE_POOL_BEGIN		@autoreleasepool{
-		#define AUTORELEASE_POOL_END		}
 		#define LOGGER_ARC_MACROS_DEFINED
 	#endif
 #endif
@@ -136,8 +134,6 @@
     #define CAST_TO_NSSTRING			NSString *
 	#define CAST_TO_CFDATA				CFDataRef
 	#define RELEASE(obj)				[obj release]
-	#define AUTORELEASE_POOL_BEGIN		NSAutoreleasePool *__pool=[[NSAutoreleasePool alloc] init];
-	#define AUTORELEASE_POOL_END		[__pool drain];
 #endif
 #undef LOGGER_ARC_MACROS_DEFINED
 
@@ -482,24 +478,25 @@ void LoggerFlush(Logger *logger, BOOL waitForConnection)
 	}
 }
 
-#if LOGGER_DEBUG
+#if LOGGER_DEBUG||1
 static void LoggerDbg(CFStringRef format, ...)
 {
 	// Internal debugging function
 	// (what do you think, that we use the Logger to debug itself ??)
 	if (format != NULL)
 	{
-		AUTORELEASE_POOL_BEGIN
-		va_list	args;	
-		va_start(args, format);
-		CFStringRef s = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
-		va_end(args);
-		if (s != NULL)
+		@autoreleasepool
 		{
-			CFShow(s);
-			CFRelease(s);
+			va_list args;
+			va_start(args, format);
+			CFStringRef s = CFStringCreateWithFormatAndArguments(NULL, NULL, format, args);
+			va_end(args);
+			if (s != NULL)
+			{
+				CFShow(s);
+				CFRelease(s);
+			}
 		}
-		AUTORELEASE_POOL_END
 	}
 }
 #endif
@@ -1756,11 +1753,11 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			// see http://developer.apple.com/library/ios/#technotes/tn2287/_index.html#//apple_ref/doc/uid/DTS40011309
 			// if we are running iOS 5 or later, use a special mode that allows the stack to downgrade gracefully
 	#if ALLOW_COCOA_USE
-            AUTORELEASE_POOL_BEGIN
-			NSString *versionString = [[UIDevice currentDevice] systemVersion];
-			if ([versionString compare:@"5.0" options:NSNumericSearch] != NSOrderedAscending)
-				SSLValues[0] = CFSTR("kCFStreamSocketSecurityLevelTLSv1_0SSLv3");
-            AUTORELEASE_POOL_END
+			@autoreleasepool {
+				NSString *versionString = [[UIDevice currentDevice] systemVersion];
+				if ([versionString compare:@"5.0" options:NSNumericSearch] != NSOrderedAscending)
+					SSLValues[0] = CFSTR("kCFStreamSocketSecurityLevelTLSv1_0SSLv3");
+			}
 	#else
 			// we can't find out, assume we _may_ be on iOS 5 but can't be certain
 			// go for SSLv3 which works without the TLS 1.2 / 1.1 / 1.0 downgrade issue
@@ -2046,19 +2043,19 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 			name = [threadDict objectForKey:@"__$NSLoggerThreadName$__"];
 			if (name == nil)
 			{
-				AUTORELEASE_POOL_BEGIN
-				// optimize CPU use by computing the thread name once and storing it back
-				// in the thread dictionary
-				name = [thread description];
-				NSRange range = [name rangeOfString:@"num = "];
-				if (range.location != NSNotFound)
-				{
-					name = [NSString stringWithFormat:@"Thread %@",
-							[name substringWithRange:NSMakeRange(range.location + range.length,
-																 [name length] - range.location - range.length - 1)]];
-					[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
+				@autoreleasepool {
+					// optimize CPU use by computing the thread name once and storing it back
+					// in the thread dictionary
+					name = [thread description];
+					NSRange range = [name rangeOfString:@"num = "];
+					if (range.location != NSNotFound)
+					{
+						name = [NSString stringWithFormat:@"Thread %@",
+														  [name substringWithRange:NSMakeRange(range.location + range.length,
+																							   [name length] - range.location - range.length - 1)]];
+						[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
+					}
 				}
-				AUTORELEASE_POOL_END
 			}
 		}
 		if (name != nil)
@@ -2278,13 +2275,14 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 #if TARGET_OS_IPHONE && ALLOW_COCOA_USE
 		if ([NSThread isMultiThreaded] || [NSThread isMainThread])
 		{
-			AUTORELEASE_POOL_BEGIN
-			UIDevice *device = [UIDevice currentDevice];
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.name, PART_KEY_UNIQUEID);
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemVersion, PART_KEY_OS_VERSION);
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemName, PART_KEY_OS_NAME);
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.model, PART_KEY_CLIENT_MODEL);
-			AUTORELEASE_POOL_END
+			@autoreleasepool
+			{
+				UIDevice *device = [UIDevice currentDevice];
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.name, PART_KEY_UNIQUEID);
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemVersion, PART_KEY_OS_VERSION);
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemName, PART_KEY_OS_NAME);
+				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.model, PART_KEY_CLIENT_MODEL);
+			}
 		}
 #elif TARGET_OS_MAC
 		CFStringRef osName = NULL, osVersion = NULL;
@@ -2297,7 +2295,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			if ([versionString length])
 			{
 				osName = CFSTR("Mac OS X");
-				osVersion = CFRetain((CFStringRef)versionString);
+				osVersion = CFRetain((CAST_TO_CFSTRING)versionString);
 			}
 		}
 		@catch (NSException *exc)
