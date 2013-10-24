@@ -37,6 +37,10 @@
 #import <sys/time.h>
 #import <arpa/inet.h>
 #import <stdlib.h>
+
+#import "LoggerClient.h"
+#import "LoggerCommon.h"
+
 #if !TARGET_OS_IPHONE
 	#import <sys/types.h>
 	#import <sys/sysctl.h>
@@ -46,9 +50,6 @@
 	#import <UIKit/UIKit.h>
 #endif
 #import <fcntl.h>
-
-#import "LoggerClient.h"
-#import "LoggerCommon.h"
 
 /* --------------------------------------------------------------------------------
  * IMPLEMENTATION NOTES:
