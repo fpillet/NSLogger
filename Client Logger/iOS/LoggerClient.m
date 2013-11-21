@@ -37,6 +37,10 @@
 #import <sys/time.h>
 #import <arpa/inet.h>
 #import <stdlib.h>
+
+#import "LoggerClient.h"
+#import "LoggerCommon.h"
+
 #if !TARGET_OS_IPHONE
 	#import <sys/types.h>
 	#import <sys/sysctl.h>
@@ -46,9 +50,6 @@
 	#import <UIKit/UIKit.h>
 #endif
 #import <fcntl.h>
-
-#import "LoggerClient.h"
-#import "LoggerCommon.h"
 
 /* --------------------------------------------------------------------------------
  * IMPLEMENTATION NOTES:
@@ -1012,7 +1013,7 @@ static void LoggerWriteMoreData(Logger *logger)
 		}
 		
 		pthread_mutex_lock(&logger->logQueueMutex);
-		int remainingMsgs = CFArrayGetCount(logger->logQueue);
+		CFIndex remainingMsgs = CFArrayGetCount(logger->logQueue);
 		pthread_mutex_unlock(&logger->logQueueMutex);
 		if (remainingMsgs == 0)
 			pthread_cond_broadcast(&logger->logQueueEmpty);
@@ -2004,7 +2005,7 @@ static uint8_t *LoggerMessagePrepareForPart(CFMutableDataRef encoder, uint32_t r
 	// Ensure a data block has the required storage capacity, update the total size and part count
 	// then return a pointer for fast storage of the data
 	uint8_t *p = CFDataGetMutableBytePtr(encoder);
-	uint32_t size = CFDataGetLength(encoder);
+	CFIndex size = CFDataGetLength(encoder);
 	uint32_t oldSize = ntohl(*(uint32_t *)p);
 	uint32_t newSize = oldSize + requiredExtraBytes;
 	if ((newSize + 4) > size)
