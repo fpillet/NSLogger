@@ -35,6 +35,7 @@
 #import "LoggerConnection.h"
 #import "LoggerNativeMessage.h"
 #import "LoggerAppDelegate.h"
+#import "LoggerTCPConnection.h"
 
 @implementation LoggerDocument
 
@@ -279,7 +280,24 @@
 
 	if ([typeName isEqualToString:@"NSLogger Data"])
 	{
-		id logs = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+		id logs=nil;
+		@try
+		{
+			// backward compatibility with NSLogger < 1.5
+			[NSKeyedUnarchiver setClass:[LoggerTCPConnection class] forClassName:@"LoggerNativeConnection"];
+
+			logs = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+		}
+		@catch (NSException *exception)
+		{
+			if (outError != NULL)
+			{
+				*outError = [NSError errorWithDomain:@"NSLogger" code:-1 userInfo:@{
+					NSLocalizedDescriptionKey: [exception reason]
+				}];
+			}
+			return NO;
+		}
 		if ([logs isKindOfClass:[LoggerConnection class]])
 			[attachedLogs addObject:logs];
 		else
