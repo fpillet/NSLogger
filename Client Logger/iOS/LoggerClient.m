@@ -1531,6 +1531,30 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 						return;
 					}
 				}
+				else
+				{
+					// If the desktop viewer we found requested that only clients looking for its name can connect,
+					// honor the request and do not connect. This helps with teams having multiple devices and multiple
+					// desktops with NSLogger installed to avoid unwanted logs coming to a specific viewer
+					// To indicate that the desktop only wants clients that are looking for its specific name,
+					// the desktop sets the TXT record to be a dictionary containing the @"filterClients" key with value @"1"
+					CFDataRef txtData = CFNetServiceGetTXTData(service);
+					if (txtData != NULL)
+					{
+						CFDictionaryRef txtDict = CFNetServiceCreateDictionaryWithTXTData(NULL, txtData);
+						if (txtDict != NULL)
+						{
+							const void *value = CFDictionaryGetValue(txtDict, CFSTR("filterClients"));
+							if (value != NULL &&
+								CFGetTypeID((CFTypeRef)value) == CFStringGetTypeID() &&
+								CFStringCompare((CFStringRef)value, CFSTR("1"), 0) != kCFCompareEqualTo)
+							{
+								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), name, logger->bonjourServiceName);
+								return;
+							}
+						}
+					}
+				}
 				CFArrayAppendValue(logger->bonjourServices, service);
 				LoggerTryConnect(logger);
 			}
@@ -2293,20 +2317,21 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		CFStringRef osName = NULL, osVersion = NULL;
 	#if ALLOW_COCOA_USE
 		// Read the OS version without using deprecated Gestalt calls
-		AUTORELEASE_POOL_BEGIN
-		@try
+		@autoreleasepool
 		{
-			NSString* versionString = [[NSDictionary dictionaryWithContentsOfFile: @"/System/Library/CoreServices/SystemVersion.plist"] objectForKey: @"ProductVersion"];
-			if ([versionString length])
+			@try
 			{
-				osName = CFSTR("Mac OS X");
-				osVersion = CFRetain((CAST_TO_CFSTRING)versionString);
+				NSString* versionString = [[NSDictionary dictionaryWithContentsOfFile: @"/System/Library/CoreServices/SystemVersion.plist"] objectForKey: @"ProductVersion"];
+				if ([versionString length])
+				{
+					osName = CFSTR("Mac OS X");
+					osVersion = CFRetain((CAST_TO_CFSTRING)versionString);
+				}
+			}
+			@catch (NSException *exc)
+			{
 			}
 		}
-		@catch (NSException *exc)
-		{
-		}
-		AUTORELEASE_POOL_END
 	#endif
 		if (osVersion == NULL)
 		{
