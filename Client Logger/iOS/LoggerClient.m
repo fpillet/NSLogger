@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.5-RC 06-OCT-2013
+ * version 1.5-RC2 22-NOV-2013
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -233,6 +233,11 @@ Logger *LoggerGetDefaultLogger(void)
 	return l;
 }
 
+Logger *LoggerCheckDefaultLogger(void)
+{
+	return sDefaultLogger;
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 #pragma mark Initialization and setup
@@ -419,9 +424,12 @@ void LoggerStop(Logger *logger)
 		logger = sDefaultLogger;
 		sDefaultLogger = NULL;
 	}
-	CFIndex where = CFArrayGetFirstIndexOfValue(sLoggersList, CFRangeMake(0, CFArrayGetCount(sLoggersList)), (void const *)logger);
-	if (where != -1)
-		CFArrayRemoveValueAtIndex(sLoggersList, where);
+	if (sLoggersList != NULL && logger != NULL)
+	{
+		CFIndex where = CFArrayGetFirstIndexOfValue(sLoggersList, CFRangeMake(0, CFArrayGetCount(sLoggersList)), (void const *) logger);
+		if (where != -1)
+			CFArrayRemoveValueAtIndex(sLoggersList, where);
+	}
 	pthread_mutex_unlock(&sLoggersListMutex);
 
 	if (logger != NULL)

@@ -1,7 +1,7 @@
 /*
  * LoggerClient.h
  *
- * version 1.5-beta 01-JUL-2013
+ * version 1.5-RC2 22-NOV-2013
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
@@ -136,9 +136,14 @@ typedef struct
 extern "C" {
 #endif
 
-// Functions to set and get the default logger
+// Set the default logger which will be the one used when passing NULL for logge
 extern void LoggerSetDefaultLogger(Logger *aLogger);
+
+// Get the default logger, create one if it does not exist
 extern Logger *LoggerGetDefaultLogger(void);
+
+// Checks whether the default logger exists, returns it if YES, otherwise do NO create one
+extern Logger *LoggerCheckDefaultLogger(void);
 
 // Initialize a new logger, set as default logger if this is the first one
 // Options default to:
