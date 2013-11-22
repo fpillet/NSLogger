@@ -1554,9 +1554,11 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 						if (txtDict != NULL)
 						{
 							const void *value = CFDictionaryGetValue(txtDict, CFSTR("filterClients"));
-							if (value != NULL &&
-								CFGetTypeID((CFTypeRef)value) == CFStringGetTypeID() &&
-								CFStringCompare((CFStringRef)value, CFSTR("1"), 0) != kCFCompareEqualTo)
+							Boolean mismatch = (value != NULL &&
+												CFGetTypeID((CFTypeRef)value) == CFStringGetTypeID() &&
+												CFStringCompare((CFStringRef)value, CFSTR("1"), 0) != kCFCompareEqualTo);
+							CFRelease(txtDict);
+							if (mismatch)
 							{
 								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), name, logger->bonjourServiceName);
 								return;
