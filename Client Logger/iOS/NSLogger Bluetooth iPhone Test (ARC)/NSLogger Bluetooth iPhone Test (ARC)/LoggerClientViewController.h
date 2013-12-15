@@ -43,7 +43,7 @@
 	IBOutlet UISwitch *connecToBluetooth;
 
 	NSTimer *sendTimer;
-	NSArray *tagsArray;
+	__strong NSArray *tagsArray;
 	int counter;
 	int imagesCounter;
 }

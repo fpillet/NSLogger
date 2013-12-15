@@ -34,14 +34,10 @@
 
 @implementation LoggerClientViewController
 
-- (void)awakeFromNib
-{
-	tagsArray = [NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil];
-}
-
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
+	tagsArray = [NSArray arrayWithObjects:@"main",@"audio",@"video",@"network",@"database",nil];
 	
 	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 	viewerHostField.text = [ud stringForKey:@"host"];

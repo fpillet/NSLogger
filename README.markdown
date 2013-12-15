@@ -1,6 +1,6 @@
 ## NSLogger Legacy Bluetooth Client (iOS 5 &amp; 6) ##
 
-<sup>*</sup> Compatible with ver 1.5-beta 01-JUL-2013
+<sup>*</sup> Compatible with ver 1.5-RC2 22-NOV-2013
 
 ### Bluetooth Connections in iOS
 There are three Bluetooth frameworks and one API publicly opened in iOS 5 &amp; 6  
@@ -13,7 +13,7 @@ The one that is most clutter-free and provides best possible use case is, so far
 
 ### How to run demo
 1. Run iPad Viewer with WiFi off and Bluetooth on from system setting.  
-2. Run iOS client with Bluetooth on. (It's up to use to leave WiFi or cellular on).      
+2. Run iOS client with Bluetooth on. (It's up to you to leave WiFi or cellular on).      
 3. Start logging. Look at the Bluetooth mark on top right corner. :)  
 
 ### iPhone Client Screenshot (Apr. 27, 2013)
