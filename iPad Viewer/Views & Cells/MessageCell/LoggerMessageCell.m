@@ -300,19 +300,29 @@ UIColor *defaultTagAndLevelColor = nil;
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSaveGState(context);
 	
-	CGRect r = aDrawRect;
-/*
-	// Draw thread ID
-	NSMutableDictionary *attrs = [self threadIDAttributes];
-	if (aHighlightedTextColor != nil)
-	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-	}
-*/
-
-	CGContextClipToRect(context, r);
 	
+	// flip coordinate system upside-down
+	// flip context vertically
+	CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+	CGContextTranslateCTM(context, 0, self.bounds.size.height);
+	CGContextScaleCTM(context, 1.0, -1.0);
+	
+	// clip context
+	CGContextClipToRect(context, aDrawRect);
+	
+#if 0
+	
+	CGRect r = aDrawRect;
+	/*
+	 // Draw thread ID
+	 NSMutableDictionary *attrs = [self threadIDAttributes];
+	 if (aHighlightedTextColor != nil)
+	 {
+	 attrs = [[attrs mutableCopy] autorelease];
+	 [attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+	 }
+	 */
+
 	CGSize threadBounds =
 		[self.messageData.threadID
 		 sizeWithFont:displayDefaultFont
@@ -328,7 +338,49 @@ UIColor *defaultTagAndLevelColor = nil;
 	 withFont:displayDefaultFont
 	 lineBreakMode:NSLineBreakByWordWrapping
 	 alignment:NSTextAlignmentLeft];
+#endif
 
+	
+	NSString *s = self.messageData.threadID;
+	CFRange textRange = CFRangeMake(0, s.length);
+	
+	//  Create an empty mutable string big enough to hold our test
+	CFMutableAttributedStringRef as = CFAttributedStringCreateMutable(kCFAllocatorDefault, s.length);
+	
+	//  Inject our text into it
+	CFAttributedStringReplaceString(as, CFRangeMake(0, 0), (CFStringRef) s);
+	
+	CTFontRef f = [[LoggerTextStyleManager sharedStyleManager] defaultTagAndLevelFont];
+	CTParagraphStyleRef p = [[LoggerTextStyleManager sharedStyleManager] defaultTagAndLevelParagraphStyle];
+
+	//  Apply our font and line spacing attributes over the span
+	CFAttributedStringSetAttribute(as, textRange, kCTFontAttributeName, f);
+	CFAttributedStringSetAttribute(as, textRange, kCTParagraphStyleAttributeName, p);
+	
+	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString(as);
+	CGMutablePathRef path = CGPathCreateMutable();
+	CGPathAddRect(path, NULL, CGRectInset(aDrawRect, 3, 0));
+	
+	CTFrameRef frame = \
+	CTFramesetterCreateFrame(framesetter, CFRangeMake(0, CFAttributedStringGetLength(as)), path, NULL);
+	
+	CFRelease(path);
+	CFRelease(framesetter);
+	CFRelease(as);
+	
+	
+	CTFrameDraw(frame, context);
+	CFRelease(frame);
+	
+	
+	
+	
+	
+	
+	
+	
+#if 0
+	
 	// Draw tag and level, if provided
 	NSString *tag = self.messageData.tag;
 	int level = [self.messageData.level intValue];
@@ -422,6 +474,111 @@ UIColor *defaultTagAndLevelColor = nil;
 		}
 	}
 
+#endif
+
+	CGSize threadBounds = [LoggerTextStyleManager
+						   sizeForStringWithDefaultTagAndLevelFont:self.messageData.threadID
+						   constraint:aDrawRect.size];
+	
+	
+	CGRect r = aDrawRect;
+	r.size.height = threadBounds.height;	
+	
+	// Draw tag and level, if provided
+	NSString *tag = self.messageData.tag;
+	int level = [self.messageData.level intValue];
+	if ([tag length] || level)
+	{
+		CGFloat threadColumnWidth = DEFAULT_THREAD_COLUMN_WIDTH;
+		CGSize tagSize = CGSizeZero;
+		CGSize levelSize = CGSizeZero;
+		NSString *levelString = nil;
+		r.origin.y += CGRectGetHeight(r);
+		
+		// set tag,level text color
+		[[UIColor whiteColor] set];
+		
+		if ([tag length])
+		{
+			tagSize =
+			[tag
+			 sizeWithFont:displayTagAndLevelFont
+			 forWidth:threadColumnWidth
+			 lineBreakMode:NSLineBreakByWordWrapping];
+			
+			tagSize.width += 4;
+			tagSize.height += 2;
+		}
+		
+		if (level)
+		{
+			levelString = [NSString stringWithFormat:@"%d", level];
+			
+			levelSize =
+			[levelString
+			 sizeWithFont:displayTagAndLevelFont
+			 forWidth:threadColumnWidth
+			 lineBreakMode:NSLineBreakByWordWrapping];
+			
+			
+			levelSize.width += 4;
+			levelSize.height += 2;
+		}
+		
+		CGFloat h = fmaxf(tagSize.height, levelSize.height);
+		
+		
+		
+		CGRect tagRect = CGRectMake(CGRectGetMinX(r) + 3,
+									CGRectGetMinY(r),
+									tagSize.width,h);
+		
+		CGRect levelRect = CGRectMake(CGRectGetMaxX(tagRect),
+									  CGRectGetMinY(tagRect),
+									  levelSize.width,h);
+		
+		CGRect tagAndLevelRect = CGRectUnion(tagRect, levelRect);
+		
+		MakeRoundedPath(context, tagAndLevelRect, 3.0f);
+		CGColorRef fillColor = [[LoggerMessageCell colorForTag:tag] CGColor];
+		CGContextSetFillColorWithColor(context, fillColor);
+		CGContextFillPath(context);
+		
+		if (levelSize.width)
+		{
+			UIColor *black = GRAYCOLOR(0.25f);
+			CGContextSaveGState(context);
+			CGContextSetFillColorWithColor(context, [black CGColor]);
+			CGContextClipToRect(context,levelRect);
+			MakeRoundedPath(context, tagAndLevelRect, 3.0f);
+			CGContextFillPath(context);
+			CGContextRestoreGState(context);
+		}
+		
+		// set text color
+		[[UIColor whiteColor] set];
+		
+		if (tagSize.width)
+		{
+			[tag
+			 drawInRect:CGRectInset(tagRect, 2, 1)
+			 withFont:displayTagAndLevelFont
+			 lineBreakMode:NSLineBreakByWordWrapping
+			 alignment:NSTextAlignmentLeft];
+		}
+		
+		if (levelSize.width)
+		{
+			[levelString
+			 drawInRect:CGRectInset(levelRect, 2, 1)
+			 withFont:displayTagAndLevelFont
+			 lineBreakMode:NSLineBreakByWordWrapping
+			 alignment:NSTextAlignmentRight];
+		}
+	}
+
+	
+	
 	CGContextRestoreGState(context);
 }
 

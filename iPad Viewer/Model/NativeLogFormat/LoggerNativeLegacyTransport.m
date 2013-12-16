@@ -315,12 +315,20 @@ ServiceRegisterSocketCallBack(CFSocketRef			socket,
 			// the local computer name (as defined in the sharing prefs panel
 			// (see Technical Q&A QA1228 http://developer.apple.com/library/mac/#qa/qa2001/qa1228.html )
 			NSString *serviceName = [[LoggerPreferenceManager sharedPrefManager] bonjourServiceName];
-			if (serviceName == nil || ![serviceName isKindOfClass:[NSString class]])
+			BOOL useDefaultServiceName = (serviceName == nil || ![serviceName isKindOfClass:[NSString class]]);
+			if (useDefaultServiceName)
 				serviceName = @"";
 			
 			[serviceName retain];
 			[bonjourServiceName release];
 			bonjourServiceName = serviceName;
+			
+			// added in 1.5: let clients know that we have customized our service name and that they should connect to us
+			// only if their own settings match our name
+			NSData *textRecord = nil;
+			if (useDefaultServiceName){
+				textRecord = [[NSNetService dataFromTXTRecordDictionary:@{@"filterClients": @"1"}] retain];
+			}
 			
 			errorType =
 			DNSServiceRegister(&(self->_sdServiceRef),		// sdRef
@@ -331,11 +339,15 @@ ServiceRegisterSocketCallBack(CFSocketRef			socket,
 							   NULL,						// domain
 							   NULL,						// host
 							   htons(listenerPort),			// port. just for bt init
-							   0,							// txtLen
-							   NULL,						// txtRecord
+							   (useDefaultServiceName)?[textRecord length]:0,  // txtLen
+							   (useDefaultServiceName)?[textRecord bytes]:NULL,// txtRecord
 							   ServiceRegisterCallback,		// callBack
 							   (void *)(self)				// context
 							   );
+
+			if (useDefaultServiceName){
+				[textRecord release],textRecord = nil;
+			}
 			
 			if (errorType == kDNSServiceErr_NoError)
 			{
