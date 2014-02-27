@@ -492,7 +492,7 @@ void LoggerFlush(Logger *logger, BOOL waitForConnection)
 	}
 }
 
-#if LOGGER_DEBUG||1
+#if LOGGER_DEBUG
 static void LoggerDbg(CFStringRef format, ...)
 {
 	// Internal debugging function
