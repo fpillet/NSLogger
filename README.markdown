@@ -26,16 +26,23 @@ Clients automatically find the logger application running on Mac OS X via Bonjou
 [CocoaPods](http://cocoapods.org) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like AFNetworking in your projects.
 
 ## Podfile ##
-
 If your project is configured to use [CocoaPods](http://cocoapods.org), just add this line to your Podfile:
 
 ```ruby
 pod "NSLogger"
 ```
 
-## Starting the logger for teamwork ##
+Then download this pre-built version of the [NSLogger desktop viewer](https://www.dropbox.com/sh/8z4gdaz4a5nr2q8/DXTQI0THSv) for OS X.
 
-Then add this line to your `main.m` file, at the beginning of your `main()` function:
+## Adding logs to you app ##
+A one stop-shopper header file is `<NSLogger/NSLogger.h>`. By importing this header file, you'll be able to add traces to your code this way:
+
+```objective-c
+LoggerApp(1, @"Hello world! Today is: %@", [self myDate]);
+```
+
+## Starting the logger ##
+The `NSLogger.h` will also allow you to start the logger at the begining of your code. To do so, just add the following line to your `main.m` file, at the beginning of your `main()` function:
 
 ```objective-c
 LoggerStartForBuildUser();

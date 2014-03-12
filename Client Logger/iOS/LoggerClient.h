@@ -136,11 +136,6 @@ typedef struct
 extern "C" {
 #endif
 
-// Starts the logger with the username defined in the build settings.
-// The build setting NSLOGGER_BUILD_USERNAME is automatically configured when NSLogger is
-// added to a project using CocoaPods. To use it, just add this macro call to your main() function.
-#define LoggerStartForBuildUser() LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(xstr(NSLOGGER_BUILD_USERNAME)))
-
 // Set the default logger which will be the one used when passing NULL for logge
 extern void LoggerSetDefaultLogger(Logger *aLogger);
 
