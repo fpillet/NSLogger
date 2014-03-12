@@ -22,6 +22,29 @@ Clients automatically find the logger application running on Mac OS X via Bonjou
 
 ![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
+# CocoaPods Install #
+[CocoaPods](http://cocoapods.org) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like AFNetworking in your projects.
+
+## Podfile ##
+
+If your project is configured to use [CocoaPods](http://cocoapods.org), just add this line to your Podfile:
+
+```ruby
+pod "NSLogger"
+```
+
+## Starting the logger for teamwork ##
+
+Then add this line to your `main.m` file, at the beginning of your `main()` function:
+
+```objective-c
+LoggerStartForBuildUser();
+```
+
+In the Preferences of the NSLogger.app desktop viewer, go to the "Network" tab. Type your user name (i.e. $USER) in the "Bonjour service name" text field. This will allow the traces to be received only by the computer of the user who compiled the app (important for team work).
+
+This only work when NSLogger has been added to your project using CocoaPods.
+
 # One-step setup #
 All you have to do is add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
 
