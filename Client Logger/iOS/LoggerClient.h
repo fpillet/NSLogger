@@ -136,6 +136,11 @@ typedef struct
 extern "C" {
 #endif
 
+// Starts the logger with the username defined in the build settings.
+// The build setting NSLOGGER_BUILD_USERNAME is automatically configured when NSLogger is
+// added to a project using CocoaPods. To use it, just add this macro call to your main() function.
+#define LoggerStartForBuildUser() LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(xstr(NSLOGGER_BUILD_USERNAME)))
+
 // Set the default logger which will be the one used when passing NULL for logge
 extern void LoggerSetDefaultLogger(Logger *aLogger);
 
@@ -163,7 +168,6 @@ extern void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, C
 // Directly set the viewer host (hostname or IP address) and port we want to connect to. If set, LoggerStart() will
 // try to connect there first before trying Bonjour
 extern void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port);
-
 
 // Configure the logger to use a local file for buffering, instead of memory.
 // - If you initially set a buffer file after logging started but while a logger connection
