@@ -164,7 +164,6 @@ extern void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, C
 // try to connect there first before trying Bonjour
 extern void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port);
 
-
 // Configure the logger to use a local file for buffering, instead of memory.
 // - If you initially set a buffer file after logging started but while a logger connection
 //   has not been acquired, the contents of the log queue will be written to the buffer file
