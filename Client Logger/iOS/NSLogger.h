@@ -63,7 +63,7 @@
 
 #else
     #define NSLog(...)                      LogMessageCompat(__VA_ARGS__)
-    #define LoggerError(...)                while(0} {}
+    #define LoggerError(...)                while(0) {}
     #define LoggerApp(level, ...)           while(0) {}
     #define LoggerView(...)                 while(0) {}
     #define LoggerService(...)              while(0) {}
