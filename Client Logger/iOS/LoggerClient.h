@@ -35,7 +35,7 @@
  */
 #import <unistd.h>
 #import <pthread.h>
-#import <dispatch/once.h>
+#import <dispatch/dispatch.h>
 #import <libkern/OSAtomic.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
