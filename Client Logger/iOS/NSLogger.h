@@ -80,10 +80,17 @@
 
 
 
+/// Stringification, see this:
+/// http://gcc.gnu.org/onlinedocs/cpp/Stringification.html
+#define nslogger_xstr(s) nslogger_str(s)
+#define nslogger_str(s) #s
+
+
+
 // Starts the logger with the username defined in the build settings.
 // The build setting NSLOGGER_BUILD_USERNAME is automatically configured when NSLogger is
 // added to a project using CocoaPods. To use it, just add this macro call to your main() function.
-#define LoggerStartForBuildUser() LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(xstr(NSLOGGER_BUILD_USERNAME)))
+#define LoggerStartForBuildUser() LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(nslogger_xstr(NSLOGGER_BUILD_USERNAME)))
 
 
 
