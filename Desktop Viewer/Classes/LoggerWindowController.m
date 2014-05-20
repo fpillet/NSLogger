@@ -809,6 +809,26 @@ static NSArray *sXcodeFileExtensions = nil;
 	[detailsWindowController showWindow:self];
 }
 
+void runSystemCommand(NSString *cmd)
+{
+    [[NSTask launchedTaskWithLaunchPath:@"/bin/sh"
+                              arguments:[NSArray arrayWithObjects:@"-c", cmd, nil]] waitUntilExit];
+}
+
+- (IBAction)openDetailsInExternalEditor:(id)sender
+{
+    NSArray *msgs = [displayedMessages objectsAtIndexes:[logTable selectedRowIndexes]];
+    NSString *txtMsg = [[msgs lastObject] textRepresentation];
+
+    NSString *globallyUniqueStr = [[NSProcessInfo processInfo] globallyUniqueString];
+    NSString *tempPath = [NSTemporaryDirectory() stringByAppendingPathComponent:globallyUniqueStr];
+
+    [txtMsg writeToFile:tempPath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+
+    NSString *cmd = [NSString stringWithFormat:@"open -t %@", tempPath];
+    runSystemCommand(cmd);
+}
+
 - (void)xedFile:(NSString *)path line:(NSString *)line client:(NSString *)client {
     id args = [NSArray arrayWithObjects:
                @"-l",
@@ -827,9 +847,13 @@ static NSArray *sXcodeFileExtensions = nil;
 	// and the file is found (using alt can mess with the results of the AppleScript)
     // alt + double click opens the detail view
 	NSEvent *event = [NSApp currentEvent];
-    if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
+    if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSFunctionKeyMask) != 0)
     {
         [self openDetailsWindow:sender];
+    }
+    else if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
+    {
+        [self openDetailsInExternalEditor:sender];
     }
     else if ([event clickCount] > 1)
     {

@@ -247,6 +247,9 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	statusController = [[LoggerStatusWindowController alloc] initWithWindowNibName:@"LoggerStatus"];
 	[statusController showWindow:self];
 
+    // This window is rarely useful. But the best would probably be to open it in case of error.
+    [statusController close];
+
 	/* initialize all supported transports */
 	
 	// unencrypted Bonjour service (for backwards compatibility)
@@ -360,6 +363,11 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	if (prefsController == nil)
 		prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
 	[prefsController showWindow:sender];
+}
+
+- (IBAction)showStatus:(id)sender
+{
+    [statusController.window makeKeyAndOrderFront:nil];
 }
 
 - (void)relaunchApplication
