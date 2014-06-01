@@ -163,7 +163,6 @@
 		044FEFBE16AC4BC30067FA53 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		044FEFC016AC4BCF0067FA53 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		044FEFC216AC4BD90067FA53 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		04731B32185ED596002D95A3 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/iOS/LoggerCommon.h"; sourceTree = "<group>"; };
 		047BF70016D0E43900866DFB /* AppDelegateCycleHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegateCycleHandle.h; sourceTree = "<group>"; };
 		047DC61D17A7FBAC0067471C /* LoggerTextStyleManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerTextStyleManager.h; sourceTree = "<group>"; };
 		047DC61E17A7FBAC0067471C /* LoggerTextStyleManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerTextStyleManager.m; sourceTree = "<group>"; };
@@ -185,6 +184,7 @@
 		04A4EED81738001E00479F0E /* LoggerMarkerCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerMarkerCell.m; sourceTree = "<group>"; };
 		04A4EED91738001E00479F0E /* LoggerMessageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerMessageCell.h; sourceTree = "<group>"; };
 		04A4EEDA1738001E00479F0E /* LoggerMessageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerMessageCell.m; sourceTree = "<group>"; };
+		04A5E75F193B5EC30029F81E /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "../Client Logger/iOS/LoggerCommon.h"; sourceTree = "<group>"; };
 		04A8844A17074A4100A64257 /* ICloudSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICloudSupport.h; sourceTree = "<group>"; };
 		04A8844B17074A4100A64257 /* ICloudSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICloudSupport.m; sourceTree = "<group>"; };
 		04C27EE31747B7B600765A3C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
@@ -305,7 +305,7 @@
 		044FEF0C16AC49810067FA53 = {
 			isa = PBXGroup;
 			children = (
-				04731B32185ED596002D95A3 /* LoggerCommon.h */,
+				04A5E75F193B5EC30029F81E /* LoggerCommon.h */,
 				040AD41B16ACF5F60072DFAD /* Views & Cells */,
 				044FEF8A16AC4A810067FA53 /* ViewController */,
 				044FEF5916AC4A810067FA53 /* Managers */,

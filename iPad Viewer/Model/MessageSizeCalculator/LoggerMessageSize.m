@@ -6,49 +6,41 @@
  * Copyright (c) 2012-2013 Sung-Taek, Kim <stkim1@colorfulglue.com> All Rights
  * Reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Any redistribution is done solely for personal benefit and not for any
- *    commercial purpose or for monetary gain
- *
- * 4. No binary form of source code is submitted to App Store℠ of Apple Inc.
- *
- * 5. Neither the name of the Sung-Taek, Kim nor the names of its contributors
- *    may be used to endorse or promote products derived from  this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER AND AND CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Redistributions of  source code  must retain  the above  copyright notice,
+ * this list of  conditions and the following  disclaimer. Redistributions in
+ * binary  form must  reproduce  the  above copyright  notice,  this list  of
+ * conditions and the following disclaimer  in the documentation and/or other
+ * materials  provided with  the distribution.  Neither the  name of Sung-Tae
+ * k Kim nor the names of its contributors may be used to endorse or promote
+ * products  derived  from  this  software  without  specific  prior  written
+ * permission.  THIS  SOFTWARE  IS  PROVIDED BY  THE  COPYRIGHT  HOLDERS  AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A  PARTICULAR PURPOSE  ARE DISCLAIMED.  IN  NO EVENT  SHALL THE  COPYRIGHT
+ * HOLDER OR  CONTRIBUTORS BE  LIABLE FOR  ANY DIRECT,  INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY,  OR CONSEQUENTIAL DAMAGES (INCLUDING,  BUT NOT LIMITED
+ * TO, PROCUREMENT  OF SUBSTITUTE GOODS  OR SERVICES;  LOSS OF USE,  DATA, OR
+ * PROFITS; OR  BUSINESS INTERRUPTION)  HOWEVER CAUSED AND  ON ANY  THEORY OF
+ * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
+ * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
+ * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  *
  */
+
 
 #import "LoggerMessageSize.h"
 #import "LoggerMessage.h"
 #import <CoreText/CoreText.h>
 
-NSString		*hintForLongText = nil;
-NSString		*hintForLargeData = nil;
-
 CGFloat			_minHeightForCell;
 CGFloat			_heightFileLineFunction;
 CGFloat			_heightSingleDataLine;
+
+CGFloat			_hintHeightForLongText;
+CGFloat			_hintHeightForLongData;
 
 @implementation LoggerMessageSize
 + (void)initialize
@@ -62,19 +54,23 @@ CGFloat			_heightSingleDataLine;
 	[LoggerMessageSize heightOfFileLineFunctionOnWidth:MSG_CELL_PORTRAIT_WIDTH];
 	[LoggerMessageSize heightOfSingleDataLineOnWidth:MSG_CELL_PORTRAIT_WIDTH];
 	
-
+	//@@TODO:: we need a unified, size formatter
+	CGFloat maxWidth = MSG_CELL_PORTRAIT_WIDTH-(TIMESTAMP_COLUMN_WIDTH + DEFAULT_THREAD_COLUMN_WIDTH + MSG_CELL_LATERAL_PADDING);
+	CGFloat maxHeight = MSG_CELL_PORTRAIT_MAX_HEIGHT - MSG_CELL_TOP_PADDING;
+	CGSize const maxConstraint = CGSizeMake(maxWidth,maxHeight);
+	
 	// hint text should be short, and small at the bottom so that its size,
 	// especially the width, won't exceed the smallest possible width, the portrait width
-	
-	if(hintForLongText == nil)
-	{
-		hintForLongText = [NSLocalizedString(kBottomHintText, nil) retain];
-	}
+	NSString *textHint = NSLocalizedString(kBottomHintText, nil);
+	CGSize htr = [LoggerTextStyleManager sizeforStringWithDefaultHintFont:textHint constraint:maxConstraint];
+	_hintHeightForLongText = htr.height;
 
-	if(hintForLargeData == nil)
-	{
-		hintForLargeData = [NSLocalizedString(kBottomHintData, nil) retain];
-	}
+	NSString *dataHint = NSLocalizedString(kBottomHintData, nil);
+	CGSize hdr = [LoggerTextStyleManager sizeforStringWithDefaultHintFont:dataHint constraint:maxConstraint];
+	_hintHeightForLongData = hdr.height;
+	
+MTLog(@"htr %@ hdr %@",NSStringFromCGSize(htr),NSStringFromCGSize(hdr));
+
 }
 
 
@@ -105,7 +101,7 @@ CGFloat			_heightSingleDataLine;
 
 	CGSize r = [LoggerTextStyleManager sizeForStringWithDefaultTagAndLevelFont:@"file:100 funcQyTg" constraint:maxConstraint];
 	
-	_heightFileLineFunction = r.height + MSG_CELL_TOP_BOTTOM_PADDING;
+	_heightFileLineFunction = r.height + MSG_CELL_VERTICAL_PADDING;
 
 	return _heightFileLineFunction;
 }
@@ -121,6 +117,16 @@ CGFloat			_heightSingleDataLine;
 	_heightSingleDataLine = r.height;
 
 	return _heightFileLineFunction;
+}
+
++ (CGFloat)heightOfFileLineFunction:(LoggerMessage * const)aMessage
+									maxWidth:(CGFloat)aMaxWidth
+								   maxHeight:(CGFloat)aMaxHeight
+{
+	CGSize const maxConstraint = CGSizeMake(aMaxWidth,aMaxHeight);
+	NSString *s = aMessage.fileFuncString;
+	CGSize fs = [LoggerTextStyleManager sizeForStringWithDefaultFileAndFunctionFont:s constraint:maxConstraint];
+	return fs.height;
 }
 
 + (CGSize)sizeOfMessage:(LoggerMessage * const)aMessage
@@ -165,17 +171,16 @@ CGFloat			_heightSingleDataLine;
 			break;
 	}
 
-	//CGFloat displayHeight = sz.height + MSG_CELL_TOP_BOTTOM_PADDING;
+	//CGFloat displayHeight = sz.height + MSG_CELL_VERTICAL_PADDING;
 	sz.height = fmaxf(sz.height, minimumHeight);
 
 	// return calculated drawing size
 	return sz;
 }
 
-+ (CGSize)sizeOfHint:(LoggerMessage * const)aMessage
-			maxWidth:(CGFloat)aMaxWidth
-		   maxHeight:(CGFloat)aMaxHeight
++ (CGFloat)heightOfHint:(LoggerMessage * const)aMessage maxWidth:(CGFloat)aMaxWidth maxHeight:(CGFloat)aMaxHeight
 {
+/*
 	CGSize sz = CGSizeMake(aMaxWidth,aMaxHeight);
 	CGSize const maxConstraint = CGSizeMake(aMaxWidth,aMaxHeight);
 	switch (aMessage.contentsType)
@@ -200,14 +205,24 @@ CGFloat			_heightSingleDataLine;
 
 	// return calculated drawing size
 	return sz;
+*/
+	
+	switch (aMessage.contentsType)
+	{
+		case kMessageString: {
+			return _hintHeightForLongText;
+		}
+			
+		case kMessageData: {
+			return _hintHeightForLongData;
+		}
+			
+		case kMessageImage:
+		default:
+			break;
+	}
+
+	return 0.f;
 }
-
-
-+ (CGSize)sizeOfFileLineFunctionOfMessage:(LoggerMessage * const)aMessage
-								   onWidth:(CGFloat)aWidth
-{
-	return CGSizeZero;
-}
-
 
 @end

@@ -27,7 +27,9 @@
  * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
- */#import "LoggerTCPConnection.h"
+ */
+
+#import "LoggerTCPConnection.h"
 
 #define TMP_BUF_SIZE	((size_t)32767)
 

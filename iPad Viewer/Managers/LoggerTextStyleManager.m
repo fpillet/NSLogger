@@ -6,38 +6,30 @@
  * Copyright (c) 2012-2013 Sung-Taek, Kim <stkim1@colorfulglue.com> All Rights
  * Reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Any redistribution is done solely for personal benefit and not for any
- *    commercial purpose or for monetary gain
- *
- * 4. No binary form of source code is submitted to App Store℠ of Apple Inc.
- *
- * 5. Neither the name of the Sung-Taek, Kim nor the names of its contributors
- *    may be used to endorse or promote products derived from  this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER AND AND CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Redistributions of  source code  must retain  the above  copyright notice,
+ * this list of  conditions and the following  disclaimer. Redistributions in
+ * binary  form must  reproduce  the  above copyright  notice,  this list  of
+ * conditions and the following disclaimer  in the documentation and/or other
+ * materials  provided with  the distribution.  Neither the  name of Sung-Tae
+ * k Kim nor the names of its contributors may be used to endorse or promote
+ * products  derived  from  this  software  without  specific  prior  written
+ * permission.  THIS  SOFTWARE  IS  PROVIDED BY  THE  COPYRIGHT  HOLDERS  AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A  PARTICULAR PURPOSE  ARE DISCLAIMED.  IN  NO EVENT  SHALL THE  COPYRIGHT
+ * HOLDER OR  CONTRIBUTORS BE  LIABLE FOR  ANY DIRECT,  INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY,  OR CONSEQUENTIAL DAMAGES (INCLUDING,  BUT NOT LIMITED
+ * TO, PROCUREMENT  OF SUBSTITUTE GOODS  OR SERVICES;  LOSS OF USE,  DATA, OR
+ * PROFITS; OR  BUSINESS INTERRUPTION)  HOWEVER CAUSED AND  ON ANY  THEORY OF
+ * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
+ * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
+ * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  *
  */
+
 
 #import "LoggerTextStyleManager.h"
 #import "SynthesizeSingleton.h"
@@ -56,11 +48,19 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 @synthesize defaultFont = _defaultFont;
 @synthesize defaultParagraphStyle = _defaultParagraphStyle;
 
+@synthesize defaultThreadStyle = _defaultThreadStyle;
+
 @synthesize defaultTagAndLevelFont = _defaultTagAndLevelFont;
-@synthesize defaultTagAndLevelParagraphStyle = _defaultTagAndLevelParagraphStyle;
+@synthesize defaultTagAndLevelStyle = _defaultTagAndLevelStyle;
+
+@synthesize defaultFileAndFunctionFont = _defaultFileAndFunctionFont;
+@synthesize defaultFileAndFunctionStyle = _defaultFileAndFunctionStyle;
 
 @synthesize defaultMonospacedFont = _defaultMonospacedFont;
 @synthesize defaultMonospacedStyle = _defaultMonospacedStyle;
+
+@synthesize defaultHintFont = _defaultHintFont;
+
 
 +(CGSize)_sizeForString:(NSString *)aString constraint:(CGSize)aConstraint font:(CTFontRef)aFont style:(CTParagraphStyleRef)aStyle
 {
@@ -97,12 +97,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 	
 	CTFontRef font = [[LoggerTextStyleManager sharedStyleManager] defaultFont];
 	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultParagraphStyle];
-
-	return [LoggerTextStyleManager
-			_sizeForString:aString
-			constraint:aConstraint
-			font:font
-			style:style];
+	return [LoggerTextStyleManager _sizeForString:aString constraint:aConstraint font:font style:style];
 }
 
 +(CGSize)sizeForStringWithDefaultTagAndLevelFont:(NSString *)aString constraint:(CGSize)aConstraint
@@ -111,14 +106,20 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 		return CGSizeZero;
 
 	CTFontRef font = [[LoggerTextStyleManager sharedStyleManager] defaultTagAndLevelFont];
-	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultTagAndLevelParagraphStyle];
-	
-	return [LoggerTextStyleManager
-			_sizeForString:aString
-			constraint:aConstraint
-			font:font
-			style:style];
+	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultTagAndLevelStyle];
+	return [LoggerTextStyleManager _sizeForString:aString constraint:aConstraint font:font style:style];
 }
+
++(CGSize)sizeForStringWithDefaultFileAndFunctionFont:(NSString *)aString constraint:(CGSize)aConstraint
+{
+	if(IS_NULL_STRING(aString))
+		return CGSizeZero;
+	
+	CTFontRef font = [[LoggerTextStyleManager sharedStyleManager] defaultFileAndFunctionFont];
+	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultFileAndFunctionStyle];
+	return [LoggerTextStyleManager _sizeForString:aString constraint:aConstraint font:font style:style];
+}
+
 
 +(CGSize)sizeForStringWithDefaultMonospacedFont:(NSString *)aString constraint:(CGSize)aConstraint
 {
@@ -127,13 +128,20 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 
 	CTFontRef font = [[LoggerTextStyleManager sharedStyleManager] defaultMonospacedFont];
 	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultMonospacedStyle];
-
-	return [LoggerTextStyleManager
-			_sizeForString:aString
-			constraint:aConstraint
-			font:font
-			style:style];
+	return [LoggerTextStyleManager _sizeForString:aString constraint:aConstraint font:font style:style];
 }
+
++(CGSize)sizeforStringWithDefaultHintFont:(NSString *)aString constraint:(CGSize)aConstraint
+{
+	if(IS_NULL_STRING(aString))
+		return CGSizeZero;
+
+	CTFontRef font = [[LoggerTextStyleManager sharedStyleManager] defaultHintFont];
+	CTParagraphStyleRef style = [[LoggerTextStyleManager sharedStyleManager] defaultParagraphStyle];
+	return [LoggerTextStyleManager _sizeForString:aString constraint:aConstraint font:font style:style];
+}
+
+
 
 -(id)init
 {
@@ -152,29 +160,65 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 		//  the leading value of the font.
 		CGFloat defaultLeading = CTFontGetLeading(_defaultFont) + CTFontGetDescent(_defaultFont);
 		
-		CTParagraphStyleSetting defaultStyle[2] = {
+		// CTParagraphStyleSetting only takes CTParagraphStyle related parameters do not put anything else
+		CTParagraphStyleSetting dfs[] = {
 			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &defaultLeading }
 			,{kCTParagraphStyleSpecifierAlignment,sizeof(CTTextAlignment),&alignment}
 		};
 
-		_defaultParagraphStyle = CTParagraphStyleCreate(defaultStyle, 2);
+		_defaultParagraphStyle = CTParagraphStyleCreate(dfs, sizeof(dfs) / sizeof(dfs[0]));
 
 
-
+		//------------------------ default thread style ------------------------
+		CTLineBreakMode mlb = kCTLineBreakByTruncatingMiddle;
+		CTParagraphStyleSetting dths[] = {
+			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &defaultLeading }
+			,{kCTParagraphStyleSpecifierAlignment,sizeof(CTTextAlignment),&alignment}
+			,{kCTParagraphStyleSpecifierLineBreakMode,sizeof(CTLineBreakMode),&mlb}
+		};
+		
+		_defaultThreadStyle = CTParagraphStyleCreate(dths, sizeof(dths) / sizeof(dths[0]));
+		
 		//-------------------------- tag and level font ------------------------
 		// in ios, no Lucida Sans. we're going with 'Telugu Sangman MN'
-		_defaultTagAndLevelFont =  CTFontCreateWithName(CFSTR("TeluguSangamMN"), DEFAULT_TAG_LEVEL_SIZE, NULL);
+		CTFontRef tlfr = CTFontCreateWithName(CFSTR("TeluguSangamMN"), DEFAULT_TAG_LEVEL_SIZE, NULL);
+		
+		// Create a copy of the original font with the masked trait set to the
+		// desired value. If the font family does not have the appropriate style,
+		// this will return NULL.
+		CTFontRef btlfr = CTFontCreateCopyWithSymbolicTraits(tlfr, 0.0, NULL, kCTFontBoldTrait,kCTFontBoldTrait);
+		if(btlfr == NULL)
+		{
+			_defaultTagAndLevelFont = tlfr;
+		}
+		else
+		{
+			_defaultTagAndLevelFont = btlfr;
+			CFRelease(tlfr);
+		}
+		
 
 		CGFloat tagLevelLeading = CTFontGetLeading(_defaultTagAndLevelFont) + CTFontGetDescent(_defaultTagAndLevelFont);
-		
-		CTParagraphStyleSetting tagLevelStyle[2] = {
+
+		CTParagraphStyleSetting tls[] = {
 			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &tagLevelLeading }
 			,{kCTParagraphStyleSpecifierAlignment,sizeof(CTTextAlignment),&alignment}
 		};
 
-		_defaultTagAndLevelParagraphStyle = CTParagraphStyleCreate(tagLevelStyle, 2);
-		
-		
+		_defaultTagAndLevelStyle = CTParagraphStyleCreate(tls, sizeof(tls) / sizeof(tls[0]));
+
+		//-------------------------- file and function -------------------------
+		// set the desired trait to be bold, Mask off the bold trait to indicate
+		// that CTFontSymbolicTraits is the only trait desired to be modified.
+		_defaultFileAndFunctionFont = _defaultTagAndLevelFont;
+
+		CTParagraphStyleSetting ffs[] = {
+			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &tagLevelLeading }
+			,{kCTParagraphStyleSpecifierAlignment,sizeof(CTTextAlignment),&alignment}
+			,{kCTParagraphStyleSpecifierLineBreakMode,sizeof(CTLineBreakMode),&mlb}
+		};
+
+		_defaultFileAndFunctionStyle = CTParagraphStyleCreate(ffs, sizeof(ffs) / sizeof(ffs[0]));
 		
 		//-------------------------- monospaced font ---------------------------
 		// this is for binary, so we're to go with cusom font
@@ -189,16 +233,24 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerTextStyleManager,sharedStyleM
 		
 		CGFloat monospacedLeading = CTFontGetLeading(_defaultMonospacedFont) + CTFontGetDescent(_defaultMonospacedFont);
 		
-		CTParagraphStyleSetting monospacedStyle[2] = {
+		CTParagraphStyleSetting mfs[] = {
 			{kCTParagraphStyleSpecifierLineSpacingAdjustment, sizeof (CGFloat), &monospacedLeading }
 			,{kCTParagraphStyleSpecifierAlignment,sizeof(CTTextAlignment),&alignment}
 		};
 
-		_defaultMonospacedStyle = CTParagraphStyleCreate(monospacedStyle, 2);
+		_defaultMonospacedStyle = CTParagraphStyleCreate(mfs, sizeof(mfs) / sizeof(mfs[0]));
 		
 		CGDataProviderRelease(fontProvider);
 		CFRelease(cgFont);
 
+		//------------------------------- hint font ----------------------------
+		CTFontRef hf = CTFontCreateCopyWithSymbolicTraits(_defaultFont, 0.0, NULL, kCTFontTraitItalic,kCTFontTraitItalic);
+		if(hf != NULL){
+			_defaultHintFont = hf;
+		}else{
+			_defaultHintFont = _defaultFont;
+		}
+		
 	}
 	return self;
 }

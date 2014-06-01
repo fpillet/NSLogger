@@ -5,38 +5,30 @@
  * Copyright (c) 2012-2013 Sung-Taek, Kim <stkim1@colorfulglue.com> All Rights
  * Reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Any redistribution is done solely for personal benefit and not for any
- *    commercial purpose or for monetary gain
- *
- * 4. No binary form of source code is submitted to App Store℠ of Apple Inc.
- *
- * 5. Neither the name of the Sung-Taek, Kim nor the names of its contributors
- *    may be used to endorse or promote products derived from  this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER AND AND CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Redistributions of  source code  must retain  the above  copyright notice,
+ * this list of  conditions and the following  disclaimer. Redistributions in
+ * binary  form must  reproduce  the  above copyright  notice,  this list  of
+ * conditions and the following disclaimer  in the documentation and/or other
+ * materials  provided with  the distribution.  Neither the  name of Sung-Tae
+ * k Kim nor the names of its contributors may be used to endorse or promote
+ * products  derived  from  this  software  without  specific  prior  written
+ * permission.  THIS  SOFTWARE  IS  PROVIDED BY  THE  COPYRIGHT  HOLDERS  AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A  PARTICULAR PURPOSE  ARE DISCLAIMED.  IN  NO EVENT  SHALL THE  COPYRIGHT
+ * HOLDER OR  CONTRIBUTORS BE  LIABLE FOR  ANY DIRECT,  INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY,  OR CONSEQUENTIAL DAMAGES (INCLUDING,  BUT NOT LIMITED
+ * TO, PROCUREMENT  OF SUBSTITUTE GOODS  OR SERVICES;  LOSS OF USE,  DATA, OR
+ * PROFITS; OR  BUSINESS INTERRUPTION)  HOWEVER CAUSED AND  ON ANY  THEORY OF
+ * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
+ * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
+ * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  *
  */
+
 
 #import <CoreData/CoreData.h>
 #import <QuartzCore/QuartzCore.h>
@@ -48,6 +40,8 @@
 #import "LoggerClientInfoCell.h"
 #import "LoggerConstModel.h"
 #import "LoggerConstView.h"
+
+//#define TEST_SHOW 1
 
 @interface LoggerMessageViewController ()
 @property (nonatomic, retain) NSFetchedResultsController	*messageFetchResultController;
@@ -116,6 +110,11 @@
     self.toolBar.alternateBackgroundColor = [UIColor colorWithRed:0.94 green:0.94 blue:0.94 alpha:1.000];
     self.toolBar.noiseBlendMode = kCGBlendModeMultiply;
     self.toolBar.noiseOpacity = 0.1;
+	
+
+#ifdef TEST_SHOW
+	[self readMessages:nil];
+#endif
 }
 
 -(void)startViewDestruction
@@ -154,16 +153,20 @@
 //------------------------------------------------------------------------------
 -(void)readMessages:(NSNotification *)aNotification
 {
+#ifdef TEST_SHOW
+	uLong clientHash = 0x48d4119d;
+	int32_t runCount = 26;
+#else
 	NSDictionary *userInfo = [aNotification userInfo];
 	
 	MTLog(@"userInfo %@",userInfo);
 	
 	uLong clientHash = [[userInfo objectForKey:kClientHash] integerValue];
 	int32_t runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
-	
+
 	self.clientInfo = nil;
 	self.clientInfo = userInfo;
-
+#endif
 	self.runCountLabel.text = \
 		[NSString stringWithFormat:
 		 NSLocalizedString(@"Run %d of %d", nil),runCount+1,runCount+1];
@@ -397,7 +400,15 @@
 heightForRowAtIndexPath:(NSIndexPath *)anIndexPath
 {
 	LoggerMessageData *data = [self.messageFetchResultController objectAtIndexPath:anIndexPath];
-	return [[data portraitHeight] floatValue];
+	CGFloat h = [[data portraitHeight] floatValue] + [[data portraitFileFuncHeight] floatValue];
+	if([[data truncated] boolValue]){
+		
+		//@@TODO:: find accruate height
+		CGFloat hint = [[data portraitHintHeight] floatValue];
+		h += hint + 100;
+	}
+	
+	return h;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView

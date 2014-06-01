@@ -5,38 +5,30 @@
  * Copyright (c) 2012-2013 Sung-Taek, Kim <stkim1@colorfulglue.com> All Rights
  * Reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Any redistribution is done solely for personal benefit and not for any
- *    commercial purpose or for monetary gain
- *
- * 4. No binary form of source code is submitted to App Store℠ of Apple Inc.
- *
- * 5. Neither the name of the Sung-Taek, Kim nor the names of its contributors
- *    may be used to endorse or promote products derived from  this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER AND AND CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * Redistributions of  source code  must retain  the above  copyright notice,
+ * this list of  conditions and the following  disclaimer. Redistributions in
+ * binary  form must  reproduce  the  above copyright  notice,  this list  of
+ * conditions and the following disclaimer  in the documentation and/or other
+ * materials  provided with  the distribution.  Neither the  name of Sung-Tae
+ * k Kim nor the names of its contributors may be used to endorse or promote
+ * products  derived  from  this  software  without  specific  prior  written
+ * permission.  THIS  SOFTWARE  IS  PROVIDED BY  THE  COPYRIGHT  HOLDERS  AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A  PARTICULAR PURPOSE  ARE DISCLAIMED.  IN  NO EVENT  SHALL THE  COPYRIGHT
+ * HOLDER OR  CONTRIBUTORS BE  LIABLE FOR  ANY DIRECT,  INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY,  OR CONSEQUENTIAL DAMAGES (INCLUDING,  BUT NOT LIMITED
+ * TO, PROCUREMENT  OF SUBSTITUTE GOODS  OR SERVICES;  LOSS OF USE,  DATA, OR
+ * PROFITS; OR  BUSINESS INTERRUPTION)  HOWEVER CAUSED AND  ON ANY  THEORY OF
+ * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
+ * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
+ * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  *
  */
+
 
 
 #import "LoggerDataManager.h"
@@ -528,6 +520,7 @@ didEstablishConnection:(LoggerConnection *)theConnection
 				
 				[messageData setTimestamp:		[NSNumber numberWithUnsignedLongLong:tm64]];
 				[messageData setTimestampString:[theInfoMessage timestampString]];
+				[messageData setFileFuncRepresentation:[theInfoMessage fileFuncString]];
 				
 				[messageData setTag:			nil];
 				[messageData setFilename:		nil];
@@ -615,6 +608,7 @@ didReceiveMessages:(NSArray *)theMessages
 					[messageData setTag:			[aMessage tag]];
 					[messageData setFilename:		[aMessage filename]];
 					[messageData setFunctionName:	[aMessage functionName]];
+					[messageData setFileFuncRepresentation:[aMessage fileFuncString]];
 					
 					[messageData setSequence:		[NSNumber numberWithUnsignedInteger:[aMessage sequence]]];
 					[messageData setThreadID:		[aMessage threadID]];
@@ -625,8 +619,11 @@ didReceiveMessages:(NSArray *)theMessages
 					[messageData setContentsType:	[NSNumber numberWithShort:[aMessage contentsType]]];
 					[messageData setMessageType:	[aMessage messageType]];
 
+					[messageData setPortraitFileFuncHeight:[NSNumber numberWithFloat:[aMessage portraitFileFuncHeight]]];
 					[messageData setPortraitHeight: [NSNumber numberWithFloat:[aMessage portraitHeight]]];
 					[messageData setPortraitMessageSize:NSStringFromCGSize([aMessage portraitMessageSize])];
+
+					[messageData setLandscapeFileFuncHeight:[NSNumber numberWithFloat:[aMessage landscaleFileFuncHeight]]];
 					[messageData setLandscapeHeight:[NSNumber numberWithFloat:[aMessage landscapeHeight]]];
 					[messageData setLandscapeMessageSize:NSStringFromCGSize([aMessage landscapeMessageSize])];
 
@@ -646,8 +643,8 @@ didReceiveMessages:(NSArray *)theMessages
 							// set hint size
 							if([aMessage isTruncated])
 							{
-								[messageData setPortraitHintSize:NSStringFromCGSize([aMessage portraitHintSize])];
-								[messageData setLandscapeHintSize:NSStringFromCGSize([aMessage landscapeHintSize])];
+								[messageData setPortraitHintHeight:[NSNumber numberWithFloat:[aMessage portraitHintHeight]]];
+								[messageData setLandscapeHintHeight:[NSNumber numberWithFloat:[aMessage landscapeHintHeight]]];
 							}
 							break;
 						}
@@ -662,8 +659,8 @@ didReceiveMessages:(NSArray *)theMessages
 							// set hint size
 							if([aMessage isTruncated])
 							{
-								[messageData setPortraitHintSize:NSStringFromCGSize([aMessage portraitHintSize])];
-								[messageData setLandscapeHintSize:NSStringFromCGSize([aMessage landscapeHintSize])];
+								[messageData setPortraitHintHeight:[NSNumber numberWithFloat:[aMessage portraitHintHeight]]];
+								[messageData setLandscapeHintHeight:[NSNumber numberWithFloat:[aMessage landscapeHintHeight]]];
 							}
 
 							
