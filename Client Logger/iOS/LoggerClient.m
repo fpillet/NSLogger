@@ -2018,7 +2018,7 @@ static uint8_t *LoggerMessagePrepareForPart(CFMutableDataRef encoder, uint32_t r
 	CFIndex size = CFDataGetLength(encoder);
 	uint32_t oldSize = ntohl(*(uint32_t *)p);
 	uint32_t newSize = oldSize + requiredExtraBytes;
-	if ((newSize + 4) > size)
+	if ((newSize + 4) > (uint32_t)size)
 	{
 		// grow by 64 bytes chunks
 		CFDataSetLength(encoder, (newSize + 4 + 64) & ~63);
