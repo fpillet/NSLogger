@@ -2095,6 +2095,10 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 																							   [name length] - range.location - range.length - 1)]];
 						[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
 					}
+                    else
+                    {
+                        name = nil;
+                    }
 				}
 			}
 		}
