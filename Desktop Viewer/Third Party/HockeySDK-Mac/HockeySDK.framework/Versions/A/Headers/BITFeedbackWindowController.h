@@ -1,7 +1,7 @@
 /*
- * Author: Landon Fuller <landonf@plausiblelabs.com>
+ * Author: Andreas Linde <mail@andreaslinde.de>
  *
- * Copyright (c) 2008-2009 Plausible Labs Cooperative, Inc.
+ * Copyright (c) 2013-2014 HockeyApp, Bit Stadium GmbH.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person
@@ -26,35 +26,40 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
-@interface PLCrashReportSignalInfo : NSObject {
+@class BITFeedbackManager;
+
+@interface BITFeedbackWindowController : NSWindowController {
 @private
-    /** Signal name */
-    NSString *_name;
-    
-    /** Signal code */
-    NSString *_code;
+  BITFeedbackManager *_manager;
+  NSDateFormatter *_lastUpdateDateFormatter;
 
-    /** Fauling instruction or address */
-    uint64_t _address;
+  NSView *_userDataView;
+  NSTextField *_userNameTextField;
+  NSTextField *_userEmailTextField;
+  NSButton *_userDataContinueButton;
+  
+  NSString *_userName;
+  NSString *_userEmail;
+  
+  NSView *_feedbackView;
+  NSView *_feedbackEmptyView;
+  NSScrollView *_feedbackScrollView;
+  NSTableView *_feedbackTableView;
+
+  NSTextView *_messageTextField;
+  NSAttributedString *_messageText;
+
+  NSView *_statusBarComposeView;
+  NSButton *_sendMessageButton;
+  
+  NSView *_statusBarDefaultView;
+  NSProgressIndicator *_statusBarLoadingIndicator;
+  NSTextField *_statusBarTextField;
+  NSButton *_statusBarRefreshButton;
 }
 
-- (id) initWithSignalName: (NSString *) name code: (NSString *) code address: (uint64_t) address;
-
-/**
- * The signal name.
- */
-@property(nonatomic, readonly) NSString *name;
-
-/**
- * The signal code.
- */
-@property(nonatomic, readonly) NSString *code;
-
-/**
- * The faulting instruction or address.
- */
-@property(nonatomic, readonly) uint64_t address;
+- (id)initWithManager:(BITFeedbackManager *)feedbackManager;
 
 @end

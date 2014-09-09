@@ -33,7 +33,7 @@
 
 @class LoggerConnection, LoggerTransport, LoggerStatusWindowController, LoggerPrefsWindowController;
 
-@interface LoggerAppDelegate : NSObject <BITCrashReportManagerDelegate>
+@interface LoggerAppDelegate : NSObject <BITHockeyManagerDelegate>
 {
 	CFArrayRef serverCerts;
 	BOOL serverCertsLoadAttempted;

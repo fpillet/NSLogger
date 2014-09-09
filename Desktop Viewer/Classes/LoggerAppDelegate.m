@@ -231,11 +231,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	if ([hockeyAppID isKindOfClass:[NSString class]] && [hockeyAppID length])
 	{
 		BITHockeyManager *shm = [BITHockeyManager sharedHockeyManager];
-		[shm configureWithIdentifier:hockeyAppID
-						 companyName:[hockeyConf objectForKey:@"companyName"]
-		  crashReportManagerDelegate:self];
+		[shm configureWithIdentifier:hockeyAppID];
 		[shm startManager];
-		[shm setExceptionInterceptionEnabled:YES];
 	}
 	
 	// Listen to prefs change notifications, where we start / stop transports on demand
@@ -532,14 +529,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	}
 
 	return (serverCerts != NULL);
-}
-
-// -----------------------------------------------------------------------------
-#pragma mark -
-#pragma mark BITCrashReportManagerDelegate
-// -----------------------------------------------------------------------------
-- (void) showMainApplicationWindow
-{
 }
 
 @end
