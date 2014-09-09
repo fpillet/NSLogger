@@ -841,15 +841,59 @@ void runSystemCommand(NSString *cmd)
                              arguments:args];
 }
 
+- (void)openDetailsInIDE
+{
+	NSInteger row = [logTable selectedRow];
+	if (row >= 0 && row < [displayedMessages count])
+	{
+		LoggerMessage *msg = [displayedMessages objectAtIndex:row];
+		NSString *filename = msg.filename;
+		if ([filename length])
+		{
+			NSFileManager *fm = [[NSFileManager alloc] init];
+			if ([fm fileExistsAtPath:filename])
+			{
+				// If the file is .h, .m, .c, .cpp, .h, .hpp: open the file
+				// using xed. Otherwise, open the file with the Finder. We really don't
+				// know which IDE the user is running if it's not Xcode
+				// (when logging from Android, could be IntelliJ or Eclipse)
+				NSString *extension = [filename pathExtension];
+				BOOL useXcode = NO;
+				//if ([fm fileExistsAtPath:@"/usr/bin/xed"])
+				//{
+				for (NSString *ext in sXcodeFileExtensions)
+				{
+					if ([ext caseInsensitiveCompare:extension] == NSOrderedSame)
+					{
+						useXcode = YES;
+						break;
+					}
+				}
+				//}
+				if (useXcode)
+				{
+					[self xedFile:filename
+							 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber)]
+						   client:[attachedConnection clientName]];
+				}
+				else
+				{
+					[[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:filename]];
+				}
+			}
+		}
+	}
+}
+
 - (void)logCellDoubleClicked:(id)sender
 {
-	// double click opens the source file if it was defined in the log
-	// and the file is found (using alt can mess with the results of the AppleScript)
-    // alt + double click opens the detail view
+    // double click opens the selection in the detail view
+	// command-double click opens the source file if it was defined in the log and the file is found (using alt can mess with the results of the AppleScript)
+	// alt-doubleclick opens the selection in external editor
 	NSEvent *event = [NSApp currentEvent];
-    if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSFunctionKeyMask) != 0)
+    if ([event clickCount] > 1 && ([NSEvent modifierFlags] & (NSFunctionKeyMask | NSCommandKeyMask)) != 0)
     {
-        [self openDetailsWindow:sender];
+		[self openDetailsInIDE];
     }
     else if ([event clickCount] > 1 && ([NSEvent modifierFlags] & NSAlternateKeyMask) != 0)
     {
@@ -857,47 +901,7 @@ void runSystemCommand(NSString *cmd)
     }
     else if ([event clickCount] > 1)
     {
-		NSInteger row = [logTable selectedRow];
-		if (row >= 0 && row < [displayedMessages count])
-		{
-			LoggerMessage *msg = [displayedMessages objectAtIndex:row];
-			NSString *filename = msg.filename;
-			if ([filename length])
-			{
-				NSFileManager *fm = [[NSFileManager alloc] init];
-				if ([fm fileExistsAtPath:filename])
-				{
-					// If the file is .h, .m, .c, .cpp, .h, .hpp: open the file
-					// using xed. Otherwise, open the file with the Finder. We really don't
-					// know which IDE the user is running if it's not Xcode
-					// (when logging from Android, could be IntelliJ or Eclipse)
-					NSString *extension = [filename pathExtension];
-					BOOL useXcode = NO;
-                    //if ([fm fileExistsAtPath:@"/usr/bin/xed"])
-                    //{
-                    for (NSString *ext in sXcodeFileExtensions)
-                    {
-                        if ([ext caseInsensitiveCompare:extension] == NSOrderedSame)
-                        {
-                            useXcode = YES;
-                            break;
-                        }
-                    }
-                    //}
-					if (useXcode)
-					{                        
-                        [self xedFile:filename 
-                                 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber)]
-                               client:[attachedConnection clientName]];
-					}
-					else
-					{
-						[[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:filename]];
-					}
-				}
-			}
-		}
-		return;
+        [self openDetailsWindow:sender];
 	}
 }
 
