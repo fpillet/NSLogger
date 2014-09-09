@@ -29,11 +29,10 @@
  * 
  */
 #import <Cocoa/Cocoa.h>
-#import <HockeySDK/HockeySDK.h>
 
 @class LoggerConnection, LoggerTransport, LoggerStatusWindowController, LoggerPrefsWindowController;
 
-@interface LoggerAppDelegate : NSObject <BITHockeyManagerDelegate>
+@interface LoggerAppDelegate : NSObject
 {
 	CFArrayRef serverCerts;
 	BOOL serverCertsLoadAttempted;

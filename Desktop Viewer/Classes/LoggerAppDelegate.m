@@ -29,7 +29,7 @@
  * 
  */
 #import <Security/SecItem.h>
-#import <HockeySDK/BITHockeyManager.h>
+#import <HockeySDK/HockeySDK.h>
 #import "LoggerAppDelegate.h"
 #import "LoggerNativeTransport.h"
 #import "LoggerWindowController.h"
@@ -180,7 +180,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	}
 	@catch (NSException * e)
 	{
-		NSLog(@"Catched exception while trying to archive filters: %@", e);
+		NSLog(@"Caught exception while trying to archive filters: %@", e);
 	}
 }
 
