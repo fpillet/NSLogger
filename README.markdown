@@ -32,7 +32,7 @@ If your project is configured to use [CocoaPods](http://cocoapods.org), just add
 pod "NSLogger"
 ```
 
-Then download this pre-built version of the [NSLogger desktop viewer](https://www.dropbox.com/s/zt1eyfgymc9fbak/NSLogger-1.2.zip) for OS X.
+Then download the pre-built version of the [NSLogger desktop viewer](https://github.com/fpillet/NSLogger/releases) for OS X.
 
 ## Adding logs to you app ##
 A one stop-shopper header file is `<NSLogger/NSLogger.h>`. By importing this header file, you'll be able to add traces to your code this way:
