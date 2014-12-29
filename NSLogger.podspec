@@ -22,5 +22,19 @@ Pod::Spec.new do |s|
     'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) NSLOGGER_WAS_HERE=1',
     'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_BUILD_USERNAME="${USER}"'
   }
+
+  s.default_subspec = 'Standard'
+
+  # the 'Standard' subspec is the default: unused NSLogger functions will be stripped
+  # from the final build
+  s.subspec 'Standard' do |standard|
+  end
   
+  # the 'NoStrip' subspec prevents unused functions from being stripped by the linker.
+  # this is useful when other frameworks linked into the application dynamically look for
+  # NSLogger functions and use them if present.
+  s.subspec 'NoStrip' do |nostrip|
+  	nostrip.compiler_flags = '-DNSLOGGER_ALLOW_NOSTRIP'
+  end
+
 end
