@@ -125,13 +125,16 @@
 
 // small set of macros for proper ARC/non-ARC compilation support
 // with added cruft to support non-clang compilers
+#undef CAST_TO_CFSTRING
+#undef CAST_TO_NSSTRING
+#undef RELEASE_NSOBJECT
 #undef LOGGER_ARC_MACROS_DEFINED
 #if defined(__has_feature)
 	#if __has_feature(objc_arc)
         #define CAST_TO_CFSTRING			__bridge CFStringRef
         #define CAST_TO_NSSTRING			__bridge NSString *
 		#define CAST_TO_CFDATA				__bridge CFDataRef
-		#define RELEASE(obj)				do{}while(0)
+		#define RELEASE_NSOBJECT(obj)		do{}while(0)
 		#define LOGGER_ARC_MACROS_DEFINED
 	#endif
 #endif
@@ -139,7 +142,7 @@
 	#define CAST_TO_CFSTRING			CFStringRef
     #define CAST_TO_NSSTRING			NSString *
 	#define CAST_TO_CFDATA				CFDataRef
-	#define RELEASE(obj)				[obj release]
+	#define RELEASE_NSOBJECT(obj)		[obj release]
 #endif
 #undef LOGGER_ARC_MACROS_DEFINED
 
@@ -2531,7 +2534,7 @@ static void LogMessageTo_internal(Logger *logger,
             if (msgString != nil)
             {
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)msgString, PART_KEY_MESSAGE);
-                RELEASE(msgString);
+                RELEASE_NSOBJECT(msgString);
             }
 #else
             CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
