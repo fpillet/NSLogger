@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.subspec 'Standard' do |standard|
     standard.source_files = 'Client Logger/iOS/*.{h,m}'
     standard.xcconfig = {
-      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_BUILD_USERNAME="${USER}"'
+      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
   	}
   end
 
@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
   s.subspec 'NoStrip' do |nostrip|
     nostrip.source_files = 'Client Logger/iOS/*.{h,m}'
     nostrip.xcconfig = {
-      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_BUILD_USERNAME="${USER}" NSLOGGER_ALLOW_NOSTRIP=1'
+      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}" NSLOGGER_ALLOW_NOSTRIP=1'
     }
   end
 
