@@ -22,10 +22,10 @@ Pod::Spec.new do |s|
   # the 'Standard' subspec is the default: unused NSLogger functions will be stripped
   # from the final build
   s.subspec 'Standard' do |standard|
-    standard.source_files = 'Client Logger/iOS/*.{h,m}'
-    standard.xcconfig = {
-      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
-  	}
+  standard.source_files = 'Client Logger/iOS/*.{h,m}'
+  standard.xcconfig = {
+    'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
+  }
   end
 
   # the 'NoStrip' subspec prevents unused functions from being stripped by the linker.
