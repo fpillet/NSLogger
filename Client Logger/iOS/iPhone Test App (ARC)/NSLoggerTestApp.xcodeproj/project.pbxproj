@@ -18,6 +18,7 @@
 		3D62642B125223CA00359022 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D62642A125223CA00359022 /* CFNetwork.framework */; };
 		3DA99CB50F10BC160077756A /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA99CB40F10BC160077756A /* LoggerClient.m */; };
 		3DB964331274C5E60054F72D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DB964321274C5E50054F72D /* SystemConfiguration.framework */; };
+		AF9B54B01AD6CE4F007A9E4C /* SwiftLoggerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9B54AF1AD6CE4F007A9E4C /* SwiftLoggerClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,8 @@
 		3DA99CB40F10BC160077756A /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../../LoggerClient.m; sourceTree = "<group>"; };
 		3DB964321274C5E50054F72D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AF9B54AE1AD6CE4E007A9E4C /* NSLoggerClient TestApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLoggerClient TestApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		AF9B54AF1AD6CE4F007A9E4C /* SwiftLoggerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftLoggerClient.swift; path = ../../SwiftLoggerClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				3D0187E01255D10C009D8545 /* LoggerCommon.h */,
 				3DA99CB30F10BC160077756A /* LoggerClient.h */,
 				3DA99CB40F10BC160077756A /* LoggerClient.m */,
+				AF9B54AF1AD6CE4F007A9E4C /* SwiftLoggerClient.swift */,
+				AF9B54AE1AD6CE4E007A9E4C /* NSLoggerClient TestApp-Bridging-Header.h */,
 			);
 			name = "Logger Client";
 			path = Classes;
@@ -193,6 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
+				AF9B54B01AD6CE4F007A9E4C /* SwiftLoggerClient.swift in Sources */,
 				1D3623260D0F684500981E51 /* LoggerClientAppDelegate.m in Sources */,
 				28D7ACF80DDB3853001CB0EB /* LoggerClientViewController.m in Sources */,
 				3DA99CB50F10BC160077756A /* LoggerClient.m in Sources */,
@@ -206,6 +212,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -215,8 +222,12 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-D DEBUG";
 				PRODUCT_NAME = NSLoggerClient;
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/NSLoggerClient TestApp-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -224,14 +235,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = NSLoggerTestApp_Prefix.pch;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = NSLoggerClient;
+				SWIFT_OBJC_BRIDGING_HEADER = "Classes/NSLoggerClient TestApp-Bridging-Header.h";
 			};
 			name = Release;
 		};
