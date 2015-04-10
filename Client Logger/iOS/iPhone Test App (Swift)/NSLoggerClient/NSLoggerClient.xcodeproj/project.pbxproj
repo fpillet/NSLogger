@@ -1,0 +1,445 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AFB1E7041AD7D8AD009F7055 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFB1E7031AD7D8AD009F7055 /* AppDelegate.swift */; };
+		AFB1E7061AD7D8AD009F7055 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFB1E7051AD7D8AD009F7055 /* ViewController.swift */; };
+		AFB1E7091AD7D8AD009F7055 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AFB1E7071AD7D8AD009F7055 /* Main.storyboard */; };
+		AFB1E70B1AD7D8AD009F7055 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AFB1E70A1AD7D8AD009F7055 /* Images.xcassets */; };
+		AFB1E70E1AD7D8AD009F7055 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AFB1E70C1AD7D8AD009F7055 /* LaunchScreen.xib */; };
+		AFB1E71A1AD7D8AD009F7055 /* NSLoggerClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFB1E7191AD7D8AD009F7055 /* NSLoggerClientTests.swift */; };
+		AFB1E7271AD7D8EB009F7055 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = AFB1E7241AD7D8EB009F7055 /* LoggerClient.m */; };
+		AFB1E7281AD7D8EB009F7055 /* SwiftLoggerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFB1E7261AD7D8EB009F7055 /* SwiftLoggerClient.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AFB1E7141AD7D8AD009F7055 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AFB1E6F61AD7D8AD009F7055 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AFB1E6FD1AD7D8AD009F7055;
+			remoteInfo = NSLoggerClient;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		AFB1E6FE1AD7D8AD009F7055 /* NSLoggerClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFB1E7021AD7D8AD009F7055 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AFB1E7031AD7D8AD009F7055 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AFB1E7051AD7D8AD009F7055 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		AFB1E7081AD7D8AD009F7055 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		AFB1E70A1AD7D8AD009F7055 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		AFB1E70D1AD7D8AD009F7055 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		AFB1E7131AD7D8AD009F7055 /* NSLoggerClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NSLoggerClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFB1E7181AD7D8AD009F7055 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AFB1E7191AD7D8AD009F7055 /* NSLoggerClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSLoggerClientTests.swift; sourceTree = "<group>"; };
+		AFB1E7231AD7D8EB009F7055 /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = ../../../LoggerClient.h; sourceTree = "<group>"; };
+		AFB1E7241AD7D8EB009F7055 /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../../../LoggerClient.m; sourceTree = "<group>"; };
+		AFB1E7251AD7D8EB009F7055 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = ../../../LoggerCommon.h; sourceTree = "<group>"; };
+		AFB1E7261AD7D8EB009F7055 /* SwiftLoggerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftLoggerClient.swift; path = ../../../SwiftLoggerClient.swift; sourceTree = "<group>"; };
+		AFB1E72C1AD7EF49009F7055 /* NSLoggerClient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLoggerClient-Bridging-Header.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AFB1E6FB1AD7D8AD009F7055 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFB1E7101AD7D8AD009F7055 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AFB1E6F51AD7D8AD009F7055 = {
+			isa = PBXGroup;
+			children = (
+				AFB1E7001AD7D8AD009F7055 /* NSLoggerClient */,
+				AFB1E7161AD7D8AD009F7055 /* NSLoggerClientTests */,
+				AFB1E6FF1AD7D8AD009F7055 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AFB1E6FF1AD7D8AD009F7055 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AFB1E6FE1AD7D8AD009F7055 /* NSLoggerClient.app */,
+				AFB1E7131AD7D8AD009F7055 /* NSLoggerClientTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AFB1E7001AD7D8AD009F7055 /* NSLoggerClient */ = {
+			isa = PBXGroup;
+			children = (
+				AFB1E72C1AD7EF49009F7055 /* NSLoggerClient-Bridging-Header.h */,
+				AFB1E7231AD7D8EB009F7055 /* LoggerClient.h */,
+				AFB1E7241AD7D8EB009F7055 /* LoggerClient.m */,
+				AFB1E7251AD7D8EB009F7055 /* LoggerCommon.h */,
+				AFB1E7261AD7D8EB009F7055 /* SwiftLoggerClient.swift */,
+				AFB1E7031AD7D8AD009F7055 /* AppDelegate.swift */,
+				AFB1E7051AD7D8AD009F7055 /* ViewController.swift */,
+				AFB1E7071AD7D8AD009F7055 /* Main.storyboard */,
+				AFB1E70A1AD7D8AD009F7055 /* Images.xcassets */,
+				AFB1E70C1AD7D8AD009F7055 /* LaunchScreen.xib */,
+				AFB1E7011AD7D8AD009F7055 /* Supporting Files */,
+			);
+			path = NSLoggerClient;
+			sourceTree = "<group>";
+		};
+		AFB1E7011AD7D8AD009F7055 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AFB1E7021AD7D8AD009F7055 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AFB1E7161AD7D8AD009F7055 /* NSLoggerClientTests */ = {
+			isa = PBXGroup;
+			children = (
+				AFB1E7191AD7D8AD009F7055 /* NSLoggerClientTests.swift */,
+				AFB1E7171AD7D8AD009F7055 /* Supporting Files */,
+			);
+			path = NSLoggerClientTests;
+			sourceTree = "<group>";
+		};
+		AFB1E7171AD7D8AD009F7055 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				AFB1E7181AD7D8AD009F7055 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AFB1E6FD1AD7D8AD009F7055 /* NSLoggerClient */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFB1E71D1AD7D8AD009F7055 /* Build configuration list for PBXNativeTarget "NSLoggerClient" */;
+			buildPhases = (
+				AFB1E6FA1AD7D8AD009F7055 /* Sources */,
+				AFB1E6FB1AD7D8AD009F7055 /* Frameworks */,
+				AFB1E6FC1AD7D8AD009F7055 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NSLoggerClient;
+			productName = NSLoggerClient;
+			productReference = AFB1E6FE1AD7D8AD009F7055 /* NSLoggerClient.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AFB1E7121AD7D8AD009F7055 /* NSLoggerClientTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFB1E7201AD7D8AD009F7055 /* Build configuration list for PBXNativeTarget "NSLoggerClientTests" */;
+			buildPhases = (
+				AFB1E70F1AD7D8AD009F7055 /* Sources */,
+				AFB1E7101AD7D8AD009F7055 /* Frameworks */,
+				AFB1E7111AD7D8AD009F7055 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AFB1E7151AD7D8AD009F7055 /* PBXTargetDependency */,
+			);
+			name = NSLoggerClientTests;
+			productName = NSLoggerClientTests;
+			productReference = AFB1E7131AD7D8AD009F7055 /* NSLoggerClientTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AFB1E6F61AD7D8AD009F7055 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+				ORGANIZATIONNAME = "Guillaume Laurent";
+				TargetAttributes = {
+					AFB1E6FD1AD7D8AD009F7055 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					AFB1E7121AD7D8AD009F7055 = {
+						CreatedOnToolsVersion = 6.3;
+						TestTargetID = AFB1E6FD1AD7D8AD009F7055;
+					};
+				};
+			};
+			buildConfigurationList = AFB1E6F91AD7D8AD009F7055 /* Build configuration list for PBXProject "NSLoggerClient" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AFB1E6F51AD7D8AD009F7055;
+			productRefGroup = AFB1E6FF1AD7D8AD009F7055 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AFB1E6FD1AD7D8AD009F7055 /* NSLoggerClient */,
+				AFB1E7121AD7D8AD009F7055 /* NSLoggerClientTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AFB1E6FC1AD7D8AD009F7055 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFB1E7091AD7D8AD009F7055 /* Main.storyboard in Resources */,
+				AFB1E70E1AD7D8AD009F7055 /* LaunchScreen.xib in Resources */,
+				AFB1E70B1AD7D8AD009F7055 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFB1E7111AD7D8AD009F7055 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AFB1E6FA1AD7D8AD009F7055 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFB1E7271AD7D8EB009F7055 /* LoggerClient.m in Sources */,
+				AFB1E7061AD7D8AD009F7055 /* ViewController.swift in Sources */,
+				AFB1E7281AD7D8EB009F7055 /* SwiftLoggerClient.swift in Sources */,
+				AFB1E7041AD7D8AD009F7055 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFB1E70F1AD7D8AD009F7055 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFB1E71A1AD7D8AD009F7055 /* NSLoggerClientTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AFB1E7151AD7D8AD009F7055 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AFB1E6FD1AD7D8AD009F7055 /* NSLoggerClient */;
+			targetProxy = AFB1E7141AD7D8AD009F7055 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		AFB1E7071AD7D8AD009F7055 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AFB1E7081AD7D8AD009F7055 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		AFB1E70C1AD7D8AD009F7055 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AFB1E70D1AD7D8AD009F7055 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		AFB1E71B1AD7D8AD009F7055 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AFB1E71C1AD7D8AD009F7055 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AFB1E71E1AD7D8AD009F7055 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = NSLoggerClient/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "-D DEBUG";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NSLoggerClient/NSLoggerClient-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		AFB1E71F1AD7D8AD009F7055 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = NSLoggerClient/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NSLoggerClient/NSLoggerClient-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		AFB1E7211AD7D8AD009F7055 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = NSLoggerClientTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NSLoggerClient.app/NSLoggerClient";
+			};
+			name = Debug;
+		};
+		AFB1E7221AD7D8AD009F7055 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = NSLoggerClientTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NSLoggerClient.app/NSLoggerClient";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AFB1E6F91AD7D8AD009F7055 /* Build configuration list for PBXProject "NSLoggerClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFB1E71B1AD7D8AD009F7055 /* Debug */,
+				AFB1E71C1AD7D8AD009F7055 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AFB1E71D1AD7D8AD009F7055 /* Build configuration list for PBXNativeTarget "NSLoggerClient" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFB1E71E1AD7D8AD009F7055 /* Debug */,
+				AFB1E71F1AD7D8AD009F7055 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AFB1E7201AD7D8AD009F7055 /* Build configuration list for PBXNativeTarget "NSLoggerClientTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFB1E7211AD7D8AD009F7055 /* Debug */,
+				AFB1E7221AD7D8AD009F7055 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AFB1E6F61AD7D8AD009F7055 /* Project object */;
+}

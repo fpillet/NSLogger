@@ -16,14 +16,14 @@ class SwiftLoggerClient {
         #endif
     }
 
-    class func logMessage(domain:String, level:Int32, format:String, args:CVarArgType ...) {
+    class func logMessage(#domain:String, level:Int32, format:String, args:CVarArgType ...) {
         #if DEBUG
             let vaArgs = getVaList(args)
             LogMessage_va(domain, level, format, vaArgs)
         #endif
     }
 
-    class func logMessage(filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, format:String, args:CVarArgType ...) {
+    class func logMessage(#filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, format:String, args:CVarArgType ...) {
         #if DEBUG
         let vaArgs = getVaList(args)
 
@@ -35,13 +35,13 @@ class SwiftLoggerClient {
     }
 
 
-    class func logData(domain:String, level:Int32, data:NSData) {
+    class func logData(#domain:String, level:Int32, data:NSData) {
         #if DEBUG
         LogData(domain, level, data)
         #endif
     }
 
-    class func logData(filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, data:NSData) {
+    class func logData(#filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, data:NSData) {
         #if DEBUG
             let fileNameCstr = stringToCStr(filename)
             let functionNameCstr = stringToCStr(functionName)
@@ -49,13 +49,13 @@ class SwiftLoggerClient {
         #endif
     }
 
-    class func logImageData(domain:String, level:Int32, width:Int32, height:Int32, data:NSData) {
+    class func logImageData(#domain:String, level:Int32, width:Int32, height:Int32, data:NSData) {
         #if DEBUG
             LogImageData(domain, level, width, height, data)
         #endif
     }
 
-    class func logImageData(filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, width:Int32, height:Int32, data:NSData) {
+    class func logImageData(#filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, width:Int32, height:Int32, data:NSData) {
         #if DEBUG
             let fileNameCstr = stringToCStr(filename)
             let functionNameCstr = stringToCStr(functionName)
