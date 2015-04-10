@@ -40,7 +40,7 @@
 		3DA99CB40F10BC160077756A /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = ../../LoggerClient.m; sourceTree = "<group>"; };
 		3DB964321274C5E50054F72D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AF9B54AE1AD6CE4E007A9E4C /* NSLoggerClient TestApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSLoggerClient TestApp-Bridging-Header.h"; path = "../../NSLoggerClient TestApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		AF9B54AE1AD6CE4E007A9E4C /* NSLoggerClient TestApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLoggerClient TestApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		AF9B54AF1AD6CE4F007A9E4C /* SwiftLoggerClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftLoggerClient.swift; path = ../../SwiftLoggerClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
