@@ -34,10 +34,9 @@ class ViewController: UIViewController {
     }
 
     @IBAction func logFormattedMessage(sender: AnyObject) {
-        SwiftLoggerClient.logMessage(domain:domain, level:1, format:"A formatted message : %d %@", args: messageCount++, textField.text)
+        SwiftLoggerClient.logMessage(domain:domain, level:1, format:"A formatted message : \(messageCount++) \(textField.text)")
         SwiftLoggerClient.logMessage(filename: __FILE__, lineNumber: __LINE__, functionName: __FUNCTION__,
-            domain:domain, level:1, format:"A formatted message : %d %@", args: messageCount++, textField.text)
-
+            domain:domain, level:1, format:"A formatted message : \(messageCount++) \(textField.text)")
     }
 
     @IBAction func logData(sender: AnyObject) {
