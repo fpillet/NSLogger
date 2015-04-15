@@ -1,14 +1,14 @@
 /*
  * NSLoggerClient.java
  *
- * Android version 1.0b4 2012-02-18
+ * Android version 1.0.1 2015-04-15
  *
  * Android port of the NSLogger client code
  * https://github.com/fpillet/NSLogger
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  *
- * Copyright (c) 2011-2012 Florent Pillet All Rights Reserved.
+ * Copyright (c) 2011-2015 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -44,20 +44,16 @@ import android.os.Process;
 import android.provider.Settings.Secure;
 import android.util.Log;
 
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
-import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,10 +84,11 @@ public class NSLoggerClient
 	private final boolean DEBUG_LOGGER = false;
 
 	// Options
-	static final int
+	public static final int
 		OPT_FLUSH_EACH_MESSAGE = 1,		// If set, NSLogger waits for each message to be sent to the desktop viewer (this includes connecting to the viewer)
 		OPT_BROWSE_BONJOUR = 2,
-		OPT_USE_SSL = 4;
+		OPT_USE_SSL = 4,
+		OPT_ROUTE_TO_LOGCAT = 8;
 
 	// A global lock that we use to tell the OS that we need to use multicasting
 	// when we need to use Bonjour. Each NSLogger instance willing to use Bonjour
@@ -100,7 +97,7 @@ public class NSLoggerClient
 
 	// Instance variables
 	Context currentContext;
-	int options;
+	protected int options;
 	String bufferFile;			// buffer file to write to. We use this when not connected if OPT_BUFFER_UNTIL_CONNECTION, and when no remote host defined and no OPT_LOG_TO_CONSOLE
 	String bonjourServiceName;	// when browsing for Bonjour services, the bonjour service name to use. If not customized by the user, we will use the first service found
 	String bonjourServiceType;	// the service type to use. If not customized by the user, we will use either the SSL or non-SSL service type
@@ -294,7 +291,7 @@ public class NSLoggerClient
 		}
 		catch (Exception e)
 		{
-			Log.e("NSLogger", "Exception catched in startLoggingThreadIfNeeded: " + e.toString());
+			Log.e("NSLogger", "Exception caught in startLoggingThreadIfNeeded: " + e.toString());
 		}
 	}
 
@@ -782,7 +779,7 @@ public class NSLoggerClient
 	/**
 	 * The class encapsulating the actual worker thread for NSLogger
 	 */
-	private class LoggingWorker extends Thread implements ServiceListener, HandshakeCompletedListener, JmDNS.Delegate
+	private class LoggingWorker extends Thread
 	{
 		ArrayList<LogMessage> logs = new ArrayList<LogMessage>(64);
 
@@ -799,7 +796,6 @@ public class NSLoggerClient
 		byte[] incompleteSend;			// if last message could not be sent in one batch, the full message here
 		int incompleteSendOffset;		// and the offset from which to continue sending here
 
-		JmDNS bonjourBrowser;			// Bonjour browser instance while trying to find a viewer on the network
 		String bonjourListeningType;
 
 		// Startup locking mechanism
@@ -915,7 +911,7 @@ public class NSLoggerClient
 			catch (Exception e)
 			{
 				if (DEBUG_LOGGER)
-					Log.e("NSLogger", "Exception catched in LoggingWorker.run(): " + e.toString());
+					Log.e("NSLogger", "Exception caught in LoggingWorker.run(): " + e.toString());
 
 				// In case an exception was caused before run, make sure waiters are unblocked
 				ready.set(true);
@@ -1093,8 +1089,9 @@ public class NSLoggerClient
 
 						SSLSocket socket = (SSLSocket) remoteSocket;
 						socket.setUseClientMode(true);
-						socket.addHandshakeCompletedListener(this);
-						socket.startHandshake();
+						writeStream = remoteSocket.getOutputStream();
+						socketSendBufferSize = remoteSocket.getSendBufferSize();
+						loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_CONNECT_COMPLETE));
 					}
 				}
 				else
@@ -1128,18 +1125,13 @@ public class NSLoggerClient
 					if (DEBUG_LOGGER)
 						Log.d("NSLogger", "disconnectFromRemote()");
 
-					if (remoteSocket instanceof SSLSocket)
-					{
-						SSLSocket socket = (SSLSocket) remoteSocket;
-						socket.removeHandshakeCompletedListener(this);
-					}
 					if (writeStream != null)
 						writeStream.close();
 					remoteSocket.close();
 				}
 				catch (Exception e)
 				{
-					Log.e("NSLogger", "Exception catched in disconnectFromRemote: " + e.toString());
+					Log.e("NSLogger", "Exception caught in disconnectFromRemote: " + e.toString());
 				}
 				finally
 				{
@@ -1162,8 +1154,11 @@ public class NSLoggerClient
 
 			if ((options & OPT_BROWSE_BONJOUR) != 0)
 			{
+				// TODO: Bonjour
+				/*
 				if (bonjourBrowser == null)
 					setupBonjour();
+					*/
 			}
 			else
 			{
@@ -1172,24 +1167,6 @@ public class NSLoggerClient
 			}
 		}
 
-		public void handshakeCompleted(HandshakeCompletedEvent handshakeCompletedEvent)
-		{
-			try
-			{
-				if (DEBUG_LOGGER)
-					Log.v("NSLogger", "SSL handshake completed");
-
-				socketSendBufferSize = remoteSocket.getSendBufferSize();
-				writeStream = remoteSocket.getOutputStream();
-				loggingThreadHandler.sendMessage(loggingThreadHandler.obtainMessage(MSG_CONNECT_COMPLETE));
-			}
-			catch (Exception e)
-			{
-				Log.e("NSLogger", "Exception cached in handshakeCompleted: " + e.toString());
-				disconnectFromRemote();
-				tryReconnecting();
-			}
-		}
 
 		void pushClientInfoToFrontOfQueue()
 		{
@@ -1235,7 +1212,7 @@ public class NSLoggerClient
 			}
 			catch (Exception e)
 			{
-				Log.e("NSLogger", "Exception catched while trying to create file stream: " + e.toString());
+				Log.e("NSLogger", "Exception caught while trying to create file stream: " + e.toString());
 				bufferFile = null;
 			}
 		}
@@ -1252,7 +1229,7 @@ public class NSLoggerClient
 			}
 			catch (Exception e)
 			{
-				Log.e("NSLogger", "Exception catched in closeBufferWriteStream: " + e.toString());
+				Log.e("NSLogger", "Exception caught in closeBufferWriteStream: " + e.toString());
 			}
 			writeStream = null;
 		}
@@ -1280,7 +1257,7 @@ public class NSLoggerClient
 				}
 				catch (IOException e)
 				{
-					Log.e("NSLogger", "Exception catched while trying to write to file stream: " + e.toString());
+					Log.e("NSLogger", "Exception caught while trying to write to file stream: " + e.toString());
 				}
 			}
 			try
@@ -1298,7 +1275,7 @@ public class NSLoggerClient
 			}
 			catch (IOException e)
 			{
-				Log.e("NSLogger", "Exception catched in flushQueueToBufferStream: " + e.toString());
+				Log.e("NSLogger", "Exception caught in flushQueueToBufferStream: " + e.toString());
 			}
 		}
 
@@ -1306,6 +1283,7 @@ public class NSLoggerClient
 		{
 			if ((options & OPT_BROWSE_BONJOUR) != 0)
 			{
+				/*
 				if (bonjourBrowser == null)
 				{
 					try
@@ -1327,10 +1305,11 @@ public class NSLoggerClient
 					}
 					catch (Exception e)
 					{
-						Log.e("NSLogger", "Exception catched in setupBonjour(): " + e.toString());
+						Log.e("NSLogger", "Exception caught in setupBonjour(): " + e.toString());
 						bonjourListeningType = null;
 					}
 				}
+				*/
 			}
 			else
 			{
@@ -1342,6 +1321,7 @@ public class NSLoggerClient
 		{
 			try
 			{
+				/*
 				if (bonjourBrowser != null)
 				{
 					if (DEBUG_LOGGER)
@@ -1361,13 +1341,14 @@ public class NSLoggerClient
 					// packets so as to save battery
 					multicastLock.release();
 				}
+				*/
 			}
 			catch (Exception e)
 			{
-				Log.e("NSLogger", "Exception catched in closeBonjour(): " + e.toString());
+				Log.e("NSLogger", "Exception caught in closeBonjour(): " + e.toString());
 			}
 		}
-
+/*
 		public void serviceAdded(ServiceEvent event)
 		{
 			if (DEBUG_LOGGER)
@@ -1412,5 +1393,6 @@ public class NSLoggerClient
 			if (DEBUG_LOGGER)
 				Log.e("NSLogger", "JmDNS can't record from IOError: infos=" + infos.toString());
 		}
+		*/
 	}
 }
