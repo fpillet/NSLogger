@@ -1,6 +1,6 @@
 ### Android client code for NSLogger
 
-This code works (I use it every day) but is not completely packaged in a way easy to access for newcomers. In particular, you'll need to get JMmDNS for Bonjour support. See instructions below. 
+This code works (I use it every day) but is not completely packaged in a way easy to access for newcomers.
 
 I have not completed a proper Ant build file yet, so you'll have to do things more or less manually.
 
@@ -8,8 +8,7 @@ I have not completed a proper Ant build file yet, so you'll have to do things mo
 
 Here is how to use NSLogger on Android:
 
-- Add the contents of src to your project (sorry I have not made a jar yet).
-- Add lib/jmdns.jar to your project
+- Add the contents of src to your project
 
 - The classes Debug and DroidLogger are not part of NSLogger itself, but are the ones I use in my app
   to use NSLogger and have logs that can stay in the code but are totally removed in production
