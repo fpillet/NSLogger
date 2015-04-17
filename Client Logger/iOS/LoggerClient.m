@@ -1563,7 +1563,7 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 							CFRelease(txtDict);
 							if (mismatch)
 							{
-								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), name, logger->bonjourServiceName);
+								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), logger->bonjourServiceName);
 								return;
 							}
 						}
