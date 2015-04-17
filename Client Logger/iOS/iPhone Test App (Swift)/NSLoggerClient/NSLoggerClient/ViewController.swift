@@ -41,9 +41,9 @@ class ViewController: UIViewController {
 
     @IBAction func logData(sender: AnyObject) {
 
-        var str:CFString = "foobar"
+        var str:NSString = "foobar"
 
-        var someBytes = CFStringGetCStringPtr(str, CFStringBuiltInEncodings.ASCII.rawValue)
+        var someBytes = str.cStringUsingEncoding(NSASCIIStringEncoding)
 
         var data = NSData(bytes: someBytes, length: CFStringGetLength(str))
 
