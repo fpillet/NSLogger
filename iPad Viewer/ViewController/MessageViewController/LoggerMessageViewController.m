@@ -108,10 +108,10 @@
     self.toolBar.noiseBlendMode = kCGBlendModeMultiply;
     self.toolBar.noiseOpacity = 0.1;
 	
-
 #ifdef TEST_SHOW
 	[self readMessages:nil];
 #endif
+    
 }
 
 -(void)startViewDestruction
@@ -137,6 +137,8 @@
 	self.searchBar = nil;
 	self.titleLabel = nil;
 	self.toolBar = nil;
+    self.previousRunButton = nil;
+    self.nextRunButton = nil;
 }
 
 -(void)beginInstanceDestruction
@@ -158,7 +160,6 @@
 	
 	MTLog(@"userInfo %@",userInfo);
 	
-	uLong clientHash = [[userInfo objectForKey:kClientHash] integerValue];
 	NSInteger runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
 
 	self.clientInfo = nil;
@@ -168,79 +169,94 @@
 		[NSString stringWithFormat:
 		 NSLocalizedString(@"Run %ld of %ld", nil),runCount+1,runCount+1];
 
-	assert([self.dataManager messageDisplayContext] != nil);
-	
-	if(_messageFetchResultController != nil)
-	{
-		self.messageFetchResultController.delegate = nil;
-		self.messageFetchResultController = nil;
-		[self deleteTableViewSection];
-	}
+    self.previousRunButton.hidden = runCount < 0;
+    self.nextRunButton.hidden = YES;
+    
+    [self fetchDataForRun:runCount+1
+             notification:aNotification];
+}
 
-	// start timer
-	[self startTimer];
-	
-	// start fetching
-	NSFetchRequest *request = [[NSFetchRequest alloc] init];
-	
-	NSEntityDescription *entity =\
-		[NSEntityDescription
-		 entityForName:@"LoggerMessageData"
-		 inManagedObjectContext:[[self dataManager] messageDisplayContext]];
-	[request setShouldRefreshRefetchedObjects:NO];
-	[request setEntity:entity];
-	[request setFetchBatchSize:20];
-	//[request setFetchLimit:40];
-	//[request setFetchOffset:0];
-	
-	[request setPredicate:
-	 [NSPredicate
-	  predicateWithFormat:
-	  @"clientHash == %d AND runCount == %d"
-	  ,clientHash
-	  ,runCount]];
-	
-	NSSortDescriptor *sortByTimestamp = \
-		[[NSSortDescriptor alloc]
-		 initWithKey:@"timestamp"
-		 ascending:YES];
-	
-	NSSortDescriptor *sortBySequence = \
-		[[NSSortDescriptor alloc]
-		 initWithKey:@"sequence"
-		 ascending:YES];
-	
-	[request setSortDescriptors:@[sortBySequence,sortByTimestamp]];
-	
-	NSString *cacheName = [NSString stringWithFormat:@"Cache-%lx",clientHash];
-	
-	[NSFetchedResultsController deleteCacheWithName:cacheName];
-	
-	NSFetchedResultsController *frc = \
-		[[NSFetchedResultsController alloc]
-		 initWithFetchRequest:request
-		 managedObjectContext:[[self dataManager] messageDisplayContext]
-		 sectionNameKeyPath:nil//@"uniqueID"
-		 cacheName:cacheName];
-	
-	NSError *error = nil;
-	[frc performFetch:&error];
-	
-	// alert tableview to prepare for incoming data
-	// before fetching started, make sure every setup is completed
-	[self setMessageFetchResultController:frc];
-	[frc setDelegate:self];
-	
+- (void)fetchDataForRun:(NSInteger)run
+           notification:(NSNotification *)aNotification
+{
 
-	[self insertTableViewSection];
-	[self.tableView
-	 reloadSections:[NSIndexSet indexSetWithIndex:0]
-	 withRowAnimation:UITableViewRowAnimationNone];
-	
-	[frc release],frc = nil;
-	[sortBySequence release],sortBySequence = nil;
-	[sortByTimestamp release],sortByTimestamp = nil;
-	[request release],request = nil;
+    NSDictionary *userInfo = [aNotification userInfo];
+
+    uLong clientHash = [[userInfo objectForKey:kClientHash] integerValue];
+
+    assert([self.dataManager messageDisplayContext] != nil);
+    
+    if(_messageFetchResultController != nil)
+    {
+        self.messageFetchResultController.delegate = nil;
+        self.messageFetchResultController = nil;
+        [self deleteTableViewSection];
+    }
+    
+    // start timer
+    [self startTimer];
+    
+    // start fetching
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    
+    NSEntityDescription *entity =\
+    [NSEntityDescription
+     entityForName:@"LoggerMessageData"
+     inManagedObjectContext:[[self dataManager] messageDisplayContext]];
+    [request setShouldRefreshRefetchedObjects:NO];
+    [request setEntity:entity];
+    [request setFetchBatchSize:20];
+    //[request setFetchLimit:40];
+    //[request setFetchOffset:0];
+    
+    [request setPredicate:
+     [NSPredicate
+      predicateWithFormat:
+      @"clientHash == %d AND runCount == %d"
+      ,clientHash
+      ,run]];
+    
+    NSSortDescriptor *sortByTimestamp = \
+    [[NSSortDescriptor alloc]
+     initWithKey:@"timestamp"
+     ascending:YES];
+    
+    NSSortDescriptor *sortBySequence = \
+    [[NSSortDescriptor alloc]
+     initWithKey:@"sequence"
+     ascending:YES];
+    
+    [request setSortDescriptors:@[sortBySequence,sortByTimestamp]];
+    
+    NSString *cacheName = [NSString stringWithFormat:@"Cache-%lx",clientHash];
+    
+    [NSFetchedResultsController deleteCacheWithName:cacheName];
+    
+    NSFetchedResultsController *frc = \
+    [[NSFetchedResultsController alloc]
+     initWithFetchRequest:request
+     managedObjectContext:[[self dataManager] messageDisplayContext]
+     sectionNameKeyPath:nil//@"uniqueID"
+     cacheName:cacheName];
+    
+    NSError *error = nil;
+    [frc performFetch:&error];
+    
+    // alert tableview to prepare for incoming data
+    // before fetching started, make sure every setup is completed
+    [self setMessageFetchResultController:frc];
+    [frc setDelegate:self];
+    
+    
+    [self insertTableViewSection];
+    [self.tableView
+     reloadSections:[NSIndexSet indexSetWithIndex:0]
+     withRowAnimation:UITableViewRowAnimationNone];
+    
+    [frc release],frc = nil;
+    [sortBySequence release],sortBySequence = nil;
+    [sortByTimestamp release],sortByTimestamp = nil;
+    [request release],request = nil;
 }
 
 -(void)insertTableViewSection

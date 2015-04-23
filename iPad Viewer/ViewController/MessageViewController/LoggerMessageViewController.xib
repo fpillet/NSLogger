@@ -9,6 +9,8 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="LoggerMessageViewController">
             <connections>
+                <outlet property="nextRunButton" destination="21" id="tGW-43-Efu"/>
+                <outlet property="previousRunButton" destination="22" id="nas-OW-nvW"/>
                 <outlet property="runCountLabel" destination="23" id="36"/>
                 <outlet property="searchBar" destination="28" id="37"/>
                 <outlet property="tableView" destination="5" id="8"/>
