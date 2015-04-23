@@ -253,8 +253,8 @@
 	NSArray *results = [self executeFetchRequest:request error:&error];
 	
 	MTAssert(error == nil, @"%@", [error description]);
-	MTAssert([results count] <= 1, @"Object count %ud returned from method %@",
-		[results count], NSStringFromSelector(_cmd));
+	MTAssert([results count] <= 1, @"Object count %lud returned from method %@",
+		(unsigned long)[results count], NSStringFromSelector(_cmd));
 	
 	return [results lastObject];
 }

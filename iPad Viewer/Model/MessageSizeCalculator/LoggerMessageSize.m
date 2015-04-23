@@ -151,7 +151,7 @@ MTLog(@"htr %@ hdr %@",NSStringFromCGSize(htr),NSStringFromCGSize(hdr));
 
 		case kMessageData: {
 			NSUInteger numBytes = [(NSData *)aMessage.message length];
-			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
+			NSInteger nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
 			if (nLines > MAX_DATA_LINES)
 				nLines = MAX_DATA_LINES + 1;
 			

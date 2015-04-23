@@ -185,13 +185,13 @@
 					break;
 				}
 
-				int i, b = sprintf(buffer," %04x: ", offset);
+				int i, b = sprintf(buffer," %04lx: ", (unsigned long)offset);
 				for (i=0; i < 16 && i < dataLen; i++)
 					sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 				for (int j=i; j < 16; j++)
 					strcat(buffer, "   ");
 				
-				b = strlen(buffer);
+				b = (int)strlen(buffer);
 				buffer[b++] = '\'';
 				for (i=0; i < 16 && i < dataLen; i++)
 				{

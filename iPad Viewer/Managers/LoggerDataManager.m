@@ -457,7 +457,7 @@ didEstablishConnection:(LoggerConnection *)theConnection
 		{
 			// run count is 0 based. when there is client info exist,
 			// you can increase runcount by client's runcount
-			int32_t lastRunCount = 0;
+			int lastRunCount = 0;
 			uLong clientHash = [theConnection clientHash];
 
 			@try
@@ -485,7 +485,7 @@ didEstablishConnection:(LoggerConnection *)theConnection
 				}
 
 				// runcount is 0-based 
-				lastRunCount = [[client connectionStatus] count];
+				lastRunCount = (int)[[client connectionStatus] count];
 				
 				// @@@ TODO: we should avoid set a client's run count in a connection 
 				[theConnection setReconnectionCount:lastRunCount];

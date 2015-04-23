@@ -54,7 +54,7 @@
 @property (nonatomic, readonly) NSMutableArray			*readOperationSlot;
 
 @property (nonatomic, retain)	NSString				*basepath;
-@property (nonatomic, readonly) int						cpuCount;
+@property (nonatomic, readonly) NSUInteger				cpuCount;
 
 
 -(void)_purgeDataEntryCache;
@@ -95,14 +95,14 @@ unsigned int _delete_dependency_count(NSArray*, LoggerDataDelete*);
 	dispatch_queue_t		_highPriorityOperationQueue;
 
 	// according to this count, we will resume or suspend the queue above
-	unsigned int			_high_queue_suspension_count;
+	NSUInteger			_high_queue_suspension_count;
 
 	// this queue will concurrently dispatch actual instructions
 	dispatch_queue_t		_operationDispatcherQueue;
 
 	// this is the cache pool that contains binary data
 	NSMutableDictionary		*_dataEntryCache;
-	unsigned int			_dataEntryCacheSize;
+	NSUInteger			_dataEntryCacheSize;
 	
 	// data operation queue
 	NSMutableArray			*_operationPool;
@@ -117,7 +117,7 @@ unsigned int _delete_dependency_count(NSArray*, LoggerDataDelete*);
 	// a path where directory operation must based on
 	NSString				*_basepath;
 	
-	int						_cpuCount;
+	NSUInteger				_cpuCount;
 }
 @synthesize lowPriorityOperationQueue			= _lowPriorityOperationQueue;
 @synthesize highPriorityOperationQueue			= _highPriorityOperationQueue;
@@ -163,7 +163,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS_WITH_ACCESSOR(LoggerDataStorage,sharedDataStorage
 		dispatch_set_target_queue(_lowPriorityOperationQueue,_highPriorityOperationQueue);
 		
 		// cpu core counts
-		int cpus = [[NSProcessInfo processInfo] processorCount];
+		NSUInteger cpus = [[NSProcessInfo processInfo] processorCount];
 		
 		dispatch_sync(_highPriorityOperationQueue, ^{
 			

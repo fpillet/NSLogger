@@ -57,7 +57,7 @@ NSString *defaultDataHint = nil;
 //#define DEBUG_CT_FRAME_RANGE
 //#define DEBUG_DRAW_AREA
 
-#define TEXT_LENGH_BETWEEN_LOCS(LOCATION_1,LOCATION_0) (abs(LOCATION_1 - LOCATION_0))
+#define TEXT_LENGH_BETWEEN_LOCS(LOCATION_1,LOCATION_0) (labs(LOCATION_1 - LOCATION_0))
 #define BORDER_LINE_WIDTH 1.f
 
 @interface LoggerMessageView : UIView
@@ -65,7 +65,17 @@ NSString *defaultDataHint = nil;
 @implementation LoggerMessageView
 - (void)drawRect:(CGRect)aRect
 {
-	[(LoggerMessageCell *)[[self superview] superview] drawMessageView:aRect];
+    UIView *superView = [self superview];
+    UIView *superSuperView = [superView superview];
+    if ([superSuperView respondsToSelector:@selector(drawMessageView:)]) {
+        [(LoggerMessageCell *)superSuperView drawMessageView:aRect];
+    } else {
+        if ([superView respondsToSelector:@selector(drawMessageView:)]) {
+            [(LoggerMessageCell *)superView drawMessageView:aRect];
+        } else {
+            NSLog(@"Cannot draw this cell: %@", superSuperView);
+        }
+    }
 }
 @end
 
@@ -286,18 +296,18 @@ NSString *defaultDataHint = nil;
 		CGRect cellFrame = (CGRect){CGPointZero,{MSG_CELL_PORTRAIT_WIDTH,height}};
 				
 		// string range indexes
-		int totalTextLength = 0;
-		int locTimestamp	= 0;
+		NSInteger totalTextLength = 0;
+		NSInteger locTimestamp	= 0;
 		
 		//@@TODO:: timedelta
-		int locTimedelta	= locTimestamp + [aMessageData.timestampString length];
-		int locThread		= locTimedelta;// + [aMessageData.timeDeltaString length];
+		NSInteger locTimedelta	= locTimestamp + [aMessageData.timestampString length];
+		NSInteger locThread		= locTimedelta;// + [aMessageData.timeDeltaString length];
 		
-		int locTag			= locThread + [aMessageData.threadID length];
-		int locLevel		= locTag + [aMessageData.tag length];
-		int locFileFunc		= locLevel + [[aMessageData.level stringValue] length];
-		int locMessage		= locFileFunc + (IS_NULL_STRING(aMessageData.fileFuncRepresentation)?0:[aMessageData.fileFuncRepresentation length]);
-		int locHint			= 0;
+		NSInteger locTag		= locThread + [aMessageData.threadID length];
+		NSInteger locLevel		= locTag + [aMessageData.tag length];
+		NSInteger locFileFunc	= locLevel + [[aMessageData.level stringValue] length];
+		NSInteger locMessage	= locFileFunc + (IS_NULL_STRING(aMessageData.fileFuncRepresentation)?0:[aMessageData.fileFuncRepresentation length]);
+		NSInteger locHint		= 0;
 
 		switch([self.messageData dataType]){
 			case kMessageString:{

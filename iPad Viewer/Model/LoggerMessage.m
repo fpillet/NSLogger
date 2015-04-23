@@ -447,13 +447,13 @@
 							@"Unknown");
 	NSString *desc;
 	if (contentsType == kMessageData)
-		desc = [NSString stringWithFormat:@"{data %u bytes}", [message length]];
+		desc = [NSString stringWithFormat:@"{data %lu bytes}", [message length]];
 	else if (contentsType == kMessageImage)
-		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", (NSInteger)[self imageSize].width, (NSInteger)[self imageSize].height];
+		desc = [NSString stringWithFormat:@"{image w=%ld h=%ld}", (NSInteger)[self imageSize].width, (NSInteger)[self imageSize].height];
 	else
 		desc = (NSString *)message;
 	
-	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d message=%@>",
+	return [NSString stringWithFormat:@"<%@ %p seq=%ld type=%@ thread=%@ tag=%@ level=%d message=%@>",
 			[self class], self, sequence, typeString, threadID, tag, (int)level, desc];
 }
 #endif

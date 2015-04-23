@@ -66,9 +66,6 @@
 {
 	[super finishViewConstruction];
 
-	[self.navigationController.navigationBar setFrame:(CGRect){{0.f,20.f},{self.view.frame.size.width,VIEWCONTROLLER_TITLE_HEIGHT}}];
-	[self.navigationController.navigationBar addSubview:self.titleBar];
-	
 	[[NSNotificationCenter defaultCenter]
 	 addObserver:self
 	 selector:@selector(readMessages:)
@@ -162,14 +159,14 @@
 	MTLog(@"userInfo %@",userInfo);
 	
 	uLong clientHash = [[userInfo objectForKey:kClientHash] integerValue];
-	int32_t runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
+	NSInteger runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
 
 	self.clientInfo = nil;
 	self.clientInfo = userInfo;
 #endif
 	self.runCountLabel.text = \
 		[NSString stringWithFormat:
-		 NSLocalizedString(@"Run %d of %d", nil),runCount+1,runCount+1];
+		 NSLocalizedString(@"Run %ld of %ld", nil),runCount+1,runCount+1];
 
 	assert([self.dataManager messageDisplayContext] != nil);
 	
