@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AF6C240A1AE7ED74001881DE /* LoggerMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24091AE7ED74001881DE /* LoggerMessage.swift */; };
 		AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C240B1AE7F7E2001881DE /* Synchronize.swift */; };
+		AF6C240E1AE9A6AF001881DE /* LoggerIPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C240D1AE9A6AF001881DE /* LoggerIPConnection.swift */; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -31,6 +32,8 @@
 /* Begin PBXFileReference section */
 		AF6C24091AE7ED74001881DE /* LoggerMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessage.swift; sourceTree = "<group>"; };
 		AF6C240B1AE7F7E2001881DE /* Synchronize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Synchronize.swift; sourceTree = "<group>"; };
+		AF6C240D1AE9A6AF001881DE /* LoggerIPConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerIPConnection.swift; sourceTree = "<group>"; };
+		AF6C240F1AE9AD54001881DE /* NSLoggerSW-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLoggerSW-Bridging-Header.h"; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -83,6 +86,7 @@
 		AFF594BB1AE5AC4F00592595 /* NSLoggerSW */ = {
 			isa = PBXGroup;
 			children = (
+				AF6C240D1AE9A6AF001881DE /* LoggerIPConnection.swift */,
 				AF6C24091AE7ED74001881DE /* LoggerMessage.swift */,
 				AF6C240B1AE7F7E2001881DE /* Synchronize.swift */,
 				AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */,
@@ -92,6 +96,7 @@
 				AFF594C41AE5AC4F00592595 /* Images.xcassets */,
 				AFF594C61AE5AC4F00592595 /* Main.storyboard */,
 				AFF594BC1AE5AC4F00592595 /* Supporting Files */,
+				AF6C240F1AE9AD54001881DE /* NSLoggerSW-Bridging-Header.h */,
 			);
 			path = NSLoggerSW;
 			sourceTree = "<group>";
@@ -223,6 +228,7 @@
 				AF6C240A1AE7ED74001881DE /* LoggerMessage.swift in Sources */,
 				AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */,
 				AFF594DE1AE665C000592595 /* LoggerConnection.swift in Sources */,
+				AF6C240E1AE9A6AF001881DE /* LoggerIPConnection.swift in Sources */,
 				AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */,
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,
@@ -343,10 +349,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = NSLoggerSW/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NSLoggerSW/NSLoggerSW-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -354,10 +363,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = NSLoggerSW/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NSLoggerSW/NSLoggerSW-Bridging-Header.h";
 			};
 			name = Release;
 		};

@@ -84,12 +84,12 @@ class LoggerConnection: NSObject, NSCoding {
 
         super.init()
 
-        clientName = aDecoder.decodeObjectForKey("clientName") as? String
-        clientVersion = aDecoder.decodeObjectForKey("clientVersion") as? String
-        clientOSName = aDecoder.decodeObjectForKey("clientOSName") as? String
-        clientOSVersion = aDecoder.decodeObjectForKey("clientOSVersion") as? String
-        clientDevice = aDecoder.decodeObjectForKey("clientDevice") as? String
-        clientUDID = aDecoder.decodeObjectForKey("clientUDID") as? String
+        clientName         = aDecoder.decodeObjectForKey("clientName") as? String
+        clientVersion      = aDecoder.decodeObjectForKey("clientVersion") as? String
+        clientOSName       = aDecoder.decodeObjectForKey("clientOSName") as? String
+        clientOSVersion    = aDecoder.decodeObjectForKey("clientOSVersion") as? String
+        clientDevice       = aDecoder.decodeObjectForKey("clientDevice") as? String
+        clientUDID         = aDecoder.decodeObjectForKey("clientUDID") as? String
         parentIndexesStack = (aDecoder.decodeObjectForKey("parentIndexes") as? [Int])!
 
         if let decodedFileNames = aDecoder.decodeObjectForKey("filenames") as? Set<String> {
