@@ -25,20 +25,20 @@ class SwiftLoggerClient {
 
     class func logMessage(#domain:String, level:Int32, @autoclosure format: () -> String) {
         #if DEBUG
-            let vaArgs = getVaList([])
-            LogMessage_va(domain, level, format(), vaArgs)
+            let vaArgs = getVaList([format()])
+            LogMessage_va(domain, level, "%@", vaArgs)
         #endif
     }
 
 
     class func logMessage(#filename:String, lineNumber:Int32, functionName:String, domain:String, level:Int32, @autoclosure format: () -> String) {
         #if DEBUG
-        let vaArgs = getVaList([])
+        let vaArgs = getVaList([format()])
 
         let fileNameCstr = stringToCStr(filename)
         let functionNameCstr = stringToCStr(functionName)
 
-        LogMessageF_va(fileNameCstr, lineNumber, functionNameCstr, domain, level, format(), vaArgs)
+        LogMessageF_va(fileNameCstr, lineNumber, functionNameCstr, domain, level, "%@", vaArgs)
         #endif
     }
 
@@ -73,7 +73,7 @@ class SwiftLoggerClient {
     
 
     private class func stringToCStr(string:String) -> UnsafePointer<Int8> {
-        let cfStr:CFString = string as NSString
-        return CFStringGetCStringPtr(cfStr, CFStringBuiltInEncodings.ASCII.rawValue)
+        let cfStr = string as NSString
+        return cfStr.cStringUsingEncoding(NSASCIIStringEncoding)
     }
 }
