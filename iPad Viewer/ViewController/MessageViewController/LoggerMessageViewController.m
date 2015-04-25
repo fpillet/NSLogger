@@ -46,6 +46,9 @@
 @interface LoggerMessageViewController ()
 @property (nonatomic, retain) NSFetchedResultsController	*messageFetchResultController;
 @property (nonatomic, retain) NSDictionary					*clientInfo;
+@property NSInteger currentRun;
+@property NSInteger runCount;
+@property uLong currentClientHash;
 -(void)readMessages:(NSNotification *)aNotification;
 -(void)insertTableViewSection;
 -(void)deleteTableViewSection;
@@ -108,6 +111,9 @@
     self.toolBar.noiseBlendMode = kCGBlendModeMultiply;
     self.toolBar.noiseOpacity = 0.1;
 	
+    self.currentRun = -1;
+    self.runCount = -1;
+    
 #ifdef TEST_SHOW
 	[self readMessages:nil];
 #endif
@@ -160,29 +166,33 @@
 	
 	MTLog(@"userInfo %@",userInfo);
 	
-	NSInteger runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
+	self.runCount = [[userInfo objectForKey:kClientRunCount] integerValue];
+    self.currentRun = self.runCount;
 
 	self.clientInfo = nil;
 	self.clientInfo = userInfo;
-#endif
-	self.runCountLabel.text = \
-		[NSString stringWithFormat:
-		 NSLocalizedString(@"Run %ld of %ld", nil),runCount+1,runCount+1];
-
-    self.previousRunButton.hidden = runCount < 0;
-    self.nextRunButton.hidden = YES;
+    self.currentClientHash = [[userInfo objectForKey:kClientHash] integerValue];
     
-    [self fetchDataForRun:runCount+1
-             notification:aNotification];
+#endif
+    
+    [self enableRunControls];
+    [self fetchDataForRun:self.currentRun
+            withClientHash:self.currentClientHash];
+}
+
+- (void)enableRunControls
+{
+    self.runCountLabel.text = \
+    [NSString stringWithFormat:
+     NSLocalizedString(@"Run %ld of %ld", nil),self.currentRun+1,self.runCount+1];
+    
+    self.previousRunButton.hidden = self.currentRun <= 0;
+    self.nextRunButton.hidden = self.currentRun >= self.runCount;
 }
 
 - (void)fetchDataForRun:(NSInteger)run
-           notification:(NSNotification *)aNotification
+         withClientHash:(uLong)clientHash
 {
-
-    NSDictionary *userInfo = [aNotification userInfo];
-
-    uLong clientHash = [[userInfo objectForKey:kClientHash] integerValue];
 
     assert([self.dataManager messageDisplayContext] != nil);
     
@@ -278,6 +288,27 @@
 	 withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 //------------------------------------------------------------------------------
+#pragma mark Actions
+//------------------------------------------------------------------------------
+- (IBAction)didPressPreviousButton:(id)sender {
+    if (self.currentRun > 0) {
+        self.currentRun--;
+        [self enableRunControls];
+        [self fetchDataForRun:self.currentRun
+               withClientHash:self.currentClientHash];
+    }
+}
+
+- (IBAction)didPressNextButton:(id)sender {
+    if (self.currentRun < self.runCount) {
+        self.currentRun++;
+        [self enableRunControls];
+        [self fetchDataForRun:self.currentRun
+               withClientHash:self.currentClientHash];
+    }
+}
+
+//------------------------------------------------------------------------------
 #pragma mark Timer Control
 //------------------------------------------------------------------------------
 - (void)startTimer
@@ -324,7 +355,8 @@
 - (NSInteger)tableView:(UITableView *)aTableView
  numberOfRowsInSection:(NSInteger)aSection
 {
-	return [[self.messageFetchResultController fetchedObjects] count];
+    NSArray *records = [self.messageFetchResultController fetchedObjects];
+	return [records count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)aTableView

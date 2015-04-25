@@ -300,6 +300,9 @@ NSString *defaultDataHint = nil;
 		NSInteger locTimestamp	= 0;
 		
 		//@@TODO:: timedelta
+        
+        if (IS_NULL_STRING(aMessageData.tag)) aMessageData.tag = @" ";
+
 		NSInteger locTimedelta	= locTimestamp + [aMessageData.timestampString length];
 		NSInteger locThread		= locTimedelta;// + [aMessageData.timeDeltaString length];
 		
@@ -345,7 +348,7 @@ NSString *defaultDataHint = nil;
 		CFAttributedStringReplaceString(as, CFRangeMake(locThread, 0), (CFStringRef)aMessageData.threadID);
 		
 		// Place Tag
-		CFAttributedStringReplaceString(as, CFRangeMake(locTag, 0), (CFStringRef)aMessageData.tag);
+        CFAttributedStringReplaceString(as, CFRangeMake(locTag, 0), (CFStringRef)aMessageData.tag);
 		
 		// Place level
 		CFAttributedStringReplaceString(as, CFRangeMake(locLevel, 0), (CFStringRef)[aMessageData.level stringValue]);
