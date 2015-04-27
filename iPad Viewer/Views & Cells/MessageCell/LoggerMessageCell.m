@@ -593,6 +593,7 @@ NSString *defaultDataHint = nil;
 			 frameSetter:(CTFramesetterRef)framesetter
 {
 	CGSize frameSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, aRange, NULL, aConstraint, NULL);
+    frameSize.width += 1;
 	return frameSize;
 }
 
