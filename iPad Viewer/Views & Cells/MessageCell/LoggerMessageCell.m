@@ -302,6 +302,7 @@ NSString *defaultDataHint = nil;
 		//@@TODO:: timedelta
         
         if (IS_NULL_STRING(aMessageData.tag)) aMessageData.tag = @" ";
+        if (IS_NULL_STRING(aMessageData.textRepresentation)) aMessageData.textRepresentation = @"";
 
 		NSInteger locTimedelta	= locTimestamp + [aMessageData.timestampString length];
 		NSInteger locThread		= locTimedelta;// + [aMessageData.timeDeltaString length];
