@@ -5,3 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#import "LoggerNativeTransport.h"
+#import "LoggerNativeMessage.h"
+#import "LoggerTCPConnection.h"
+#import "EncryptionCertificateLoader.h"
