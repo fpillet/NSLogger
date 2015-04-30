@@ -111,8 +111,20 @@
     self.toolBar.noiseBlendMode = kCGBlendModeMultiply;
     self.toolBar.noiseOpacity = 0.1;
 	
-    self.currentRun = -1;
-    self.runCount = -1;
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    self.currentClientHash = [defaults integerForKey:kClientHash];
+    self.runCount = [defaults integerForKey:kClientRunCount];
+    
+    if (self.currentClientHash != 0 && self.runCount != 0) {
+        self.currentRun = self.runCount;
+        [self enableRunControls];
+        [self fetchDataForRun:self.currentRun
+               withClientHash:self.currentClientHash];
+        [self stopTimer];
+    } else {
+        self.currentRun = -1;
+        self.runCount = -1;
+    }
     
 #ifdef TEST_SHOW
 	[self readMessages:nil];
@@ -173,6 +185,10 @@
 	self.clientInfo = userInfo;
     self.currentClientHash = [[userInfo objectForKey:kClientHash] integerValue];
     
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setInteger: self.currentClientHash forKey:kClientHash];
+    [defaults setInteger: self.runCount forKey:kClientRunCount];
+
 #endif
     
     [self enableRunControls];
@@ -296,6 +312,7 @@
         [self enableRunControls];
         [self fetchDataForRun:self.currentRun
                withClientHash:self.currentClientHash];
+        [self stopTimer];
     }
 }
 
@@ -305,6 +322,7 @@
         [self enableRunControls];
         [self fetchDataForRun:self.currentRun
                withClientHash:self.currentClientHash];
+        [self stopTimer];
     }
 }
 
