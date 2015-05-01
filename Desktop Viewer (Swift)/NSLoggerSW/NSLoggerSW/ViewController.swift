@@ -7,13 +7,30 @@
 //
 
 import Cocoa
+import ReactiveCocoa
 
 class ViewController: NSViewController {
+
+    dynamic var messageCounter = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+
+        if let appDelegate = NSApplication.sharedApplication().delegate as? AppDelegate {
+
+            let (aSignal, aSink) = Signal<LoggerMessage, NoError>.pipe()
+
+            appDelegate.messageSignal = aSignal
+            appDelegate.sink = aSink
+
+            appDelegate.messageSignal!.observe(next: {
+                message in
+                self.messageCounter++
+            })
+        }
+
     }
 
     override var representedObject: AnyObject? {
@@ -23,5 +40,8 @@ class ViewController: NSViewController {
     }
 
 
+    @IBAction func testCounterIncrement(sender: AnyObject) {
+        messageCounter++
+    }
 }
 

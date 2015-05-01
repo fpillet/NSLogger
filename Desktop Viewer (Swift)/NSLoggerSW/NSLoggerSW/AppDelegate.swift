@@ -8,6 +8,9 @@
 
 import Cocoa
 
+import LlamaKit
+import ReactiveCocoa
+
 @NSApplicationMain
 
 class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
@@ -15,6 +18,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
     var transports = [LoggerTransport]()
 
     var connection:LoggerConnection?
+
+    var messageSignal:Signal<LoggerMessage, NoError>?
+    var sink:SinkOf<Event<LoggerMessage, NoError>>?
 
     var serverCertsLoadAttempted:Bool {
         get {
@@ -44,6 +50,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
         transports.append(secureNativeTransport)
 
         startStopTransports()
+
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
@@ -64,7 +71,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
 
         let foo = encryptionCertificateLoader.serverCerts
 
-
         println("new connection received")
         connection = aConnection
         connection?.delegate = self
@@ -79,6 +85,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
 
     func connection(theConnection: LoggerConnection!, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
         println("new message received")
+
+        if let sink = self.sink {
+            for msg in theMessages {
+                if let message = msg as? LoggerMessage {
+                    sendNext(sink, message)
+                }
+            }
+        } else {
+            println("got message before app was fully launched, appDelegate.sink not setup yet - this shouldn't be possible")
+        }
+
     }
 }
 

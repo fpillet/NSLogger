@@ -18,6 +18,8 @@
 		AF6C245A1AED5F40001881DE /* LoggerTCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24521AED5F40001881DE /* LoggerTCPConnection.m */; };
 		AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
 		AF6C24631AF0EB16001881DE /* EncryptionCertificateLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24621AF0EB16001881DE /* EncryptionCertificateLoader.m */; };
+		AF6C24681AF386EC001881DE /* LlamaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6C24661AF386EC001881DE /* LlamaKit.framework */; };
+		AF6C24691AF386EC001881DE /* ReactiveCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -62,6 +64,8 @@
 		AF6C245F1AF046F6001881DE /* PrefConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrefConstants.m; sourceTree = "<group>"; };
 		AF6C24611AF0EB16001881DE /* EncryptionCertificateLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncryptionCertificateLoader.h; sourceTree = "<group>"; };
 		AF6C24621AF0EB16001881DE /* EncryptionCertificateLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncryptionCertificateLoader.m; sourceTree = "<group>"; };
+		AF6C24661AF386EC001881DE /* LlamaKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LlamaKit.framework; path = Carthage/Build/Mac/LlamaKit.framework; sourceTree = "<group>"; };
+		AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveCocoa.framework; path = Carthage/Build/Mac/ReactiveCocoa.framework; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -80,6 +84,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF6C24681AF386EC001881DE /* LlamaKit.framework in Frameworks */,
+				AF6C24691AF386EC001881DE /* ReactiveCocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,9 +126,19 @@
 			name = "Transport and connection";
 			sourceTree = "<group>";
 		};
+		AF6C246B1AF38AF2001881DE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AF6C24661AF386EC001881DE /* LlamaKit.framework */,
+				AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		AFF594B01AE5AC4E00592595 = {
 			isa = PBXGroup;
 			children = (
+				AF6C246B1AF38AF2001881DE /* Frameworks */,
 				AFF594BB1AE5AC4F00592595 /* NSLoggerSW */,
 				AFF594D01AE5AC4F00592595 /* NSLoggerSWTests */,
 				AFF594BA1AE5AC4F00592595 /* Products */,
@@ -193,6 +209,7 @@
 				AFF594B51AE5AC4E00592595 /* Sources */,
 				AFF594B61AE5AC4E00592595 /* Frameworks */,
 				AFF594B71AE5AC4E00592595 /* Resources */,
+				AF6C246A1AF38779001881DE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -276,6 +293,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AF6C246A1AF38779001881DE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/Mac/LlamaKit.framework",
+				"$(SRCROOT)/Carthage/Build/Mac/ReactiveCocoa.framework",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AFF594B51AE5AC4E00592595 /* Sources */ = {
@@ -415,6 +450,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = NSLoggerSW/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -429,6 +468,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = NSLoggerSW/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";

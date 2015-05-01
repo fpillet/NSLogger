@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../Cartfile">
+   </FileRef>
+   <FileRef
       location = "self:NSLoggerSW.xcodeproj">
    </FileRef>
 </Workspace>
