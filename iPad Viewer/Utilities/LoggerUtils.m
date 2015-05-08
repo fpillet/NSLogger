@@ -34,20 +34,20 @@ NSString *StringWithTimeDelta(struct timeval *td)
 {
 	if (td->tv_sec)
 	{
-		int hrs,mn,s,ms;
+		NSInteger hrs,mn,s,ms;
 		hrs = td->tv_sec / 3600;
 		mn = (td->tv_sec % 3600) / 60;
 		s = td->tv_sec % 60;
 		ms = td->tv_usec / 1000;
 		if (hrs != 0)
-			return [NSString stringWithFormat:@"+%dh %dmn %d.%03ds", hrs, mn, s, ms];
+			return [NSString stringWithFormat:@"+%ldh %ldmn %ld.%03lds", hrs, mn, s, ms];
 		if (mn != 0)
-			return [NSString stringWithFormat:@"+%dmn %d.%03ds", mn, s, ms];
+			return [NSString stringWithFormat:@"+%ldmn %ld.%03lds", mn, s, ms];
 		if (s != 0)
 		{
 			if (ms != 0)
-				return [NSString stringWithFormat:@"+%d.%03ds", s, ms];
-			return [NSString stringWithFormat:@"+%ds", s];
+				return [NSString stringWithFormat:@"+%ld.%03lds", s, ms];
+			return [NSString stringWithFormat:@"+%lds", s];
 		}
 	}
 	if (td->tv_usec == 0)

@@ -65,13 +65,8 @@
 
 	[root setDataManager:[LoggerDataManager sharedDataManager]];
 
-	UINavigationController *nav = \
-		[[UINavigationController alloc]
-		 initWithRootViewController:root];
-
-	self.window.rootViewController = nav;
+	self.window.rootViewController = root;
 	[root release],root = nil;
-	[nav release],nav = nil;
 
 	[self.window makeKeyAndVisible];
     return YES;

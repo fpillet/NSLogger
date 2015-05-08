@@ -72,6 +72,7 @@
 		04D13F5916B56B17004FDB3A /* LoggerConnectionStatusData.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D13F5716B56B17004FDB3A /* LoggerConnectionStatusData.m */; };
 		04D13F5B16B56B2A004FDB3A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 04D13F5A16B56B2A004FDB3A /* libz.dylib */; };
 		04E405E817A6BDF70013FD63 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04E405E717A6BDF70013FD63 /* CoreText.framework */; };
+		713A99671AE8D34F00CEA52B /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 713A99661AE8D34F00CEA52B /* Images.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -196,6 +197,7 @@
 		04D13F5716B56B17004FDB3A /* LoggerConnectionStatusData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerConnectionStatusData.m; sourceTree = "<group>"; };
 		04D13F5A16B56B2A004FDB3A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		04E405E717A6BDF70013FD63 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		713A99661AE8D34F00CEA52B /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -352,6 +354,7 @@
 				044FEF2A16AC49810067FA53 /* AppDelegate.h */,
 				044FEF2B16AC49810067FA53 /* AppDelegate.m */,
 				044FEFB816AC4B7A0067FA53 /* MainWindow.xib */,
+				713A99661AE8D34F00CEA52B /* Images.xcassets */,
 				044FEF2216AC49810067FA53 /* Supporting Files */,
 			);
 			path = "iPad Viewer";
@@ -631,6 +634,7 @@
 				044FEF2E16AC49810067FA53 /* Default.png in Resources */,
 				044FEF3016AC49810067FA53 /* Default@2x.png in Resources */,
 				044FEF3216AC49810067FA53 /* Default-568h@2x.png in Resources */,
+				713A99671AE8D34F00CEA52B /* Images.xcassets in Resources */,
 				044FEFB016AC4A810067FA53 /* LoggerMessageViewController.xib in Resources */,
 				044FEFB716AC4AC60067FA53 /* NSLoggerResource.bundle in Resources */,
 				044FEFB916AC4B7A0067FA53 /* MainWindow.xib in Resources */,
@@ -764,6 +768,8 @@
 		044FEF3C16AC49810067FA53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iPad Viewer/iPad Viewer-Prefix.pch";
 				INFOPLIST_FILE = "iPad Viewer/iPad Viewer-Info.plist";
@@ -776,6 +782,8 @@
 		044FEF3D16AC49810067FA53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "iPad Viewer/iPad Viewer-Prefix.pch";
 				INFOPLIST_FILE = "iPad Viewer/iPad Viewer-Info.plist";
