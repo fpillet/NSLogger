@@ -47,7 +47,7 @@
 #import "LoggerTCPTransport.h"
 #import "LoggerTCPConnection.h"
 #import "LoggerMessage.h"
-#import "NSLoggerSW-Swift.h"
+#import "MessageListener-Swift.h"
 #import "PrefConstants.h"
 
 /* Local prototypes */
@@ -402,27 +402,29 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (BOOL)canDoSSL
 {
 	// This method can BLOCK THE CURRENT THREAD and run security dialog UI from the main thread
-	AppDelegate *appDelegate = (AppDelegate *)[[NSApplication sharedApplication] delegate];
-	if (!appDelegate.serverCertsLoadAttempted)
+    MessageListener* messageListener = [MessageListener sharedInstance];
+
+	if (!messageListener.serverCertsLoadAttempted)
 	{
 		dispatch_sync(dispatch_get_main_queue(), ^{
 			NSError *error = nil;
-			if (![appDelegate loadEncryptionCertificate:&error])
+			if (![messageListener loadEncryptionCertificate:&error])
 			{
 				[NSApp performSelector:@selector(presentError:) withObject:error afterDelay:0];
 			}
 		});
 	}
-	return (appDelegate.serverCerts != NULL);
+	return (messageListener.serverCerts != NULL);
 }
 
 - (BOOL)setupSSLForStream:(NSInputStream *)readStream
 {
-    AppDelegate *appDelegate = (AppDelegate *)[[NSApplication sharedApplication] delegate];
 #ifdef DEBUG
-	NSLog(@"setupSSLForStream, stream=%@ self=%@ serverCerts=%@", readStream, self, appDelegate.serverCerts);
+    MessageListener* messageListener = [MessageListener sharedInstance];
+
+	NSLog(@"setupSSLForStream, stream=%@ self=%@ serverCerts=%@", readStream, self, messageListener.serverCerts);
 #endif
-	CFArrayRef serverCerts = appDelegate.serverCerts;
+	CFArrayRef serverCerts = messageListener.serverCerts;
 	if (serverCerts != NULL)
 	{
 		// setup stream for SSL

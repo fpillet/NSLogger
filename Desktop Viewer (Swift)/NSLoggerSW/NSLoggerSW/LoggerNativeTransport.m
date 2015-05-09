@@ -41,7 +41,7 @@
 #import "LoggerCommon.h"
 #import "LoggerNativeMessage.h"
 #import "PrefConstants.h"
-#import "NSLoggerSW-Swift.h"
+#import "MessageListener-Bridging-Header.h"
 
 
 @interface LoggerNativeTransport ()
@@ -192,7 +192,8 @@
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+        int i;
+        unsigned long b = sprintf(buffer," %04lx: ", (unsigned long)offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)

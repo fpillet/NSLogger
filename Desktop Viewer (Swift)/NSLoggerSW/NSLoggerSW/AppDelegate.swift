@@ -13,43 +13,27 @@ import ReactiveCocoa
 
 @NSApplicationMain
 
-class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
-
-    var transports = [LoggerTransport]()
-
-    var connection:LoggerConnection?
+class AppDelegate: NSObject, NSApplicationDelegate {
 
     var messageSignal:Signal<LoggerMessage, NoError>?
     var sink:SinkOf<Event<LoggerMessage, NoError>>?
 
-    var serverCertsLoadAttempted:Bool {
-        get {
-            return encryptionCertificateLoader.serverCertsLoadAttempted
-        }
-    }
-
-    var serverCerts:CFArray {
-        get {
-            return encryptionCertificateLoader.serverCerts
-        }
-    }
-
-    var encryptionCertificateLoader = EncryptionCertificateLoader()
+//    var serverCertsLoadAttempted:Bool {
+//        get {
+//            return encryptionCertificateLoader.serverCertsLoadAttempted
+//        }
+//    }
+//
+//    var serverCerts:CFArray {
+//        get {
+//            return encryptionCertificateLoader.serverCerts
+//        }
+//    }
+//
+//    var encryptionCertificateLoader = EncryptionCertificateLoader()
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
-
-        var nativeTransport = LoggerNativeTransport()
-        nativeTransport.publishBonjourService = true
-        nativeTransport.secure = false
-        transports.append(nativeTransport)
-
-        var secureNativeTransport = LoggerNativeTransport()
-        secureNativeTransport.publishBonjourService = true
-        secureNativeTransport.secure = true
-        transports.append(secureNativeTransport)
-
-        startStopTransports()
 
     }
 
@@ -58,32 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, LoggerConnectionDelegate {
     }
 
 
-    func startStopTransports() {
-        for transport in transports {
-            if let t = transport as? LoggerNativeTransport {
-
-                t.restart() // be more subtle with Bonjour publishing later
-            }
-        }
-    }
-
-    func newConnection(aConnection:LoggerConnection, fromTransport aTransport:LoggerTransport) {
-
-        let foo = encryptionCertificateLoader.serverCerts
-
-        println("new connection received")
-        connection = aConnection
-        connection?.delegate = self
-        connection?.attachedToWindow = true
-    }
-
-    func loadEncryptionCertificate(outError : NSErrorPointer) -> Bool {
-        return encryptionCertificateLoader.loadEncryptionCertificate(outError)
-    }
-
-    //MARK: LoggerConnectionDelegate
-
-    func connection(theConnection: LoggerConnection!, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
+    func connection(theConnection: LoggerConnectionInfo!, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
         println("new message received")
 
         if let sink = self.sink {

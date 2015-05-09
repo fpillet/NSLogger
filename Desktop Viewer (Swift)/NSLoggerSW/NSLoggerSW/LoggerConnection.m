@@ -33,11 +33,13 @@
 #import "LoggerConnection.h"
 #import "LoggerMessage.h"
 #import "LoggerCommon.h"
-#import "NSLoggerSW-Swift.h"
+#import "MessageListener-Swift.h"
 
 char sConnectionAssociatedObjectKey = 1;
 
 @implementation LoggerConnection
+
+@synthesize connectionInfo = _connectionInfo;
 
 - (id)init
 {
@@ -323,6 +325,22 @@ char sConnectionAssociatedObjectKey = 1;
 - (void)shutdown
 {
 	self.connected = NO;
+}
+
+- (LoggerConnectionInfo*)connectionInfo
+{
+    if (! _connectionInfo) {
+        _connectionInfo = [[LoggerConnectionInfo alloc] init];
+
+        _connectionInfo.clientName      = self.clientName;
+        _connectionInfo.clientVersion   = self.clientVersion;
+        _connectionInfo.clientOSName    = self.clientOSName;
+        _connectionInfo.clientOSVersion = self.clientOSVersion;
+        _connectionInfo.clientDevice    = self.clientDevice;
+        _connectionInfo.clientUDID      = self.clientUDID;
+    }
+
+    return _connectionInfo;
 }
 
 // -----------------------------------------------------------------------------

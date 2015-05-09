@@ -32,6 +32,16 @@
 
 @class LoggerConnection;
 
+@class LoggerTransport;
+
+@protocol LoggerTransportDelegate <NSObject>
+
+@required
+
+- (void)attachConnection:(LoggerConnection*)aConnection fromTransport:(LoggerTransport*)transport;
+
+@end
+
 @interface LoggerTransport : NSObject 
 {
 	NSMutableArray *connections;
@@ -47,7 +57,8 @@
 @property (nonatomic, readonly) BOOL failed;
 @property (nonatomic, readonly) BOOL ready;
 @property (nonatomic, readonly) NSMutableArray *connections;
-@property (nonatomic, retain) NSString *failureReason;
+@property (nonatomic, strong) NSString *failureReason;
+@property (nonatomic, weak) id<LoggerTransportDelegate> delegate;
 
 - (void)startup;
 - (void)shutdown;

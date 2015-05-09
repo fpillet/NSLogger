@@ -13,6 +13,9 @@ class ViewController: NSViewController {
 
     dynamic var messageCounter = 0
 
+    var messageListener:MessageListenerXPC?
+    var messageListenerConnection:NSXPCConnection?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -29,6 +32,18 @@ class ViewController: NSViewController {
                 message in
                 self.messageCounter++
             })
+        }
+
+        messageListener = MessageListenerXPC()
+        messageListenerConnection = messageListener?.messageListenerConnection
+
+        if let connection = messageListenerConnection {
+            let remoteObjectProxy = connection.remoteObjectProxyWithErrorHandler({ error in
+                NSLog("remote proxy error : %@", error)
+            }) as! NSLoggerSW_MessageListenerProtocol
+
+            remoteObjectProxy.startListener()
+
         }
 
     }

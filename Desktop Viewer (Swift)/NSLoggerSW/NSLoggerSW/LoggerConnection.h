@@ -30,7 +30,7 @@
  */
 #import <Cocoa/Cocoa.h>
 
-@class LoggerConnection, LoggerMessage;
+@class LoggerConnection, LoggerMessage, LoggerConnectionInfo;
 
 // -----------------------------------------------------------------------------
 // LoggerConnectionDelegate protocol
@@ -49,52 +49,29 @@
 // NSLoggerConnection class
 // -----------------------------------------------------------------------------
 @interface LoggerConnection : NSObject <NSCoding>
-{
-//	id<LoggerConnectionDelegate> delegate;
-//
-//	// Client info, as transmitted
-//	NSString *clientName;
-//	NSString *clientVersion;
-//	NSString *clientOSName;
-//	NSString *clientOSVersion;
-//	NSString *clientDevice;
-//	NSString *clientUDID;
-//
-//	NSMutableSet *filenames;			// pool of unique file names
-//	NSMutableSet *functionNames;		// pool of unique function names
-//
-//	NSData *clientAddress;				// depends on the underlying protocol
-//
-//	NSMutableArray *messages;
-//	NSMutableArray *parentIndexesStack;	// during messages receive, use this to quickly locate parent indexes in groups
-//	dispatch_queue_t messageProcessingQueue;
-//
-//	int reconnectionCount;				// when a reconnection is detected (same client, disconnects then reconnects), the # reconnection for this connection
-//	BOOL connected;
-//	BOOL restoredFromSave;
-//	BOOL attachedToWindow;
-}
 
-@property (retain) id <LoggerConnectionDelegate> delegate;
+@property (weak) id <LoggerConnectionDelegate> delegate;
 
-@property (nonatomic, retain) NSString *clientName;
-@property (nonatomic, retain) NSString *clientVersion;
-@property (nonatomic, retain) NSString *clientOSName;
-@property (nonatomic, retain) NSString *clientOSVersion;
-@property (nonatomic, retain) NSString *clientDevice;
-@property (nonatomic, retain) NSString *clientUDID;
+@property (nonatomic, strong) NSString *clientName;
+@property (nonatomic, strong) NSString *clientVersion;
+@property (nonatomic, strong) NSString *clientOSName;
+@property (nonatomic, strong) NSString *clientOSVersion;
+@property (nonatomic, strong) NSString *clientDevice;
+@property (nonatomic, strong) NSString *clientUDID;
 
 @property (nonatomic, readonly) NSData *clientAddress;
 @property (nonatomic, readonly) NSMutableSet *filenames;
 @property (nonatomic, readonly) NSMutableSet *functionNames;
 
 @property (nonatomic, readonly) NSMutableArray *messages;
-@property (nonatomic,  strong) NSMutableArray *parentIndexesStack;
+@property (nonatomic, strong) NSMutableArray *parentIndexesStack;
 @property (nonatomic, assign) int reconnectionCount;
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
 @property (nonatomic, assign) BOOL attachedToWindow;
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
+
+@property (nonatomic, readonly) LoggerConnectionInfo* connectionInfo;
 
 - (id)initWithAddress:(NSData *)anAddress;
 - (void)shutdown;
@@ -108,6 +85,7 @@
 - (NSString *)clientDescription;
 
 - (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection;
+
 
 @end
 

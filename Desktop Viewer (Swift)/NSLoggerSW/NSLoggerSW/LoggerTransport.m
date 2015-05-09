@@ -30,7 +30,6 @@
  */
 #import "LoggerTransport.h"
 #import "LoggerConnection.h"
-#import "NSLoggerSW-Swift.h"
 
 @implementation LoggerTransport
 
@@ -68,10 +67,9 @@
 {
 	// make a new document for a connection (it is considered live once we have received
 	// the ClientInfo message) or reuse an existing document if this is a reconnection
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		if (!aConnection.attachedToWindow)
-			[(AppDelegate *)[NSApp delegate] newConnection:aConnection fromTransport:self];
-	});
+
+    [self.delegate attachConnection:aConnection fromTransport:self];
+
 }
 
 - (void)startup

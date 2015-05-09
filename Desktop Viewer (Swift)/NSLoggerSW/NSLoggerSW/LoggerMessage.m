@@ -124,7 +124,8 @@ static NSMutableArray *sTags = nil;
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+        int i;
+        unsigned long b = sprintf(buffer," %04lx: ", (unsigned long)offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
@@ -177,21 +178,26 @@ static NSMutableArray *sTags = nil;
 		self.level = [decoder decodeIntForKey:@"l"];
 		self.type = [decoder decodeIntForKey:@"mt"];
 		self.contentsType = [decoder decodeIntForKey:@"ct"];
-		
+
+        // TODO: restore filename and functionName
+
 		// reload the filename / function name / line number. Since this is a pool
 		// kept by the LoggerConnection itself, we use the runtime's associated objects
 		// feature to get a hold on the LoggerConnection object
-		LoggerConnection *cnx = objc_getAssociatedObject(decoder, &sConnectionAssociatedObjectKey);
-		NSString *s = [decoder decodeObjectForKey:@"f"];
-		if (s != nil)
-			[self setFilename:s connection:cnx];
-		else
-			_filename = @"";
-		s = [decoder decodeObjectForKey:@"fn"];
-		if (s != nil)
-			[self setFunctionName:s connection:cnx];
-		else
-			_functionName = @"";
+//		LoggerConnection *cnx = objc_getAssociatedObject(decoder, &sConnectionAssociatedObjectKey);
+//		NSString *s = [decoder decodeObjectForKey:@"f"];
+//		if (s != nil)
+//			[self setFilename:s connection:cnx];
+//		else
+//			_filename = @"";
+//		s = [decoder decodeObjectForKey:@"fn"];
+//		if (s != nil)
+//			[self setFunctionName:s connection:cnx];
+//		else
+//			_functionName = @"";
+
+
+
 		_lineNumber = [decoder decodeIntForKey:@"ln"];
 
 		self.tag = [decoder decodeObjectForKey:@"tag"];
