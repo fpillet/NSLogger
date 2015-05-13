@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class MessageListenerXPC: NSObject, NSLoggerSW_MessageListenerProtocol {
+class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
 
     // XPC service
     lazy var messageListenerConnection : NSXPCConnection = makeConnection(self)()
@@ -19,32 +19,31 @@ class MessageListenerXPC: NSObject, NSLoggerSW_MessageListenerProtocol {
 
     func makeConnection() -> NSXPCConnection {
         let connection = NSXPCConnection(serviceName: "org.telegraph-road.MessageListener")
-        connection.remoteObjectInterface = NSXPCInterface(withProtocol: NSLoggerSW_MessageListenerProtocol.self)
+        connection.remoteObjectInterface = NSXPCInterface(withProtocol: MessageListenerProtocol.self)
 
-        connection.exportedObject = self // so we expose the newConnection and receivedMessage parts
+        // so we expose the newConnection and receivedMessage parts
+        //
+        connection.exportedInterface = NSXPCInterface(withProtocol: AppMessagePassingProtocol.self)
+        connection.exportedObject = self
 
         connection.resume()
         return connection
     }
 
-
-
-
-    func startListener() {
-        // unused on this side
+    func listenerStarted() {
+        NSLog("listenerStarted")
     }
 
-    func stopListener() {
-        // unused on this side
+    func ping(message:String) {
+        NSLog("ping received \(message)")
     }
-
 
     func newConnection(connection:LoggerConnectionInfo) {
-        println("new connection")
+        NSLog("MessageListenerXPC : new connection")
     }
 
     func receivedMessages(connection: LoggerConnectionInfo, messages: [LoggerMessage]) {
-        println("received messages")
+        NSLog("MessageListenerXPC : received messages")
     }
 
 

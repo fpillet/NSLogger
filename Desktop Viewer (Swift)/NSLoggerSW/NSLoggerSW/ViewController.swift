@@ -38,11 +38,14 @@ class ViewController: NSViewController {
         messageListenerConnection = messageListener?.messageListenerConnection
 
         if let connection = messageListenerConnection {
-            let remoteObjectProxy = connection.remoteObjectProxyWithErrorHandler({ error in
+            let remoteObjectProxy:AnyObject = connection.remoteObjectProxyWithErrorHandler({ error in
                 NSLog("remote proxy error : %@", error)
-            }) as! NSLoggerSW_MessageListenerProtocol
+            })
 
-            remoteObjectProxy.startListener()
+            if let messageListenerRemoteProxy = remoteObjectProxy as? MessageListenerProtocol {
+
+                messageListenerRemoteProxy.startListener()
+            }
 
         }
 

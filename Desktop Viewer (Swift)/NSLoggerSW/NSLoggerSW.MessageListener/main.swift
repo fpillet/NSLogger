@@ -14,13 +14,26 @@ class ServiceDelegate : NSObject, NSXPCListenerDelegate {
 
     func listener(listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         connection = newConnection
-        newConnection.exportedInterface = NSXPCInterface(withProtocol: NSLoggerSW_MessageListenerProtocol.self)
+        newConnection.exportedInterface = NSXPCInterface(withProtocol: MessageListenerProtocol.self)
         var exportedObject = MessageListener()
         newConnection.exportedObject = exportedObject
+
+        newConnection.remoteObjectInterface = NSXPCInterface(withProtocol: AppMessagePassingProtocol.self)
+
         newConnection.resume()
 
         // setup app counterpart side
-        exportedObject.appCounterPart = newConnection.remoteObjectProxy as? NSLoggerSW_MessageListenerProtocol
+        exportedObject.appConnection = newConnection
+
+//        let remoteObjectProxy:AnyObject = newConnection.remoteObjectProxyWithErrorHandler({ error in
+//            NSLog("remote proxy error : %@", error)
+//        })
+//
+//        if let appRemoteObjectProxy =  remoteObjectProxy as? NSLoggerSW_MessageListenerProtocol {
+//            exportedObject.appCounterPart = appRemoteObjectProxy
+//        } else {
+//            NSLog("appRemoteObjectProxy error - couldn't cast to NSLoggerSW_MessageListenerProtocol")
+//        }
 
         return true
     }

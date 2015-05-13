@@ -8,14 +8,19 @@
 
 import Foundation
 
-@objc(NSLoggerSW_MessageListenerProtocol) protocol NSLoggerSW_MessageListenerProtocol {
+// from app to MessageListener
+@objc(MessageListenerProtocol) protocol MessageListenerProtocol {
 
-    // from app to MessageListener
     func startListener()
     func stopListener()
 
+}
 
-    // from MessageListener to app
+// from MessageListener to app
+@objc(AppMessagePassingProtocol) protocol AppMessagePassingProtocol {
+
+    func listenerStarted()
+    func ping(message:String)
     func newConnection(connection:LoggerConnectionInfo) // tell app about new connection
     func receivedMessages(connection:LoggerConnectionInfo, messages:[LoggerMessage]) // tell app about new messages received
 
