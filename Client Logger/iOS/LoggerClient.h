@@ -69,11 +69,16 @@ enum {
 	kLoggerOption_CaptureSystemConsole				= 0x20
 };
 
+//#define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
+//								 kLoggerOption_BrowseBonjour |				\
+//								 kLoggerOption_BrowseOnlyLocalDomain |		\
+//								 kLoggerOption_UseSSL |						\
+//								 kLoggerOption_CaptureSystemConsole)
+
 #define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
-								 kLoggerOption_BrowseBonjour |				\
-								 kLoggerOption_BrowseOnlyLocalDomain |		\
-								 kLoggerOption_UseSSL |						\
-								 kLoggerOption_CaptureSystemConsole)
+kLoggerOption_BrowseBonjour |				\
+kLoggerOption_BrowseOnlyLocalDomain |		\
+kLoggerOption_CaptureSystemConsole)
 
 /* -----------------------------------------------------------------
  * Structure defining a Logger
