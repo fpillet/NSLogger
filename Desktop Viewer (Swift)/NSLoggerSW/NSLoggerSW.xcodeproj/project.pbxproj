@@ -28,8 +28,6 @@
 		AF6C24CD1AF75C03001881DE /* EncryptionCertificateLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24621AF0EB16001881DE /* EncryptionCertificateLoader.m */; };
 		AF6C24CE1AF81A06001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
 		AF6C24D11AFAC5FF001881DE /* LoggerMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C244A1AED5F40001881DE /* LoggerMessage.m */; };
-		AF6C24D31AFCB32A001881DE /* LoggerConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24D21AFCB32A001881DE /* LoggerConnectionInfo.swift */; };
-		AF6C24D41AFCB32A001881DE /* LoggerConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24D21AFCB32A001881DE /* LoggerConnectionInfo.swift */; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -106,7 +104,6 @@
 		AF6C24C01AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSLoggerSW_MessageListenerProtocol.swift; path = Shared/NSLoggerSW_MessageListenerProtocol.swift; sourceTree = SOURCE_ROOT; };
 		AF6C24C71AF63008001881DE /* MessageListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageListener.swift; sourceTree = "<group>"; };
 		AF6C24CA1AF63441001881DE /* MessageListenerXPC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageListenerXPC.swift; sourceTree = "<group>"; };
-		AF6C24D21AFCB32A001881DE /* LoggerConnectionInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerConnectionInfo.swift; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -152,7 +149,6 @@
 			children = (
 				AF6C245B1AEE2D12001881DE /* LoggerCommon.h */,
 				AF6C24451AED5F40001881DE /* LoggerConnection.h */,
-				AF6C24D21AFCB32A001881DE /* LoggerConnectionInfo.swift */,
 				AF6C24471AED5F40001881DE /* LoggerIPConnection.h */,
 				AF6C24491AED5F40001881DE /* LoggerMessage.h */,
 				AF6C244D1AED5F40001881DE /* LoggerNativeMessage.h */,
@@ -461,7 +457,6 @@
 				AF6C24B51AF592C7001881DE /* LoggerIPConnection.m in Sources */,
 				AF6C24CC1AF759AA001881DE /* MessageListener.swift in Sources */,
 				AF6C24BA1AF592C8001881DE /* LoggerTCPTransport.m in Sources */,
-				AF6C24D41AFCB32A001881DE /* LoggerConnectionInfo.swift in Sources */,
 				AF6C24BB1AF592C8001881DE /* LoggerTransport.m in Sources */,
 				AF6C24B71AF592C8001881DE /* LoggerNativeMessage.m in Sources */,
 				AF6C24B41AF592C7001881DE /* LoggerConnection.m in Sources */,
@@ -485,7 +480,6 @@
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,
 				AF6C24CB1AF63441001881DE /* MessageListenerXPC.swift in Sources */,
-				AF6C24D31AFCB32A001881DE /* LoggerConnectionInfo.swift in Sources */,
 				AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */,
 				AF6C24D11AFAC5FF001881DE /* LoggerMessage.m in Sources */,
 			);

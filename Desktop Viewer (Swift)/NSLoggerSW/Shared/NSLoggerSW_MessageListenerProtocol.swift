@@ -21,8 +21,8 @@ import Foundation
 
     func listenerStarted()
     func ping(message:String)
-    func newConnection(connection:LoggerConnectionInfo) // tell app about new connection
-    func receivedMessages(connection:LoggerConnectionInfo, messages:[LoggerMessage]) // tell app about new messages received
+    func newConnection(connectionInfo:NSDictionary) // tell app about new connection
+    func receivedMessages(connectionInfo:NSDictionary, messages:NSArray) // tell app about new messages received
 
 }
 

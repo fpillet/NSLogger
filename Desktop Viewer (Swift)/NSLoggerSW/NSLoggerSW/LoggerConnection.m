@@ -327,17 +327,19 @@ char sConnectionAssociatedObjectKey = 1;
 	self.connected = NO;
 }
 
-- (LoggerConnectionInfo*)connectionInfo
+- (NSDictionary*)connectionInfo
 {
     if (! _connectionInfo) {
-        _connectionInfo = [[LoggerConnectionInfo alloc] init];
 
-        _connectionInfo.clientName      = self.clientName;
-        _connectionInfo.clientVersion   = self.clientVersion;
-        _connectionInfo.clientOSName    = self.clientOSName;
-        _connectionInfo.clientOSVersion = self.clientOSVersion;
-        _connectionInfo.clientDevice    = self.clientDevice;
-        _connectionInfo.clientUDID      = self.clientUDID;
+        NSMutableDictionary* tmpConnectionInfo = [NSMutableDictionary dictionary];
+        _connectionInfo = tmpConnectionInfo;
+
+        tmpConnectionInfo[@"clientName"]      = self.clientName;
+        tmpConnectionInfo[@"clientVersion"]   = self.clientVersion;
+        tmpConnectionInfo[@"clientOSName"]    = self.clientOSName;
+        tmpConnectionInfo[@"clientOSVersion"] = self.clientOSVersion;
+        tmpConnectionInfo[@"clientDevice"]    = self.clientDevice;
+        tmpConnectionInfo[@"clientUDID"]      = self.clientUDID;
     }
 
     return _connectionInfo;

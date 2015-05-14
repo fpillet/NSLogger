@@ -42,7 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
 
-    func connection(theConnection: LoggerConnectionInfo!, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
+    func connection(theConnection: NSDictionary, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
         println("new message received")
 
         if let sink = self.sink {

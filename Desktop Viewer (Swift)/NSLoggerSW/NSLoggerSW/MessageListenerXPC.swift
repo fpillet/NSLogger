@@ -38,11 +38,11 @@ class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
         NSLog("ping received \(message)")
     }
 
-    func newConnection(connection:LoggerConnectionInfo) {
+    func newConnection(connectionInfo:NSDictionary) {
         NSLog("MessageListenerXPC : new connection")
     }
 
-    func receivedMessages(connection: LoggerConnectionInfo, messages: [LoggerMessage]) {
+    func receivedMessages(connectionInfo: NSDictionary, messages: NSArray) {
         NSLog("MessageListenerXPC : received messages")
     }
 

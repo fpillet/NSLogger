@@ -71,7 +71,7 @@
 @property (nonatomic, assign) BOOL attachedToWindow;
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
 
-@property (nonatomic, readonly) LoggerConnectionInfo* connectionInfo;
+@property (nonatomic, readonly) NSDictionary* connectionInfo;
 
 - (id)initWithAddress:(NSData *)anAddress;
 - (void)shutdown;
