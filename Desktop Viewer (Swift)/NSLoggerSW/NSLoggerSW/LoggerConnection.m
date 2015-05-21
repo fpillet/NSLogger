@@ -40,6 +40,7 @@ char sConnectionAssociatedObjectKey = 1;
 @implementation LoggerConnection
 
 @synthesize connectionInfo = _connectionInfo;
+@synthesize delegate = _delegate;
 
 - (id)init
 {
@@ -195,9 +196,12 @@ char sConnectionAssociatedObjectKey = 1;
 			range = NSMakeRange([self.messages count], [msgs count]);
 			[self.messages addObjectsFromArray:msgs];
 		}
-		
-		if (self.attachedToWindow)
-			[self.delegate connection:self didReceiveMessages:msgs range:range];
+
+        if (self.delegate) {
+            [self.delegate connection:self didReceiveMessages:msgs range:range];
+        } else {
+            NSLog(@"connection %@ has no delegate", self);
+        }
 	});
 }
 
@@ -400,6 +404,15 @@ char sConnectionAssociatedObjectKey = 1;
 		[aCoder encodeObject:self.messages forKey:@"messages"];
 		[aCoder encodeObject:self.parentIndexesStack forKey:@"parentIndexes"];
 	}
+}
+
+- (void)setDelegate:(id<LoggerConnectionDelegate>)delegate
+{
+    _delegate = delegate;
+}
+
+- (id<LoggerConnectionDelegate>)delegate {
+    return _delegate;
 }
 
 @end

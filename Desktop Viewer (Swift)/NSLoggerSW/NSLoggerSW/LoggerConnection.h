@@ -68,7 +68,7 @@
 @property (nonatomic, assign) int reconnectionCount;
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
-@property (nonatomic, assign) BOOL attachedToWindow;
+// @property (nonatomic, assign) BOOL attachedToWindow; // no longer used
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
 
 @property (nonatomic, readonly) NSDictionary* connectionInfo;

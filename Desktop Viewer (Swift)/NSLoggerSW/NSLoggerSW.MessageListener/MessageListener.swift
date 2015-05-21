@@ -96,7 +96,9 @@ class MessageListener: NSObject, MessageListenerProtocol, LoggerTransportDelegat
 
     // MARK: LoggerTransportDelegate
     func attachConnection(connection: LoggerConnection!, fromTransport: LoggerTransport!) {
-        NSLog("attachConnection")
+        NSLog("attachConnection - connection : \(connection)")
+
+        connection.delegate = self
 
         let connectionInfo = connection.connectionInfo
 

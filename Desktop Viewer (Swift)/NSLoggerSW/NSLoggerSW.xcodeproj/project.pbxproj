@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C244E1AED5F40001881DE /* LoggerNativeMessage.m */; };
 		AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C240B1AE7F7E2001881DE /* Synchronize.swift */; };
 		AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
 		AF6C24681AF386EC001881DE /* LlamaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6C24661AF386EC001881DE /* LlamaKit.framework */; };
@@ -476,6 +477,7 @@
 			files = (
 				AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */,
 				AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */,
+				AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */,
 				AF6C24C11AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift in Sources */,
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,

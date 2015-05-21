@@ -23,7 +23,20 @@ class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
 
         // so we expose the newConnection and receivedMessage parts
         //
-        connection.exportedInterface = NSXPCInterface(withProtocol: AppMessagePassingProtocol.self)
+//        var expectedClasses = Set<NSObject>()
+//        expectedClasses.insert(LoggerNativeMessage.self)
+
+        let aClass = LoggerNativeMessage.self
+
+
+        let interface = NSXPCInterface(withProtocol: AppMessagePassingProtocol.self)
+
+        let currentExpectedClasses = interface.classesForSelector("receivedMessages:messages:", argumentIndex: 1, ofReply: false) as NSSet
+
+        let allClasses = currentExpectedClasses.setByAddingObject(LoggerNativeMessage.self)
+
+        interface.setClasses(allClasses as Set<NSObject>, forSelector: "receivedMessages:messages:", argumentIndex: 1, ofReply: false)
+        connection.exportedInterface = interface
         connection.exportedObject = self
 
         connection.resume()

@@ -33,7 +33,7 @@
 
 @class LoggerConnection;
 
-@interface LoggerMessage : NSObject <NSCoding, NSCopying>
+@interface LoggerMessage : NSObject <NSSecureCoding, NSCopying>
 {
 //	struct timeval timestamp;	// seconds and microseconds
 //

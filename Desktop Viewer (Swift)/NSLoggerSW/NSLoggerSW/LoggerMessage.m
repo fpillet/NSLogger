@@ -171,13 +171,27 @@ static NSMutableArray *sTags = nil;
 	{
         _timestamp.tv_sec = [decoder decodeInt64ForKey:@"s"];
 		_timestamp.tv_usec = [decoder decodeInt64ForKey:@"us"];
-		self.parts = [decoder decodeObjectForKey:@"p"];
-		self.message = [decoder decodeObjectForKey:@"m"];
+        self.parts =  [decoder decodeObjectOfClass:[NSDictionary class] forKey:@"p"]; // [decoder decodeObjectForKey:@"p"];
+        self.contentsType = [decoder decodeIntForKey:@"ct"];
+
+        NSString* messageDecoderKey = @"m";
+
+        switch (self.contentsType) {
+            case kMessageString:
+                self.message = [decoder decodeObjectOfClass:[NSString class] forKey:messageDecoderKey];
+                break;
+            case kMessageData:
+                self.message = [decoder decodeObjectOfClass:[NSData class] forKey:messageDecoderKey];
+            case kMessageImage:
+                self.message = [decoder decodeObjectOfClass:[NSImage class] forKey:messageDecoderKey];
+            default:
+                break;
+        }
+//        self.message = [decoder decodeObjectForKey:@"m"];
 		sequence = [decoder decodeIntForKey:@"n"];
-		self.threadID = [decoder decodeObjectForKey:@"t"];
+        self.threadID = [decoder decodeObjectOfClass:[NSString class] forKey:@"t"]; // [decoder decodeObjectForKey:@"t"];
 		self.level = [decoder decodeIntForKey:@"l"];
 		self.type = [decoder decodeIntForKey:@"mt"];
-		self.contentsType = [decoder decodeIntForKey:@"ct"];
 
         // TODO: restore filename and functionName
 
@@ -200,7 +214,7 @@ static NSMutableArray *sTags = nil;
 
 		_lineNumber = [decoder decodeIntForKey:@"ln"];
 
-		self.tag = [decoder decodeObjectForKey:@"tag"];
+        self.tag = [decoder decodeObjectOfClass:[NSString class] forKey:@"tag"]; // [decoder decodeObjectForKey:@"tag"];
 	}
 	return self;
 }
@@ -317,6 +331,10 @@ static NSMutableArray *sTags = nil;
 	double t = t1 - t2;
 	td->tv_sec = (__darwin_time_t)t;
 	td->tv_usec = (__darwin_suseconds_t)((t - (double)td->tv_sec) * 1000000.0);
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #ifdef DEBUG
