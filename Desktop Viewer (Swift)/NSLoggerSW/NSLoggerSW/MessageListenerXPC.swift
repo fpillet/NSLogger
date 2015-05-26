@@ -7,8 +7,12 @@
 //
 
 import Cocoa
+import ReactiveCocoa
 
 class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
+
+    var messageSignal:Signal<LoggerMessage, NoError>?
+    var sink:SinkOf<Event<LoggerMessage, NoError>>?
 
     // XPC service
     lazy var messageListenerConnection : NSXPCConnection = makeConnection(self)()
@@ -21,13 +25,7 @@ class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
         let connection = NSXPCConnection(serviceName: "org.telegraph-road.MessageListener")
         connection.remoteObjectInterface = NSXPCInterface(withProtocol: MessageListenerProtocol.self)
 
-        // so we expose the newConnection and receivedMessage parts
-        //
-//        var expectedClasses = Set<NSObject>()
-//        expectedClasses.insert(LoggerNativeMessage.self)
-
         let aClass = LoggerNativeMessage.self
-
 
         let interface = NSXPCInterface(withProtocol: AppMessagePassingProtocol.self)
 
@@ -57,6 +55,14 @@ class MessageListenerXPC: NSObject, AppMessagePassingProtocol {
 
     func receivedMessages(connectionInfo: NSDictionary, messages: NSArray) {
         NSLog("MessageListenerXPC : received messages")
+
+        if let sink = self.sink {
+            for msg in messages {
+                if let message = msg as? LoggerMessage {
+                    sendNext(sink, message)
+                }
+            }
+        }
     }
 
 

@@ -46,7 +46,6 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	if ((self = [super init]) != nil)
 	{
-		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 		_messages = [[NSMutableArray alloc] initWithCapacity:1024];
 		self.parentIndexesStack = [[NSMutableArray alloc] init];
 		_filenames = [[NSMutableSet alloc] init];
@@ -59,7 +58,6 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	if ((self = [super init]) != nil)
 	{
-		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 		_messages = [[NSMutableArray alloc] initWithCapacity:1024];
 		self.parentIndexesStack = [[NSMutableArray alloc] init];
 		_clientAddress = [anAddress copy];
@@ -149,75 +147,26 @@ char sConnectionAssociatedObjectKey = 1;
 
 - (void)messagesReceived:(NSArray *)msgs
 {
-	dispatch_async(self.messageProcessingQueue, ^{
-		/* Code not functional yet
-		 *
-		NSRange range = NSMakeRange([messages count], [msgs count]);
-		NSUInteger lastParent = NSNotFound;
-		if ([parentIndexesStack count])
-			lastParent = [[parentIndexesStack lastObject] intValue];
-		
-		for (NSUInteger i = 0, count = [msgs count]; i < count; i++)
-		{
-			// update cache for indentation
-			LoggerMessage *message = [msgs objectAtIndex:i];
-			switch (message.type)
-			{
-				case LOGMSG_TYPE_BLOCKSTART:
-					[parentIndexesStack addObject:[NSNumber numberWithInt:range.location+i]];
-					lastParent = range.location + i;
-					break;
-					
-				case LOGMSG_TYPE_BLOCKEND:
-					if ([parentIndexesStack count])
-					{
-						[parentIndexesStack removeLastObject];
-						if ([parentIndexesStack count])
-							lastParent = [[parentIndexesStack lastObject] intValue];
-						else
-							lastParent = NSNotFound;
-					}
-					break;
-					
-				default:
-					if (lastParent != NSNotFound)
-					{
-						message.distanceFromParent = range.location + i - lastParent;
-						message.indent = [parentIndexesStack count];
-					}
-					break;
-			}
-		}
-		 *
-		 */
-		NSRange range;
-		@synchronized (self.messages)
-		{
-			range = NSMakeRange([self.messages count], [msgs count]);
-			[self.messages addObjectsFromArray:msgs];
-		}
+    if (self.delegate) {
+        [self.delegate connection:self didReceiveMessages:msgs];
+    } else {
+        NSLog(@"connection %@ has no delegate", self);
+    }
 
-        if (self.delegate) {
-            [self.delegate connection:self didReceiveMessages:msgs range:range];
-        } else {
-            NSLog(@"connection %@ has no delegate", self);
-        }
-	});
 }
 
 - (void)clearMessages
 {
-	// Clear the backlog of messages, only keeping the top (client info) message
-	// This MUST be called on the messageProcessingQueue
-	assert(dispatch_get_current_queue() == self.messageProcessingQueue);
-	if (![self.messages count])
-		return;
+    // Clear the backlog of messages, only keeping the top (client info) message
+    // This MUST be called on the messageProcessingQueue
+    if (![self.messages count])
+        return;
 
-	// Locate the clientInfo message
-	if (((LoggerMessage *)[self.messages objectAtIndex:0]).type == LOGMSG_TYPE_CLIENTINFO)
-		[self.messages removeObjectsInRange:NSMakeRange(1, [self.messages count]-1)];
-	else
-		[self.messages removeAllObjects];
+    // Locate the clientInfo message
+    if (((LoggerMessage *)[self.messages objectAtIndex:0]).type == LOGMSG_TYPE_CLIENTINFO)
+        [self.messages removeObjectsInRange:NSMakeRange(1, [self.messages count]-1)];
+    else
+        [self.messages removeAllObjects];
 }
 
 - (void)clientInfoReceived:(LoggerMessage *)message
@@ -226,40 +175,31 @@ char sConnectionAssociatedObjectKey = 1;
 	// an existing ClientInfo message at this position, just replace it. Also, don't fire
 	// a "didReceiveMessages". The rationale behind this is that if the connection just came in,
 	// we are not yet attached to a window and when attaching, the window will refresh all messages.
-	dispatch_async(self.messageProcessingQueue, ^{
-		@synchronized (self.messages)
-		{
-			if ([self.messages count] == 0 || ((LoggerMessage *)[self.messages objectAtIndex:0]).type != LOGMSG_TYPE_CLIENTINFO)
-				[self.messages insertObject:message atIndex:0];
-		}
-	});
+    if ([self.messages count] == 0 || ((LoggerMessage *)[self.messages objectAtIndex:0]).type != LOGMSG_TYPE_CLIENTINFO)
+        [self.messages insertObject:message atIndex:0];
 
 	// all this stuff occurs on the main thread to avoid touching values
 	// while the UI reads them
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSDictionary *parts = message.parts;
-		id value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
-		if (value != nil)
-			self.clientName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
-		if (value != nil)
-			self.clientVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
-		if (value != nil)
-			self.clientOSName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
-		if (value != nil)
-			self.clientOSVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
-		if (value != nil)
-			self.clientDevice = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
-		if (value != nil)
-			self.clientUDID = value;
+    NSDictionary *parts = message.parts;
+    id value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
+    if (value != nil)
+        self.clientName = value;
+    value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+    if (value != nil)
+        self.clientVersion = value;
+    value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+    if (value != nil)
+        self.clientOSName = value;
+    value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+    if (value != nil)
+        self.clientOSVersion = value;
+    value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+    if (value != nil)
+        self.clientDevice = value;
+    value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+    if (value != nil)
+        self.clientUDID = value;
 
-//		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
-//															object:self];
-	});
 }
 
 - (NSString *)clientAppDescription
@@ -375,9 +315,6 @@ char sConnectionAssociatedObjectKey = 1;
 		_reconnectionCount = [aDecoder decodeIntForKey:@"reconnectionCount"];
 		_restoredFromSave = YES;
 		
-		// we need a messageProcessingQueue just for the ability to add/insert marks
-		// when user does post-mortem investigation
-		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
 	}
 	return self;
 }

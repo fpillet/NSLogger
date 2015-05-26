@@ -37,7 +37,7 @@
 // -----------------------------------------------------------------------------
 @protocol LoggerConnectionDelegate
 // method that may not be called on main thread
-- (void)connection:(LoggerConnection *)theConnection didReceiveMessages:(NSArray *)theMessages range:(NSRange)rangeInMessagesList;
+- (void)connection:(LoggerConnection *)theConnection didReceiveMessages:(NSArray *)theMessages;
 @end
 
 @interface NSObject (LoggerConnectionDelegateOptional)

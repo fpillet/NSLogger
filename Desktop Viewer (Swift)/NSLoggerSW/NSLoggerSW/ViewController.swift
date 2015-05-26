@@ -21,19 +21,9 @@ class ViewController: NSViewController {
 
         // Do any additional setup after loading the view.
 
-        if let appDelegate = NSApplication.sharedApplication().delegate as? AppDelegate {
 
-            let (aSignal, aSink) = Signal<LoggerMessage, NoError>.pipe()
-
-            appDelegate.messageSignal = aSignal
-            appDelegate.sink = aSink
-
-            appDelegate.messageSignal!.observe(next: {
-                message in
-                self.messageCounter++
-            })
-        }
-
+        // Setup XPC service
+        //
         messageListener = MessageListenerXPC()
         messageListenerConnection = messageListener?.messageListenerConnection
 
@@ -48,6 +38,20 @@ class ViewController: NSViewController {
             }
 
         }
+
+
+        // connect ReactiveCocoa stuff
+        //
+        let (aSignal, aSink) = Signal<LoggerMessage, NoError>.pipe()
+
+        messageListener!.messageSignal = aSignal
+        messageListener!.sink = aSink
+
+        messageListener!.messageSignal!.observe(next: {
+            message in
+            self.messageCounter++
+        })
+
 
     }
 

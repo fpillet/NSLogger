@@ -56,7 +56,7 @@ class MessageListener: NSObject, MessageListenerProtocol, LoggerTransportDelegat
         for transport in transports {
             if let t = transport as? LoggerNativeTransport {
 
-                t.restart() // be more subtle with Bonjour publishing later
+                t.restart() // TODO : be more subtle with Bonjour publishing later
             }
         }
     }
@@ -112,7 +112,7 @@ class MessageListener: NSObject, MessageListenerProtocol, LoggerTransportDelegat
     }
 
     // MARK: LoggerConnectionDelegate
-    func connection(theConnection: LoggerConnection!, didReceiveMessages theMessages: [AnyObject]!, range rangeInMessagesList: NSRange) {
+    func connection(theConnection: LoggerConnection!, didReceiveMessages theMessages: [AnyObject]!) {
         let connectionInfo = theConnection.connectionInfo
 
         if let messages = theMessages as? [LoggerMessage], appCounterPart = appConnection?.remoteObjectProxy as? AppMessagePassingProtocol {
