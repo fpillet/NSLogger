@@ -129,11 +129,11 @@
 				case PART_KEY_MESSAGE:
 					self.message = part;
 					if (partType == PART_TYPE_STRING)
-						self.contentsType = kMessageString;
+						self.contentsType = LoggerMessageTypeString;
 					else if (partType == PART_TYPE_BINARY)
-						self.contentsType = kMessageData;
+						self.contentsType = LoggerMessageTypeData;
 					else if (partType == PART_TYPE_IMAGE)
-                        self.contentsType = kMessageImage;
+                        self.contentsType = LoggerMessageTypeImage;
 					break;
 				case PART_KEY_IMAGE_WIDTH:
                     if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32) {
@@ -192,7 +192,7 @@
 	}
 #if 0
 	// Debug tool to log the original image (until we have DnD)
-	if (type == LOGMSG_TYPE_LOG && contentsType == kMessageImage)
+	if (type == LOGMSG_TYPE_LOG && contentsType == LoggerMessageTypeImage)
 	{
 		// detect the image type to set the proper extension
 		NSString *ext = @"png";

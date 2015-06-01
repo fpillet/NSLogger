@@ -61,7 +61,7 @@ static NSMutableArray *sTags = nil;
 
 - (NSImage *)image
 {
-	if (self.contentsType != kMessageImage)
+	if (self.contentsType != LoggerMessageTypeImage)
 		return nil;
 	if (self.image == nil)
 		self.image = [[NSImage alloc] initWithData:self.message];
@@ -81,7 +81,7 @@ static NSMutableArray *sTags = nil;
 	time_t sec = self.timestamp.tv_sec;
 	struct tm *t = localtime(&sec);
 
-	if (self.contentsType == kMessageString)
+	if (self.contentsType == LoggerMessageTypeString)
 	{
 		if (self.type == LOGMSG_TYPE_MARK)
 			return [NSString stringWithFormat:@"%@\n", self.message];
@@ -107,7 +107,7 @@ static NSMutableArray *sTags = nil;
 						(self.tag == NULL) ? @"-" : self.tag,
 						self.threadID];
 
-	if (self.contentsType == kMessageImage)
+	if (self.contentsType == LoggerMessageTypeImage)
 		return [NSString stringWithFormat:@"%@IMAGE size=%dx%d px\n", header, (int)self.imageSize.width, (int)self.imageSize.height];
 
 	assert([self.message isKindOfClass:[NSData class]]);
@@ -177,12 +177,12 @@ static NSMutableArray *sTags = nil;
         NSString* messageDecoderKey = @"m";
 
         switch (self.contentsType) {
-            case kMessageString:
+            case LoggerMessageTypeString:
                 self.message = [decoder decodeObjectOfClass:[NSString class] forKey:messageDecoderKey];
                 break;
-            case kMessageData:
+            case LoggerMessageTypeData:
                 self.message = [decoder decodeObjectOfClass:[NSData class] forKey:messageDecoderKey];
-            case kMessageImage:
+            case LoggerMessageTypeImage:
                 self.message = [decoder decodeObjectOfClass:[NSImage class] forKey:messageDecoderKey];
             default:
                 break;
@@ -263,16 +263,16 @@ static NSMutableArray *sTags = nil;
 // -----------------------------------------------------------------------------
 - (NSString *)messageText
 {
-	if (self.contentsType == kMessageString)
+	if (self.contentsType == LoggerMessageTypeString)
 		return self.message;
 	return @"";
 }
 
 - (NSString *)messageType
 {
-	if (self.contentsType == kMessageString)
+	if (self.contentsType == LoggerMessageTypeString)
 		return @"text";
-	if (self.contentsType == kMessageData)
+	if (self.contentsType == LoggerMessageTypeData)
 		return @"data";
 	return @"img";
 }
@@ -348,9 +348,9 @@ static NSMutableArray *sTags = nil;
 							(_type == LOGMSG_TYPE_MARK) ? @"Mark" :
 							@"Unknown");
 	NSString *desc;
-	if (self.contentsType == kMessageData)
+	if (self.contentsType == LoggerMessageTypeData)
 		desc = [NSString stringWithFormat:@"{data %lu bytes}", (unsigned long)[self.message length]];
-	else if (self.contentsType == kMessageImage)
+	else if (self.contentsType == LoggerMessageTypeImage)
 		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", (int)self.imageSize.width, (int)self.imageSize.height];
 	else
 		desc = (NSString *)self.message;

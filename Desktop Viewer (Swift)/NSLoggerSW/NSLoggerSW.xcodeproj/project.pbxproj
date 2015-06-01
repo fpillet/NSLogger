@@ -29,6 +29,9 @@
 		AF6C24CD1AF75C03001881DE /* EncryptionCertificateLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24621AF0EB16001881DE /* EncryptionCertificateLoader.m */; };
 		AF6C24CE1AF81A06001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
 		AF6C24D11AFAC5FF001881DE /* LoggerMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C244A1AED5F40001881DE /* LoggerMessage.m */; };
+		AF7BE3971B1C677A0007496C /* LoggerMessageCellViewThreadId.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */; };
+		AF7BE3991B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */; };
+		AF8B35EA1B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -105,6 +108,9 @@
 		AF6C24C01AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSLoggerSW_MessageListenerProtocol.swift; path = Shared/NSLoggerSW_MessageListenerProtocol.swift; sourceTree = SOURCE_ROOT; };
 		AF6C24C71AF63008001881DE /* MessageListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageListener.swift; sourceTree = "<group>"; };
 		AF6C24CA1AF63441001881DE /* MessageListenerXPC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageListenerXPC.swift; sourceTree = "<group>"; };
+		AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewThreadId.swift; sourceTree = "<group>"; };
+		AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewMessageContent.swift; sourceTree = "<group>"; };
+		AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewTimeStamp.swift; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -253,6 +259,9 @@
 				AF6C240B1AE7F7E2001881DE /* Synchronize.swift */,
 				AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */,
 				AFF594C01AE5AC4F00592595 /* ViewController.swift */,
+				AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */,
+				AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */,
+				AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */,
 				AF6C24CA1AF63441001881DE /* MessageListenerXPC.swift */,
 				AFF594C21AE5AC4F00592595 /* Document.swift */,
 				AFF594C41AE5AC4F00592595 /* Images.xcassets */,
@@ -476,11 +485,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */,
+				AF7BE3971B1C677A0007496C /* LoggerMessageCellViewThreadId.swift in Sources */,
+				AF8B35EA1B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift in Sources */,
 				AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */,
 				AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */,
 				AF6C24C11AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift in Sources */,
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,
+				AF7BE3991B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift in Sources */,
 				AF6C24CB1AF63441001881DE /* MessageListenerXPC.swift in Sources */,
 				AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */,
 				AF6C24D11AFAC5FF001881DE /* LoggerMessage.m in Sources */,

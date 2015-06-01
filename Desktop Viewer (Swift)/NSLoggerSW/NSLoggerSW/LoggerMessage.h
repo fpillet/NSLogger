@@ -84,8 +84,8 @@
 
 @end
 
-enum {
-	kMessageString = 0,
-	kMessageData,
-	kMessageImage
+typedef NS_ENUM(NSInteger, LoggerMessageType) {
+	LoggerMessageTypeString = 0,
+	LoggerMessageTypeData,
+	LoggerMessageTypeImage
 };
