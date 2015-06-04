@@ -15,6 +15,7 @@ class ViewController: UIViewController {
     let domain = "NSLoggerClientSwift"
 
     @IBOutlet weak var textField: UITextField!
+    @IBOutlet weak var imageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,19 +55,16 @@ class ViewController: UIViewController {
 
         var layer = view.layer
 
-        UIGraphicsBeginImageContext(view.bounds.size)
-        CGContextClipToRect(UIGraphicsGetCurrentContext(), view.frame)
-        layer.renderInContext(UIGraphicsGetCurrentContext())
-        let image = UIGraphicsGetImageFromCurrentImageContext()
 
-        if image != nil {
+
+        if let image = imageView.image {
             let dataProvider = CGImageGetDataProvider(image.CGImage)
             let data = CGDataProviderCopyData(dataProvider) as NSData
 
             SwiftLoggerClient.logImageData(domain: domain, level: 1, width:Int32(image.size.width), height:Int32(image.size.height), data: data)
         } else {
 
-            let alert = UIAlertView(title: "screenshot error", message: "couldn't take screenshot", delegate: nil, cancelButtonTitle: nil)
+            let alert = UIAlertView(title: "no image", message: "imageView is empty ?", delegate: nil, cancelButtonTitle: nil)
             alert.show()
             
         }
