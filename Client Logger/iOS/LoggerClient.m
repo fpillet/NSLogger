@@ -1630,7 +1630,7 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 		else
 		{
 			// reachability for generic connection to the internet
-			LOGGERDBG(CFSTR("Starting SCNetworkReachability to wait for internet to be reachable"), logger->host);
+			LOGGERDBG(CFSTR("Starting SCNetworkReachability to wait for internet to be reachable"));
 			struct sockaddr_in addr;
 			bzero(&addr, sizeof(addr));
 			addr.sin_len = (__uint8_t) sizeof(addr);
