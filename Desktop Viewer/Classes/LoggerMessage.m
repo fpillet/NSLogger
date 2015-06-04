@@ -119,7 +119,8 @@ static NSMutableArray *sTags = nil;
 	[s appendString:header];
 	NSUInteger offset = 0, dataLen = [message length];
 	NSString *str;
-	char buffer[1+6+16*3+1+16+1+1+1];
+	int offsetPad = (int)ceil(ceil(log2f(dataLen)) / 4.f);
+	char buffer[1+offsetPad+2+16*3+1+16+1+1+1];
 	buffer[0] = '\0';
 	const unsigned char *q = [message bytes];
 	if (dataLen == 1)
@@ -128,7 +129,7 @@ static NSMutableArray *sTags = nil;
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer," %04x: ", offset);
+		int i, b = sprintf(buffer, " %0*x: ", offsetPad, offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
