@@ -1539,7 +1539,7 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 					CFStringRef name = CFNetServiceGetName(service);
 					if (name == NULL || kCFCompareEqualTo != CFStringCompare(name, logger->bonjourServiceName, kCFCompareCaseInsensitive | kCFCompareDiacriticInsensitive))
 					{
-						LOGGERDBG(CFSTR("-> service name %@ does not match requested service name, ignoring."), name, logger->bonjourServiceName);
+						LOGGERDBG(CFSTR("-> service name %@ does not match requested service name, ignoring."), name);
 						return;
 					}
 				}
@@ -1563,7 +1563,7 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 							CFRelease(txtDict);
 							if (mismatch)
 							{
-								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), name, logger->bonjourServiceName);
+								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), CFNetServiceGetName(service));
 								return;
 							}
 						}
