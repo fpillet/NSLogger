@@ -1692,7 +1692,7 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 	else for (LoggerMessage *mark in marks)
 	{
-		NSMenuItem *markItem = [[NSMenuItem alloc] initWithTitle:mark.message
+		NSMenuItem *markItem = [[NSMenuItem alloc] initWithTitle:mark.message ?: @""
 														  action:@selector(jumpToMark:)
 												   keyEquivalent:@""];
 		[markItem setRepresentedObject:mark];
