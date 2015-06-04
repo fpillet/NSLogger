@@ -40,7 +40,7 @@ char sConnectionAssociatedObjectKey = 1;
 @implementation LoggerConnection
 
 @synthesize connectionInfo = _connectionInfo;
-@synthesize delegate = _delegate;
+//@synthesize delegate = _delegate;
 
 - (id)init
 {
@@ -343,13 +343,13 @@ char sConnectionAssociatedObjectKey = 1;
 	}
 }
 
-- (void)setDelegate:(id<LoggerConnectionDelegate>)delegate
-{
-    _delegate = delegate;
-}
-
-- (id<LoggerConnectionDelegate>)delegate {
-    return _delegate;
-}
+//- (void)setDelegate:(id<LoggerConnectionDelegate>)delegate
+//{
+//    _delegate = delegate;
+//}
+//
+//- (id<LoggerConnectionDelegate>)delegate {
+//    return _delegate;
+//}
 
 @end

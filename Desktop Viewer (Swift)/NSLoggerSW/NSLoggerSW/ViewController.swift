@@ -91,16 +91,19 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     func setupMessageContentCellView(cellView : LoggerMessageCellViewMessageContent, forMessage message:LoggerMessage) {
 
-        let t = Int(message.type)
+        let t = Int(message.contentsType)
 
         if let msgType = LoggerMessageType(rawValue: t) {
 
             switch msgType {
             case .String:
-                let messageString = message.message as! String
-                cellView.messageText.stringValue = messageString
-                cellView.messageText.hidden = false
-                cellView.messageImage.hidden = true
+                if let messageString = message.message as? String {
+                    cellView.messageText.stringValue = messageString
+                    cellView.messageText.hidden = false
+                    cellView.messageImage.hidden = true
+                } else {
+                    NSLog("setupMessageContentCellView : problem, message type is String (%d) but message content is not", message.contentsType)
+                }
 
             case .Image:
                 cellView.messageImage.image = message.image
@@ -108,9 +111,17 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
                 cellView.messageImage.hidden = false
 
             case .Data:
-                cellView.messageText.stringValue = "TODO - data"
-                cellView.messageText.hidden = false
-                cellView.messageImage.hidden = true
+                if let messageData = message.message as? NSData {
+                    let dataStrings = stringsWithData(messageData)
+                    let dataString = dataStrings.reduce("") { (res, str) -> String in
+                        res + str
+                    }
+                    cellView.messageText.stringValue = dataString
+                    cellView.messageText.hidden = false
+                    cellView.messageImage.hidden = true
+                } else {
+                    NSLog("setupMessageContentCellView : problem, message type is Data (%d) but message content is not", message.contentsType)
+                }
             }
         }
 
@@ -159,5 +170,88 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         return tableCellView
     }
 
+
+    // MARK: Utilities
+
+    let MAX_DATA_LINES = 16
+
+    func stringsWithData(data:NSData) -> [String] {
+        var strings = [String]()
+
+        var offset = 0
+        var dataLen = data.length
+
+        let ptr = UnsafePointer<UInt8>(data.bytes)
+        let bytes = UnsafeBufferPointer<UInt8>(start:ptr, count:data.length)
+
+        if dataLen == 1 {
+            let t = NSLocalizedString("Raw data, 1 byte :", comment:"")
+            strings.append(t)
+        } else {
+            let t = String(format:NSLocalizedString("Raw data, %u bytes :", comment:""), dataLen)
+            strings.append(t)
+        }
+
+        while dataLen > 0 {
+            if strings.count == MAX_DATA_LINES {
+                let t = String(format:NSLocalizedString("Double-click to see all data...", comment:""), dataLen)
+                strings.append(t)
+            }
+
+            // print offset
+            //
+            let offsetString = String(format:"%04x: ", offset)
+            var string = offsetString
+
+            // print bytes
+            //
+            var nbBytesPrinted = 0
+            for i in 0..<min(16, dataLen) {
+                let aByte = Int(bytes[i + offset])
+                string += String(format: "%02x ", aByte)
+                ++nbBytesPrinted
+            }
+
+            // pad string with spaces if needed
+            //
+            if nbBytesPrinted < 16 {
+                for j in nbBytesPrinted..<16 {
+                    string += "   "
+                }
+            }
+
+            string += "\'"
+            nbBytesPrinted = 0
+
+            // now print data as ASCII chars
+            for i in 0..<min(16, dataLen) {
+                let aByte = Int(bytes[i + offset])
+                if aByte >= 32 && aByte < 128 {
+                    string += String(format: "%c", aByte)
+                } else {
+                    string += " "
+                }
+                ++nbBytesPrinted
+            }
+
+            // pad string with spaces if needed
+            //
+            if nbBytesPrinted < 16 {
+                for j in nbBytesPrinted..<16 {
+                    string += " "
+                }
+            }
+
+            string += "\'"
+
+            strings.append(string)
+
+            offset += nbBytesPrinted
+            dataLen -= nbBytesPrinted
+        }
+
+
+        return strings
+    }
 }
 

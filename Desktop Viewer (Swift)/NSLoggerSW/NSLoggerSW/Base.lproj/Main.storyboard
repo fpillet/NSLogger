@@ -705,7 +705,7 @@
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="30" rowSizeStyle="automatic" headerView="Wix-vW-OkW" viewBased="YES" id="mM1-c6-dYw">
-                                                            <rect key="frame" x="0.0" y="0.0" width="535" height="0.0"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="309" height="0.0"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -793,7 +793,7 @@
                                                                         </tableCellView>
                                                                     </prototypeCellViews>
                                                                 </tableColumn>
-                                                                <tableColumn identifier="MESSAGE_CONTENT" width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="RYk-wf-DOP">
+                                                                <tableColumn identifier="MESSAGE_CONTENT" width="326" minWidth="10" maxWidth="3.4028234663852886e+38" id="RYk-wf-DOP">
                                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                                         <font key="font" metaFont="smallSystem"/>
                                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -807,22 +807,32 @@
                                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                     <prototypeCellViews>
                                                                         <tableCellView id="dUG-CR-201" customClass="LoggerMessageCellViewMessageContent" customModule="NSLoggerSW" customModuleProvider="target">
-                                                                            <rect key="frame" x="207" y="1" width="100" height="30"/>
+                                                                            <rect key="frame" x="207" y="1" width="326" height="13"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YEQ-jm-6iw">
-                                                                                    <rect key="frame" x="1" y="-2" width="98" height="34"/>
+                                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YEQ-jm-6iw">
+                                                                                    <rect key="frame" x="1" y="-2" width="98" height="17"/>
                                                                                     <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" title="Multiline Label" id="vSf-j0-UET">
                                                                                         <font key="font" metaFont="system"/>
                                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                     </textFieldCell>
                                                                                 </textField>
-                                                                                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p0Y-uh-3Ew">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="94" height="30"/>
+                                                                                <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p0Y-uh-3Ew">
+                                                                                    <rect key="frame" x="0.0" y="0.0" width="100" height="13"/>
                                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="JoF-SE-0sE"/>
                                                                                 </imageView>
                                                                             </subviews>
+                                                                            <constraints>
+                                                                                <constraint firstItem="p0Y-uh-3Ew" firstAttribute="leading" secondItem="dUG-CR-201" secondAttribute="leading" id="8Di-Ns-SjF"/>
+                                                                                <constraint firstItem="p0Y-uh-3Ew" firstAttribute="top" secondItem="dUG-CR-201" secondAttribute="top" id="IW3-3D-es0"/>
+                                                                                <constraint firstAttribute="bottom" secondItem="p0Y-uh-3Ew" secondAttribute="bottom" id="Rkt-T1-yby"/>
+                                                                                <constraint firstItem="YEQ-jm-6iw" firstAttribute="top" secondItem="dUG-CR-201" secondAttribute="top" constant="-2" id="ZN6-rR-QME"/>
+                                                                                <constraint firstAttribute="trailing" secondItem="p0Y-uh-3Ew" secondAttribute="trailing" id="m5q-d1-cZ9"/>
+                                                                                <constraint firstItem="YEQ-jm-6iw" firstAttribute="leading" secondItem="dUG-CR-201" secondAttribute="leading" constant="3" id="t1A-Gr-rBS"/>
+                                                                                <constraint firstAttribute="trailing" secondItem="YEQ-jm-6iw" secondAttribute="trailing" constant="3" id="t6c-w8-jkc"/>
+                                                                                <constraint firstAttribute="bottom" secondItem="YEQ-jm-6iw" secondAttribute="bottom" constant="-2" id="vpz-Qd-q9E"/>
+                                                                            </constraints>
                                                                             <connections>
                                                                                 <outlet property="messageImage" destination="p0Y-uh-3Ew" id="I4y-64-gtM"/>
                                                                                 <outlet property="messageText" destination="YEQ-jm-6iw" id="AhH-cd-E2k"/>
@@ -839,7 +849,7 @@
                                                     </subviews>
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </clipView>
-                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.007462686567164179" horizontal="YES" id="KAw-tD-OdZ">
+                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="YES" id="KAw-tD-OdZ">
                                                     <rect key="frame" x="1" y="117.88611376285553" width="238" height="16"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </scroller>

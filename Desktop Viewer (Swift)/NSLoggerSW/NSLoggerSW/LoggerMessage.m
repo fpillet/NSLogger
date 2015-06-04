@@ -63,14 +63,14 @@ static NSMutableArray *sTags = nil;
 {
 	if (self.contentsType != LoggerMessageTypeImage)
 		return nil;
-	if (self.image == nil)
-		self.image = [[NSImage alloc] initWithData:self.message];
-	return self.image;
+	if (_image == nil)
+		_image = [[NSImage alloc] initWithData:self.message];
+	return _image;
 }
 
 - (NSSize)imageSize
 {
-	if (self.imageSize.width == 0 || self.imageSize.height == 0)
+	if (_imageSize.width == 0 || _imageSize.height == 0)
 		_imageSize = self.image.size;
 	return _imageSize;
 }
@@ -181,13 +181,13 @@ static NSMutableArray *sTags = nil;
                 self.message = [decoder decodeObjectOfClass:[NSString class] forKey:messageDecoderKey];
                 break;
             case LoggerMessageTypeData:
+            case LoggerMessageTypeImage: // images are transmitted as data
                 self.message = [decoder decodeObjectOfClass:[NSData class] forKey:messageDecoderKey];
-            case LoggerMessageTypeImage:
-                self.message = [decoder decodeObjectOfClass:[NSImage class] forKey:messageDecoderKey];
+                break;
             default:
                 break;
         }
-//        self.message = [decoder decodeObjectForKey:@"m"];
+
 		sequence = [decoder decodeIntForKey:@"n"];
         self.threadID = [decoder decodeObjectOfClass:[NSString class] forKey:@"t"]; // [decoder decodeObjectForKey:@"t"];
 		self.level = [decoder decodeIntForKey:@"l"];
