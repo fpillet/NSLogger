@@ -51,17 +51,18 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         messageListener!.messageSignal = aSignal
         messageListener!.sink = aSink
 
-        messageListener!.messageSignal!.observe(next: {
-            message in
+        messageListener!.messageSignal!.observe(next: { message in
+
             self.messageCounter++
 
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 self.messages.append(message)
-                self.messagesTableView.reloadData()
+//                self.messagesTableView.reloadData()
+                let lastIndexSet = NSIndexSet(index: (self.messages.count - 1))
+                self.messagesTableView.insertRowsAtIndexes(lastIndexSet, withAnimation: NSTableViewAnimationOptions.SlideUp)
             })
 
         })
-
 
     }
 
@@ -84,6 +85,37 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
             res = String(format:"%02d:%02d:%02d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec)
         } else {
             res = String(format:"%02d:%02d:%02d.%03d", localTime.tm_hour, localTime.tm_min, localTime.tm_sec, timestamp.tv_usec / 1000)
+        }
+
+        return res
+    }
+
+    func timeOffsetStringFromMessage(message:LoggerMessage, previousMessage:LoggerMessage) -> String {
+        var td = timeval()
+
+        message.computeTimeDelta(&td, since: previousMessage)
+
+        var res = ""
+
+        if td.tv_sec != 0 {
+
+            let hrs = td.tv_sec / 3600
+            let mn = (td.tv_sec % 3600) / 60
+            let s = (td.tv_sec % 60)
+            let ms = td.tv_usec / 1000
+
+            if hrs != 0 {
+                res = String(format:"+%dh %dmn %d.%03ds", hrs, mn, s, ms)
+            } else if mn != 0 {
+                res = String(format:"+%dmn %d.%03ds", mn, s, ms)
+            } else if s != 0 {
+                if ms != 0 {
+                    res = String(format:"+%d.%03ds", s, ms)
+                } else {
+                    res = String(format:"+%ds", s)
+                }
+            }
+
         }
 
         return res
@@ -149,12 +181,18 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         case "TIMESTAMP":
             var timeStampCellView = tableView.makeViewWithIdentifier(identifier!, owner: self) as? LoggerMessageCellViewTimeStamp
             timeStampCellView?.timestamp.stringValue = timestampString(message.timestamp)
+            if row > 0 {
+                timeStampCellView?.timeOffset.stringValue = timeOffsetStringFromMessage(message, previousMessage: messages[row - 1])
+            } else {
+                timeStampCellView?.timeOffset.stringValue = ""
+            }
             tableCellView = timeStampCellView
 
         case "SENDER_ID":
             var senderIdCellView = tableView.makeViewWithIdentifier(identifier!, owner: self) as? LoggerMessageCellViewThreadId
             senderIdCellView?.threadName.stringValue = message.threadID
-            senderIdCellView?.messageTag.stringValue = "\(message.type) \(message.level)"
+            senderIdCellView?.messageTag.stringValue = "\(message.tag) \(message.level)"
+            // senderIdCellView?.messageTag.backgroundColor = NSColor.grayColor()
             tableCellView = senderIdCellView
 
         case "MESSAGE_CONTENT":
