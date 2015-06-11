@@ -60,11 +60,15 @@
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="image" translatesAutoresizingMaskIntoConstraints="NO" id="dJV-ON-tcL">
                                 <rect key="frame" x="233" y="179" width="119" height="76"/>
                             </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JMM-lK-Rqu">
+                                <rect key="frame" x="35" y="351" width="240" height="128"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <connections>
                         <outlet property="imageView" destination="dJV-ON-tcL" id="Bld-c2-hSb"/>
+                        <outlet property="testImageView" destination="JMM-lK-Rqu" id="NKy-Ze-uVX"/>
                         <outlet property="textField" destination="5W8-73-Qbi" id="IBv-35-JJL"/>
                     </connections>
                 </viewController>

@@ -16,6 +16,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var testImageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,15 +54,18 @@ class ViewController: UIViewController {
 
     @IBAction func logImage(sender: AnyObject) {
 
-        var layer = view.layer
-
-
-
         if let image = imageView.image {
-            let dataProvider = CGImageGetDataProvider(image.CGImage)
-            let data = CGDataProviderCopyData(dataProvider) as NSData
+
+            let data = UIImagePNGRepresentation(image)
 
             SwiftLoggerClient.logImageData(domain: domain, level: 1, width:Int32(image.size.width), height:Int32(image.size.height), data: data)
+
+            if let testImage = UIImage(data: data) {
+                testImageView.image = testImage
+            } else {
+                NSLog("testImage nil")
+            }
+
         } else {
 
             let alert = UIAlertView(title: "no image", message: "imageView is empty ?", delegate: nil, cancelButtonTitle: nil)
