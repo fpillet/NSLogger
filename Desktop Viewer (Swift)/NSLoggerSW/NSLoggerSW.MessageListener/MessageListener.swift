@@ -52,6 +52,10 @@ class MessageListener: NSObject, MessageListenerProtocol, LoggerTransportDelegat
 
     }
 
+    deinit {
+        stopListener()
+    }
+
     func startStopTransports() {
         for transport in transports {
             if let t = transport as? LoggerNativeTransport {
