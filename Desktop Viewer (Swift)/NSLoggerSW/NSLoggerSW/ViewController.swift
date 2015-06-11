@@ -18,6 +18,13 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     var messages = [LoggerMessage]()
 
+    var filterSets:[[String:AnyObject]]!
+    var filterSortDescriptors:[NSSortDescriptor]!
+
+    @IBOutlet var filterSetsArrayController: NSArrayController!
+    @IBOutlet var filtersArrayController: NSArrayController!
+    @IBOutlet weak var filterSetsTableView: NSTableView!
+    @IBOutlet weak var filtersTableView: NSTableView!
     @IBOutlet weak var messagesTableView: NSTableView!
 
     override func viewDidLoad() {
@@ -25,6 +32,12 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
         // Do any additional setup after loading the view.
 
+        let appDelegate = NSApplication.sharedApplication().delegate as! AppDelegate
+
+        filterSets = appDelegate.filterSets
+        filterSortDescriptors = appDelegate.filterSortDescriptors
+
+        filterSetsArrayController.content = filterSets // refresh content of array controller
 
         // Setup XPC service
         //
@@ -162,7 +175,13 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     // MARK: NSTableView dataSource & delegate
 
     func numberOfRowsInTableView(aTableView: NSTableView) -> Int {
-        return messages.count
+
+        if aTableView == messagesTableView {
+            return messages.count
+        } else {
+            NSLog("numberOfRowsInTableView : called for another tableView")
+            return 0
+        }
     }
 
     func tableView(tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
