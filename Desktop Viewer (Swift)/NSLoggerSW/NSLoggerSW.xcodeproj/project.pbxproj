@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF09B8991B2B241B008D275D /* LoggerMessageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF09B8981B2B241B008D275D /* LoggerMessageStore.swift */; };
 		AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C244E1AED5F40001881DE /* LoggerNativeMessage.m */; };
 		AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C240B1AE7F7E2001881DE /* Synchronize.swift */; };
 		AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
@@ -72,6 +73,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AF09B8981B2B241B008D275D /* LoggerMessageStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageStore.swift; sourceTree = "<group>"; };
 		AF3F5C4E1AFE539600375CA0 /* MessageListener.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = MessageListener.entitlements; sourceTree = SOURCE_ROOT; };
 		AF6C24091AE7ED74001881DE /* LoggerMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessage.swift; sourceTree = "<group>"; };
 		AF6C240B1AE7F7E2001881DE /* Synchronize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Synchronize.swift; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				AF6C240B1AE7F7E2001881DE /* Synchronize.swift */,
 				AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */,
 				AFF594C01AE5AC4F00592595 /* ViewController.swift */,
+				AF09B8981B2B241B008D275D /* LoggerMessageStore.swift */,
 				AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */,
 				AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */,
 				AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */,
@@ -489,6 +492,7 @@
 				AF8B35EA1B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift in Sources */,
 				AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */,
 				AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */,
+				AF09B8991B2B241B008D275D /* LoggerMessageStore.swift in Sources */,
 				AF6C24C11AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift in Sources */,
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,

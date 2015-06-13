@@ -16,7 +16,9 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     var messageListener:MessageListenerXPC?
     var messageListenerConnection:NSXPCConnection?
 
-    var messages = [LoggerMessage]()
+//    var messages = [LoggerMessage]()
+
+    var messageStore = LoggerMessageStore()
 
     var filterSets:[[String:AnyObject]]!
     var filterSortDescriptors:[NSSortDescriptor]!
@@ -64,18 +66,30 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         messageListener!.messageSignal = aSignal
         messageListener!.sink = aSink
 
-        messageListener!.messageSignal!.observe(next: { message in
+        messageStore.observeMessagesSignal(messageListener!.messageSignal!)
 
-            self.messageCounter++
+        // handle new arriving message
+        messageStore.newMessageSignal!.observe(next: { self.messagesTableView.insertRowsAtIndexes($0, withAnimation: NSTableViewAnimationOptions.SlideUp) })
 
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                self.messages.append(message)
-//                self.messagesTableView.reloadData()
-                let lastIndexSet = NSIndexSet(index: (self.messages.count - 1))
-                self.messagesTableView.insertRowsAtIndexes(lastIndexSet, withAnimation: NSTableViewAnimationOptions.SlideUp)
-            })
-
+        // handle filter change
+        messageStore.refreshSignal.observe(next: { _ in
+            NSLog("refresh : reloading data")
+            self.messagesTableView.reloadData()
         })
+
+        // old implementation, keeping momentarily for reference
+        //
+//        messageListener!.messageSignal!.observe(next: { message in
+//
+//            self.messageCounter++
+//
+//            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+//                self.messages.append(message)
+////                self.messagesTableView.reloadData()
+//                let lastIndexSet = NSIndexSet(index: (self.messages.count - 1))
+//                self.messagesTableView.insertRowsAtIndexes(lastIndexSet, withAnimation: NSTableViewAnimationOptions.SlideUp)
+//            })
+//        })
 
     }
 
@@ -177,7 +191,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
     func numberOfRowsInTableView(aTableView: NSTableView) -> Int {
 
         if aTableView == messagesTableView {
-            return messages.count
+            return messageStore.displayedMessages.count
         } else {
             NSLog("numberOfRowsInTableView : called for another tableView")
             return 0
@@ -190,7 +204,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     func tableView(tableView: NSTableView, viewForTableColumn tableColumn: NSTableColumn?, row: Int) -> NSView? {
 
-        let message = messages[row]
+        let message = messageStore.displayedMessages[row]
 
         var tableCellView:NSTableCellView?
 
@@ -201,7 +215,7 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
             var timeStampCellView = tableView.makeViewWithIdentifier(identifier!, owner: self) as? LoggerMessageCellViewTimeStamp
             timeStampCellView?.timestamp.stringValue = timestampString(message.timestamp)
             if row > 0 {
-                timeStampCellView?.timeOffset.stringValue = timeOffsetStringFromMessage(message, previousMessage: messages[row - 1])
+                timeStampCellView?.timeOffset.stringValue = timeOffsetStringFromMessage(message, previousMessage: messageStore.displayedMessages[row - 1])
             } else {
                 timeStampCellView?.timeOffset.stringValue = ""
             }
@@ -227,6 +241,16 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         return tableCellView
     }
 
+
+    // MARK: Filters Table Views
+
+    @IBAction func filtersTableViewClicked(sender: NSTableView) {
+        NSLog("Filters Table View clicked row \(sender.clickedRow)")
+    }
+
+    @IBAction func filterSetsTableViewClicked(sender: NSTableView) {
+        NSLog("Filter Sets Table View clicked row \(sender.clickedRow)")
+    }
 
     // MARK: Utilities
 

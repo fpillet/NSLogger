@@ -921,6 +921,7 @@
                                                 </tableColumn>
                                             </tableColumns>
                                             <connections>
+                                                <action selector="filterSetsTableViewClicked:" target="5gI-5U-AMq" id="phH-Yc-AY8"/>
                                                 <binding destination="CeB-uw-6d6" name="content" keyPath="arrangedObjects" id="fN5-T3-We7"/>
                                             </connections>
                                         </tableView>
@@ -994,6 +995,7 @@
                                                 </tableColumn>
                                             </tableColumns>
                                             <connections>
+                                                <action selector="filtersTableViewClicked:" target="5gI-5U-AMq" id="kcY-cr-sBd"/>
                                                 <binding destination="48S-XF-ycb" name="content" keyPath="arrangedObjects" id="h7K-Hq-TTy"/>
                                             </connections>
                                         </tableView>
