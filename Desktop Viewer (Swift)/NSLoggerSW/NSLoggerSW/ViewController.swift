@@ -69,7 +69,12 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
         messageStore.observeMessagesSignal(messageListener!.messageSignal!)
 
         // handle new arriving message
-        messageStore.newMessageSignal!.observe(next: { self.messagesTableView.insertRowsAtIndexes($0, withAnimation: NSTableViewAnimationOptions.SlideUp) })
+        messageStore.newMessageSignal!.observe(next: {
+            message in
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                self.messagesTableView.insertRowsAtIndexes(message, withAnimation: NSTableViewAnimationOptions.SlideUp)
+            })
+        })
 
         // handle filter change
         messageStore.refreshSignal.observe(next: { _ in
