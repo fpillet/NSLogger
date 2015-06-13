@@ -11,8 +11,6 @@
 		AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C244E1AED5F40001881DE /* LoggerNativeMessage.m */; };
 		AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6C240B1AE7F7E2001881DE /* Synchronize.swift */; };
 		AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C245F1AF046F6001881DE /* PrefConstants.m */; };
-		AF6C24681AF386EC001881DE /* LlamaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6C24661AF386EC001881DE /* LlamaKit.framework */; };
-		AF6C24691AF386EC001881DE /* ReactiveCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */; };
 		AF6C24B01AF592A7001881DE /* MessageListener.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = AF6C24A41AF592A7001881DE /* MessageListener.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AF6C24B41AF592C7001881DE /* LoggerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24461AED5F40001881DE /* LoggerConnection.m */; };
 		AF6C24B51AF592C7001881DE /* LoggerIPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = AF6C24481AED5F40001881DE /* LoggerIPConnection.m */; };
@@ -33,6 +31,14 @@
 		AF7BE3971B1C677A0007496C /* LoggerMessageCellViewThreadId.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */; };
 		AF7BE3991B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */; };
 		AF8B35EA1B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */; };
+		AFA8AD551B2CF17D0081F0FA /* Box.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD511B2CF17D0081F0FA /* Box.framework */; };
+		AFA8AD561B2CF17D0081F0FA /* Box.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD511B2CF17D0081F0FA /* Box.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AFA8AD571B2CF17D0081F0FA /* LlamaKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */; };
+		AFA8AD581B2CF17D0081F0FA /* LlamaKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AFA8AD591B2CF17D0081F0FA /* ReactiveCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */; };
+		AFA8AD5A1B2CF17D0081F0FA /* ReactiveCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AFA8AD5B1B2CF17D0081F0FA /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD541B2CF17D0081F0FA /* Result.framework */; };
+		AFA8AD5C1B2CF17D0081F0FA /* Result.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD541B2CF17D0081F0FA /* Result.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -70,6 +76,20 @@
 			name = "Embed XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AFA8AD501B2CF1270081F0FA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AFA8AD561B2CF17D0081F0FA /* Box.framework in Embed Frameworks */,
+				AFA8AD5A1B2CF17D0081F0FA /* ReactiveCocoa.framework in Embed Frameworks */,
+				AFA8AD581B2CF17D0081F0FA /* LlamaKit.framework in Embed Frameworks */,
+				AFA8AD5C1B2CF17D0081F0FA /* Result.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -100,8 +120,6 @@
 		AF6C245F1AF046F6001881DE /* PrefConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrefConstants.m; sourceTree = "<group>"; };
 		AF6C24611AF0EB16001881DE /* EncryptionCertificateLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncryptionCertificateLoader.h; sourceTree = "<group>"; };
 		AF6C24621AF0EB16001881DE /* EncryptionCertificateLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncryptionCertificateLoader.m; sourceTree = "<group>"; };
-		AF6C24661AF386EC001881DE /* LlamaKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LlamaKit.framework; path = Carthage/Build/Mac/LlamaKit.framework; sourceTree = "<group>"; };
-		AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveCocoa.framework; path = Carthage/Build/Mac/ReactiveCocoa.framework; sourceTree = "<group>"; };
 		AF6C24811AF57B4F001881DE /* NSLoggerSW.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = NSLoggerSW.entitlements; sourceTree = "<group>"; };
 		AF6C24A41AF592A7001881DE /* MessageListener.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = MessageListener.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF6C24A71AF592A7001881DE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -113,6 +131,10 @@
 		AF7BE3961B1C677A0007496C /* LoggerMessageCellViewThreadId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewThreadId.swift; sourceTree = "<group>"; };
 		AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewMessageContent.swift; sourceTree = "<group>"; };
 		AF8B35E91B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoggerMessageCellViewTimeStamp.swift; sourceTree = "<group>"; };
+		AFA8AD511B2CF17D0081F0FA /* Box.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Box.framework; path = Carthage/Build/Mac/Box.framework; sourceTree = "<group>"; };
+		AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LlamaKit.framework; path = Carthage/Build/Mac/LlamaKit.framework; sourceTree = "<group>"; };
+		AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveCocoa.framework; path = Carthage/Build/Mac/ReactiveCocoa.framework; sourceTree = "<group>"; };
+		AFA8AD541B2CF17D0081F0FA /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = Carthage/Build/Mac/Result.framework; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -138,8 +160,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF6C24681AF386EC001881DE /* LlamaKit.framework in Frameworks */,
-				AF6C24691AF386EC001881DE /* ReactiveCocoa.framework in Frameworks */,
+				AFA8AD551B2CF17D0081F0FA /* Box.framework in Frameworks */,
+				AFA8AD591B2CF17D0081F0FA /* ReactiveCocoa.framework in Frameworks */,
+				AFA8AD571B2CF17D0081F0FA /* LlamaKit.framework in Frameworks */,
+				AFA8AD5B1B2CF17D0081F0FA /* Result.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,8 +205,6 @@
 		AF6C246B1AF38AF2001881DE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AF6C24661AF386EC001881DE /* LlamaKit.framework */,
-				AF6C24671AF386EC001881DE /* ReactiveCocoa.framework */,
 			);
 			name = Frameworks;
 			path = ..;
@@ -231,6 +253,10 @@
 		AFF594B01AE5AC4E00592595 = {
 			isa = PBXGroup;
 			children = (
+				AFA8AD511B2CF17D0081F0FA /* Box.framework */,
+				AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */,
+				AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */,
+				AFA8AD541B2CF17D0081F0FA /* Result.framework */,
 				AFF594BB1AE5AC4F00592595 /* NSLoggerSW */,
 				AFF594D01AE5AC4F00592595 /* NSLoggerSWTests */,
 				AF6C24A51AF592A7001881DE /* MessageListener */,
@@ -330,6 +356,7 @@
 				AFF594B71AE5AC4E00592595 /* Resources */,
 				AF6C246A1AF38779001881DE /* ShellScript */,
 				AF6C247C1AF57788001881DE /* Embed XPC Services */,
+				AFA8AD501B2CF1270081F0FA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -668,7 +695,6 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
@@ -691,7 +717,6 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
