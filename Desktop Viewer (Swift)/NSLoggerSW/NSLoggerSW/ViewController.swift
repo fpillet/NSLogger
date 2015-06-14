@@ -78,8 +78,10 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
         // handle filter change
         messageStore.refreshSignal.observe(next: { _ in
-            NSLog("refresh : reloading data")
-            self.messagesTableView.reloadData()
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                NSLog("refresh : reloading data")
+                self.messagesTableView.reloadData()
+            })
         })
 
         // old implementation, keeping momentarily for reference
@@ -251,12 +253,28 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 
     @IBAction func filtersTableViewClicked(sender: NSTableView) {
         NSLog("Filters Table View clicked row \(sender.clickedRow)")
+
+        let selectedFilterSet:[[String:AnyObject]]
+
+        if filterSetsArrayController.selectedObjects.count > 0 {
+            selectedFilterSet = filterSetsArrayController.selectedObjects[0]["filters"] as! [[String:AnyObject]]
+        } else {
+            selectedFilterSet = filterSets[0]["filters"] as! [[String:AnyObject]]
+        }
+
+        let newPredicateDesc = selectedFilterSet[sender.clickedRow]
+
+        let newPredicate = newPredicateDesc["predicate"] as! NSPredicate
+
+        messageStore.filterPredicate = newPredicate
+
     }
 
     @IBAction func filterSetsTableViewClicked(sender: NSTableView) {
         NSLog("Filter Sets Table View clicked row \(sender.clickedRow)")
     }
 
+    
     // MARK: Utilities
 
     let MAX_DATA_LINES = 16
