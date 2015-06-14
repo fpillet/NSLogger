@@ -657,17 +657,11 @@
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
                         <toolbar key="toolbar" implicitIdentifier="F63803E4-6518-44DB-BFC2-6D6BF7084ECC" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="iHW-wg-HCj">
                             <allowedToolbarItems>
-                                <toolbarItem implicitItemIdentifier="NSToolbarShowColorsItem" id="1CL-Y4-d4m"/>
-                                <toolbarItem implicitItemIdentifier="NSToolbarShowFontsItem" id="MK4-i8-znZ"/>
-                                <toolbarItem implicitItemIdentifier="NSToolbarPrintItem" id="Xyh-vM-FSx"/>
                                 <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="ebt-UU-giq"/>
                                 <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="UHe-dY-W2s"/>
                             </allowedToolbarItems>
                             <defaultToolbarItems>
-                                <toolbarItem reference="1CL-Y4-d4m"/>
-                                <toolbarItem reference="MK4-i8-znZ"/>
                                 <toolbarItem reference="UHe-dY-W2s"/>
-                                <toolbarItem reference="Xyh-vM-FSx"/>
                             </defaultToolbarItems>
                         </toolbar>
                     </window>
@@ -858,7 +852,7 @@
                                     </subviews>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
-                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="YES" id="KAw-tD-OdZ">
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="KAw-tD-OdZ">
                                     <rect key="frame" x="1" y="117.88611376285553" width="238" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -872,7 +866,7 @@
                                 </tableHeaderView>
                             </scrollView>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fj0-8P-y8e" userLabel="Filter Sets Table View">
-                                <rect key="frame" x="0.0" y="380" width="183" height="220"/>
+                                <rect key="frame" x="0.0" y="400" width="183" height="200"/>
                                 <clipView key="contentView" id="bFm-oU-Xpv">
                                     <rect key="frame" x="1" y="17" width="238" height="117"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -929,7 +923,7 @@
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="220" id="FhM-w3-XsD"/>
+                                    <constraint firstAttribute="height" constant="200" id="FhM-w3-XsD"/>
                                     <constraint firstAttribute="width" constant="183" id="sgY-yw-ppY"/>
                                 </constraints>
                                 <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="bzy-WB-SI8">
@@ -946,7 +940,7 @@
                                 </tableHeaderView>
                             </scrollView>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M3a-gt-guD" userLabel="Filters Table View">
-                                <rect key="frame" x="0.0" y="0.0" width="183" height="372"/>
+                                <rect key="frame" x="0.0" y="0.0" width="183" height="392"/>
                                 <clipView key="contentView" id="YNG-h8-nUT">
                                     <rect key="frame" x="1" y="17" width="238" height="117"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
