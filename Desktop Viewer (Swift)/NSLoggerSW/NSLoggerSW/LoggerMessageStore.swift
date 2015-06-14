@@ -37,7 +37,7 @@ class LoggerMessageStore: NSObject {
                     // short version
                     self.displayedMessages = self.messages.filter() { fp.evaluateWithObject($0) }
 
-                    sendNext(self.refreshSignalSink, 0) // signal completion of filtering
+                    sendNext(self.refreshSignalSink, 0) // signal completion of filtering of previous messages with the new filter
                 })
 
             } else {
@@ -47,10 +47,13 @@ class LoggerMessageStore: NSObject {
         }
     }
 
-    lazy var signalFilter: (LoggerMessage) -> Bool = { [unowned self, weak filterPredicate = self.filterPredicate] (message:LoggerMessage) in
-        if let fp = filterPredicate {
-            return fp.evaluateWithObject(message)
+    lazy var signalFilter: (LoggerMessage) -> Bool = { [unowned self] (message:LoggerMessage) in
+        if let fp = self.filterPredicate {
+            let r = fp.evaluateWithObject(message)
+            NSLog("signalFilter : r = %d", r)
+            return r
         } else {
+            NSLog("signalFilter : no filter")
             return true
         }
     }
