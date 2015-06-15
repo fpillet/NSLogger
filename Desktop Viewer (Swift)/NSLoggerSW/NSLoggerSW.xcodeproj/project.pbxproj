@@ -205,6 +205,10 @@
 		AF6C246B1AF38AF2001881DE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */,
+				AFA8AD541B2CF17D0081F0FA /* Result.framework */,
+				AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */,
+				AFA8AD511B2CF17D0081F0FA /* Box.framework */,
 			);
 			name = Frameworks;
 			path = ..;
@@ -253,10 +257,6 @@
 		AFF594B01AE5AC4E00592595 = {
 			isa = PBXGroup;
 			children = (
-				AFA8AD511B2CF17D0081F0FA /* Box.framework */,
-				AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */,
-				AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */,
-				AFA8AD541B2CF17D0081F0FA /* Result.framework */,
 				AFF594BB1AE5AC4F00592595 /* NSLoggerSW */,
 				AFF594D01AE5AC4F00592595 /* NSLoggerSWTests */,
 				AF6C24A51AF592A7001881DE /* MessageListener */,
