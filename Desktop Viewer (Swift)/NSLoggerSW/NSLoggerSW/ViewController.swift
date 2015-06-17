@@ -98,11 +98,21 @@ class ViewController: NSViewController, NSTableViewDataSource, NSTableViewDelega
 //            })
 //        })
 
+
+    }
+
+    override func viewWillAppear() {
+        if let windowController = view.window?.windowController() as? NSWindowController {
+            representedObject = windowController.document
+        } else {
+            NSLog("ViewController.viewDidLoad : no document")
+        }
     }
 
     override var representedObject: AnyObject? {
         didSet {
         // Update the view, if already loaded.
+            NSLog("viewController representedObject : \(representedObject)")
         }
     }
 

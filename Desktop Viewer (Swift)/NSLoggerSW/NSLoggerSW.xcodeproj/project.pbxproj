@@ -39,6 +39,10 @@
 		AFA8AD5A1B2CF17D0081F0FA /* ReactiveCocoa.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AFA8AD5B1B2CF17D0081F0FA /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD541B2CF17D0081F0FA /* Result.framework */; };
 		AFA8AD5C1B2CF17D0081F0FA /* Result.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AFA8AD541B2CF17D0081F0FA /* Result.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AFA8AD5E1B2F256E0081F0FA /* PreferencesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA8AD5D1B2F256E0081F0FA /* PreferencesViewController.swift */; };
+		AFA8AD601B2F29310081F0FA /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA8AD5F1B2F29310081F0FA /* PreferencesWindowController.swift */; };
+		AFA8AD651B3076930081F0FA /* ContainerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA8AD631B3076930081F0FA /* ContainerViewController.swift */; };
+		AFA8AD661B3076930081F0FA /* CrossfadeStoryboardSegue.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA8AD641B3076930081F0FA /* CrossfadeStoryboardSegue.swift */; };
 		AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */; };
 		AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C01AE5AC4F00592595 /* ViewController.swift */; };
 		AFF594C31AE5AC4F00592595 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF594C21AE5AC4F00592595 /* Document.swift */; };
@@ -135,6 +139,10 @@
 		AFA8AD521B2CF17D0081F0FA /* LlamaKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LlamaKit.framework; path = Carthage/Build/Mac/LlamaKit.framework; sourceTree = "<group>"; };
 		AFA8AD531B2CF17D0081F0FA /* ReactiveCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveCocoa.framework; path = Carthage/Build/Mac/ReactiveCocoa.framework; sourceTree = "<group>"; };
 		AFA8AD541B2CF17D0081F0FA /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = Carthage/Build/Mac/Result.framework; sourceTree = "<group>"; };
+		AFA8AD5D1B2F256E0081F0FA /* PreferencesViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesViewController.swift; sourceTree = "<group>"; };
+		AFA8AD5F1B2F29310081F0FA /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
+		AFA8AD631B3076930081F0FA /* ContainerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContainerViewController.swift; path = "Third Party/ContainerViewController.swift"; sourceTree = "<group>"; };
+		AFA8AD641B3076930081F0FA /* CrossfadeStoryboardSegue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrossfadeStoryboardSegue.swift; path = "Third Party/CrossfadeStoryboardSegue.swift"; sourceTree = "<group>"; };
 		AFF594B91AE5AC4F00592595 /* NSLoggerSW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLoggerSW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFF594BD1AE5AC4F00592595 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AFF594BE1AE5AC4F00592595 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -254,6 +262,15 @@
 			path = NSLoggerSW.MessageListener;
 			sourceTree = "<group>";
 		};
+		AFA8AD671B307F510081F0FA /* Third Party */ = {
+			isa = PBXGroup;
+			children = (
+				AFA8AD631B3076930081F0FA /* ContainerViewController.swift */,
+				AFA8AD641B3076930081F0FA /* CrossfadeStoryboardSegue.swift */,
+			);
+			name = "Third Party";
+			sourceTree = "<group>";
+		};
 		AFF594B01AE5AC4E00592595 = {
 			isa = PBXGroup;
 			children = (
@@ -278,6 +295,7 @@
 		AFF594BB1AE5AC4F00592595 /* NSLoggerSW */ = {
 			isa = PBXGroup;
 			children = (
+				AFA8AD671B307F510081F0FA /* Third Party */,
 				AF6C24811AF57B4F001881DE /* NSLoggerSW.entitlements */,
 				AF6C245E1AF046C5001881DE /* PrefConstants.h */,
 				AF6C245F1AF046F6001881DE /* PrefConstants.m */,
@@ -293,6 +311,8 @@
 				AF7BE3981B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift */,
 				AF6C24CA1AF63441001881DE /* MessageListenerXPC.swift */,
 				AFF594C21AE5AC4F00592595 /* Document.swift */,
+				AFA8AD5F1B2F29310081F0FA /* PreferencesWindowController.swift */,
+				AFA8AD5D1B2F256E0081F0FA /* PreferencesViewController.swift */,
 				AFF594C41AE5AC4F00592595 /* Images.xcassets */,
 				AFF594C61AE5AC4F00592595 /* Main.storyboard */,
 				AF6C246B1AF38AF2001881DE /* Frameworks */,
@@ -514,17 +534,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFA8AD661B3076930081F0FA /* CrossfadeStoryboardSegue.swift in Sources */,
 				AFF594C11AE5AC4F00592595 /* ViewController.swift in Sources */,
 				AF7BE3971B1C677A0007496C /* LoggerMessageCellViewThreadId.swift in Sources */,
 				AF8B35EA1B1AFEA100C2DAE6 /* LoggerMessageCellViewTimeStamp.swift in Sources */,
 				AFF594BF1AE5AC4F00592595 /* AppDelegate.swift in Sources */,
 				AF47786B1B05E4B900DBD7BF /* LoggerNativeMessage.m in Sources */,
+				AFA8AD5E1B2F256E0081F0FA /* PreferencesViewController.swift in Sources */,
 				AF09B8991B2B241B008D275D /* LoggerMessageStore.swift in Sources */,
 				AF6C24C11AF61FF4001881DE /* NSLoggerSW_MessageListenerProtocol.swift in Sources */,
 				AF6C240C1AE7F7E2001881DE /* Synchronize.swift in Sources */,
 				AFF594C31AE5AC4F00592595 /* Document.swift in Sources */,
+				AFA8AD651B3076930081F0FA /* ContainerViewController.swift in Sources */,
 				AF7BE3991B1C67A90007496C /* LoggerMessageCellViewMessageContent.swift in Sources */,
 				AF6C24CB1AF63441001881DE /* MessageListenerXPC.swift in Sources */,
+				AFA8AD601B2F29310081F0FA /* PreferencesWindowController.swift in Sources */,
 				AF6C24601AF046F6001881DE /* PrefConstants.m in Sources */,
 				AF6C24D11AFAC5FF001881DE /* LoggerMessage.m in Sources */,
 			);

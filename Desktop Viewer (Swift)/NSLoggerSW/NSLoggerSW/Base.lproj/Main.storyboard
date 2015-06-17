@@ -21,7 +21,11 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
-                                        <menuItem title="Preferences…" keyEquivalent="," id="BOF-NM-1cW"/>
+                                        <menuItem title="Preferences…" keyEquivalent="," id="BOF-NM-1cW">
+                                            <connections>
+                                                <segue destination="p22-FZ-bUT" kind="show" id="AP8-L9-Wgg"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
                                         <menuItem title="Services" id="NMo-om-nkz">
                                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -673,6 +677,111 @@
             </objects>
             <point key="canvasLocation" x="172" y="403"/>
         </scene>
+        <!--Preferences Window Controller-->
+        <scene sceneID="dXy-6m-gfn">
+            <objects>
+                <windowController id="p22-FZ-bUT" userLabel="Preferences Window Controller" customClass="PreferencesWindowController" customModule="NSLoggerSW" customModuleProvider="target" sceneMemberID="viewController">
+                    <window key="window" title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="alq-uG-g90">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="294" y="362" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1177"/>
+                        <toolbar key="toolbar" implicitIdentifier="51BAAA62-688A-4207-AE70-95235CEAB17B" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="GgE-vS-jOn">
+                            <allowedToolbarItems>
+                                <toolbarItem implicitItemIdentifier="NSToolbarShowColorsItem" id="4BA-8X-yML"/>
+                                <toolbarItem implicitItemIdentifier="NSToolbarShowFontsItem" id="Bgt-fU-x8g"/>
+                                <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="sNM-dJ-TcI"/>
+                                <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="EIC-Wr-jUI"/>
+                                <toolbarItem implicitItemIdentifier="83BD2DCA-5AAB-452B-BD66-F06AD0A78F22" explicitItemIdentifier="General" label="General" paletteLabel="General" tag="-1" image="NSPreferencesGeneral" selectable="YES" id="709-Xb-RKF">
+                                    <connections>
+                                        <segue destination="kec-bN-BfY" kind="custom" customClass="CrossfadeStoryboardSegue" customModule="NSLoggerSW" customModuleProvider="target" id="kfo-TK-HrW"/>
+                                    </connections>
+                                </toolbarItem>
+                                <toolbarItem implicitItemIdentifier="9443D559-D659-4D2E-BC8E-0CAB3AFC8462" label="Network" paletteLabel="Network" tag="-1" image="NSNetwork" id="yMn-PV-egL">
+                                    <connections>
+                                        <segue destination="s2g-8j-e6b" kind="custom" customClass="CrossfadeStoryboardSegue" customModule="NSLoggerSW" customModuleProvider="target" id="iQy-OS-Sag"/>
+                                    </connections>
+                                </toolbarItem>
+                            </allowedToolbarItems>
+                            <defaultToolbarItems>
+                                <toolbarItem reference="709-Xb-RKF"/>
+                                <toolbarItem reference="yMn-PV-egL"/>
+                                <toolbarItem reference="4BA-8X-yML"/>
+                                <toolbarItem reference="Bgt-fU-x8g"/>
+                                <toolbarItem reference="EIC-Wr-jUI"/>
+                            </defaultToolbarItems>
+                            <connections>
+                                <outlet property="window" destination="alq-uG-g90" id="Rim-Og-6CC"/>
+                            </connections>
+                        </toolbar>
+                    </window>
+                    <connections>
+                        <segue destination="5SO-Ko-U3n" kind="relationship" relationship="window.shadowedContentViewController" id="V3e-04-NJk"/>
+                    </connections>
+                </windowController>
+                <customObject id="Cks-wr-rKU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="976" y="-278"/>
+        </scene>
+        <!--Container View Controller-->
+        <scene sceneID="huC-9g-r2s">
+            <objects>
+                <viewController id="5SO-Ko-U3n" customClass="ContainerViewController" customModule="NSLoggerSW" sceneMemberID="viewController">
+                    <view key="view" id="Nlx-1i-bSE">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </view>
+                </viewController>
+                <customObject id="ztZ-B9-NVk" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1803" y="-278"/>
+        </scene>
+        <!--General Prefs Panel-->
+        <scene sceneID="y2y-P1-Law">
+            <objects>
+                <viewController storyboardIdentifier="GeneralPreferencesPanel" id="kec-bN-BfY" userLabel="General Prefs Panel" sceneMemberID="viewController">
+                    <view key="view" id="Jnu-TZ-syY">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CbE-R9-WDw">
+                                <rect key="frame" x="64" y="175" width="213" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Some general prefs" id="O4P-7S-cjo">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                    </view>
+                </viewController>
+                <customObject id="6cN-vU-16y" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1409" y="397"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="7Xw-Nm-v71">
+            <objects>
+                <viewController id="s2g-8j-e6b" sceneMemberID="viewController">
+                    <view key="view" id="A32-oq-oAN">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xNX-yp-4PP">
+                                <rect key="frame" x="65" y="168" width="233" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Some network prefs" id="vGg-UC-4PS">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                    </view>
+                </viewController>
+                <customObject id="RGK-zX-5f5" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1938" y="391"/>
+        </scene>
         <!--View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
@@ -1047,4 +1156,8 @@
             <point key="canvasLocation" x="314.5" y="1307"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="NSNetwork" width="32" height="32"/>
+        <image name="NSPreferencesGeneral" width="32" height="32"/>
+    </resources>
 </document>
