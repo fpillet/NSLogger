@@ -350,7 +350,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (NSColor *)colorForMessage:(LoggerMessage *)message
 {
     /* `description` is supposed to be used just for debugging...exactly the main purpose of NSLogger */
-    return [self colorForString:[message description]];
+    return [self colorForString:[message message]];
 }
 
 #pragma mark -

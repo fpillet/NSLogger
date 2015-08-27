@@ -314,6 +314,7 @@ static NSMutableArray *sTags = nil;
 	td->tv_usec = (__darwin_suseconds_t)((t - (double)td->tv_sec) * 1000000.0);
 }
 
+#ifdef DEBUG
 -(NSString *)description
 {
 	NSString *typeString = ((type == LOGMSG_TYPE_LOG) ? @"Log" :
@@ -334,5 +335,6 @@ static NSMutableArray *sTags = nil;
 	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d message=%@>",
 			[self class], self, sequence, typeString, threadID, tag, (int)level, desc];
 }
+#endif
 
 @end
