@@ -1160,8 +1160,8 @@ static void LoggerStopConsoleRedirection()
 	close(sSTDOUT);
 	close(sSTDERR);
 
-    sSTDOUT = -1;
-    sSTDERR = -1;
+	sSTDOUT = -1;
+	sSTDERR = -1;
     
 	// restore sigpipe flag on standard streams
 	fcntl(STDOUT_FILENO, F_SETNOSIGPIPE, &sSTDOUThadSIGPIPE);
