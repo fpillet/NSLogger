@@ -110,5 +110,5 @@ You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLo
 
 NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
 
-NSLogger is Copyright (c) 2010-2014 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
+NSLogger is Copyright (c) 2010-2015 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
 The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
