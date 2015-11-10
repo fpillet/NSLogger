@@ -16,7 +16,7 @@
 
 **You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki).**
 
-Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wikiNSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
+Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
 
 Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host/port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
 
