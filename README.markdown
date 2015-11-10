@@ -14,19 +14,19 @@
   * Export logs to text files
   * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
 
-**You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki/).**
+**You'll find instructions for use in the [NSLogger wiki](https://github.com/fpillet/NSLogger/wiki).**
 
-Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wiki/NSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
+Your application emits traces using the *NSLogger* [trace APIs](https://github.com/fpillet/NSLogger/wikiNSLogger-API). The desktop viewer application (running on **Mac OS X 10.6 or later**) displays them.
 
 Clients automatically find the logger application running on Mac OS X via Bonjour networking, and can optionally connect to a specific remote host/port. You have no setup to do: just start the logger on your Mac, launch your iOS or Mac OS X application then when your app emits traces, they will automatically show up in *NSLogger* if the viewer is running locally on your network. Until a logger is found, logs are buffered on the client so you don't lose anything.
 
 ![Desktop Viewer (main window)](https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png "Desktop Viewer")
 
 # CocoaPods Install #
-[CocoaPods](http://cocoapods.org) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like AFNetworking in your projects.
+[CocoaPods](https://cocoapods.org/) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like AFNetworking in your projects.
 
 ## Podfile ##
-If your project is configured to use [CocoaPods](http://cocoapods.org), just add this line to your Podfile:
+If your project is configured to use [CocoaPods](https://cocoapods.org/), just add this line to your Podfile:
 
 ```ruby
 pod "NSLogger"
@@ -110,5 +110,5 @@ You'll find documentation in the [NSLogger Wiki](https://github.com/fpillet/NSLo
 
 NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with NSLogger.
 
-NSLogger is Copyright (c) 2010-2014 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://www.opensource.org/licenses/bsd-license.php).
-The NSLogger icon is Copyright (c) [Louis Harboe](http://www.graphicpeel.com)
+NSLogger is Copyright (c) 2010-2014 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php).
+The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
