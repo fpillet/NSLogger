@@ -2124,7 +2124,7 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 					// optimize CPU use by computing the thread name once and storing it back
 					// in the thread dictionary
 					name = [thread description];
-                    NSArray *threadNumberPrefixes = @[ @"num = ", @"number = " ];
+                    NSArray *threadNumberPrefixes = @[@"num = ", @"number = "];
                     NSRange range = NSMakeRange(NSNotFound, 0);
                     
                     for (NSString *threadNumberPrefix in threadNumberPrefixes)
@@ -2137,9 +2137,20 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 					
 					if (range.location != NSNotFound)
 					{
-						name = [NSString stringWithFormat:@"Thread %@",
-														  [name substringWithRange:NSMakeRange(range.location + range.length,
-																							   [name length] - range.location - range.length - 1)]];
+						// iOS and OS X now add a "name = (null)" when thread name unknown. Suppress it.
+						NSRange noNameRange = [name rangeOfString:@", name = (null)" options:(NSLiteralSearch | NSBackwardsSearch)];
+						if (noNameRange.location != NSNotFound)
+						{
+							name = [NSString stringWithFormat:@"Thread %@",
+									[name substringWithRange:NSMakeRange(range.location + range.length,
+																		 noNameRange.location - range.location - range.length)]];
+						}
+						else
+						{
+							name = [NSString stringWithFormat:@"Thread %@",
+									[name substringWithRange:NSMakeRange(range.location + range.length,
+																		 [name length] - range.location - range.length - 1)]];
+						}
 						[threadDict setObject:name forKey:@"__$NSLoggerThreadName$__"];
 					}
                     else
