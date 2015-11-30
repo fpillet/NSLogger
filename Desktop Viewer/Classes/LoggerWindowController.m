@@ -90,6 +90,7 @@ static NSArray *sXcodeFileExtensions = nil;
 - (void)dealloc
 {
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:kMaxTableRowHeight];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
