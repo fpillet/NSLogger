@@ -89,6 +89,8 @@ static NSArray *sXcodeFileExtensions = nil;
 
 - (void)dealloc
 {
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:kMaxTableRowHeight];
+
 	[detailsWindowController release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
