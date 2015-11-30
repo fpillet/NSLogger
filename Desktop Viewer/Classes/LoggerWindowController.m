@@ -216,6 +216,10 @@ static NSArray *sXcodeFileExtensions = nil;
 				 forceUpdate:(BOOL)forceUpdate
 					   group:(dispatch_group_t)group
 {
+	// check for cancellation
+	if (group != NULL && dispatch_get_context(group) == NULL)
+		return;
+
 	NSMutableArray *updatedMessages = [[NSMutableArray alloc] initWithCapacity:[messages count]];
     NSSize maxCellSize = tableSize;
     NSInteger maxRowHeight = [[NSUserDefaults standardUserDefaults] integerForKey:kMaxTableRowHeight];
@@ -279,6 +283,22 @@ static NSArray *sXcodeFileExtensions = nil;
 	[updatedMessages release];
 }
 
+- (void)cancelAsynchronousTiling
+{
+	if (lastTilingGroup != NULL)
+	{
+		dispatch_group_t leaveGroup = lastTilingGroup;
+		dispatch_set_context(leaveGroup, NULL);
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+			// by clearing the context, all further tasks on this group will cancel their work
+			// wait until they all went through cancellation before removing the group
+			dispatch_group_wait(leaveGroup, 0);
+			dispatch_release(leaveGroup);
+		});
+	}
+	lastTilingGroup = NULL;
+}
+
 - (void)tileLogTable:(BOOL)forceUpdate
 {
 	// tile the visible rows (and a bit more) first, then tile all the rest
@@ -296,12 +316,7 @@ static NSArray *sXcodeFileExtensions = nil;
 							 group:NULL];
 	}
 	
-	// cancel previous tiling group
-	if (lastTilingGroup != NULL)
-	{
-		dispatch_set_context(lastTilingGroup, NULL);
-		dispatch_release(lastTilingGroup);
-	}
+	[self cancelAsynchronousTiling];
 	
 	// create new group, set it a non-NULL context to indicate that it is running
 	lastTilingGroup = dispatch_group_create();
