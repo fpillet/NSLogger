@@ -1115,7 +1115,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 			}
 			
 			// output message to grabbers
-			CFStringRef message = CFStringCreateWithBytes(NULL, bytes+offset, pos-offset, kCFStringEncodingUTF8, true);
+			CFStringRef message = CFStringCreateWithBytes(NULL, bytes+offset, pos-offset, kCFStringEncodingUTF8, false);
 			if (message != NULL)
 			{
 				LoggerLogMessageToConsoleGrabbers(tag, message);
@@ -1123,7 +1123,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 			}
 			else
 			{
-				LOGGERDBG(CFSTR("failed extrating string of length %d from fd %d"), pos-offset, fd);
+				LOGGERDBG(CFSTR("failed extracting string of length %d from fd %d"), pos-offset, fd);
 			}
 
 			// drop all newlines and move on
