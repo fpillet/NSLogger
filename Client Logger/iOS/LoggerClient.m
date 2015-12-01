@@ -103,7 +103,7 @@
 // Set to 0 to disable internal debug completely
 // Set to 1 to activate console logs when running the logger itself
 // Set to 2 to see every logging call issued by the app, too
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 2
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -1123,7 +1123,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 			}
 			else
 			{
-				LOGGERDBG("failed extrating strign of length %d from fd %d", pos-offset, fd);
+				LOGGERDBG(CFSTR("failed extrating string of length %d from fd %d"), pos-offset, fd);
 			}
 
 			// drop all newlines and move on
