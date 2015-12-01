@@ -103,7 +103,7 @@
 // Set to 0 to disable internal debug completely
 // Set to 1 to activate console logs when running the logger itself
 // Set to 2 to see every logging call issued by the app, too
-#define LOGGER_DEBUG 2
+#define LOGGER_DEBUG 0
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -1071,10 +1071,8 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 		for(;;)
 		{
 			ssize_t size = read(fd, buffer, kFileDescriptorCaptureBufferSize);
-			if (size <= 0) {
-				break;
-			}
-			CFDataAppendBytes(data, buffer, size);
+			if (size > 0)
+				CFDataAppendBytes(data, buffer, size);
 			if (size < kFileDescriptorCaptureBufferSize)
 				break;
 		}
@@ -1084,7 +1082,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 		{
 			// locate newline
 			const unsigned char *bytes = CFDataGetMutableBytePtr(data);
-			if (bytes == NULL)
+			if (bytes == NULL)	// pointer may be null if data is empty
 				break;
 			NSInteger pos = 0, maxPos = CFDataGetLength(data);
 			while (pos < maxPos)
@@ -1097,7 +1095,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 				break;
 
 			NSUInteger offset = 0;
-			if (pos > 24 + prognameLength + 4)
+			if (pos > 24 + prognameLength + 2)
 			{
 				// detect and remove NSLog header
 				// "yyyy-mm-dd HH:MM:ss.SSS progname[:] "
@@ -1129,7 +1127,7 @@ static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
 			// drop all newlines and move on
 			while (++pos < maxPos && (bytes[pos] == '\n' || bytes[pos] == '\r'))
 				;
-			CFDataReplaceBytes(data, CFRangeMake(0, pos), NULL, 0);
+			CFDataDeleteBytes(data, CFRangeMake(0, pos));
 		}
 	});
 	dispatch_resume(source);
