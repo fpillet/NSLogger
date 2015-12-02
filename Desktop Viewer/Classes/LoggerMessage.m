@@ -103,7 +103,7 @@ static NSMutableArray *sTags = nil;
 				t->tm_hour, t->tm_min, t->tm_sec, timestamp.tv_usec / 1000,
 				(tag == NULL) ? @"-" : tag,
 				threadID,
-				message];
+				s];
 	}
 	
 	NSString *header = [NSString stringWithFormat:@"[%-8lu] %02d:%02d:%02d.%03d | %@ | %@ | ",

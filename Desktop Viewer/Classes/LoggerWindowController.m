@@ -868,7 +868,7 @@ void runSystemCommand(NSString *cmd)
 		NSString *filename = msg.filename;
 		if ([filename length])
 		{
-			NSFileManager *fm = [[NSFileManager alloc] init];
+			NSFileManager *fm = [NSFileManager defaultManager];
 			if ([fm fileExistsAtPath:filename])
 			{
 				// If the file is .h, .m, .c, .cpp, .h, .hpp: open the file
@@ -1057,10 +1057,11 @@ void runSystemCommand(NSString *cmd)
 - (void)filterIncomingMessages:(NSArray *)messages
 {
 	assert([NSThread isMainThread]);
-	NSPredicate *aFilter = filterPredicate;		// catch value now rather than dereference it from self later
+	NSPredicate *aFilter = [filterPredicate retain];		// catch value now rather than dereference it from self later
 	NSSize tableFrameSize = [logTable frame].size;
 	dispatch_async(messageFilteringQueue, ^{
 		[self filterIncomingMessages:(NSArray *)messages withFilter:aFilter tableFrameSize:tableFrameSize];
+		[aFilter release];
 	});
 }
 

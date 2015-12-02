@@ -304,7 +304,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             color = [self colorFromHexRGB:@"#0047AB"];
         } else if ([colorName hasPrefix:@"red"]) {
             color = [self colorFromHexRGB:@"#DC143C"];
-            color = [NSColor redColor];
+//            color = [NSColor redColor];
         } else if ([colorName hasPrefix:@"green"]) {
             color = [self colorFromHexRGB:@"#008000"];
         } else {
@@ -319,10 +319,12 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
         }
         if (color == nil) {
             NSLog(@"** Warning: unexpected color spec '%@'", colorName);
-            continue;
         }
-        color.bold = isBold;
-        [advancedColors setObject:color forKey:regexp];
+		else {
+			color.bold = isBold;
+			[advancedColors setObject:color forKey:regexp];
+		}
+		[regexp release];
     }
 }
 
@@ -378,7 +380,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			[strings addObject:NSLocalizedString(@"Double-click to see all data...", @"")];
 			break;
 		}
-		int i, b = sprintf(buffer,"%04x: ", offset);
+		int i, b = sprintf(buffer,"%04x: ", (int)offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
@@ -806,7 +808,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
 			if (highlightedTextColor == nil)
 				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
-            NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+            NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
             [style setAlignment:NSRightTextAlignment];
             [hintAttrs setObject:style forKey:NSParagraphStyleAttributeName];
 			hint = NSLocalizedString(@"See all...", @"");
