@@ -540,7 +540,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 							NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
 												  NSLocalizedString(@"NSLogger SSL authentication failure", @""), NSLocalizedDescriptionKey,
 												  NSLocalizedString(@"Your NSLogger build may not be codesigned. As a result, a conflict between Firewall and Keychain tagging of your viewer requires that you restart NSLogger to complete the SSL certificate authorization.\n\nRestart NSLogger now to fix the issue.", @""), NSLocalizedRecoverySuggestionErrorKey,
-												  [NSString stringWithFormat:@"CFStream error %d", errCode], NSUnderlyingErrorKey,
+												  [NSString stringWithFormat:@"CFStream error %d", (int)errCode], NSUnderlyingErrorKey,
 												  NSLocalizedString(@"Click the Restart button to restart NSLogger now.", @""), NSLocalizedRecoverySuggestionErrorKey,
 												  [NSArray arrayWithObject:NSLocalizedString(@"Restart", @"")],  NSLocalizedRecoveryOptionsErrorKey,
 												  [NSApp delegate], NSRecoveryAttempterErrorKey,
@@ -656,7 +656,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 								[myself setupSSLForStream:(NSInputStream *)readStream];
 
 							// Create the connection instance
-							[myself addConnection:[myself connectionWithInputStream:readStream clientAddress:address]];
+							[myself addConnection:[myself connectionWithInputStream:(NSInputStream *)readStream clientAddress:(NSData *)address]];
 
 							// Schedule & open stream
 							[(NSInputStream *)readStream setDelegate:myself];

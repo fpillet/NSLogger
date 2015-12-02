@@ -85,12 +85,12 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 #pragma mark -
 #pragma mark NSTableDataSource
 // -----------------------------------------------------------------------------
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [((LoggerAppDelegate *)[NSApp delegate]).transports count];
 }
 
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(int)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
 	if (rowIndex >= 0 && rowIndex < [transports count])
