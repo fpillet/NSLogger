@@ -313,8 +313,11 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             if ([NSColor respondsToSelector:colorSelector]) {
                 color = [NSColor performSelector:colorSelector];
             }
+			else {
+				color = nil;
+			}
         }
-        if (! color) {
+        if (color == nil) {
             NSLog(@"** Warning: unexpected color spec '%@'", colorName);
             continue;
         }
