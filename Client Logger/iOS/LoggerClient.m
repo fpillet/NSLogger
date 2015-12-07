@@ -322,16 +322,28 @@ void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFString
 		logger = LoggerGetDefaultLogger();
 	if (logger != NULL)
 	{
+		BOOL change = ((bonjourServiceName != NULL) != (logger->bonjourServiceName != NULL) ||
+					   (bonjourServiceName != NULL && CFStringCompare(bonjourServiceName, logger->bonjourServiceName, 0) != kCFCompareEqualTo))
+		||			((bonjourServiceType != NULL) != (logger->bonjourServiceType != NULL) ||
+					 (bonjourServiceType != NULL && CFStringCompare(bonjourServiceType, logger->bonjourServiceType, 0) != kCFCompareEqualTo));
+		
 		if (bonjourServiceType != NULL)
 			CFRetain(bonjourServiceType);
 		if (bonjourServiceName != NULL)
 			CFRetain(bonjourServiceName);
+		
 		if (logger->bonjourServiceType != NULL)
 			CFRelease(logger->bonjourServiceType);
 		if (logger->bonjourServiceName != NULL)
 			CFRelease(logger->bonjourServiceName);
+		
 		logger->bonjourServiceType = bonjourServiceType;
 		logger->bonjourServiceName = bonjourServiceName;
+
+		if (change && logger->remoteOptionsChangedSource != NULL)
+		{
+			CFRunLoopSourceSignal(logger->remoteOptionsChangedSource);
+		}
 	}
 }
 
