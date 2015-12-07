@@ -1631,12 +1631,13 @@ static void LoggerRemoteSettingsChanged(Logger *logger)
 	// Always terminate any ongoing connection first
 	LoggerWriteStreamTerminated(logger);
 
+	LoggerStopBonjourBrowsing(logger);
+	LoggerStopReconnectTimer(logger);
+	LoggerStopReachabilityChecking(logger);
+
 	if (logger->host == NULL && !(logger->options & kLoggerOption_BrowseBonjour))
 	{
 		// developer doesn't want any network connection
-		LoggerStopBonjourBrowsing(logger);
-		LoggerStopReconnectTimer(logger);
-		LoggerStopReachabilityChecking(logger);
 	}
 	else
 	{
@@ -1647,8 +1648,6 @@ static void LoggerRemoteSettingsChanged(Logger *logger)
 		{
 			if (logger->options & kLoggerOption_BrowseBonjour)
 				LoggerStartBonjourBrowsing(logger);
-			else
-				LoggerStopBonjourBrowsing(logger);
 		}
 		LoggerTryConnect(logger);
 	}
