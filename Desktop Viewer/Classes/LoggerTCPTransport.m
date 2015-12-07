@@ -304,7 +304,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			// the local computer name (as defined in the sharing prefs panel
 			// (see Technical Q&A QA1228 http://developer.apple.com/library/mac/#qa/qa2001/qa1228.html )
 			NSString *serviceName = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefBonjourServiceName];
-			BOOL useDefaultServiceName = (serviceName == nil || ![serviceName isKindOfClass:[NSString class]]);
+			BOOL useDefaultServiceName = (serviceName == nil || ![serviceName isKindOfClass:[NSString class]] || ![serviceName length]);
 			if (useDefaultServiceName)
 				serviceName = @"";
 
@@ -318,7 +318,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 			// added in 1.5: let clients know that we have customized our service name and that they should connect to us
 			// only if their own settings match our name
-			if (useDefaultServiceName)
+			if (!useDefaultServiceName)
 				[bonjourService setTXTRecordData:[NSNetService dataFromTXTRecordDictionary:@{@"filterClients": @"1"}]];
 
 			[bonjourService setDelegate:self];
