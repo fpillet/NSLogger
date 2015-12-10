@@ -20,18 +20,23 @@ A release version of 0.4 would be highly limited in terms of UI. Nontheless, its
 4. Start logging. Look at the Bluetooth mark on top right corner. :)  
 
 ##Work-In-Progress
-CoreText now draws Timestamp, text message, binary messages. As CoreText is performing not as slowly as I suppose, I will expand its use cases.
+1. CoreText now draws Timestamp, text message, binary messages. As CoreText is performing not as slowly as I suppose, I will expand its use cases.  
+2. Shift from CoreData to Realm. 
+3. iOS9 Look
 
 ##Issues
 ### Displaying logging message lags behind.
 
-If you generate more than 110 logs/sec, you will see iPad Viewer starts laggin behind a client device's input. This is due to 1) CoreData processing log data slowly, and 2) it takes too much CPU cycle to convert raw image to CGImage and to get it on the screen.
+If you generate more than 110 logs/sec, you will see iPad Viewer starts laggin behind a client device's input (Tested on 3rd Gen iPad). This is due to 1) CoreData processing log data slowly, and 2) it takes too much CPU cycle to convert raw image to CGImage and to get it on the screen.
 
 Although no messages are missed, it renders iPad Viewer useless when one goes to highly pressured situation. Looking forward to replace CoreData with other backend such as plain SQLite3. Also, UIImage will be replaced with something else. 
 
 Stay tuned.
 
+### Various Crashes
+
+
 ##License
 [Modified BSD license](https://github.com/fpillet/NSLogger/blob/master/iPad%20Viewer/LICENSE)   
 _Version : 0.4.1_  
-_Updated : Aug 25, 2013_
+_Updated : Dec. 10, 2015_
