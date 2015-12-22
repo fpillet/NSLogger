@@ -14,9 +14,6 @@
 		0426F52A17ACDAA800B50BFA /* LoggerJSONMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 0426F52917ACDAA800B50BFA /* LoggerJSONMessage.m */; };
 		042DEB2A1716E9CD00088195 /* BaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 042DEB231716E9CD00088195 /* BaseViewController.m */; };
 		042DEB2B1716E9CD00088195 /* BaseViewKeyboardAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 042DEB261716E9CD00088195 /* BaseViewKeyboardAddition.m */; };
-		042DEB381716EA2B00088195 /* KGNoise.m in Sources */ = {isa = PBXBuildFile; fileRef = 042DEB301716EA2B00088195 /* KGNoise.m */; };
-		042DEB391716EA2B00088195 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = 042DEB311716EA2B00088195 /* license.txt */; };
-		042DEB3A1716EA2B00088195 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = 042DEB321716EA2B00088195 /* readme.md */; };
 		042F180B170E7D3A007ECDA4 /* LoggerMessageFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 042F1803170E7D3A007ECDA4 /* LoggerMessageFormatter.m */; };
 		042F180C170E7D3A007ECDA4 /* LoggerClientSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 042F1806170E7D3A007ECDA4 /* LoggerClientSize.m */; };
 		042F180D170E7D3A007ECDA4 /* LoggerMarkerSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 042F1808170E7D3A007ECDA4 /* LoggerMarkerSize.m */; };
@@ -91,10 +88,6 @@
 		042DEB231716E9CD00088195 /* BaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseViewController.m; sourceTree = "<group>"; };
 		042DEB251716E9CD00088195 /* BaseViewKeyboardAddition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseViewKeyboardAddition.h; sourceTree = "<group>"; };
 		042DEB261716E9CD00088195 /* BaseViewKeyboardAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseViewKeyboardAddition.m; sourceTree = "<group>"; };
-		042DEB2F1716EA2B00088195 /* KGNoise.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KGNoise.h; sourceTree = "<group>"; };
-		042DEB301716EA2B00088195 /* KGNoise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KGNoise.m; sourceTree = "<group>"; };
-		042DEB311716EA2B00088195 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = license.txt; sourceTree = "<group>"; };
-		042DEB321716EA2B00088195 /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.md; sourceTree = "<group>"; };
 		042F1802170E7D3A007ECDA4 /* LoggerMessageFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerMessageFormatter.h; sourceTree = "<group>"; };
 		042F1803170E7D3A007ECDA4 /* LoggerMessageFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LoggerMessageFormatter.m; sourceTree = "<group>"; };
 		042F1805170E7D3A007ECDA4 /* LoggerClientSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoggerClientSize.h; sourceTree = "<group>"; };
@@ -258,20 +251,8 @@
 		042DEB2D1716EA2B00088195 /* Vendors */ = {
 			isa = PBXGroup;
 			children = (
-				042DEB2E1716EA2B00088195 /* KGNoise */,
 			);
 			path = Vendors;
-			sourceTree = "<group>";
-		};
-		042DEB2E1716EA2B00088195 /* KGNoise */ = {
-			isa = PBXGroup;
-			children = (
-				042DEB2F1716EA2B00088195 /* KGNoise.h */,
-				042DEB301716EA2B00088195 /* KGNoise.m */,
-				042DEB311716EA2B00088195 /* license.txt */,
-				042DEB321716EA2B00088195 /* readme.md */,
-			);
-			path = KGNoise;
 			sourceTree = "<group>";
 		};
 		042F1801170E7D3A007ECDA4 /* MessageFormatter */ = {
@@ -638,8 +619,6 @@
 				044FEFB016AC4A810067FA53 /* LoggerMessageViewController.xib in Resources */,
 				044FEFB716AC4AC60067FA53 /* NSLoggerResource.bundle in Resources */,
 				044FEFB916AC4B7A0067FA53 /* MainWindow.xib in Resources */,
-				042DEB391716EA2B00088195 /* license.txt in Resources */,
-				042DEB3A1716EA2B00088195 /* readme.md in Resources */,
 				04C27EE41747B7B600765A3C /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -688,7 +667,6 @@
 				042F180E170E7D3A007ECDA4 /* LoggerMessageSize.m in Sources */,
 				042DEB2A1716E9CD00088195 /* BaseViewController.m in Sources */,
 				042DEB2B1716E9CD00088195 /* BaseViewKeyboardAddition.m in Sources */,
-				042DEB381716EA2B00088195 /* KGNoise.m in Sources */,
 				04A4EEE41738001E00479F0E /* LoggerClientInfoCell.m in Sources */,
 				04A4EEE51738001E00479F0E /* LoggerMarkerCell.m in Sources */,
 				04A4EEE61738001E00479F0E /* LoggerMessageCell.m in Sources */,
