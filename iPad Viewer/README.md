@@ -34,17 +34,17 @@ Although no messages are missed, it renders iPad Viewer useless when one goes to
 
 ### CoreData Replacement  
 
-In the first phase of CoreData replacement, it is planned on keeping stuff in-memory and perhaps no database at all.
+Thanks to Florent, a plan to remove CoreData for accepting high volume of log data is depicted blow. In the first phase of CoreData replacement, it is planned on keeping log data in memory only.
 
-- Store data in memory, up to some threshold  
+- Store data in memory, up to some threshold.  
 - Over the threshold, offload data to storage. 
 - From then on, keep writing to storage but use mmap() to keep reading from file as if data was in memory.  
 
-Since there is no change after the data has been written, there would be good amount of hardcore optimization.
+Since there is no change after the data has been written, there would chances for good amount of hardcore optimization. 
 
 * * *  
 
-Log data coming to NSLogger are going through rather atypical process that they are not being modified that often. Logs are written, read, and deleted only. It is very ideal situaltion to apply optimization and effective ad-hoc memory-disk hybrid cache.
+Log data coming to NSLogger are going through rather atypical processes that they are not being modified often. Logs are written, read, and deleted only. It is very ideal situaltion to apply optimization and effective ad-hoc memory-disk hybrid cache.  
 
 Thus, in the second phase, memory & disk hybrid cache would be implemented in a way that the least viewed data will be flushed and the most relevant data would be kept in memory for repeated use while the entire data set gets transferred to disk from time to time.
 
