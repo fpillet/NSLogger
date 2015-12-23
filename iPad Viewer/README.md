@@ -34,21 +34,23 @@ Although no messages are missed, it renders iPad Viewer useless when one goes to
 
 ### CoreData Replacement  
 
-Thanks to Florent, a plan to remove CoreData for accepting high volume of log data is depicted blow. In the first phase of CoreData replacement, it is planned on keeping log data in memory only.
+Thanks to Florent, a plan to remove CoreData for accepting log data in high volume is drawn below. In the first phase of CoreData replacement, it is planned on keeping log data in memory only.  
+
+The execution steps are,  
 
 - Store data in memory, up to some threshold.  
 - Over the threshold, offload data to storage. 
-- From then on, keep writing to storage but use mmap() to keep reading from file as if data was in memory.  
+- From then on, keep writing to storage but use mmap() to keep reading from file as if data is in memory.  
 
-Since there is no change after the data has been written, there would chances for good amount of hardcore optimization. 
+Since there is no change after the data has been written, there would be good chances for optimization.  
 
 * * *  
 
-Log data coming to NSLogger are going through rather atypical processes that they are not being modified often. Logs are written, read, and deleted only. It is very ideal situaltion to apply optimization and effective ad-hoc memory-disk hybrid cache.  
+Log data coming to NSLogger goes through rather atypical processes that the data does not have a chance to be modified. Logs are written, read, and deleted only. It is very ideal situaltion to apply optimization and effective ad-hoc memory-disk hybrid cache.  
 
-Thus, in the second phase, memory & disk hybrid cache would be implemented in a way that the least viewed data will be flushed and the most relevant data would be kept in memory for repeated use while the entire data set gets transferred to disk from time to time.
+Thus, in the second phase, memory & disk hybrid cache would be implemented in a way that the least viewed data will be flushed from memory and the most relevant data would be kept for effective cache hit while the entire data set gets transferred to storage from time to time.
 
-For data indexing, LSM tree or B+ tree would be chosen to be implemented.  
+For data indexing, LSM tree or B+ tree would be implemented.  
 
 ### Various Crashes
 
