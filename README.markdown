@@ -38,6 +38,19 @@ If you are using frameworks or libraries that may use NSLogger, then you can use
 pod "NSLogger/NoStrip"
 ```
 
+# Carthage #
+NSLogger is Carthage-compatible. To use it, add the following line to your `Cartfile`:
+
+```
+github "fpillet/NSLogger"
+```
+
+Then run:
+
+```shell
+$ carthage update
+```
+
 ## Desktop Viewer ##
 Download the pre-built, signed version of the [NSLogger desktop viewer](https://github.com/fpillet/NSLogger/releases) for OS X.
 
@@ -80,8 +93,8 @@ The desktop viewer application provides tools like:
  * Fast navigation in your logs
  * Display and export all your logs as text
  * Optional display of file, line and function for uncluttered display
- 
- 
+
+
 Your logs can be saved to a `.nsloggerdata` file, and reloaded later. When logging to a file, name your log file with extension `.rawnsloggerdata` so NSLogger can reopen and process it. You can have clients remotely generating raw logger data files, then send them to you so you can investigate post-mortem.
 
 Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
