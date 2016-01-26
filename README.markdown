@@ -52,7 +52,7 @@ LoggerApp(1, @"Hello world! Today is: %@", [self myDate]);
 The `NSLogger.h` will also allow you to start the logger at the begining of your code. To do so, just add the following line to your `main.m` file, at the beginning of your `main()` function:
 
 ```objc
-LoggerStartForBuildUser();
+LoggerStart(LoggerGetDefaultLogger());
 ```
 
 In the Preferences of the NSLogger.app desktop viewer, go to the "Network" tab. Type your user name (i.e. $USER) in the "Bonjour service name" text field. This will allow the traces to be received only by the computer of the user who compiled the app (important for team work).
