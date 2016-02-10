@@ -494,7 +494,7 @@
 				LastUpgradeCheck = 0420;
 				ORGANIZATIONNAME = "Florent Pillet";
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLogger" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLoggerViewer" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -688,6 +688,7 @@
 				HEADER_SEARCH_PATHS = "\"Third Party/BWToolkit\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = NSLogger;
 			};
 			name = Debug;
@@ -707,6 +708,7 @@
 				HEADER_SEARCH_PATHS = "\"Third Party/BWToolkit\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = NSLogger;
 			};
 			name = Release;
@@ -763,7 +765,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLogger" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLoggerViewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
