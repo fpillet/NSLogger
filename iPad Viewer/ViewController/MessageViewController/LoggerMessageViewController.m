@@ -93,10 +93,7 @@
     [super viewDidLoad];
 
 	self.titleBar.backgroundColor = [UIColor colorWithRed:0.73 green:0.73 blue:0.73 alpha:1.000];
-    self.titleBar.alternateBackgroundColor = [UIColor colorWithRed:0.94 green:0.94 blue:0.94 alpha:1.000];
-    self.titleBar.noiseBlendMode = kCGBlendModeMultiply;
-    self.titleBar.noiseOpacity = 0.1;
-	
+    
 	for (id img in self.searchBar.subviews)
 	{
         if ([img isKindOfClass:NSClassFromString(@"UISearchBarBackground")]) {
@@ -107,10 +104,7 @@
 	[self.timeLabel setFont:[UIFont fontWithName:@"Digital-7" size:_timeLabel.font.pointSize]];
     
 	self.toolBar.backgroundColor = [UIColor colorWithRed:0.73 green:0.73 blue:0.73 alpha:1.000];
-    self.toolBar.alternateBackgroundColor = [UIColor colorWithRed:0.94 green:0.94 blue:0.94 alpha:1.000];
-    self.toolBar.noiseBlendMode = kCGBlendModeMultiply;
-    self.toolBar.noiseOpacity = 0.1;
-	
+    
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     self.currentClientHash = [defaults integerForKey:kClientHash];
     self.runCount = [defaults integerForKey:kClientRunCount];

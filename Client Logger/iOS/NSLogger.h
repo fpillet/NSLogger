@@ -33,7 +33,13 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  *
  */
-#import "LoggerClient.h"
+
+#ifdef IS_CARTHAGE_BUILD
+    #import <NSLogger/LoggerClient.h>
+    #import <NSLogger/LoggerCommon.h>
+#else
+    #import "LoggerClient.h"
+#endif
 
 
 

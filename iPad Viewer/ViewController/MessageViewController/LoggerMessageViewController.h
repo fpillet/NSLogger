@@ -31,9 +31,9 @@
 
 
 #import <UIKit/UIKit.h>
-#import "LoggerDataManager.h"
-#import "KGNoise.h"
 #import <CoreData/NSFetchedResultsController.h>
+
+#import "LoggerDataManager.h"
 #import "BaseViewController.h"
 
 @interface LoggerMessageViewController : BaseViewController
@@ -48,6 +48,6 @@
 @property (nonatomic, assign) IBOutlet UIButton         *previousRunButton;
 @property (nonatomic, assign) IBOutlet UIButton         *nextRunButton;
 @property (nonatomic, assign) IBOutlet UISearchBar		*searchBar;
-@property (nonatomic, strong) IBOutlet KGNoiseLinearGradientView *titleBar;
-@property (nonatomic, assign) IBOutlet KGNoiseLinearGradientView *toolBar;
+@property (nonatomic, strong) IBOutlet UITextView       *titleBar;
+@property (nonatomic, assign) IBOutlet UIView           *toolBar;
 @end
