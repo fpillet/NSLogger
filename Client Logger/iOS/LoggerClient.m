@@ -1190,8 +1190,12 @@ static void LoggerStopConsoleRedirection()
 	// cancel & destroy the dispatch sources
 	dispatch_source_cancel(sSTDOUTGrabber);
 	dispatch_source_cancel(sSTDERRGrabber);
-	dispatch_release(sSTDOUTGrabber);
-	dispatch_release(sSTDERRGrabber);
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000 || MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
+    // Integration of dispatch objects with Objective-C requires targeting iOS 6.0+ and Mac OS X 10.8+
+#else
+    dispatch_release(sSTDOUTGrabber);
+    dispatch_release(sSTDERRGrabber);
+#endif
 	sSTDOUTGrabber = NULL;
 	sSTDERRGrabber = NULL;
 
