@@ -1661,6 +1661,12 @@ static void LoggerStartReachabilityChecking(Logger *logger)
 {
 	if (logger->reachability == NULL)
 	{
+		// start reachability only when network will be required, which is at least one of:
+		// - Bonjour is being used
+		// - A target host has been specified
+		if (logger->host == NULL && !(logger->options & kLoggerOption_BrowseBonjour))
+			return;
+
 		if (logger->host != NULL)
 		{
 			// reachability targeted to the configured host
