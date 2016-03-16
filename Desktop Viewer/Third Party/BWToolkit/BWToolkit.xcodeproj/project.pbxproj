@@ -718,12 +718,14 @@
 		C056398808A954F8003078D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_NAME = BWToolkit;
 			};
 			name = Debug;
 		};
 		C056398908A954F8003078D8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_NAME = BWToolkit;
 			};
 			name = Release;
 		};
