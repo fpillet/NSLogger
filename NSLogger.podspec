@@ -14,6 +14,10 @@ Pod::Spec.new do |s|
                   'filtering, image and binary logging, traces buffering, timing information, etc. ' \
                   'Download a prebuilt desktop viewer from https://github.com/fpillet/NSLogger/releases'
 
+  s.ios.deployment_target  = '8.0'
+  s.osx.deployment_target  = '10.10'
+  s.tvos.deployment_target = '9.0'
+  
   s.ios.frameworks   = 'CFNetwork', 'SystemConfiguration'
   s.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
   
