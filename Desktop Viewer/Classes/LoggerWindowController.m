@@ -1903,7 +1903,26 @@ didReceiveMessages:(NSArray *)theMessages
 		if (attachedConnection == nil || attachedConnection.restoredFromSave || [((LoggerDocument *)[self document]).attachedLogs count] <= 1)
 			return NO;
 	}
+	else if (action == @selector(copy:))
+	{
+		return logTable.selectedRowIndexes.count > 0;
+	}
 	return YES;
+}
+
+#pragma mark -
+#pragma mark - Clipboard actions
+
+- (void)copy:(id)sender
+{
+	NSArray *selectedMessages = [displayedMessages objectsAtIndexes:logTable.selectedRowIndexes];
+	if (selectedMessages.count == 0)
+		return;
+	
+	NSArray *messages = [selectedMessages valueForKeyPath:NSStringFromSelector(@selector(message))];
+	NSPasteboard *generalPasteboard = [NSPasteboard generalPasteboard];
+	[generalPasteboard declareTypes:@[ NSPasteboardTypeString ] owner:nil];
+	[generalPasteboard setString:[messages componentsJoinedByString:@"\n"] forType:NSPasteboardTypeString];
 }
 
 // -----------------------------------------------------------------------------
