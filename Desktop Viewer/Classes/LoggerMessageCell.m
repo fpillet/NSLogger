@@ -354,7 +354,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 + (NSColor *)colorForMessage:(LoggerMessage *)message
 {
-    return [self colorForString:[message message]];
+    return [self colorForString:message.description];
 }
 
 #pragma mark -
