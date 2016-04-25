@@ -7,12 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C29EC74D1CCE5FF000258184 /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C29EC74E1CCE5FF100258184 /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C29EC74F1CCE5FF800258184 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
+		C29EC7501CCE5FF900258184 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
+		C29EC7511CCE5FFF00258184 /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C29EC7521CCE5FFF00258184 /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAD1C4BE55F0042313D /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAE1C4BE55F0042313D /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
 		DAAD0FB01C4BE55F0042313D /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C29EC7381CCE5D9700258184 /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C29EC7451CCE5DA400258184 /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAAD0F961C4BE27B0042313D /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAAD0F9B1C4BE27B0042313D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DAAD0FA91C4BE55F0042313D /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = "Client Logger/iOS/LoggerClient.h"; sourceTree = SOURCE_ROOT; };
@@ -21,6 +29,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		C29EC7341CCE5D9700258184 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C29EC7411CCE5DA400258184 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DAAD0F921C4BE27B0042313D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -43,6 +65,8 @@
 			isa = PBXGroup;
 			children = (
 				DAAD0F961C4BE27B0042313D /* NSLogger.framework */,
+				C29EC7381CCE5D9700258184 /* NSLogger.framework */,
+				C29EC7451CCE5DA400258184 /* NSLogger.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +85,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		C29EC7351CCE5D9700258184 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C29EC74D1CCE5FF000258184 /* NSLogger.h in Headers */,
+				C29EC7511CCE5FFF00258184 /* LoggerClient.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C29EC7421CCE5DA400258184 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C29EC74E1CCE5FF100258184 /* NSLogger.h in Headers */,
+				C29EC7521CCE5FFF00258184 /* LoggerClient.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DAAD0F931C4BE27B0042313D /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -73,9 +115,45 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		DAAD0F951C4BE27B0042313D /* NSLogger */ = {
+		C29EC7371CCE5D9700258184 /* NSLogger OS X */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger" */;
+			buildConfigurationList = C29EC73D1CCE5D9700258184 /* Build configuration list for PBXNativeTarget "NSLogger OS X" */;
+			buildPhases = (
+				C29EC7331CCE5D9700258184 /* Sources */,
+				C29EC7341CCE5D9700258184 /* Frameworks */,
+				C29EC7351CCE5D9700258184 /* Headers */,
+				C29EC7361CCE5D9700258184 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "NSLogger OS X";
+			productName = "NSLogger OS X";
+			productReference = C29EC7381CCE5D9700258184 /* NSLogger.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		C29EC7441CCE5DA400258184 /* NSLogger tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C29EC74A1CCE5DA400258184 /* Build configuration list for PBXNativeTarget "NSLogger tvOS" */;
+			buildPhases = (
+				C29EC7401CCE5DA400258184 /* Sources */,
+				C29EC7411CCE5DA400258184 /* Frameworks */,
+				C29EC7421CCE5DA400258184 /* Headers */,
+				C29EC7431CCE5DA400258184 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "NSLogger tvOS";
+			productName = "NSLogger tvOS";
+			productReference = C29EC7451CCE5DA400258184 /* NSLogger.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DAAD0F951C4BE27B0042313D /* NSLogger iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger iOS" */;
 			buildPhases = (
 				DAAD0F911C4BE27B0042313D /* Sources */,
 				DAAD0F921C4BE27B0042313D /* Frameworks */,
@@ -86,7 +164,7 @@
 			);
 			dependencies = (
 			);
-			name = NSLogger;
+			name = "NSLogger iOS";
 			productName = NSLogger;
 			productReference = DAAD0F961C4BE27B0042313D /* NSLogger.framework */;
 			productType = "com.apple.product-type.framework";
@@ -100,6 +178,12 @@
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = "Florent Pillet";
 				TargetAttributes = {
+					C29EC7371CCE5D9700258184 = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
+					C29EC7441CCE5DA400258184 = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
 					DAAD0F951C4BE27B0042313D = {
 						CreatedOnToolsVersion = 7.2;
 					};
@@ -117,12 +201,28 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DAAD0F951C4BE27B0042313D /* NSLogger */,
+				DAAD0F951C4BE27B0042313D /* NSLogger iOS */,
+				C29EC7371CCE5D9700258184 /* NSLogger OS X */,
+				C29EC7441CCE5DA400258184 /* NSLogger tvOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		C29EC7361CCE5D9700258184 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C29EC7431CCE5DA400258184 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DAAD0F941C4BE27B0042313D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -133,6 +233,22 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C29EC7331CCE5D9700258184 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C29EC74F1CCE5FF800258184 /* LoggerClient.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C29EC7401CCE5DA400258184 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C29EC7501CCE5FF900258184 /* LoggerClient.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DAAD0F911C4BE27B0042313D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -144,10 +260,43 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		C29EC73E1CCE5D9700258184 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C29EC73F1CCE5D9700258184 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C29EC74B1CCE5DA400258184 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		C29EC74C1CCE5DA400258184 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
 		DAAD0F9C1C4BE27B0042313D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -185,10 +334,12 @@
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VERSIONING_SYSTEM = "Semantic Versioning";
 			};
 			name = Debug;
@@ -197,6 +348,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -229,9 +381,11 @@
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "Semantic Versioning";
 			};
@@ -256,6 +410,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C29EC73D1CCE5D9700258184 /* Build configuration list for PBXNativeTarget "NSLogger OS X" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C29EC73E1CCE5D9700258184 /* Debug */,
+				C29EC73F1CCE5D9700258184 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C29EC74A1CCE5DA400258184 /* Build configuration list for PBXNativeTarget "NSLogger tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C29EC74B1CCE5DA400258184 /* Debug */,
+				C29EC74C1CCE5DA400258184 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		DAAD0F901C4BE27B0042313D /* Build configuration list for PBXProject "NSLogger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -265,7 +437,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger" */ = {
+		DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAAD0F9F1C4BE27B0042313D /* Debug */,
