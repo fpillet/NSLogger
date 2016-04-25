@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		DAAD0FAD1C4BE55F0042313D /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAE1C4BE55F0042313D /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
-		DAAD0FAF1C4BE55F0042313D /* LoggerCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAB1C4BE55F0042313D /* LoggerCommon.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FB01C4BE55F0042313D /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
@@ -18,7 +17,6 @@
 		DAAD0F9B1C4BE27B0042313D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DAAD0FA91C4BE55F0042313D /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = "Client Logger/iOS/LoggerClient.h"; sourceTree = SOURCE_ROOT; };
 		DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = "Client Logger/iOS/LoggerClient.m"; sourceTree = SOURCE_ROOT; };
-		DAAD0FAB1C4BE55F0042313D /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = "Client Logger/iOS/LoggerCommon.h"; sourceTree = SOURCE_ROOT; };
 		DAAD0FAC1C4BE55F0042313D /* NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSLogger.h; path = "Client Logger/iOS/NSLogger.h"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -54,7 +52,6 @@
 			children = (
 				DAAD0FA91C4BE55F0042313D /* LoggerClient.h */,
 				DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */,
-				DAAD0FAB1C4BE55F0042313D /* LoggerCommon.h */,
 				DAAD0FAC1C4BE55F0042313D /* NSLogger.h */,
 				DAAD0F9B1C4BE27B0042313D /* Info.plist */,
 			);
@@ -70,7 +67,6 @@
 			files = (
 				DAAD0FAD1C4BE55F0042313D /* LoggerClient.h in Headers */,
 				DAAD0FB01C4BE55F0042313D /* NSLogger.h in Headers */,
-				DAAD0FAF1C4BE55F0042313D /* LoggerCommon.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
