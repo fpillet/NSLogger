@@ -1910,22 +1910,9 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 
 	SCNetworkReachabilityFlags oldFlags = logger->reachabilityFlags;
 	logger->reachabilityFlags = flags;
-
-	if (flags & kSCNetworkReachabilityFlagsReachable)
-	{
-		// target host or internet became reachable
-		LOGGERDBG(CFSTR("-> target became reachable"));
-		logger->targetReachable = YES;
-
-		// in the event a network transition occurred without network loss (i.e. WiFi -> 3G),
-		// preemptively disconnect. In many cases, if the network stays up, we will never receive
-		// a disconnection (possibly due to SSH ?)
-		if (flags != oldFlags && logger->logStream != NULL)
-			LoggerWriteStreamTerminated(logger);
-		else
-			LoggerTryConnect(logger);			// will start Bonjour browsing if needed
-	}
-	else if (logger->connected || logger->logStream != NULL)
+	
+	bool isReachable = flags & kSCNetworkReachabilityFlagsReachable;
+	if (!isReachable && (logger->connected || logger->logStream != NULL))
 	{
 		// lost internet connecton. Force a disconnect, we'll wait for the connection to become
 		// available again
@@ -1935,6 +1922,23 @@ static void LoggerReachabilityCallBack(SCNetworkReachabilityRef target, SCNetwor
 			LoggerWriteStreamTerminated(logger);
 		LoggerStopBonjourBrowsing(logger);
 		LoggerStopReconnectTimer(logger);
+	}
+	else
+	{
+		if (isReachable)
+			LOGGERDBG(CFSTR("-> target became reachable"));
+		else
+			LOGGERDBG(CFSTR("-> target is not reachable, let's pretend it is and try to connect anyway"));
+		
+		logger->targetReachable = YES;
+		
+		// in the event a network transition occurred without network loss (i.e. WiFi -> 3G),
+		// preemptively disconnect. In many cases, if the network stays up, we will never receive
+		// a disconnection (possibly due to SSH ?)
+		if (flags != oldFlags && logger->logStream != NULL)
+			LoggerWriteStreamTerminated(logger);
+		else
+			LoggerTryConnect(logger);			// will start Bonjour browsing if needed
 	}
 }
 
