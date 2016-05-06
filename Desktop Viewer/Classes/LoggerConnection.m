@@ -306,7 +306,9 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	// enforce thread safety (only on main thread)
 	assert([NSThread isMainThread]);
-	return [NSString stringWithFormat:@"%@ @ %@", [self clientAppDescription], [self clientAddressDescription]];
+	NSString *clientAppDescription = [self clientAppDescription];
+	NSString *clientAddressDescription = [self clientAddressDescription];
+	return clientAddressDescription ? [NSString stringWithFormat:@"%@ @ %@", clientAppDescription, clientAddressDescription] : clientAppDescription;
 }
 
 - (NSString *)status
