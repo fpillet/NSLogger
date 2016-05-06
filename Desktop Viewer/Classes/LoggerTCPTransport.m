@@ -412,13 +412,11 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
 	if (!appDelegate.serverCertsLoadAttempted)
 	{
-		dispatch_async(dispatch_get_main_queue(), ^{
-			NSError *error = nil;
-			if (![appDelegate loadEncryptionCertificate:&error])
-			{
-				[NSApp presentError:error];
-			}
-		});
+		NSError *error = nil;
+		if (![appDelegate loadEncryptionCertificate:&error])
+		{
+			[NSApp performSelectorOnMainThread:@selector(presentError:) withObject:error waitUntilDone:NO];
+		}
 	}
 	return (appDelegate.serverCerts != NULL);
 }
