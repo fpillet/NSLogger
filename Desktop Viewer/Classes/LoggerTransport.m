@@ -72,7 +72,7 @@
 {
 	// make a new document for a connection (it is considered live once we have received
 	// the ClientInfo message) or reuse an existing document if this is a reconnection
-	dispatch_sync(dispatch_get_main_queue(), ^{
+	dispatch_async(dispatch_get_main_queue(), ^{
 		if (!aConnection.attachedToWindow)
 			[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection fromTransport:self];
 	});

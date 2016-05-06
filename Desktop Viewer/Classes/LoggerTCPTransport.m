@@ -211,90 +211,95 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 {
 	@try
 	{
-		CFSocketContext context = {0, self, NULL, NULL, NULL};
-		
-		// create sockets
-		listenerSocket_ipv4 = CFSocketCreate(kCFAllocatorDefault,
-											 PF_INET,
-											 SOCK_STREAM, 
-											 IPPROTO_TCP,
-											 kCFSocketAcceptCallBack,
-											 &AcceptSocketCallback,
-											 &context);
-		
-		listenerSocket_ipv6 = CFSocketCreate(kCFAllocatorDefault,
-											 PF_INET6,
-											 SOCK_STREAM, 
-											 IPPROTO_TCP,
-											 kCFSocketAcceptCallBack,
-											 &AcceptSocketCallback,
-											 &context);
-		
-		if (listenerSocket_ipv4 == NULL || listenerSocket_ipv6 == NULL)
+		// Only setup sockets when not using Bonjour because the `NSNetServiceListenForConnections`
+		// option automatically takes care of setting up sockets for listening
+		if (!publishBonjourService)
 		{
-			@throw [NSException exceptionWithName:@"CFSocketCreate"
-										   reason:NSLocalizedString(@"Failed creating listener socket (CFSocketCreate failed)", @"")
-										 userInfo:nil];
+			CFSocketContext context = {0, self, NULL, NULL, NULL};
+			
+			// create sockets
+			listenerSocket_ipv4 = CFSocketCreate(kCFAllocatorDefault,
+			                                     PF_INET,
+			                                     SOCK_STREAM,
+			                                     IPPROTO_TCP,
+			                                     kCFSocketAcceptCallBack,
+			                                     &AcceptSocketCallback,
+			                                     &context);
+			
+			listenerSocket_ipv6 = CFSocketCreate(kCFAllocatorDefault,
+			                                     PF_INET6,
+			                                     SOCK_STREAM,
+			                                     IPPROTO_TCP,
+			                                     kCFSocketAcceptCallBack,
+			                                     &AcceptSocketCallback,
+			                                     &context);
+			
+			if (listenerSocket_ipv4 == NULL || listenerSocket_ipv6 == NULL)
+			{
+				@throw [NSException exceptionWithName:@"CFSocketCreate"
+				                               reason:NSLocalizedString(@"Failed creating listener socket (CFSocketCreate failed)", @"")
+				                             userInfo:nil];
+			}
+			
+			// set socket options & addresses
+			int yes = 1;
+			setsockopt(CFSocketGetNative(listenerSocket_ipv4), SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof(yes));
+			setsockopt(CFSocketGetNative(listenerSocket_ipv6), SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof(yes));
+			
+			// set up the IPv4 endpoint; if port is 0, this will cause the kernel to choose a port for us
+			struct sockaddr_in addr4;
+			memset(&addr4, 0, sizeof(addr4));
+			addr4.sin_len = sizeof(addr4);
+			addr4.sin_family = AF_INET;
+			addr4.sin_port = htons(listenerPort);
+			addr4.sin_addr.s_addr = htonl(INADDR_ANY);
+			NSData *address4 = [NSData dataWithBytes:&addr4 length:sizeof(addr4)];
+			
+			if (CFSocketSetAddress(listenerSocket_ipv4, (CFDataRef)address4) != kCFSocketSuccess)
+			{
+				@throw [NSException exceptionWithName:@"CFSocketSetAddress"
+				                               reason:NSLocalizedString(@"Failed setting IPv4 socket address", @"")
+				                             userInfo:nil];
+			}
+			
+			if (listenerPort == 0)
+			{
+				// now that the binding was successful, we get the port number
+				// -- we will need it for the v6 endpoint and for NSNetService
+				NSData *addr = [(NSData *)CFSocketCopyAddress(listenerSocket_ipv4) autorelease];
+				memcpy(&addr4, [addr bytes], [addr length]);
+				listenerPort = ntohs(addr4.sin_port);
+			}
+			
+			// set up the IPv6 endpoint
+			struct sockaddr_in6 addr6;
+			memset(&addr6, 0, sizeof(addr6));
+			addr6.sin6_len = sizeof(addr6);
+			addr6.sin6_family = AF_INET6;
+			addr6.sin6_port = htons(listenerPort);
+			memcpy(&(addr6.sin6_addr), &in6addr_any, sizeof(addr6.sin6_addr));
+			NSData *address6 = [NSData dataWithBytes:&addr6 length:sizeof(addr6)];
+			
+			if (CFSocketSetAddress(listenerSocket_ipv6, (CFDataRef)address6) != kCFSocketSuccess)
+			{
+				@throw [NSException exceptionWithName:@"CFSocketSetAddress"
+				                               reason:NSLocalizedString(@"Failed setting IPv6 socket address", @"")
+				                             userInfo:nil];
+			}
+			
+			// set up the run loop sources for the sockets
+			CFRunLoopRef rl = CFRunLoopGetCurrent();
+			CFRunLoopSourceRef source4 = CFSocketCreateRunLoopSource(kCFAllocatorDefault, listenerSocket_ipv4, 0);
+			CFRunLoopAddSource(rl, source4, kCFRunLoopCommonModes);
+			CFRelease(source4);
+			
+			CFRunLoopSourceRef source6 = CFSocketCreateRunLoopSource(kCFAllocatorDefault, listenerSocket_ipv6, 0);
+			CFRunLoopAddSource(rl, source6, kCFRunLoopCommonModes);
+			CFRelease(source6);
+			
+			ready = YES;
 		}
-		
-		// set socket options & addresses
-		int yes = 1;
-		setsockopt(CFSocketGetNative(listenerSocket_ipv4), SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof(yes));
-		setsockopt(CFSocketGetNative(listenerSocket_ipv6), SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof(yes));
-		
-		// set up the IPv4 endpoint; if port is 0, this will cause the kernel to choose a port for us
-		struct sockaddr_in addr4;
-		memset(&addr4, 0, sizeof(addr4));
-		addr4.sin_len = sizeof(addr4);
-		addr4.sin_family = AF_INET;
-		addr4.sin_port = htons(listenerPort);
-		addr4.sin_addr.s_addr = htonl(INADDR_ANY);
-		NSData *address4 = [NSData dataWithBytes:&addr4 length:sizeof(addr4)];
-		
-	    if (CFSocketSetAddress(listenerSocket_ipv4, (CFDataRef)address4) != kCFSocketSuccess)
-		{
-			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
-										   reason:NSLocalizedString(@"Failed setting IPv4 socket address", @"")
-										 userInfo:nil];
-		}
-		
-		if (listenerPort == 0)
-		{
-			// now that the binding was successful, we get the port number 
-			// -- we will need it for the v6 endpoint and for NSNetService
-			NSData *addr = [(NSData *)CFSocketCopyAddress(listenerSocket_ipv4) autorelease];
-			memcpy(&addr4, [addr bytes], [addr length]);
-			listenerPort = ntohs(addr4.sin_port);
-		}
-		
-	    // set up the IPv6 endpoint
-		struct sockaddr_in6 addr6;
-		memset(&addr6, 0, sizeof(addr6));
-		addr6.sin6_len = sizeof(addr6);
-		addr6.sin6_family = AF_INET6;
-		addr6.sin6_port = htons(listenerPort);
-		memcpy(&(addr6.sin6_addr), &in6addr_any, sizeof(addr6.sin6_addr));
-		NSData *address6 = [NSData dataWithBytes:&addr6 length:sizeof(addr6)];
-		
-		if (CFSocketSetAddress(listenerSocket_ipv6, (CFDataRef)address6) != kCFSocketSuccess)
-		{
-			@throw [NSException exceptionWithName:@"CFSocketSetAddress"
-										   reason:NSLocalizedString(@"Failed setting IPv6 socket address", @"")
-										 userInfo:nil];
-		}
-		
-		// set up the run loop sources for the sockets
-		CFRunLoopRef rl = CFRunLoopGetCurrent();
-		CFRunLoopSourceRef source4 = CFSocketCreateRunLoopSource(kCFAllocatorDefault, listenerSocket_ipv4, 0);
-		CFRunLoopAddSource(rl, source4, kCFRunLoopCommonModes);
-		CFRelease(source4);
-		
-		CFRunLoopSourceRef source6 = CFSocketCreateRunLoopSource(kCFAllocatorDefault, listenerSocket_ipv6, 0);
-		CFRunLoopAddSource(rl, source6, kCFRunLoopCommonModes);
-		CFRelease(source6);
-
-		// register Bonjour service
-		if (publishBonjourService)
+		else
 		{
 			// The service type is nslogger-ssl (now the default), or nslogger for backwards
 			// compatibility with pre-1.0.
@@ -321,14 +326,10 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			if (!useDefaultServiceName)
 				[bonjourService setTXTRecordData:[NSNetService dataFromTXTRecordDictionary:@{@"filterClients": @"1"}]];
 
+			[bonjourService setIncludesPeerToPeer:YES];
 			[bonjourService setDelegate:self];
-			[bonjourService publish];
+			[bonjourService publishWithOptions:NSNetServiceListenForConnections];
 		}
-		else
-		{
-			ready = YES;
-		}
-
 	}
 	@catch (NSException * e)
 	{
@@ -408,15 +409,14 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (BOOL)canDoSSL
 {
-	// This method can BLOCK THE CURRENT THREAD and run security dialog UI from the main thread
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
 	if (!appDelegate.serverCertsLoadAttempted)
 	{
-		dispatch_sync(dispatch_get_main_queue(), ^{
+		dispatch_async(dispatch_get_main_queue(), ^{
 			NSError *error = nil;
 			if (![appDelegate loadEncryptionCertificate:&error])
 			{
-				[NSApp performSelector:@selector(presentError:) withObject:error afterDelay:0];
+				[NSApp presentError:error];
 			}
 		});
 	}
@@ -606,8 +606,29 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (void)netServiceDidPublish:(NSNetService *)sender
 {
 	ready = YES;
+	listenerPort = sender.port;
 	[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
 														object:self];
+}
+
+- (void)netService:(NSNetService *)sender didAcceptConnectionWithInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream
+{
+	if (self.secure && ![self canDoSSL])
+		return;
+	
+	if (self.secure)
+		[self setupSSLForStream:inputStream];
+	
+	NSData *clientAddress = nil; // TODO: how to get it?
+	[self addConnection:[self connectionWithInputStream:inputStream clientAddress:clientAddress]];
+	
+	[inputStream setDelegate:self];
+	[inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[inputStream open];
+
+	// The output stream is only used for SSL handshake, so there's no need to set a delegate
+	[outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[outputStream open];
 }
 
 @end
