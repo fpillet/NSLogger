@@ -36,28 +36,23 @@
 
 - (NSString *)clientAddressDescription
 {
-	if ([clientAddress length] == sizeof(struct sockaddr_in6))
+	int family;
+	const void *address = NULL;
+	char ip[INET6_ADDRSTRLEN];
+	socklen_t size;
+	if (clientAddress.length == sizeof(struct sockaddr_in6))
 	{
-		struct sockaddr_in6 addr6;
-		[clientAddress getBytes:&addr6 length:sizeof(addr6)];
-		return [NSString stringWithFormat:@"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
-				addr6.sin6_addr.__u6_addr.__u6_addr16[0],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[1],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[2],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[3],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[4],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[5],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[6],
-				addr6.sin6_addr.__u6_addr.__u6_addr16[7]];
+		family = AF_INET6;
+		size = INET6_ADDRSTRLEN;
+		address = clientAddress.bytes + offsetof(struct sockaddr_in6, sin6_addr);
 	}
-
-	struct sockaddr_in addr4;
-	[clientAddress getBytes:&addr4 length:sizeof(addr4)];
-	char *inetname = inet_ntoa(addr4.sin_addr);
-	if (inetname != NULL)
-		return [NSString stringWithCString:inetname encoding:NSASCIIStringEncoding];
-
-	return nil;
+	else if (clientAddress.length == sizeof(struct sockaddr_in))
+	{
+		family = AF_INET;
+		size = INET_ADDRSTRLEN;
+		address = clientAddress.bytes + offsetof(struct sockaddr_in, sin_addr);
+	}
+	return address != NULL && inet_ntop(family, address, ip, size) ? @(ip) : nil;
 }
 
 @end

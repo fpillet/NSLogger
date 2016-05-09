@@ -1494,6 +1494,28 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	CFArrayRemoveAllValues(logger->bonjourServices);
 }
 
+static Boolean NetServiceBrowserSearchForServices(CFNetServiceBrowserRef browser, CFStringRef domain, CFStringRef serviceType, CFStreamError * __nullable error)
+{
+	static Boolean (*_CFNetServiceBrowserSearchForServices)(CFNetServiceBrowserRef, CFStringRef, CFStringRef, int, CFStreamError *);
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		CFBundleRef bundle = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.CFNetwork"));
+		if (bundle)
+			_CFNetServiceBrowserSearchForServices = CFBundleGetDataPointerForName(bundle, CFSTR("_CFNetServiceBrowserSearchForServices"));
+		
+		if (!_CFNetServiceBrowserSearchForServices)
+			NSLog(@"*** NSLogger: peer-to-peer browsing unavailable (_CFNetServiceBrowserSearchForServices function not found)");
+	});
+	
+	// flags = 0 (or anything else but 1 or 2) -> _CFNetServiceBrowserSearchForServices calls DNSServiceBrowse with DNSServiceFlags = 0
+	// flags = 1 -> _CFNetServiceBrowserSearchForServices calls DNSServiceBrowse with DNSServiceFlags = kDNSServiceFlagsIncludeAWDL | kDNSServiceFlagsIncludeP2P
+	// flags = 2 -> _CFNetServiceBrowserSearchForServices calls DNSServiceBrowse with DNSServiceFlags = kDNSServiceFlagsIncludeAWDL
+	if (_CFNetServiceBrowserSearchForServices)
+		return _CFNetServiceBrowserSearchForServices(browser, domain, serviceType, 1, error);
+	else
+		return CFNetServiceBrowserSearchForServices(browser, domain, serviceType, error);
+}
+
 static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName)
 {
 	BOOL result = NO;
@@ -1514,7 +1536,7 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 		else
 			serviceType = LOGGER_SERVICE_TYPE;
 	}
-	if (!CFNetServiceBrowserSearchForServices(browser, domainName, serviceType, &error))
+	if (!NetServiceBrowserSearchForServices(browser, domainName, serviceType, &error))
 	{
 		LOGGERDBG(CFSTR("Logger can't start search on domain: %@ (error %d)"), domainName, error.error);
 		CFNetServiceBrowserUnscheduleFromRunLoop(browser, runLoop, kCFRunLoopCommonModes);
