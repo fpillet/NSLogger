@@ -847,16 +847,16 @@ void runSystemCommand(NSString *cmd)
     runSystemCommand(cmd);
 }
 
-- (void)xedFile:(NSString *)path line:(NSString *)line client:(NSString *)client {
-    id args = [NSArray arrayWithObjects:
-               @"-l",
-               line,
-               path,
-               client,
-               nil];
-    // NSLog(@"Args %@", args);
-    [NSTask launchedTaskWithLaunchPath:[[NSBundle mainBundle] pathForResource:@"xedReplacement.sh" ofType:nil]
-                             arguments:args];
+- (void)xedFile:(NSString *)path line:(NSString *)line client:(NSString *)client
+{
+	@try
+	{
+		[NSTask launchedTaskWithLaunchPath:@"/usr/bin/xcrun" arguments:@[ @"xed", @"-l", line, path ]];
+	}
+	@catch (NSException *exception)
+	{
+		NSLog(@"Could not run xed: %@", exception);
+	}
 }
 
 - (void)openDetailsInIDE
@@ -877,8 +877,6 @@ void runSystemCommand(NSString *cmd)
 				// (when logging from Android, could be IntelliJ or Eclipse)
 				NSString *extension = [filename pathExtension];
 				BOOL useXcode = NO;
-				//if ([fm fileExistsAtPath:@"/usr/bin/xed"])
-				//{
 				for (NSString *ext in sXcodeFileExtensions)
 				{
 					if ([ext caseInsensitiveCompare:extension] == NSOrderedSame)
@@ -887,7 +885,6 @@ void runSystemCommand(NSString *cmd)
 						break;
 					}
 				}
-				//}
 				if (useXcode)
 				{
 					[self xedFile:filename
