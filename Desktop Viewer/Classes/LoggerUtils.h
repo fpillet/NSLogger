@@ -36,3 +36,6 @@ extern NSString *StringWithTimeDelta(struct timeval *td);
 // Graphics utils
 extern CGColorRef CreateCGColorFromNSColor(NSColor * color);
 void MakeRoundedPath(CGContextRef ctx, CGRect r, CGFloat radius);
+
+// Xcode utils
+void OpenFileInXcode(NSString *fileName, NSUInteger lineNumber);

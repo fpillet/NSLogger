@@ -39,6 +39,7 @@
 #import "LoggerCommon.h"
 #import "LoggerDocument.h"
 #import "LoggerSplitView.h"
+#import "LoggerUtils.h"
 
 #define kMaxTableRowHeight @"maxTableRowHeight"
 
@@ -847,18 +848,6 @@ void runSystemCommand(NSString *cmd)
     runSystemCommand(cmd);
 }
 
-- (void)xedFile:(NSString *)path line:(NSString *)line client:(NSString *)client
-{
-	@try
-	{
-		[NSTask launchedTaskWithLaunchPath:@"/usr/bin/xcrun" arguments:@[ @"xed", @"-l", line, path ]];
-	}
-	@catch (NSException *exception)
-	{
-		NSLog(@"Could not run xed: %@", exception);
-	}
-}
-
 - (void)openDetailsInIDE
 {
 	NSInteger row = [logTable selectedRow];
@@ -887,9 +876,7 @@ void runSystemCommand(NSString *cmd)
 				}
 				if (useXcode)
 				{
-					[self xedFile:filename
-							 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber)]
-						   client:[attachedConnection clientName]];
+					OpenFileInXcode(filename, MAX(0, msg.lineNumber));
 				}
 				else
 				{

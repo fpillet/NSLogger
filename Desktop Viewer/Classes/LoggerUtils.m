@@ -80,3 +80,51 @@ void MakeRoundedPath(CGContextRef ctx, CGRect r, CGFloat radius)
 	CGContextClosePath(ctx);
 }
 
+static void OpenFileInXcodeWithKZLinkedConsole(NSString *fileName, NSUInteger lineNumber, void (^completionHandler)(NSString *filePath))
+{
+	static NSMutableSet *pendingFiles;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		pendingFiles = [NSMutableSet new];
+	});
+	
+	NSDistributedNotificationCenter *distributedCenter = [NSDistributedNotificationCenter defaultCenter];
+	[distributedCenter addObserverForName:@"pl.pixle.KZLinkedConsole.DidOpenFile" object:nil queue:nil usingBlock:^(NSNotification *notification) {
+		[pendingFiles removeObject:fileName];
+		completionHandler([notification.object description]);
+	}];
+	
+	[pendingFiles addObject:fileName];
+	[distributedCenter postNotificationName:@"pl.pixle.KZLinkedConsole.OpenFile" object:fileName userInfo:@{ @"Line": @(lineNumber) } deliverImmediately:YES];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		if ([pendingFiles containsObject:fileName])
+		{
+			[pendingFiles removeObject:fileName];
+			completionHandler(nil);
+		}
+	});
+}
+
+void OpenFileInXcode(NSString *fileName, NSUInteger lineNumber)
+{
+	// Try first with the KZLinkedConsole plugin because `xed --line` is terribly broken, see http://openradar.appspot.com/19529585
+	OpenFileInXcodeWithKZLinkedConsole(fileName, lineNumber, ^(NSString *filePath) {
+		if (filePath)
+		{
+			// KZLinkedConsole is installed and opened the file
+			[[NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dt.Xcode"].firstObject activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+		}
+		else
+		{
+			// KZLinkedConsole is not installed or failed to open the file, fallback to xed
+			@try
+			{
+				[NSTask launchedTaskWithLaunchPath:@"/usr/bin/xcrun" arguments:@[ @"xed", @"-l", @(lineNumber).description, fileName ]];
+			}
+			@catch (NSException *exception)
+			{
+				NSLog(@"Could not run xed: %@", exception);
+			}
+		}
+	});
+}
