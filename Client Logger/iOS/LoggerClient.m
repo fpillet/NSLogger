@@ -156,6 +156,8 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message);
 static void LoggerStartBonjourBrowsing(Logger *logger);
 static void LoggerStopBonjourBrowsing(Logger *logger);
 static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
+static void LoggerConnectToService(Logger *logger, CFNetServiceRef service);
+static void LoggerDisconnectFromService(Logger *logger, CFNetServiceRef service);
 static void LoggerServiceBrowserCallBack(CFNetServiceBrowserRef browser, CFOptionFlags flags, CFTypeRef domainOrService, CFStreamError* error, void *info);
 
 // Reachability and reconnect timer
@@ -1552,6 +1554,71 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	return result;
 }
 
+static void LoggerConnectToService(Logger *logger, CFNetServiceRef service)
+{
+	// a service has been found
+	LOGGERDBG(CFSTR("Logger found service: %@"), service);
+	if (service == NULL)
+		return;
+	
+	// if the user has specified that Logger shall only connect to the specified
+	// Bonjour service name, check it now. This makes things easier in a teamwork
+	// environment where multiple instances of NSLogger viewer may run on the
+	// same network
+	CFStringRef serviceName = CFNetServiceGetName(service);
+	if (logger->bonjourServiceName != NULL)
+	{
+		LOGGERDBG(CFSTR("-> looking for services of name %@"), logger->bonjourServiceName);
+		if (serviceName == NULL || kCFCompareEqualTo != CFStringCompare(serviceName, logger->bonjourServiceName, kCFCompareCaseInsensitive | kCFCompareDiacriticInsensitive))
+		{
+			LOGGERDBG(CFSTR("-> service name %@ does not match requested service name, ignoring."), serviceName);
+			return;
+		}
+	}
+	else
+	{
+		// If the desktop viewer we found requested that only clients looking for its name can connect,
+		// honor the request and do not connect. This helps with teams having multiple devices and multiple
+		// desktops with NSLogger installed to avoid unwanted logs coming to a specific viewer
+		// To indicate that the desktop only wants clients that are looking for its specific name,
+		// the desktop sets the TXT record to be a dictionary containing the @"filterClients" key with value @"1"
+		CFDataRef txtData = CFNetServiceGetTXTData(service);
+		if (txtData != NULL)
+		{
+			CFDictionaryRef txtDict = CFNetServiceCreateDictionaryWithTXTData(NULL, txtData);
+			if (txtDict != NULL)
+			{
+				const void *value = CFDictionaryGetValue(txtDict, CFSTR("filterClients"));
+				Boolean mismatch = (value != NULL &&
+									CFGetTypeID((CFTypeRef)value) == CFStringGetTypeID() &&
+									CFStringCompare((CFStringRef)value, CFSTR("1"), 0) != kCFCompareEqualTo);
+				CFRelease(txtDict);
+				if (mismatch)
+				{
+					LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), serviceName);
+					return;
+				}
+			}
+		}
+	}
+	CFArrayAppendValue(logger->bonjourServices, service);
+	LoggerTryConnect(logger);
+}
+
+static void LoggerDisconnectFromService(Logger *logger, CFNetServiceRef service)
+{
+	CFIndex idx = CFArrayGetFirstIndexOfValue(logger->bonjourServices, CFRangeMake(0, CFArrayGetCount(logger->bonjourServices)), service);
+	if (idx == -1)
+		return;
+	
+	CFNetServiceUnscheduleFromRunLoop(service, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
+	CFNetServiceClientContext context = {0, NULL, NULL, NULL, NULL};
+	CFNetServiceSetClient(service, NULL, &context);
+	CFNetServiceCancel(service);
+	
+	CFArrayRemoveValueAtIndex(logger->bonjourServices, idx);
+}
+
 static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 										  CFOptionFlags flags,
 										  CFTypeRef domainOrService,
@@ -1569,20 +1636,7 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 	{
 		if (!(flags & kCFNetServiceFlagIsDomain))
 		{
-			CFNetServiceRef service = (CFNetServiceRef)domainOrService;
-			CFIndex idx;
-			for (idx = 0; idx < CFArrayGetCount(logger->bonjourServices); idx++)
-			{
-				if (CFArrayGetValueAtIndex(logger->bonjourServices, idx) == service)
-				{
-					CFNetServiceUnscheduleFromRunLoop(service, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-					CFNetServiceClientContext context = {0, NULL, NULL, NULL, NULL};
-					CFNetServiceSetClient(service, NULL, &context);
-					CFNetServiceCancel(service);
-					CFArrayRemoveValueAtIndex(logger->bonjourServices, idx);
-					break;
-				}
-			}
+			LoggerDisconnectFromService(logger, (CFNetServiceRef)domainOrService);
 		}
 	}
 	else
@@ -1594,54 +1648,7 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 		}
 		else
 		{
-			// a service has been found
-			LOGGERDBG(CFSTR("Logger found service: %@"), domainOrService);
-			CFNetServiceRef service = (CFNetServiceRef)domainOrService;
-			if (service != NULL)
-			{
-				// if the user has specified that Logger shall only connect to the specified
-				// Bonjour service name, check it now. This makes things easier in a teamwork
-				// environment where multiple instances of NSLogger viewer may run on the
-				// same network
-				if (logger->bonjourServiceName != NULL)
-				{
-					LOGGERDBG(CFSTR("-> looking for services of name %@"), logger->bonjourServiceName);
-					CFStringRef name = CFNetServiceGetName(service);
-					if (name == NULL || kCFCompareEqualTo != CFStringCompare(name, logger->bonjourServiceName, kCFCompareCaseInsensitive | kCFCompareDiacriticInsensitive))
-					{
-						LOGGERDBG(CFSTR("-> service name %@ does not match requested service name, ignoring."), name);
-						return;
-					}
-				}
-				else
-				{
-					// If the desktop viewer we found requested that only clients looking for its name can connect,
-					// honor the request and do not connect. This helps with teams having multiple devices and multiple
-					// desktops with NSLogger installed to avoid unwanted logs coming to a specific viewer
-					// To indicate that the desktop only wants clients that are looking for its specific name,
-					// the desktop sets the TXT record to be a dictionary containing the @"filterClients" key with value @"1"
-					CFDataRef txtData = CFNetServiceGetTXTData(service);
-					if (txtData != NULL)
-					{
-						CFDictionaryRef txtDict = CFNetServiceCreateDictionaryWithTXTData(NULL, txtData);
-						if (txtDict != NULL)
-						{
-							const void *value = CFDictionaryGetValue(txtDict, CFSTR("filterClients"));
-							Boolean mismatch = (value != NULL &&
-												CFGetTypeID((CFTypeRef)value) == CFStringGetTypeID() &&
-												CFStringCompare((CFStringRef)value, CFSTR("1"), 0) != kCFCompareEqualTo);
-							CFRelease(txtDict);
-							if (mismatch)
-							{
-								LOGGERDBG(CFSTR("-> service %@ requested that only clients looking for it do connect."), CFNetServiceGetName(service));
-								return;
-							}
-						}
-					}
-				}
-				CFArrayAppendValue(logger->bonjourServices, service);
-				LoggerTryConnect(logger);
-			}
+			LoggerConnectToService(logger, (CFNetServiceRef)domainOrService);
 		}
 	}
 }
