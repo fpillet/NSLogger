@@ -39,6 +39,7 @@
 #import "LoggerCommon.h"
 #import "LoggerDocument.h"
 #import "LoggerSplitView.h"
+#import "LoggerUtils.h"
 
 #define kMaxTableRowHeight @"maxTableRowHeight"
 
@@ -847,18 +848,6 @@ void runSystemCommand(NSString *cmd)
     runSystemCommand(cmd);
 }
 
-- (void)xedFile:(NSString *)path line:(NSString *)line client:(NSString *)client {
-    id args = [NSArray arrayWithObjects:
-               @"-l",
-               line,
-               path,
-               client,
-               nil];
-    // NSLog(@"Args %@", args);
-    [NSTask launchedTaskWithLaunchPath:[[NSBundle mainBundle] pathForResource:@"xedReplacement.sh" ofType:nil]
-                             arguments:args];
-}
-
 - (void)openDetailsInIDE
 {
 	NSInteger row = [logTable selectedRow];
@@ -877,8 +866,6 @@ void runSystemCommand(NSString *cmd)
 				// (when logging from Android, could be IntelliJ or Eclipse)
 				NSString *extension = [filename pathExtension];
 				BOOL useXcode = NO;
-				//if ([fm fileExistsAtPath:@"/usr/bin/xed"])
-				//{
 				for (NSString *ext in sXcodeFileExtensions)
 				{
 					if ([ext caseInsensitiveCompare:extension] == NSOrderedSame)
@@ -887,12 +874,9 @@ void runSystemCommand(NSString *cmd)
 						break;
 					}
 				}
-				//}
 				if (useXcode)
 				{
-					[self xedFile:filename
-							 line:[NSString stringWithFormat:@"%d", MAX(0, msg.lineNumber)]
-						   client:[attachedConnection clientName]];
+					OpenFileInXcode(filename, MAX(0, msg.lineNumber));
 				}
 				else
 				{
