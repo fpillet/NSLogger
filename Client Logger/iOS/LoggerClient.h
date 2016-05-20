@@ -66,11 +66,13 @@ enum {
 	kLoggerOption_BrowseBonjour						= 0x04,
 	kLoggerOption_BrowseOnlyLocalDomain				= 0x08,
 	kLoggerOption_UseSSL							= 0x10,
-	kLoggerOption_CaptureSystemConsole				= 0x20
+	kLoggerOption_CaptureSystemConsole				= 0x20,
+	kLoggerOption_BrowsePeerToPeer					= 0x40
 };
 
 #define LOGGER_DEFAULT_OPTIONS	(kLoggerOption_BufferLogsUntilConnection |	\
 								 kLoggerOption_BrowseBonjour |				\
+								 kLoggerOption_BrowsePeerToPeer |			\
 								 kLoggerOption_BrowseOnlyLocalDomain |		\
 								 kLoggerOption_UseSSL |						\
 								 kLoggerOption_CaptureSystemConsole)

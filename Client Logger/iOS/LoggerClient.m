@@ -1520,7 +1520,7 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	NetServiceBrowser browser;
 #if ALLOW_COCOA_USE
 	browser = [NSNetServiceBrowser new];
-	browser.includesPeerToPeer = YES;
+	browser.includesPeerToPeer = (logger->options & kLoggerOption_BrowsePeerToPeer) == kLoggerOption_BrowsePeerToPeer;
 	browser.delegate = (__bridge id)(CFBridgingRetain([[FPLLoggerBonjourDelegate alloc] initWithLogger:logger]));
 #else
 	CFNetServiceClientContext context = {0, (void *)logger, NULL, NULL, NULL};
