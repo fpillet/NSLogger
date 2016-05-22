@@ -47,21 +47,14 @@
 #import <dlfcn.h>
 #import <fcntl.h>
 
-#if ALLOW_COCOA_USE && TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #import <UIKit/UIDevice.h>
 #endif
 
 /* --------------------------------------------------------------------------------
  * IMPLEMENTATION NOTES:
  *
- * The logger runs in a separate thread. It is written
- * in straight C for maximum compatibility with all runtime environments
- * (does not use the Objective-C runtime, only uses unix and CoreFoundation
- * calls, except for get the thread name and device information, but these
- * can be disabled by setting ALLOW_COCOA_USE to 0).
- * 
- * It is suitable for use in both Cocoa and low-level code. It does not activate
- * Cocoa multi-threading (no call to [NSThread detachNewThread...]). You can start
+ * The logger runs in a separate thread. You can start
  * logging very early (as soon as your code starts running), logs will be
  * buffered and sent to the log viewer as soon as a connection is acquired.
  * This makes the logger suitable for use in conditions where you usually
@@ -146,18 +139,9 @@
 #endif
 #undef LOGGER_ARC_MACROS_DEFINED
 
-#if ALLOW_COCOA_USE
 @interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
 - (instancetype)initWithLogger:(Logger *)logger;
 @end
-typedef NSNetServiceBrowser * NetServiceBrowser;
-typedef NSNetService * NetService;
-#define CAST_TO_NETSERVICE __bridge NetService
-#else
-typedef CFNetServiceBrowserRef NetServiceBrowser;
-typedef CFNetServiceRef NetService;
-#define CAST_TO_NETSERVICE NetService
-#endif
 
 /* Local prototypes */
 static void LoggerFlushAllOnExit(void);
@@ -168,10 +152,9 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message);
 // Bonjour management
 static void LoggerStartBonjourBrowsing(Logger *logger);
 static void LoggerStopBonjourBrowsing(Logger *logger);
-static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
-static void LoggerConnectToService(Logger *logger, NetService service);
-static void LoggerDisconnectFromService(Logger *logger, NetService service);
-static void LoggerServiceBrowserCallBack(CFNetServiceBrowserRef browser, CFOptionFlags flags, CFTypeRef domainOrService, CFStreamError* error, void *info);
+static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
+static void LoggerConnectToService(Logger *logger, NSNetService *service);
+static void LoggerDisconnectFromService(Logger *logger, NSNetService *service);
 
 // Reachability and reconnect timer
 static void LoggerRemoteSettingsChanged(Logger *logger);
@@ -1454,29 +1437,15 @@ static void LoggerStartBonjourBrowsing(Logger *logger)
 	if (logger->options & kLoggerOption_BrowseOnlyLocalDomain)
 	{
 		LOGGERDBG(CFSTR("Logger configured to search only the local domain, searching for services on: local."));
-		if (!LoggerBrowseBonjourForServices(logger, CFSTR("local.")) && logger->host == NULL)
-		{
-			LOGGERDBG(CFSTR("*** Logger: could not browse for services in domain local., no remote host configured: reverting to console logging. ***"));
-			logger->options |= kLoggerOption_LogToConsole;
-		}
+		LoggerBrowseBonjourForServices(logger, CFSTR("local."));
 	}
 	else
 	{
 		LOGGERDBG(CFSTR("Logger configured to search all domains, browsing for domains first"));
-		CFNetServiceClientContext context = {0, (void *)logger, NULL, NULL, NULL};
-		CFRunLoopRef runLoop = CFRunLoopGetCurrent();
-		logger->bonjourDomainBrowser = CFNetServiceBrowserCreate(NULL, &LoggerServiceBrowserCallBack, &context);
-		CFNetServiceBrowserScheduleWithRunLoop(logger->bonjourDomainBrowser, runLoop, kCFRunLoopCommonModes);
-		if (!CFNetServiceBrowserSearchForDomains(logger->bonjourDomainBrowser, false, NULL))
-		{
-			// An error occurred, revert to console logging if there is no remote host
-			LOGGERDBG(CFSTR("*** Logger: could not browse for domains, reverting to console logging. ***"));
-			CFNetServiceBrowserUnscheduleFromRunLoop(logger->bonjourDomainBrowser, runLoop, kCFRunLoopCommonModes);
-			CFRelease(logger->bonjourDomainBrowser);
-			logger->bonjourDomainBrowser = NULL;
-			if (logger->host == NULL)
-				logger->options |= kLoggerOption_LogToConsole;
-		}
+		NSNetServiceBrowser *browser = [NSNetServiceBrowser new];
+		browser.delegate = (__bridge id)(CFBridgingRetain([[FPLLoggerBonjourDelegate alloc] initWithLogger:logger]));
+		[browser searchForBrowsableDomains];
+		logger->bonjourDomainBrowser = CFRetain((CFTypeRef)browser);
 	}
 }
 
@@ -1487,9 +1456,9 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	// stop browsing for domains
 	if (logger->bonjourDomainBrowser != NULL)
 	{
-		CFNetServiceBrowserStopSearch(logger->bonjourDomainBrowser, NULL);
-		CFNetServiceBrowserUnscheduleFromRunLoop(logger->bonjourDomainBrowser, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		CFNetServiceBrowserInvalidate(logger->bonjourDomainBrowser);
+		NSNetServiceBrowser *browser = (__bridge NSNetServiceBrowser *)logger->bonjourDomainBrowser;
+		[browser stop];
+		CFRelease((CFTypeRef)(browser.delegate));
 		CFRelease(logger->bonjourDomainBrowser);
 		logger->bonjourDomainBrowser = NULL;
 	}
@@ -1498,15 +1467,9 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	CFIndex idx;
 	for (idx = 0; idx < CFArrayGetCount(logger->bonjourServiceBrowsers); idx++)
 	{
-		NetServiceBrowser browser = (NetServiceBrowser)CFArrayGetValueAtIndex(logger->bonjourServiceBrowsers, idx);
-#if ALLOW_COCOA_USE
+		NSNetServiceBrowser *browser = (NSNetServiceBrowser *)CFArrayGetValueAtIndex(logger->bonjourServiceBrowsers, idx);
 		[browser stop];
 		CFRelease((CFTypeRef)(browser.delegate));
-#else
-		CFNetServiceBrowserStopSearch(browser, NULL);
-		CFNetServiceBrowserUnscheduleFromRunLoop(browser, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		CFNetServiceBrowserInvalidate(browser);
-#endif
 	}
 	CFArrayRemoveAllValues(logger->bonjourServiceBrowsers);
 	
@@ -1514,22 +1477,12 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	CFArrayRemoveAllValues(logger->bonjourServices);
 }
 
-static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName)
+static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName)
 {
-	BOOL result = NO;
-	NetServiceBrowser browser;
-#if ALLOW_COCOA_USE
+	NSNetServiceBrowser *browser;
 	browser = [NSNetServiceBrowser new];
 	browser.includesPeerToPeer = (logger->options & kLoggerOption_BrowsePeerToPeer) == kLoggerOption_BrowsePeerToPeer;
 	browser.delegate = (__bridge id)(CFBridgingRetain([[FPLLoggerBonjourDelegate alloc] initWithLogger:logger]));
-#else
-	CFNetServiceClientContext context = {0, (void *)logger, NULL, NULL, NULL};
-	CFRunLoopRef runLoop = CFRunLoopGetCurrent();
-	
-	browser = CFNetServiceBrowserCreate(NULL, (CFNetServiceBrowserClientCallBack)&LoggerServiceBrowserCallBack, &context);
-	CFNetServiceBrowserScheduleWithRunLoop(browser, runLoop, kCFRunLoopCommonModes);
-#endif
-	CFStreamError error;
 
 	// try to use the user-specfied service type if any, fallback on our
 	// default service type
@@ -1542,29 +1495,12 @@ static BOOL LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 			serviceType = LOGGER_SERVICE_TYPE;
 	}
 	
-#if ALLOW_COCOA_USE
 	[browser searchForServicesOfType:(__bridge NSString *)serviceType inDomain:(__bridge NSString *)domainName];
-#else
-	if (!CFNetServiceBrowserSearchForServices(browser, domainName, serviceType, &error))
-	{
-		LOGGERDBG(CFSTR("Logger can't start search on domain: %@ (error %d)"), domainName, error.error);
-		CFNetServiceBrowserUnscheduleFromRunLoop(browser, runLoop, kCFRunLoopCommonModes);
-		CFNetServiceBrowserInvalidate(browser);
-	}
-	else
-#endif
-	{
-		LOGGERDBG(CFSTR("Logger started search for services of type %@ in domain %@"), serviceType, domainName);
-		CFArrayAppendValue(logger->bonjourServiceBrowsers, (const void *)browser);
-		result = YES;
-	}
-#if !ALLOW_COCOA_USE
-	CFRelease(browser);
-#endif
-	return result;
+	LOGGERDBG(CFSTR("Logger started search for services of type %@ in domain %@"), serviceType, domainName);
+	CFArrayAppendValue(logger->bonjourServiceBrowsers, (const void *)browser);
 }
 
-static void LoggerConnectToService(Logger *logger, NetService service)
+static void LoggerConnectToService(Logger *logger, NSNetService *service)
 {
 	// a service has been found
 	LOGGERDBG(CFSTR("Logger found service: %@"), service);
@@ -1575,11 +1511,7 @@ static void LoggerConnectToService(Logger *logger, NetService service)
 	// Bonjour service name, check it now. This makes things easier in a teamwork
 	// environment where multiple instances of NSLogger viewer may run on the
 	// same network
-#if ALLOW_COCOA_USE
 	CFStringRef serviceName = (__bridge CFStringRef)service.name;
-#else
-	CFStringRef serviceName = CFNetServiceGetName(service);
-#endif
 	if (logger->bonjourServiceName != NULL)
 	{
 		LOGGERDBG(CFSTR("-> looking for services of name %@"), logger->bonjourServiceName);
@@ -1596,11 +1528,7 @@ static void LoggerConnectToService(Logger *logger, NetService service)
 		// desktops with NSLogger installed to avoid unwanted logs coming to a specific viewer
 		// To indicate that the desktop only wants clients that are looking for its specific name,
 		// the desktop sets the TXT record to be a dictionary containing the @"filterClients" key with value @"1"
-#if ALLOW_COCOA_USE
 		CFDataRef txtData = (__bridge CFDataRef)service.TXTRecordData;
-#else
-		CFDataRef txtData = CFNetServiceGetTXTData(service);
-#endif
 		if (txtData != NULL)
 		{
 			CFDictionaryRef txtDict = CFNetServiceCreateDictionaryWithTXTData(NULL, txtData);
@@ -1623,59 +1551,17 @@ static void LoggerConnectToService(Logger *logger, NetService service)
 	LoggerTryConnect(logger);
 }
 
-static void LoggerDisconnectFromService(Logger *logger, NetService service)
+static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 {
 	CFIndex idx = CFArrayGetFirstIndexOfValue(logger->bonjourServices, CFRangeMake(0, CFArrayGetCount(logger->bonjourServices)), (const void *)service);
 	if (idx == -1)
 		return;
 	
-#if ALLOW_COCOA_USE
 	[service stop];
-#else
-	CFNetServiceUnscheduleFromRunLoop(service, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-	CFNetServiceClientContext context = {0, NULL, NULL, NULL, NULL};
-	CFNetServiceSetClient(service, NULL, &context);
-	CFNetServiceCancel(service);
-#endif
 	
 	CFArrayRemoveValueAtIndex(logger->bonjourServices, idx);
 }
 
-static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
-										  CFOptionFlags flags,
-										  CFTypeRef domainOrService,
-										  CFStreamError* error,
-										  void* info)
-{
-#pragma unused (browser)
-#pragma unused (error)
-	LOGGERDBG(CFSTR("LoggerServiceBrowserCallback browser=%@ flags=0x%04x domainOrService=%@ error=%d"), browser, flags, domainOrService, error==NULL ? 0 : error->error);
-	
-	Logger *logger = (Logger *)info;
-	assert(logger != NULL);
-	
-	if (flags & kCFNetServiceFlagRemove)
-	{
-		if (!(flags & kCFNetServiceFlagIsDomain))
-		{
-			LoggerDisconnectFromService(logger, (CAST_TO_NETSERVICE)domainOrService);
-		}
-	}
-	else
-	{
-		if (flags & kCFNetServiceFlagIsDomain)
-		{
-			// start searching for services in this domain
-			LoggerBrowseBonjourForServices(logger, (CFStringRef)domainOrService);
-		}
-		else
-		{
-			LoggerConnectToService(logger, (CAST_TO_NETSERVICE)domainOrService);
-		}
-	}
-}
-
-#if ALLOW_COCOA_USE
 @implementation FPLLoggerBonjourDelegate
 {
 	Logger *_logger;
@@ -1694,6 +1580,26 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didNotSearch:(NSDictionary<NSString *, NSNumber *> *)errorDict
 {
 	LOGGERDBG(CFSTR("netServiceBrowser:%@ didNotSearch:%@"), browser, errorDict);
+	
+	if (browser == self->_logger->bonjourDomainBrowser)
+	{
+		// An error occurred, revert to console logging if there is no remote host
+		LOGGERDBG(CFSTR("*** Logger: could not browse for domains, reverting to console logging. ***"));
+		CFRelease(self->_logger->bonjourDomainBrowser);
+		self->_logger->bonjourDomainBrowser = NULL;
+		if (self->_logger->host == NULL)
+			self->_logger->options |= kLoggerOption_LogToConsole;
+	}
+	else if (self->_logger->host == NULL)
+	{
+		LOGGERDBG(CFSTR("*** Logger: could not browse for services, no remote host configured: reverting to console logging. ***"));
+		self->_logger->options |= kLoggerOption_LogToConsole;
+	}
+}
+
+- (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindDomain:(NSString *)domain moreComing:(BOOL)moreComing
+{
+	LoggerBrowseBonjourForServices(self->_logger, (__bridge CFStringRef)domain);
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindService:(NSNetService *)service moreComing:(BOOL)moreComing
@@ -1707,7 +1613,6 @@ static void LoggerServiceBrowserCallBack (CFNetServiceBrowserRef browser,
 }
 
 @end
-#endif
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -1933,19 +1838,12 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 			// workaround for TLS in iOS 5 as per TN2287
 			// see http://developer.apple.com/library/ios/#technotes/tn2287/_index.html#//apple_ref/doc/uid/DTS40011309
 			// if we are running iOS 5 or later, use a special mode that allows the stack to downgrade gracefully
-	#if ALLOW_COCOA_USE
 			@autoreleasepool {
 				NSString *versionString = [[UIDevice currentDevice] systemVersion];
 				if ([versionString compare:@"5.0" options:NSNumericSearch] != NSOrderedAscending)
 					SSLValues[0] = CFSTR("kCFStreamSocketSecurityLevelTLSv1_0SSLv3");
 			}
-	#else
-			// we can't find out, assume we _may_ be on iOS 5 but can't be certain
-			// go for SSLv3 which works without the TLS 1.2 / 1.1 / 1.0 downgrade issue
-			SSLValues[0] = kCFStreamSocketSecurityLevelSSLv3;
-	#endif
 #endif
-
 			CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 			CFWriteStreamSetProperty(logger->logStream, kCFStreamPropertySSLSettings, SSLDict);
 			CFRelease(SSLDict);
@@ -1997,15 +1895,11 @@ static void LoggerTryConnect(Logger *logger)
 	// If there are discovered Bonjour services, try them now
 	while (CFArrayGetCount(logger->bonjourServices))
 	{
-		NetService service = (NetService)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
+		NSNetService *service = (NSNetService *)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
 		LOGGERDBG(CFSTR("-> Trying to open write stream to service %@"), service);
-#if ALLOW_COCOA_USE
 		NSOutputStream *outputStream;
 		[service getInputStream:NULL outputStream:&outputStream];
 		logger->logStream = (CFWriteStreamRef)CFBridgingRetain(outputStream);
-#else
-		CFStreamCreatePairWithSocketToNetService(NULL, service, NULL, &logger->logStream);
-#endif
 		CFArrayRemoveValueAtIndex(logger->bonjourServices, 0);
 		if (logger->logStream == NULL)
 		{
@@ -2208,7 +2102,6 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 	LoggerMessageAddTimestamp(encoder);
 
 	BOOL hasThreadName = NO;
-#if ALLOW_COCOA_USE
 	// Getting the thread number is tedious, to say the least. Since there is
 	// no direct way to get it, we have to do it sideways. Note that it can be dangerous
 	// to use any Cocoa call when in a multithreaded application that only uses non-Cocoa threads
@@ -2276,7 +2169,6 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 			hasThreadName = YES;
 		}
 	}
-#endif
 	if (!hasThreadName)
 	{
 #if __LP64__
@@ -2484,7 +2376,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		if (name != NULL)
 			LoggerMessageAddString(encoder, name, PART_KEY_CLIENT_NAME);
 
-#if TARGET_OS_IPHONE && ALLOW_COCOA_USE
+#if TARGET_OS_IPHONE
 		if ([NSThread isMultiThreaded] || [NSThread isMainThread])
 		{
 			@autoreleasepool
@@ -2498,7 +2390,6 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 		}
 #elif TARGET_OS_MAC
 		CFStringRef osName = NULL, osVersion = NULL;
-	#if ALLOW_COCOA_USE
 		// Read the OS version without using deprecated Gestalt calls
 		@autoreleasepool
 		{
@@ -2515,7 +2406,6 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			{
 			}
 		}
-	#endif
 		if (osVersion == NULL)
 		{
 			// Not allowed to call into Cocoa ? use the Darwin version string
@@ -2683,22 +2573,12 @@ static void LogMessageTo_internal(Logger *logger,
             if (functionName != NULL)
                 LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
 
-#if ALLOW_COCOA_USE
-            // Go though NSString to avoid low-level logging of CF datastructures (i.e. too detailed NSDictionary, etc)
             NSString *msgString = [[NSString alloc] initWithFormat:format arguments:args];
             if (msgString != nil)
             {
                 LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)msgString, PART_KEY_MESSAGE);
                 RELEASE_NSOBJECT(msgString);
             }
-#else
-            CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
-            if (msgString != NULL)
-            {
-                LoggerMessageAddString(encoder, msgString, PART_KEY_MESSAGE);
-                CFRelease(msgString);
-            }
-#endif
 
 			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);

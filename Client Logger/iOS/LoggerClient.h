@@ -48,14 +48,6 @@
 // being included in the project, and potentially configure their macros accordingly
 #define NSLOGGER_WAS_HERE		1
 
-// Set this to 0 if you absolutely NOT want any access to Cocoa (Objective-C, NS* calls)
-// We need a couple ones to reliably obtain the thread number and device information
-// Note that since we need NSAutoreleasePool when using Cocoa in the logger's worker thread,
-// we need to put Cocoa in multithreading mode. Also, ALLOW_COCOA_USE allows the client code
-// to use NSLog()-style message formatting (less verbose than CFShow()-style) through the
-// use of -[NSString stringWithFormat:arguments:]
-#define	ALLOW_COCOA_USE			1
-
 /* -----------------------------------------------------------------
  * Logger option flags & default options
  * -----------------------------------------------------------------
@@ -89,7 +81,7 @@ typedef struct
 
 	CFMutableArrayRef bonjourServiceBrowsers;		// Active service browsers
 	CFMutableArrayRef bonjourServices;				// Services being tried
-	CFNetServiceBrowserRef bonjourDomainBrowser;	// Domain browser
+	const void * bonjourDomainBrowser;				// Domain browser, actually a NSNetServiceBrowser * (but forbidden by ARC)
 	
 	CFMutableArrayRef logQueue;						// Message queue
 	pthread_mutex_t logQueueMutex;
