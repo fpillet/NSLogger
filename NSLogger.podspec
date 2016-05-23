@@ -20,6 +20,7 @@ Pod::Spec.new do |s|
   
   s.ios.frameworks   = 'CFNetwork', 'SystemConfiguration'
   s.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
+  s.requires_arc = false
   
   s.default_subspec = 'Standard'
 
