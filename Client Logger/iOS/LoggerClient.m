@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.6.1 26-FEB-2016
+ * version 1.7.0 23-MAY-2016
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)

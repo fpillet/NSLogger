@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name     = 'NSLogger'
-  s.version  = '1.6.1'
+  s.version  = '1.7.0'
   s.license  = 'BSD'
   s.summary  = 'A modern, flexible logging tool.'
   s.homepage = 'https://github.com/fpillet/NSLogger'
   s.author   = { 'Florent Pillet' => 'fpillet@gmail.com' }
-  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.6.1' }
+  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.7.0' }
   s.screenshot  = "https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png"
 
   s.description = 'NSLogger is a high perfomance logging utility which displays traces emitted by ' \
@@ -27,10 +27,10 @@ Pod::Spec.new do |s|
   # the 'Standard' subspec is the default: unused NSLogger functions will be stripped
   # from the final build
   s.subspec 'Standard' do |standard|
-  standard.source_files = 'Client Logger/iOS/*.{h,m}'
-  standard.xcconfig = {
-    'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
-  }
+    standard.source_files = 'Client Logger/iOS/*.{h,m}'
+    standard.xcconfig = {
+      'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
+    }
   end
 
   # the 'NoStrip' subspec prevents unused functions from being stripped by the linker.
