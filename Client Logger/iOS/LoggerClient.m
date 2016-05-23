@@ -116,32 +116,9 @@
 	#define LOGGERDBG2(format, ...) do{}while(0)
 #endif
 
-// small set of macros for proper ARC/non-ARC compilation support
-// with added cruft to support non-clang compilers
-#undef CAST_TO_CFSTRING
-#undef CAST_TO_NSSTRING
-#undef RELEASE_NSOBJECT
-#undef LOGGER_ARC_MACROS_DEFINED
-#if defined(__has_feature)
-	#if __has_feature(objc_arc)
-        #define CAST_TO_CFSTRING			__bridge CFStringRef
-        #define CAST_TO_NSSTRING			__bridge NSString *
-		#define CAST_TO_CFDATA				__bridge CFDataRef
-		#define RELEASE_NSOBJECT(obj)		do{}while(0)
-		#define LOGGER_ARC_MACROS_DEFINED
-	#endif
+#if defined(__has_feature) && __has_feature(objc_arc)
+#error LoggerClinet.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
 #endif
-#if !defined(LOGGER_ARC_MACROS_DEFINED)
-	#define CAST_TO_CFSTRING			CFStringRef
-    #define CAST_TO_NSSTRING			NSString *
-	#define CAST_TO_CFDATA				CFDataRef
-	#define RELEASE_NSOBJECT(obj)		[obj release]
-#endif
-#undef LOGGER_ARC_MACROS_DEFINED
-
-@interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
-- (instancetype)initWithLogger:(Logger *)logger;
-@end
 
 /* Local prototypes */
 static void LoggerFlushAllOnExit(void);
@@ -155,6 +132,9 @@ static void LoggerStopBonjourBrowsing(Logger *logger);
 static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
 static void LoggerConnectToService(Logger *logger, NSNetService *service);
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service);
+@interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
+- (instancetype)initWithLogger:(Logger *)logger;
+@end
 
 // Reachability and reconnect timer
 static void LoggerRemoteSettingsChanged(Logger *logger);
@@ -1053,7 +1033,7 @@ static void LoggerLogMessageToConsoleGrabbers(CFStringRef tag, CFStringRef messa
 	for (unsigned i = 0; i < consoleGrabbersListLength; i++)
 	{
 		if (consoleGrabbersList[i] != NULL)
-			LogMessageRawToF(consoleGrabbersList[i], NULL, 0, NULL, (CAST_TO_NSSTRING)tag, 0, (CAST_TO_NSSTRING)message);
+			LogMessageRawToF(consoleGrabbersList[i], NULL, 0, NULL, (NSString *)tag, 0, (NSString *)message);
 	}
 	pthread_mutex_unlock(&consoleGrabbersMutex);
 }
@@ -1443,9 +1423,9 @@ static void LoggerStartBonjourBrowsing(Logger *logger)
 	{
 		LOGGERDBG(CFSTR("Logger configured to search all domains, browsing for domains first"));
 		NSNetServiceBrowser *browser = [NSNetServiceBrowser new];
-		browser.delegate = (__bridge id)(CFBridgingRetain([[FPLLoggerBonjourDelegate alloc] initWithLogger:logger]));
+		browser.delegate = [[FPLLoggerBonjourDelegate alloc] initWithLogger:logger];
 		[browser searchForBrowsableDomains];
-		logger->bonjourDomainBrowser = CFRetain((CFTypeRef)browser);
+		logger->bonjourDomainBrowser = browser;
 	}
 }
 
@@ -1456,10 +1436,9 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	// stop browsing for domains
 	if (logger->bonjourDomainBrowser != NULL)
 	{
-		NSNetServiceBrowser *browser = (__bridge NSNetServiceBrowser *)logger->bonjourDomainBrowser;
-		[browser stop];
-		CFRelease((CFTypeRef)(browser.delegate));
-		CFRelease(logger->bonjourDomainBrowser);
+		[logger->bonjourDomainBrowser stop];
+		[logger->bonjourDomainBrowser.delegate release];
+		[logger->bonjourDomainBrowser release];
 		logger->bonjourDomainBrowser = NULL;
 	}
 	
@@ -1467,9 +1446,9 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 	CFIndex idx;
 	for (idx = 0; idx < CFArrayGetCount(logger->bonjourServiceBrowsers); idx++)
 	{
-		NSNetServiceBrowser *browser = (NSNetServiceBrowser *)CFArrayGetValueAtIndex(logger->bonjourServiceBrowsers, idx);
+		NSNetServiceBrowser *browser = CFArrayGetValueAtIndex(logger->bonjourServiceBrowsers, idx);
 		[browser stop];
-		CFRelease((CFTypeRef)(browser.delegate));
+		[browser.delegate release];
 	}
 	CFArrayRemoveAllValues(logger->bonjourServiceBrowsers);
 	
@@ -1482,7 +1461,7 @@ static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	NSNetServiceBrowser *browser;
 	browser = [NSNetServiceBrowser new];
 	browser.includesPeerToPeer = (logger->options & kLoggerOption_BrowsePeerToPeer) == kLoggerOption_BrowsePeerToPeer;
-	browser.delegate = (__bridge id)(CFBridgingRetain([[FPLLoggerBonjourDelegate alloc] initWithLogger:logger]));
+	browser.delegate = [[FPLLoggerBonjourDelegate alloc] initWithLogger:logger];
 
 	// try to use the user-specfied service type if any, fallback on our
 	// default service type
@@ -1497,7 +1476,8 @@ static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 	
 	[browser searchForServicesOfType:(__bridge NSString *)serviceType inDomain:(__bridge NSString *)domainName];
 	LOGGERDBG(CFSTR("Logger started search for services of type %@ in domain %@"), serviceType, domainName);
-	CFArrayAppendValue(logger->bonjourServiceBrowsers, (const void *)browser);
+	CFArrayAppendValue(logger->bonjourServiceBrowsers, browser);
+	[browser release];
 }
 
 static void LoggerConnectToService(Logger *logger, NSNetService *service)
@@ -1547,13 +1527,13 @@ static void LoggerConnectToService(Logger *logger, NSNetService *service)
 			}
 		}
 	}
-	CFArrayAppendValue(logger->bonjourServices, (const void *)service);
+	CFArrayAppendValue(logger->bonjourServices, service);
 	LoggerTryConnect(logger);
 }
 
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 {
-	CFIndex idx = CFArrayGetFirstIndexOfValue(logger->bonjourServices, CFRangeMake(0, CFArrayGetCount(logger->bonjourServices)), (const void *)service);
+	CFIndex idx = CFArrayGetFirstIndexOfValue(logger->bonjourServices, CFRangeMake(0, CFArrayGetCount(logger->bonjourServices)), service);
 	if (idx == -1)
 		return;
 	
@@ -1895,11 +1875,11 @@ static void LoggerTryConnect(Logger *logger)
 	// If there are discovered Bonjour services, try them now
 	while (CFArrayGetCount(logger->bonjourServices))
 	{
-		NSNetService *service = (NSNetService *)CFArrayGetValueAtIndex(logger->bonjourServices, 0);
+		NSNetService *service = CFArrayGetValueAtIndex(logger->bonjourServices, 0);
 		LOGGERDBG(CFSTR("-> Trying to open write stream to service %@"), service);
 		NSOutputStream *outputStream;
 		[service getInputStream:NULL outputStream:&outputStream];
-		logger->logStream = (CFWriteStreamRef)CFBridgingRetain(outputStream);
+		logger->logStream = (CFWriteStreamRef)outputStream;
 		CFArrayRemoveValueAtIndex(logger->bonjourServices, 0);
 		if (logger->logStream == NULL)
 		{
@@ -2165,7 +2145,7 @@ static void LoggerMessageAddTimestampAndThreadID(CFMutableDataRef encoder)
 		}
 		if (name != nil)
 		{
-			LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)name, PART_KEY_THREAD_ID);
+			LoggerMessageAddString(encoder, (CFStringRef)name, PART_KEY_THREAD_ID);
 			hasThreadName = YES;
 		}
 	}
@@ -2382,10 +2362,10 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 			@autoreleasepool
 			{
 				UIDevice *device = [UIDevice currentDevice];
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.name, PART_KEY_UNIQUEID);
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemVersion, PART_KEY_OS_VERSION);
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.systemName, PART_KEY_OS_NAME);
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)device.model, PART_KEY_CLIENT_MODEL);
+				LoggerMessageAddString(encoder, (CFStringRef)device.name, PART_KEY_UNIQUEID);
+				LoggerMessageAddString(encoder, (CFStringRef)device.systemVersion, PART_KEY_OS_VERSION);
+				LoggerMessageAddString(encoder, (CFStringRef)device.systemName, PART_KEY_OS_NAME);
+				LoggerMessageAddString(encoder, (CFStringRef)device.model, PART_KEY_CLIENT_MODEL);
 			}
 		}
 #elif TARGET_OS_MAC
@@ -2399,7 +2379,7 @@ static void	LoggerPushClientInfoToFrontOfQueue(Logger *logger)
 				if ([versionString length])
 				{
 					osName = CFSTR("Mac OS X");
-					osVersion = CFRetain((CAST_TO_CFSTRING)versionString);
+					osVersion = CFRetain((CFStringRef)versionString);
 				}
 			}
 			@catch (NSException *exc)
@@ -2518,7 +2498,7 @@ static void LogMessageRawTo_internal(Logger *logger,
         {
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
             if (domain != nil && [domain length])
-                LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
             if (level)
                 LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
             if (filename != NULL)
@@ -2528,7 +2508,7 @@ static void LogMessageRawTo_internal(Logger *logger,
             if (functionName != NULL)
                 LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
             if (message != nil)
-                LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)message, PART_KEY_MESSAGE);
+                LoggerMessageAddString(encoder, (CFStringRef)message, PART_KEY_MESSAGE);
 			else
 				LoggerMessageAddString(encoder, CFSTR(""), PART_KEY_MESSAGE);
 
@@ -2563,7 +2543,7 @@ static void LogMessageTo_internal(Logger *logger,
         {
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
             if (domain != nil && [domain length])
-                LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
             if (level)
                 LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
             if (filename != NULL)
@@ -2576,8 +2556,8 @@ static void LogMessageTo_internal(Logger *logger,
             NSString *msgString = [[NSString alloc] initWithFormat:format arguments:args];
             if (msgString != nil)
             {
-                LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)msgString, PART_KEY_MESSAGE);
-                RELEASE_NSOBJECT(msgString);
+                LoggerMessageAddString(encoder, (CFStringRef)msgString, PART_KEY_MESSAGE);
+                [msgString release];
             }
 
 			LoggerMessageFinalize(encoder);
@@ -2612,7 +2592,7 @@ static void LogImageTo_internal(Logger *logger,
 		{
 			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
 			if (domain != nil && [domain length])
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
+				LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
 			if (level)
 				LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
 			if (width && height)
@@ -2626,7 +2606,7 @@ static void LogImageTo_internal(Logger *logger,
 				LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
 			if (functionName != NULL)
 				LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
-			LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
+			LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
 
 			LoggerMessageFinalize(encoder);
 			LoggerPushMessageToQueue(logger, encoder);
@@ -2657,7 +2637,7 @@ static void LogDataTo_internal(Logger *logger,
         {
             LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
             if (domain != nil && [domain length])
-                LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)domain, PART_KEY_TAG);
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
             if (level)
                 LoggerMessageAddInt32(encoder, level, PART_KEY_LEVEL);
             if (filename != NULL)
@@ -2666,7 +2646,7 @@ static void LogDataTo_internal(Logger *logger,
                 LoggerMessageAddInt32(encoder, lineNumber, PART_KEY_LINENUMBER);
             if (functionName != NULL)
                 LoggerMessageAddCString(encoder, functionName, PART_KEY_FUNCTIONNAME);
-            LoggerMessageAddData(encoder, (CAST_TO_CFDATA)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
+            LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
 
 			LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
@@ -2693,7 +2673,7 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 			LoggerMessageAddInt32(encoder, LOGMSG_TYPE_BLOCKSTART, PART_KEY_MESSAGE_TYPE);
 			if (format != nil)
 			{
-				CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CAST_TO_CFSTRING)format, args);
+				CFStringRef msgString = CFStringCreateWithFormatAndArguments(NULL, NULL, (CFStringRef)format, args);
 				if (msgString != NULL)
 				{
 					LoggerMessageAddString(encoder, msgString, PART_KEY_MESSAGE);
@@ -2899,7 +2879,7 @@ void LogMarkerTo(Logger *logger, NSString *text)
 			}
 			else
 			{
-				LoggerMessageAddString(encoder, (CAST_TO_CFSTRING)text, PART_KEY_MESSAGE);
+				LoggerMessageAddString(encoder, (CFStringRef)text, PART_KEY_MESSAGE);
 			}
 			LoggerMessageFinalize(encoder);
 			LoggerPushMessageToQueue(logger, encoder);

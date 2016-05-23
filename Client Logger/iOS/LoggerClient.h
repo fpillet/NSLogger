@@ -81,8 +81,11 @@ typedef struct
 
 	CFMutableArrayRef bonjourServiceBrowsers;		// Active service browsers
 	CFMutableArrayRef bonjourServices;				// Services being tried
-	const void * bonjourDomainBrowser;				// Domain browser, actually a NSNetServiceBrowser * (but forbidden by ARC)
-	
+#if __has_feature(objc_arc)
+	const void *bonjourDomainBrowser;				// Domain browser
+#else
+	NSNetServiceBrowser *bonjourDomainBrowser;		// Domain browser
+#endif
 	CFMutableArrayRef logQueue;						// Message queue
 	pthread_mutex_t logQueueMutex;
 	pthread_cond_t logQueueEmpty;
