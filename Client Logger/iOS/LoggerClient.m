@@ -120,6 +120,52 @@
 #error LoggerClinet.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
 #endif
 
+struct Logger
+{
+	CFStringRef bufferFile;                         // If non-NULL, all buffering is done to the specified file instead of in-memory
+	CFStringRef host;                               // Viewer host to connect to (instead of using Bonjour)
+	UInt32 port;                                    // port on the viewer host
+	
+	CFMutableArrayRef bonjourServiceBrowsers;       // Active service browsers
+	CFMutableArrayRef bonjourServices;              // Services being tried
+	NSNetServiceBrowser *bonjourDomainBrowser;      // Domain browser
+	CFMutableArrayRef logQueue;                     // Message queue
+	pthread_mutex_t logQueueMutex;
+	pthread_cond_t logQueueEmpty;
+	
+	dispatch_once_t workerThreadInit;               // Use this to ensure creation of the worker thread is ever done only once for a given logger
+	pthread_t workerThread;                         // The worker thread responsible for Bonjour resolution, connection and logs transmission
+	CFRunLoopSourceRef messagePushedSource;         // A message source that fires on the worker thread when messages are available for send
+	CFRunLoopSourceRef bufferFileChangedSource;     // A message source that fires on the worker thread when the buffer file configuration changes
+	CFRunLoopSourceRef remoteOptionsChangedSource;  // A message source that fires when option changes imply a networking strategy change (switch to/from Bonjour, direct host or file streaming)
+	
+	CFWriteStreamRef logStream;                     // The connected stream we're writing to
+	CFWriteStreamRef bufferWriteStream;             // If bufferFile not NULL and we're not connected, points to a stream for writing log data
+	CFReadStreamRef bufferReadStream;               // If bufferFile not NULL, points to a read stream that will be emptied prior to sending the rest of in-memory messages
+	
+	SCNetworkReachabilityRef reachability;          // The reachability object we use to determine when the target host becomes reachable
+	SCNetworkReachabilityFlags reachabilityFlags;   // Last known reachability flags - we use these to detect network transitions without network loss
+	CFRunLoopTimerRef reconnectTimer;               // A timer to regularly check connection to the defined host, along with reachability for added reliability
+	
+	uint8_t *sendBuffer;                            // data waiting to be sent
+	NSUInteger sendBufferSize;
+	NSUInteger sendBufferUsed;                      // number of bytes of the send buffer currently in use
+	NSUInteger sendBufferOffset;                    // offset in sendBuffer to start sending at
+	
+	int32_t messageSeq;                             // sequential message number (added to each message sent)
+	
+	// settings
+	uint32_t options;                               // Flags, see enum above
+	CFStringRef bonjourServiceType;                 // leave NULL to use the default
+	CFStringRef bonjourServiceName;                 // leave NULL to use the first one available
+	
+	// internal state
+	BOOL targetReachable;                           // Set to YES when the Reachability target (host or internet) is deemed reachable
+	BOOL connected;                                 // Set to YES once the write stream declares the connection open
+	volatile BOOL quit;                             // Set to YES to terminate the logger worker thread's runloop
+	BOOL incompleteSendOfFirstItem;                 // set to YES if we are sending the first item in the queue and it's bigger than what the buffer can hold
+};
+
 /* Local prototypes */
 static void LoggerFlushAllOnExit(void);
 static void* LoggerWorkerThread(Logger *logger);
@@ -292,6 +338,12 @@ void LoggerSetOptions(Logger *logger, uint32_t options)
 		logger->options = options;
 }
 
+uint32_t LoggerGetOptions(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->options : 0;
+}
+
 void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFStringRef bonjourServiceName)
 {
 	LOGGERDBG(CFSTR("LoggerSetupBonjour serviceType=%@ serviceName=%@"), bonjourServiceType, bonjourServiceName);
@@ -325,6 +377,18 @@ void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFString
 	}
 }
 
+CFStringRef LoggerGetBonjourServiceType(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->bonjourServiceType : NULL;
+}
+
+CFStringRef LoggerGetBonjourServiceName(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->bonjourServiceName : NULL;
+}
+
 void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 {
 	if (logger == NULL)
@@ -353,6 +417,18 @@ void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 		CFRelease(previousHost);
 }
 
+CFStringRef LoggerGetViewerHostName(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->host : NULL;
+}
+
+UInt32 LoggerGetViewerPort(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->port : 0;
+}
+
 void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 {
 	if (logger == NULL)
@@ -377,6 +453,12 @@ void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 		if (logger->bufferFileChangedSource != NULL)
 			CFRunLoopSourceSignal(logger->bufferFileChangedSource);
 	}
+}
+
+CFStringRef LoggerGetBufferFile(Logger *logger)
+{
+	logger = logger ?: LoggerGetDefaultLogger();
+	return logger ? logger->bufferFile : NULL;
 }
 
 Logger *LoggerStart(Logger *logger)
