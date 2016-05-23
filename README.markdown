@@ -104,8 +104,6 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 # High performance, low overhead #
 *NSLogger* runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
 
-*NSLogger* can be used for low-level code in situations where only CoreFoundation can be called. Disable the **ALLOW_COCOA** flag in *LoggerClient.h* to prevent any use of Cocoa code.
-
 # Advanced colors configuration #
 Apply colors to tags and messages using regular expressions.
 
