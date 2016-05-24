@@ -628,7 +628,7 @@ static NSArray *sXcodeFileExtensions = nil;
         NSView *mainDisplay = [[sender subviews] objectAtIndex:1];
         NSRect frame = mainDisplay.frame;
         frame.size.width += newSize.width - oldSize.width;
-        frame.size.height += newSize.height - oldSize.height;
+        frame.size.height = newSize.height;
         [mainDisplay setFrame:frame];
         
         NSView *sidebar = [[sender subviews] objectAtIndex:0];
