@@ -645,6 +645,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = relaunch;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -664,6 +665,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = relaunch;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
