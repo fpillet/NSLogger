@@ -15,7 +15,7 @@
 		3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */ = {isa = PBXBuildFile; fileRef = 3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */; };
 		3D18EFA10F553B3800EC6DCC /* LoggerUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */; };
 		3D24C40C125638A500435837 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; };
-		3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; };
+		3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3D369CB71290009800462E79 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D369CB61290009800462E79 /* Security.framework */; };
 		3D4EA0580F3768EA00DF81E6 /* LoggerMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA0570F3768EA00DF81E6 /* LoggerMessage.m */; };
 		3D4EA05B0F3769B000DF81E6 /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */; };
@@ -40,7 +40,7 @@
 		3DAC10E413ED5A7E00D5E6BA /* SSSelectableToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC10E213ED5A7E00D5E6BA /* SSSelectableToolbarItem.m */; };
 		3DADCBA0125FC3B200807A7D /* ValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DADCB9F125FC3B200807A7D /* ValueTransformers.m */; };
 		3DBB562712829BCC004F729D /* LoggerMarkerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DBB562612829BCC004F729D /* LoggerMarkerCell.m */; };
-		3DC4A4C4175BC1DF004A3A34 /* HockeySDK.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */; };
+		3DC4A4C4175BC1DF004A3A34 /* HockeySDK.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3DC4A4C5175BC1E1004A3A34 /* HockeySDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC4A4BF175BC188004A3A34 /* HockeySDK.framework */; };
 		3DC4A4C7175BC3EF004A3A34 /* HockeyConf.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3DC4A4C6175BC3EF004A3A34 /* HockeyConf.plist */; };
 		3DC55EF30F436BBA005C61FD /* LoggerMessageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC55EF20F436BBA005C61FD /* LoggerMessageCell.m */; };
@@ -52,7 +52,7 @@
 		3DE01E941268D32100A39E7E /* LoggerDetailsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */; };
 		3DE8CE7D12AE4A60005C83D0 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 3D6ED59C12A3AE0C0005DD57 /* Credits.rtf */; };
 		3DE8CE7E12AE4A67005C83D0 /* relaunch.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DE8CE7312AE49E7005C83D0 /* relaunch.m */; };
-		3DE8CEEC12AE50A8005C83D0 /* relaunch in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DE8CE7812AE4A17005C83D0 /* relaunch */; };
+		3DE8CEEC12AE50A8005C83D0 /* relaunch in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DE8CE7812AE4A17005C83D0 /* relaunch */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3DEE27B712B773D8009ADA67 /* LoggerNativeTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D7C75550F4026D2006B55AD /* LoggerNativeTransport.m */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -488,7 +488,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "Florent Pillet";
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLoggerViewer" */;
@@ -713,6 +713,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
