@@ -33,13 +33,14 @@
 
 @implementation LoggerTCPConnection
 
-@synthesize readStream, buffer, tmpBuf, tmpBufSize;
+@synthesize readStream, writeStream, buffer, tmpBuf, tmpBufSize;
 
-- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+- (id)initWithInputStream:(NSInputStream *)anInputStream outputStream:(NSOutputStream *)anOutputStream clientAddress:(NSData *)anAddress;
 {
 	if ((self = [super initWithAddress:anAddress]) != nil)
 	{
 		readStream = [anInputStream retain];
+        writeStream = [anOutputStream retain];
 
 		tmpBufSize = TMP_BUF_SIZE;
 		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
@@ -62,6 +63,14 @@
 
 - (void)shutdown
 {
+    if (writeStream != nil)
+    {
+        [writeStream close];
+        [writeStream setDelegate:nil];
+        [writeStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [writeStream release];
+        writeStream = nil;
+    }
 	if (readStream != nil)
 	{
 		[readStream close];

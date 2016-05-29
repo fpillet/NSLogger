@@ -33,6 +33,8 @@
 @interface LoggerTCPConnection : LoggerIPConnection
 {
 	NSInputStream *readStream;
+    NSOutputStream *writeStream;
+    
 	NSMutableData *buffer;
 	
 	uint8_t *tmpBuf;
@@ -40,10 +42,11 @@
 }
 
 @property (nonatomic, retain) NSInputStream *readStream;
+@property (nonatomic, retain) NSOutputStream *writeStream;
 @property (nonatomic, readonly) NSMutableData *buffer;
 @property (nonatomic, readonly) uint8_t *tmpBuf;
 @property (nonatomic, readonly) NSUInteger tmpBufSize;
 
-- (id)initWithInputStream:(NSInputStream *)anInputStream clientAddress:(NSData *)anAddress;
+- (id)initWithInputStream:(NSInputStream *)anInputStream outputStream:(NSOutputStream *)outputStream clientAddress:(NSData *)anAddress;
 
 @end

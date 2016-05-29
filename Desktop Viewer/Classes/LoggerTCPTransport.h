@@ -60,7 +60,7 @@
 - (NSString *)bonjourServiceName;
 - (NSString *)bonjourServiceType;
 - (NSInteger)tcpPort;
-- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is clientAddress:(NSData *)addr;
+- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is outputStream:(NSOutputStream *)os clientAddress:(NSData *)addr;
 - (void)processIncomingData:(LoggerTCPConnection *)cnx;
 
 @end

@@ -89,9 +89,9 @@
 	return [[[NSUserDefaults standardUserDefaults] objectForKey:kPrefDirectTCPIPResponderPort] integerValue];
 }
 
-- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is clientAddress:(NSData *)addr
+- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is outputStream:(NSOutputStream *)os clientAddress:(NSData *)addr
 {
-	return [[[LoggerTCPConnection alloc] initWithInputStream:is clientAddress:addr] autorelease];
+    return [[[LoggerTCPConnection alloc] initWithInputStream:is outputStream:os clientAddress:addr] autorelease];
 }
 
 - (void)processIncomingData:(LoggerTCPConnection *)cnx

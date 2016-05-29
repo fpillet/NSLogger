@@ -438,13 +438,18 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			kCFStreamSSLCertificates
 		};
 		const void *SSLValues[] = {
-			kCFStreamSocketSecurityLevelNegotiatedSSL,
+            kCFStreamSocketSecurityLevelNegotiatedSSL,
 			kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
 			kCFBooleanTrue,				// we are server
 			serverCerts,
 		};
 		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFReadStreamSetProperty((CFReadStreamRef)readStream, kCFStreamPropertySSLSettings, SSLDict);
+
+        // force usage if TLSv1.2 or higher
+        SSLContextRef context = (__bridge SSLContextRef) [readStream propertyForKey:(__bridge NSString *) kCFStreamPropertySSLContext];
+        SSLSetProtocolVersionMin(context, kTLSProtocol12);
+        
 		CFRelease(SSLDict);
 		return YES;
 	}
@@ -475,7 +480,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	return 0;
 }
 
-- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is clientAddress:(NSData *)addr
+- (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is outputStream:(NSOutputStream *)os clientAddress:(NSData *)addr
 {
 	// subclasses must implement this
 	assert(false);
@@ -512,6 +517,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 			switch(streamEvent)
 			{
+                case NSStreamEventHasSpaceAvailable:
+                    break;
+                    
 				case NSStreamEventHasBytesAvailable:
 					while ([cnx.readStream hasBytesAvailable])
 					{
@@ -527,7 +535,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 					break;
 
 				case NSStreamEventErrorOccurred: {
+#if DEBUG
 					NSLog(@"Stream error occurred: stream=%@ self=%@ error=%@", theStream, self, [theStream streamError]);
+#endif
 					NSError *error = [theStream streamError];
 					NSInteger errCode = [error code];
 					if (errCode == errSSLDecryptionFail || errCode == errSSLBadRecordMac)
@@ -548,6 +558,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 																userInfo:dict]];
 						});
 					}
+                    
+                    // in all cases, we need to properly clean up the connection
+                    [cnx shutdown];
 					break;
 				}
 
@@ -585,6 +598,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 // -----------------------------------------------------------------------------
 - (void)netService:(NSNetService *)sender didNotPublish:(NSDictionary *)errorDict
 {
+#ifdef DEBUG
+    NSLog(@"netServiceDidNotPublish, error=%@", errorDict);
+#endif
 	[self shutdown];
 	
 	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
@@ -611,6 +627,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 - (void)netService:(NSNetService *)sender didAcceptConnectionWithInputStream:(NSInputStream *)inputStream outputStream:(NSOutputStream *)outputStream
 {
+#ifdef DEBUG
+    NSLog(@"incoming connection");
+#endif
 	if (self.secure && ![self canDoSSL])
 		return;
 	
@@ -618,13 +637,13 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		[self setupSSLForStream:inputStream];
 	
 	NSData *clientAddress = nil; // TODO: how to get it?
-	[self addConnection:[self connectionWithInputStream:inputStream clientAddress:clientAddress]];
+    [self addConnection:[self connectionWithInputStream:inputStream outputStream:outputStream clientAddress:clientAddress]];
 	
 	[inputStream setDelegate:self];
 	[inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 	[inputStream open];
 
-	// The output stream is only used for SSL handshake, so there's no need to set a delegate
+    [outputStream setDelegate:self];
 	[outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 	[outputStream open];
 }
@@ -666,7 +685,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 						// create the input and output streams. We don't need an output stream,
 						// except for SSL negotiation.
 						CFReadStreamRef readStream = NULL;
-						CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, NULL);
+                        CFWriteStreamRef writeStream = NULL;
+						CFStreamCreatePairWithSocket(kCFAllocatorDefault, nativeSocketHandle, &readStream, &writeStream);
 						if (readStream != NULL)
 						{
 							// although this is implied, just want to make sure
@@ -675,14 +695,18 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 								[myself setupSSLForStream:(NSInputStream *)readStream];
 
 							// Create the connection instance
-							[myself addConnection:[myself connectionWithInputStream:(NSInputStream *)readStream clientAddress:(NSData *)address]];
+                            [myself addConnection:[myself connectionWithInputStream:(NSInputStream *)readStream outputStream:(NSOutputStream *)writeStream clientAddress:(NSData *)address]];
 
-							// Schedule & open stream
-							[(NSInputStream *)readStream setDelegate:myself];
-							[(NSInputStream *)readStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+							// Schedule & open streams
+                            for (NSStream *stream in @[(NSInputStream *)readStream, (NSOutputStream *)writeStream])
+                            {
+                                [stream setDelegate:myself];
+                                [stream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+                                
+                                [stream open];
+                                [stream release];
 
-							[(NSInputStream *)readStream open];
-							[(NSInputStream *)readStream release];
+                            }
 						}
 						else
 						{
