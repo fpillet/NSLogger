@@ -942,7 +942,7 @@ static void LoggerLogToConsole(CFDataRef data)
 
 static void LoggerWriteMoreData(Logger *logger)
 {
-	uint32_t logToConsole = (logger->options & kLoggerOption_LogToConsole);
+    boolean_t logToConsole = (logger->options & (kLoggerOption_LogToConsole | kLoggerOption_CaptureSystemConsole)) == kLoggerOption_LogToConsole;
 	
 	if (!logger->connected)
 	{
