@@ -2535,7 +2535,7 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 		// to fire the runLoop source
 		CFRunLoopSourceSignal(logger->messagePushedSource);
 	}
-	else if (logger->workerThread == NULL && (logger->options & kLoggerOption_LogToConsole))
+	else if (logger->workerThread == NULL && (logger->options & kLoggerOption_LogToConsole) && !(logger->options & kLoggerOption_CaptureSystemConsole))
 	{
 		// In this case, a failure creating the message runLoop source forces us
 		// to always log to console
