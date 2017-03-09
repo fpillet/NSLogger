@@ -421,6 +421,21 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 	return (appDelegate.serverCerts != NULL);
 }
 
+#if DEBUG
+#define LOG_SSL_OPTION(ctx,opt) { \
+	Boolean val; \
+	if (SSLGetSessionOption(ctx,opt,&val)==noErr) { \
+		NSLog(@"SSL context option %s=%d", #opt,(int)val); \
+	} \
+}
+#define LOG_SSL_PROTOCOL_ENABLED(ctx,proto) { \
+	Boolean val; \
+	if (SSLGetProtocolVersionEnabled(ctx,proto,&val) == noErr) { \
+		NSLog(@"SSL protocol %s enabled = %d", #proto, (int)val); \
+	} \
+}
+#endif
+
 - (BOOL)setupSSLForStream:(NSInputStream *)readStream
 {
 	LoggerAppDelegate *appDelegate = (LoggerAppDelegate *)[[NSApplication sharedApplication] delegate];
@@ -435,21 +450,90 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			kCFStreamSSLLevel,
 			kCFStreamSSLValidatesCertificateChain,
 			kCFStreamSSLIsServer,
-			kCFStreamSSLCertificates
+			kCFStreamSSLPeerName,
+			kCFStreamSSLCertificates,
 		};
 		const void *SSLValues[] = {
             kCFStreamSocketSecurityLevelNegotiatedSSL,
 			kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
-			kCFBooleanTrue,				// we are server
-			serverCerts,
+			kCFBooleanTrue,			// we are server
+			kCFNull,				// ignore peer name
+			serverCerts				// certificates (serverCerts[0] assumed to be a SecIdentityRef)
 		};
-		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionaryRef SSLDict = CFDictionaryCreate(NULL, SSLKeys, SSLValues, 5, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFReadStreamSetProperty((CFReadStreamRef)readStream, kCFStreamPropertySSLSettings, SSLDict);
 
-        // force usage if TLSv1.2 or higher
+        // SSL context customization
         SSLContextRef context = (__bridge SSLContextRef) [readStream propertyForKey:(__bridge NSString *) kCFStreamPropertySSLContext];
-        SSLSetProtocolVersionMin(context, kTLSProtocol12);
-        
+		if (context != NULL) {
+#ifdef DEBUG
+			SSLProtocol protocolVersion;
+			SSLSessionState sessionState;
+			size_t numCiphers;
+
+			NSLog(@"");
+			NSLog(@"*** SSL context dump for incoming connection: ***");
+			
+			if (SSLGetSessionState(context, &sessionState) == noErr)
+				NSLog(@"session state: %d", (int)sessionState);
+			if (SSLGetProtocolVersionMin(context, &protocolVersion) == noErr)
+				NSLog(@"minimum protocol version: %d", (int)protocolVersion);
+			if (SSLGetProtocolVersionMax(context, &protocolVersion) == noErr)
+				NSLog(@"maximum protocol version: %d", (int)protocolVersion);
+			
+			LOG_SSL_PROTOCOL_ENABLED(context, kSSLProtocolUnknown);
+			LOG_SSL_PROTOCOL_ENABLED(context, kSSLProtocol3);
+			LOG_SSL_PROTOCOL_ENABLED(context, kTLSProtocol1);
+			LOG_SSL_PROTOCOL_ENABLED(context, kTLSProtocol11);
+			LOG_SSL_PROTOCOL_ENABLED(context, kTLSProtocol12);
+			LOG_SSL_PROTOCOL_ENABLED(context, kDTLSProtocol1);
+			
+			LOG_SSL_PROTOCOL_ENABLED(context, kSSLProtocol2);
+			LOG_SSL_PROTOCOL_ENABLED(context, kSSLProtocol3Only);
+			LOG_SSL_PROTOCOL_ENABLED(context, kTLSProtocol1Only);
+			LOG_SSL_PROTOCOL_ENABLED(context, kSSLProtocolAll);
+
+			LOG_SSL_OPTION(context, kSSLSessionOptionBreakOnServerAuth);
+			LOG_SSL_OPTION(context, kSSLSessionOptionBreakOnCertRequested);
+			LOG_SSL_OPTION(context, kSSLSessionOptionBreakOnClientAuth);
+			LOG_SSL_OPTION(context, kSSLSessionOptionFalseStart);
+			LOG_SSL_OPTION(context, kSSLSessionOptionSendOneByteRecord);
+			LOG_SSL_OPTION(context, kSSLSessionOptionAllowServerIdentityChange);
+			LOG_SSL_OPTION(context, kSSLSessionOptionFallback);
+			LOG_SSL_OPTION(context, kSSLSessionOptionBreakOnClientHello);
+			LOG_SSL_OPTION(context, kSSLSessionOptionAllowRenegotiation);
+			
+			if (SSLGetNumberSupportedCiphers(context, &numCiphers) == noErr) {
+				SSLCipherSuite *ciphers = (SSLCipherSuite *)malloc(sizeof(SSLCipherSuite) * numCiphers);
+				if (SSLGetSupportedCiphers(context, ciphers, &numCiphers) == noErr) {
+					NSLog(@"Supported Ciphers:");
+					for (size_t i=0; i < numCiphers; i++) {
+						NSLog(@" 0x%04x", (int)ciphers[i]);
+					}
+				}
+				free(ciphers);
+			}
+			
+			if (SSLGetNumberEnabledCiphers(context, &numCiphers) == noErr) {
+				SSLCipherSuite *ciphers = (SSLCipherSuite *)malloc(sizeof(SSLCipherSuite) * numCiphers);
+				if (SSLGetEnabledCiphers(context, ciphers, &numCiphers) == noErr) {
+					NSLog(@"Enabled Ciphers:");
+					for (size_t i=0; i < numCiphers; i++) {
+						NSLog(@" 0x%04x", (int)ciphers[i]);
+					}
+				}
+				free(ciphers);
+			}
+			
+			NSLog(@"");
+			NSLog(@"*** END SSL context dump ***");
+#endif
+		} else {
+#if DEBUG
+			NSLog(@"Can't obtain the SSL context for customization");
+#endif
+		}
+		
 		CFRelease(SSLDict);
 		return YES;
 	}
