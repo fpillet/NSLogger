@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Avoid NSLogger client to search on Bonjour.
         LoggerSetViewerHost(nil, "localhost" as NSString, 50000)
 
-        Log(.App, .Important, "Hello, Swift Logger Tester!")
+        Log(.App, .Important, "Hello, Swift Logger Tester! 🤖")
 
         return true
     }
