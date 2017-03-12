@@ -16,7 +16,7 @@
 The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or *Eclipse* consoles. It provides powerful additions like display filtering, defining log domain and level, image and binary logging, message coloring, traces buffering, timing information, link with source code, etc.
 
 <p align="center">
-  <img src="https://github.com/MonsieurDart/NSLogger/raw/master/Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
+  <img src="https://github.com/MonsieurDart/NSLogger/raw/swiftiosclient/Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
 </p>
 
 **NSLogger** feature summary:
@@ -38,7 +38,7 @@ The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or 
 Here is what it looks in action:
 
 <p align="center">
-  <img src="https://github.com/MonsieurDart/NSLogger/raw/master/Screenshots/demo_video.gif" title="Viewer Demo">
+  <img src="https://github.com/MonsieurDart/NSLogger/raw/swiftiosclient/Screenshots/demo_video.gif" title="Viewer Demo">
 </p>
 
 
@@ -51,7 +51,9 @@ For **Swift**:
 
 ```swift
 import NSLogger
+
 […]
+
 Log(.Network, .Info, "Checking paper level…")
 Log(.Network, .Error, "Oups! " + "No more paper. 🐞")
 LogImage(.View, .Noise, myPrettyImage)
@@ -62,7 +64,9 @@ For **Objective-C**:
 
 ```objective-c
 #import <NSLogger/NSLogger.h>
+
 […]
+
 LoggerApp(1, @"Hello world! Today is: %@", [self myDate]);
 LoggerNetwork(1, @"Hello world! Today is: %@", [self myDate]);
 ```
@@ -190,8 +194,4 @@ To define the color, you can use:
 
 # Credits
 
-NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application.
-
-NSLogger is Copyright (c) 2010-2017 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php).
-
-The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
+NSLogger is Copyright (c) 2010-2017 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application. The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
