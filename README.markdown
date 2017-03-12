@@ -107,7 +107,12 @@ Note that the NSLogger Mac OS X viewer requires **Mac OS X 10.6 or later**.
 # Advanced colors configuration #
 Apply colors to tags and messages using regular expressions.
 
-![Advanced Colors Preferences](https://github.com/djromero/NSLogger/raw/master/Screenshots/advanced_colors_prefs.png "Advanced Colors Preferences")
+![Advanced Colors Preferences](https://github.com/fpillet/NSLogger/raw/master/Screenshots/advanced_colors_prefs.png "Advanced Colors Preferences")
+
+To define the color, you can use:
+- A standard NSColor name, for example: `blue`
+- Hex colors, for example: `#DEAD88`
+- You can add the prefix `bold`, for example: `bold red`
 
 # Work in progress - Current status #
 This tool comes from a personal need for a more powerful logger. There are more features planned for inclusion, here is a quick list of what I'm thinking of. Requests and suggestions are welcome.
