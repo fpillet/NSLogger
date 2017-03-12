@@ -45,9 +45,9 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GeM-Rh-FY5">
-                                <rect key="frame" x="137" y="375" width="102" height="30"/>
+                                <rect key="frame" x="139" y="375" width="98" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Log The Image"/>
+                                <state key="normal" title="Log the Image"/>
                                 <connections>
                                     <action selector="logTheImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="oAq-2K-0L9"/>
                                 </connections>
