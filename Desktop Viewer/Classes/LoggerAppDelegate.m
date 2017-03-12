@@ -154,6 +154,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				}
 			}
 		}
+
+        [LoggerMessageCell loadAdvancedColorsPrefs];
 	}
 	return self;
 }
