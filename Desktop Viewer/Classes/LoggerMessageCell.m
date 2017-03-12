@@ -334,7 +334,13 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
         [self loadAdvancedColors];
     }
     NSRegularExpression *regexp;
-    for(regexp in [advancedColors allKeys]) {
+    NSArray *sortedRegexps = [[advancedColors allKeys] sortedArrayUsingComparator:
+                              ^NSComparisonResult(NSRegularExpression * _Nonnull regexp1,
+                                                  NSRegularExpression * _Nonnull regexp2) {
+                                  return [regexp1.pattern compare:regexp2.pattern];
+                              }];
+
+    for(regexp in sortedRegexps) {
         NSArray* chunks = [regexp matchesInString:string options:0 range:NSMakeRange(0, [string length])];
         if ([chunks count] > 0) {
             return [advancedColors objectForKey:regexp];
