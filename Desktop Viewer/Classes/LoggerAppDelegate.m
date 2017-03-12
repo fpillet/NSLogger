@@ -66,6 +66,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
 						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
 						 @"", kPrefBonjourServiceName,
+                         [NSNumber numberWithBool:YES], kPrefKeepMultipleRuns,
 						 nil];
 		[pool release];
 	}
