@@ -389,6 +389,16 @@ CFStringRef LoggerGetBonjourServiceName(Logger *logger)
 	return logger ? logger->bonjourServiceName : NULL;
 }
 
+/// Stringification, see this:
+/// http://gcc.gnu.org/onlinedocs/cpp/Stringification.html
+#define nslogger_xstr(s) nslogger_str(s)
+#define nslogger_str(s) #s
+
+void LoggerSetupBonjourForBuildUser()
+{
+    LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(nslogger_xstr(NSLOGGER_BUILD_USERNAME)));
+}
+
 void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 {
 	if (logger == NULL)

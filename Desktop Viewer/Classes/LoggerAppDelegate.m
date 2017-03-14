@@ -65,7 +65,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 						 [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
 						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
 						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
-						 @"", kPrefBonjourServiceName,
+                         @"", kPrefBonjourServiceName,
+                         [NSNumber numberWithBool:YES], kPrefKeepMultipleRuns,
 						 nil];
 		[pool release];
 	}
@@ -154,6 +155,8 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				}
 			}
 		}
+
+        [LoggerMessageCell loadAdvancedColorsPrefs];
 	}
 	return self;
 }
@@ -323,27 +326,58 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 
 - (NSMutableArray *)defaultFilters
 {
-	NSMutableArray *filters = [NSMutableArray arrayWithCapacity:4];
+	NSMutableArray *filters = [NSMutableArray array];
+
 	[filters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:1], @"uid",
-						NSLocalizedString(@"All logs", @""), @"title",
+						NSLocalizedString(@" All logs", @""), @"title",
 						[NSPredicate predicateWithValue:YES], @"predicate",
 						nil]];
+
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:2], @"uid",
-						NSLocalizedString(@"Text messages", @""), @"title",
+						NSLocalizedString(@"Type: text", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"text\")"]]], @"predicate",
 						nil]];
+
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:3], @"uid",
-						NSLocalizedString(@"Images", @""), @"title",
+						NSLocalizedString(@"Type: image", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"img\")"]]], @"predicate",
 						nil]];
+
 	[filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 						[NSNumber numberWithInteger:4], @"uid",
-						NSLocalizedString(@"Data blocks", @""), @"title",
+						NSLocalizedString(@"Type: data", @""), @"title",
 						[NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(messageType == \"data\")"]]], @"predicate",
 						nil]];
+
+    [filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
+                        [NSNumber numberWithInteger:5], @"uid",
+                        NSLocalizedString(@" Errors", @""), @"title",
+                        [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(level == 0)"]]], @"predicate",
+                        nil]];
+
+    [filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
+                        [NSNumber numberWithInteger:6], @"uid",
+                        NSLocalizedString(@" Errors and warnings", @""), @"title",
+                        [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(level <= 1)"]]], @"predicate",
+                        nil]];
+
+    [filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
+                        [NSNumber numberWithInteger:7], @"uid",
+                        NSLocalizedString(@" All but noise", @""), @"title",
+                        [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:@"(level < 6)"]]], @"predicate",
+                        nil]];
+
+    for (NSString *domain in @[@"App", @"View", @"Controller", @"Service", @"Network", @"Model"]) {
+        [filters addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
+                            [NSNumber numberWithInteger:8], @"uid",
+                            [NSString stringWithFormat:NSLocalizedString(@"Domain: %@", @""), domain], @"title",
+                            [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray arrayWithObject:[NSPredicate predicateWithFormat:[NSString stringWithFormat:@"(tag == \"%@\")", domain]]]], @"predicate",
+                            nil]];
+    }
+
 	return filters;
 }
 

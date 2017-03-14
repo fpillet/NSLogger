@@ -131,7 +131,7 @@ static NSArray *sXcodeFileExtensions = nil;
 {
     if (sXcodeFileExtensions == nil) {
         sXcodeFileExtensions = [[NSArray alloc] initWithObjects:
-                                @"m", @"mm", @"h", @"c", @"cp", @"cpp", @"hpp",
+                                @"m", @"mm", @"h", @"c", @"cp", @"cpp", @"hpp", @"swift",
                                 nil];
     }
     

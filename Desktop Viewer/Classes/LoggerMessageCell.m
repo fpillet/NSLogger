@@ -275,9 +275,40 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	return result;
 }
 
-+ (void)loadAdvancedColors
++ (NSArray *)defaultAdvancedColorsPrefs
+{
+    NSDictionary *errorSpec = [@{@"comment": @"Errors",
+                                      @"regexp": @"level=0",
+                                      @"colors": @"bold red"} autorelease];
+
+    NSDictionary *warningSpec = [@{@"comment": @"Warnings",
+                                   @"regexp": @"level=1",
+                                   @"colors": @"#eebb00"} autorelease];
+
+    NSDictionary *noiseSpec = [@{@"comment": @"Noise",
+                                   @"regexp": @"level=6",
+                                   @"colors": @"#aaaaaa"} autorelease];
+
+    return [[[NSArray alloc] initWithObjects:errorSpec, warningSpec, noiseSpec, nil] autorelease];
+}
+
++ (NSArray *)loadAdvancedColorsPrefs
 {
     NSArray *advancedColorsPrefs = [[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"];
+
+    if (advancedColorsPrefs.count == 0) {
+        advancedColorsPrefs = [self defaultAdvancedColorsPrefs];
+        [[NSUserDefaults standardUserDefaults] setObject:advancedColorsPrefs
+                                                  forKey:@"advancedColors"];
+    }
+
+    return advancedColorsPrefs;
+}
+
++ (void)loadAdvancedColors
+{
+    NSArray *advancedColorsPrefs = [self loadAdvancedColorsPrefs];
+
     if (advancedColors) {
         [advancedColors release];
     }
@@ -304,7 +335,6 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
             color = [self colorFromHexRGB:@"#0047AB"];
         } else if ([colorName hasPrefix:@"red"]) {
             color = [self colorFromHexRGB:@"#DC143C"];
-//            color = [NSColor redColor];
         } else if ([colorName hasPrefix:@"green"]) {
             color = [self colorFromHexRGB:@"#008000"];
         } else {
@@ -334,7 +364,13 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
         [self loadAdvancedColors];
     }
     NSRegularExpression *regexp;
-    for(regexp in [advancedColors allKeys]) {
+    NSArray *sortedRegexps = [[advancedColors allKeys] sortedArrayUsingComparator:
+                              ^NSComparisonResult(NSRegularExpression * _Nonnull regexp1,
+                                                  NSRegularExpression * _Nonnull regexp2) {
+                                  return [regexp1.pattern compare:regexp2.pattern];
+                              }];
+
+    for(regexp in sortedRegexps) {
         NSArray* chunks = [regexp matchesInString:string options:0 range:NSMakeRange(0, [string length])];
         if ([chunks count] > 0) {
             return [advancedColors objectForKey:regexp];
