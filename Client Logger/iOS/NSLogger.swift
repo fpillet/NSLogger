@@ -43,6 +43,7 @@ public enum LoggerDomain {
     case View
     case Layout
     case Controller
+    case Routing
     case Service
     case Network
     case Model
@@ -57,6 +58,7 @@ public enum LoggerDomain {
         case .View: return "View"
         case .Layout: return "Layout"
         case .Controller: return "Controller"
+        case .Routing: return "Routing"
         case .Service: return "Service"
         case .Network: return "Network"
         case .Model: return "Model"
