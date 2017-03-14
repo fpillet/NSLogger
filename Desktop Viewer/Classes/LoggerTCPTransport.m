@@ -328,6 +328,8 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 			[bonjourService setIncludesPeerToPeer:YES];
 			[bonjourService setDelegate:self];
+			
+			// bonjourService will be scheduled in the current runloop
 			[bonjourService publishWithOptions:NSNetServiceListenForConnections];
 		}
 	}
@@ -352,6 +354,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			CFRelease(listenerSocket_ipv6);
 			listenerSocket_ipv6 = NULL;
 		}
+
+		[bonjourService release];
+		bonjourService = nil;
 		return NO;
 	}
 	@finally
@@ -466,7 +471,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
         // SSL context customization
         SSLContextRef context = (__bridge SSLContextRef) [readStream propertyForKey:(__bridge NSString *) kCFStreamPropertySSLContext];
 		if (context != NULL) {
-#ifdef DEBUG
+#if DEBUG
 			SSLProtocol protocolVersion;
 			SSLSessionState sessionState;
 			size_t numCiphers;
@@ -601,7 +606,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 
 			switch(streamEvent)
 			{
-                case NSStreamEventHasSpaceAvailable:
+				case NSStreamEventHasSpaceAvailable:
                     break;
                     
 				case NSStreamEventHasBytesAvailable:
@@ -649,6 +654,10 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				}
 
 				case NSStreamEventEndEncountered: {
+#if DEBUG
+					NSLog(@"Stream end encountered, connexion closed");
+#endif
+
 					// Append a disconnect message for only one of the two streams
 					struct timeval t;
 					gettimeofday(&t, NULL);
@@ -664,6 +673,9 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 				}
 
 				case NSStreamEventOpenCompleted:
+#if DEBUG
+					NSLog(@"Stream open completed, connexion established");
+#endif
 					cnx.connected = YES;
 					break;
 
