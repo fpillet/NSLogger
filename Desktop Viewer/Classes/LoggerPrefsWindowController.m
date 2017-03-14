@@ -261,6 +261,8 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	if ([networkDefaultsController commitEditing])
 	{
 		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+		// stinking bidings REMOVE the key if field is empty
+		[ud setObject:@"" forKey:@"bonjourServiceName"];
 		for (NSString *key in [networkPrefs allKeys])
 			[ud setObject:[networkPrefs objectForKey:key] forKey:key];
 		[ud synchronize];
