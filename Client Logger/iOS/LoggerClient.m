@@ -96,7 +96,7 @@
 // Set to 0 to disable internal debug completely
 // Set to 1 to activate console logs when running the logger itself
 // Set to 2 to see every logging call issued by the app, too
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 1
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -117,7 +117,7 @@
 #endif
 
 #if defined(__has_feature) && __has_feature(objc_arc)
-#error LoggerClinet.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
+#error NSLogger: LoggerClient.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
 #endif
 
 struct Logger
@@ -1540,9 +1540,10 @@ static void LoggerStopBonjourBrowsing(Logger *logger)
 
 static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName)
 {
+	LOGGERDBG(CFSTR("LoggerBrowseBonjourForServices domainName=%@"), domainName);
 	NSNetServiceBrowser *browser;
 	browser = [NSNetServiceBrowser new];
-	browser.includesPeerToPeer = (logger->options & kLoggerOption_BrowsePeerToPeer) == kLoggerOption_BrowsePeerToPeer;
+	browser.includesPeerToPeer = YES;
 	browser.delegate = [[FPLLoggerBonjourDelegate alloc] initWithLogger:logger];
 
 	// try to use the user-specfied service type if any, fallback on our
@@ -1565,7 +1566,7 @@ static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainNam
 static void LoggerConnectToService(Logger *logger, NSNetService *service)
 {
 	// a service has been found
-	LOGGERDBG(CFSTR("Logger found service: %@"), service);
+	LOGGERDBG(CFSTR("LoggerConnectToService service=%@"), service);
 	if (service == NULL)
 		return;
 	
@@ -1590,6 +1591,7 @@ static void LoggerConnectToService(Logger *logger, NSNetService *service)
 		// desktops with NSLogger installed to avoid unwanted logs coming to a specific viewer
 		// To indicate that the desktop only wants clients that are looking for its specific name,
 		// the desktop sets the TXT record to be a dictionary containing the @"filterClients" key with value @"1"
+		LOGGERDBG(CFSTR("-> checking out TXT record data"));
 		CFDataRef txtData = (__bridge CFDataRef)service.TXTRecordData;
 		if (txtData != NULL)
 		{
@@ -1615,6 +1617,7 @@ static void LoggerConnectToService(Logger *logger, NSNetService *service)
 
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 {
+	LOGGERDBG(CFSTR("LoggerDisconnectFromService service=%@"), service);
 	CFIndex idx = CFArrayGetFirstIndexOfValue(logger->bonjourServices, CFRangeMake(0, CFArrayGetCount(logger->bonjourServices)), service);
 	if (idx == -1)
 		return;
@@ -1631,46 +1634,48 @@ static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 
 - (instancetype)initWithLogger:(Logger *)logger;
 {
-	if (!(self = [super init]))
-		return nil;
-	
-	_logger = logger;
+	LOGGERDBG(CFSTR("FPLLoggerDelegate init"));
+	if ((self = [super init]) != nil) {
+		_logger = logger;
+	}
 	
 	return self;
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didNotSearch:(NSDictionary<NSString *, NSNumber *> *)errorDict
 {
-	LOGGERDBG(CFSTR("netServiceBrowser:%@ didNotSearch:%@"), browser, errorDict);
-	
-	if (browser == self->_logger->bonjourDomainBrowser)
+	LOGGERDBG(CFSTR("FPLLoggerDelegate: netServiceBrowser:%@ didNotSearch:%@"), browser, errorDict);
+	if (browser == _logger->bonjourDomainBrowser)
 	{
 		// An error occurred, revert to console logging if there is no remote host
 		LOGGERDBG(CFSTR("*** Logger: could not browse for domains, reverting to console logging. ***"));
-		CFRelease(self->_logger->bonjourDomainBrowser);
-		self->_logger->bonjourDomainBrowser = NULL;
-		if (self->_logger->host == NULL)
-			self->_logger->options |= kLoggerOption_LogToConsole;
+		CFRelease(_logger->bonjourDomainBrowser);
+		_logger->bonjourDomainBrowser = NULL;
+		if (_logger->host == NULL)
+			_logger->options |= kLoggerOption_LogToConsole;
 	}
-	else if (self->_logger->host == NULL)
+	else if (_logger->host == NULL)
 	{
 		LOGGERDBG(CFSTR("*** Logger: could not browse for services, no remote host configured: reverting to console logging. ***"));
-		self->_logger->options |= kLoggerOption_LogToConsole;
+		_logger->options |= kLoggerOption_LogToConsole;
 	}
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindDomain:(NSString *)domain moreComing:(BOOL)moreComing
 {
+	LOGGERDBG(CFSTR("FPLLoggerDelegate: netServiceBrowser:%@ didFindDomain:%@ moreComing:%d"), browser, domain, (int)moreComing);
 	LoggerBrowseBonjourForServices(self->_logger, (__bridge CFStringRef)domain);
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didFindService:(NSNetService *)service moreComing:(BOOL)moreComing
 {
+	LOGGERDBG(CFSTR("FPLLoggerDelegate: netServiceBrowser:%@ didFindService:%@ moreComing:%d"), browser, service, (int)moreComing);
 	LoggerConnectToService(self->_logger, service);
 }
 
 - (void)netServiceBrowser:(NSNetServiceBrowser *)browser didRemoveService:(NSNetService *)service moreComing:(BOOL)moreComing
 {
+	LOGGERDBG(CFSTR("FPLLoggerDelegate: netServiceBrowser:%@ didRemoveService:%@ moreComing:%d"), browser, service, (int)moreComing);
 	LoggerDisconnectFromService(self->_logger, service);
 }
 
@@ -1890,7 +1895,7 @@ static BOOL LoggerConfigureAndOpenStream(Logger *logger)
 				kCFStreamSSLPeerName
 			};
 			const void *SSLValues[] = {
-				kCFStreamSocketSecurityLevelNegotiatedSSL,
+				kCFStreamSocketSecurityLevelTLSv1,
 				kCFBooleanFalse,			// no certificate chain validation (we use a self-signed certificate)
 				kCFBooleanFalse,			// not a server
 				kCFNull
@@ -1938,7 +1943,7 @@ static void LoggerTryConnect(Logger *logger)
 	}
 	
 	// If reachability status is not known yet, just wait
-	if (logger->targetReachable == NO)
+	if (!logger->targetReachable)
 	{
 		LOGGERDBG(CFSTR("-> not sure target is reachable, let's wait and see"));
 		return;
