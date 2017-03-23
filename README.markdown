@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/fpillet/NSLogger/raw/master/Desktop%20Viewer/Resources/Icon/1290083967_Console.png" title="NSLogger" width=128>
+  <img src="https://github.com/fpillet/NSLogger/raw/master/Desktop/Resources/Icon/1290083967_Console.png" title="NSLogger" width=128>
 </p>
 
 # NSLogger
@@ -11,7 +11,7 @@
 [![Pod License](http://img.shields.io/cocoapods/l/NSLogger.svg?style=flat)](http://opensource.org/licenses/BSD-3-Clause)
 [![Reference Status](https://www.versioneye.com/objective-c/nslogger/reference_badge.svg?style=flat)](https://www.versioneye.com/objective-c/nslogger/references)
 
-**NSLogger** is a high perfomance logging utility which displays traces emitted by client applications running on *macOS*, *iOS* and *Android*. It replaces traditional console logging traces (*NSLog()*, Java *Log*).
+**NSLogger** is a high performance logging utility which displays traces emitted by client applications running on *macOS*, *iOS* and *Android*. It replaces traditional console logging traces (*NSLog()*, Java *Log*).
 
 The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or *Eclipse* consoles. It provides powerful additions like display filtering, defining log domain and level, image and binary logging, message coloring, traces buffering, timing information, link with source code, etc.
 
@@ -35,7 +35,7 @@ The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or 
 * Export logs to text files
 * Open raw buffered traces files that you brought back from client applications not directly connected to the log viewer
 
-Here is what it looks in action:
+Here is what it looks like in action:
 
 <p align="center">
   <img src="https://github.com/MonsieurDart/NSLogger/raw/swiftiosclient/Screenshots/demo_video.gif" title="Viewer Demo">
@@ -45,9 +45,11 @@ Here is what it looks in action:
 
 # Basic Usage
 
-All the `NSLog()` logs of your app will be redirected to the NSLogger desktop viewer. But you can log messages, binary data or images more precisely:
+Without any change to your code, all the `NSLog()` logs from your application are redirected to the NSLogger desktop viewer. The viewer is found automatically on your network, using Bonjour.
 
-For **Swift**:
+A rich API lets you log messages, binary data or images with a lot of detail. Simple wrappers are available for your convenience:
+
+**Swift** wrapper API:
 
 ```swift
 import NSLogger
@@ -60,7 +62,7 @@ LogImage(.View, .Noise, myPrettyImage)
 LogData(.Custom("My Domain"), .Noise, someDataObject)
 ```
 
-For **Objective-C**:
+**Objective-C** wrapper API:
 
 ```objective-c
 #import <NSLogger/NSLogger.h>
@@ -87,7 +89,7 @@ TO BE DEFINED…
 
 ## Desktop Viewer Download
 
-Download the pre-built, signed version of the [NSLogger desktop viewer](https://github.com/fpillet/NSLogger/releases) for macOS. Don't forget to start the application.
+Download the pre-built, signed version of the [NSLogger desktop viewer](https://github.com/fpillet/NSLogger/releases) for macOS. Don't forget to launch the application on your Mac. It won't show a window until a client connects to it and starts logging.
 
 ## Client Framework Install
 
@@ -151,7 +153,9 @@ When using NSLogger without CocoaPods, add `LoggerClient.h`, `LoggerClient.m` an
 
 ## How Does the Connection Work?
 
-Your client app must run on a device that is on the same network as your Mac. When it starts logging traces, it will automatically (by default) look for the desktop NSLogger using *Bonjour*. As soon as traces start coming, a new window will open on your Mac. Advanced users can setup a Remote Host / Port to log from a client to a specific host).
+For automatic discovery of the desktop viewer, your application must run on a device that is on the same network as your Mac. When your app starts logging, the NSLogger framework automatically (by default) looks for the desktop viewer using *Bonjour*. As soon as traces start coming, a new window will open on your Mac.
+
+Advanced users can setup a Remote Host / Port to log from a client to a specific host), or specify a Bonjour name in case there are multiple viewers on the network.
 
 ## Advanced Desktop Viewer Features
 
@@ -188,8 +192,7 @@ To define the color, you can use:
 
 ## High Performance, Low Overhead
 
-*NSLogger* runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
-
+The *NSLogger* framework runs in its own thread in your application. It tries hard to consume as few CPU and memory as possible. If the desktop viewer has not been found yet, your traces can be buffered in memory until a connection is acquired. This allows for tracing in difficult situations, for example device wakeup times when the network connection is not up and running.
 
 
 # Credits

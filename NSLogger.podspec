@@ -27,7 +27,7 @@ Pod::Spec.new do |s|
   # The 'Standard' subspec is the default: unused NSLogger functions will be stripped
   # from the final build
   s.subspec 'Standard' do |standard|
-    standard.source_files = 'Client Logger/iOS/*.{h,m,swift}'
+    standard.source_files = 'Client/iOS/*.{h,m,swift}'
     standard.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
@@ -51,7 +51,7 @@ Pod::Spec.new do |s|
 
   # The 'NoSwift' subspec is the legacy ObjC only version: no Swift code will be added to your project.
   s.subspec 'NoSwift' do |noswift|
-    noswift.source_files = 'Client Logger/iOS/*.{h,m}'
+    noswift.source_files = 'Client/iOS/*.{h,m}'
     noswift.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
