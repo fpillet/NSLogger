@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1108" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="1060" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
@@ -27,8 +27,8 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
-        <window title="NSLogger" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="MainWindow" animationBehavior="default" id="371">
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="NSLogger" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" frameAutosaveName="MainWindow" animationBehavior="default" id="371">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="154" y="384" width="885" height="666"/>
@@ -184,7 +184,7 @@
                                                             <rect key="frame" x="-100" y="-100" width="200" height="15"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
-                                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.46957153231663029" horizontal="NO" id="958">
+                                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="958">
                                                             <rect key="frame" x="201" y="17" width="15" height="614"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
@@ -226,17 +226,17 @@
                                                                             </textFieldCell>
                                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                             <connections>
+                                                                                <binding destination="532" name="value" keyPath="arrangedObjects.title" id="981">
+                                                                                    <dictionary key="options">
+                                                                                        <bool key="NSConditionallySetsEditable" value="YES"/>
+                                                                                        <bool key="NSCreatesSortDescriptor" value="NO"/>
+                                                                                    </dictionary>
+                                                                                </binding>
                                                                                 <binding destination="963" name="headerTitle" keyPath="selection.title" id="1191">
                                                                                     <dictionary key="options">
                                                                                         <string key="NSNoSelectionPlaceholder">No Selection</string>
                                                                                         <string key="NSNullPlaceholder">No Selection</string>
                                                                                         <string key="NSValueTransformerName">FilterColumnHeader</string>
-                                                                                    </dictionary>
-                                                                                </binding>
-                                                                                <binding destination="532" name="value" keyPath="arrangedObjects.title" id="981">
-                                                                                    <dictionary key="options">
-                                                                                        <bool key="NSConditionallySetsEditable" value="YES"/>
-                                                                                        <bool key="NSCreatesSortDescriptor" value="NO"/>
                                                                                     </dictionary>
                                                                                 </binding>
                                                                             </connections>
@@ -342,7 +342,7 @@
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="1094" id="1091" customClass="BWAnchoredPopUpButtonCell">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                    <font key="font" metaFont="system"/>
+                                                    <font key="font" metaFont="menu"/>
                                                     <menu key="menu" title="OtherViews" id="1092">
                                                         <items>
                                                             <menuItem image="NSActionTemplate" hidden="YES" id="1094"/>
@@ -403,7 +403,7 @@
                                                     </binding>
                                                 </connections>
                                             </button>
-                                            <textField toolTip="Number of messages displayed" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="488">
+                                            <textField toolTip="Number of messages displayed" verticalHuggingPriority="750" id="488">
                                                 <rect key="frame" x="63" y="3" width="485" height="14"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" id="489">
@@ -537,7 +537,7 @@
                     <toolbarItem implicitItemIdentifier="1982BF4A-3218-428E-B152-FE3A19027668" label="Quick Search" paletteLabel="Quick Search" toolTip="Refine by filtering the current filter/tag/level settings on a search term" id="1300">
                         <size key="minSize" width="96" height="22"/>
                         <size key="maxSize" width="162" height="22"/>
-                        <searchField key="view" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" id="1298">
+                        <searchField key="view" verticalHuggingPriority="750" id="1298">
                             <rect key="frame" x="0.0" y="14" width="117" height="22"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="1299">
@@ -564,12 +564,12 @@
                         <popUpButton key="view" verticalHuggingPriority="750" id="1410">
                             <rect key="frame" x="0.0" y="14" width="100" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <popUpButtonCell key="cell" type="roundTextured" title="Item 1" bezelStyle="texturedRounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1411">
+                            <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1411">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
+                                <font key="font" metaFont="menu"/>
                                 <menu key="menu" title="OtherViews" id="1412">
                                     <items>
-                                        <menuItem title="Item 1" state="on" id="1413"/>
+                                        <menuItem title="Item 1" id="1413"/>
                                         <menuItem title="Item 2" id="1414"/>
                                         <menuItem title="Item 3" id="1415"/>
                                     </items>
@@ -577,7 +577,6 @@
                             </popUpButtonCell>
                             <connections>
                                 <binding destination="-2" name="contentValues" keyPath="document.attachedLogsPopupNames" id="1419"/>
-                                <binding destination="-2" name="enabled" keyPath="shouldEnableRunsPopup" id="1430"/>
                                 <binding destination="-2" name="selectedIndex" keyPath="document.indexOfCurrentVisibleLog" previousBinding="1419" id="1424">
                                     <dictionary key="options">
                                         <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
@@ -585,6 +584,7 @@
                                         <real key="NSNullPlaceholder" value="0.0"/>
                                     </dictionary>
                                 </binding>
+                                <binding destination="-2" name="enabled" keyPath="shouldEnableRunsPopup" id="1430"/>
                             </connections>
                         </popUpButton>
                     </toolbarItem>
@@ -874,7 +874,7 @@ Gw
                             <action selector="cancelFilterEdition:" target="-2" id="817"/>
                         </connections>
                     </button>
-                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="688">
+                    <textField verticalHuggingPriority="750" id="688">
                         <rect key="frame" x="102" y="231" width="358" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="filter name" drawsBackground="YES" id="689">
@@ -883,7 +883,7 @@ Gw
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="690">
+                    <textField verticalHuggingPriority="750" id="690">
                         <rect key="frame" x="17" y="233" width="81" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Filter Name:" id="691">
@@ -904,7 +904,7 @@ Gw
                 <rect key="frame" x="0.0" y="0.0" width="480" height="111"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="1107">
+                    <textField verticalHuggingPriority="750" id="1107">
                         <rect key="frame" x="94" y="72" width="366" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Mark title" drawsBackground="YES" id="1114">
@@ -913,7 +913,7 @@ Gw
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="1108">
+                    <textField verticalHuggingPriority="750" id="1108">
                         <rect key="frame" x="17" y="74" width="72" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="New mark:" id="1113">
@@ -971,8 +971,8 @@ Gw
                 <string>uid</string>
             </declaredKeys>
             <connections>
-                <binding destination="963" name="contentArray" keyPath="selection.filters" id="996"/>
                 <binding destination="-3" name="sortDescriptors" keyPath="delegate.filtersSortDescriptors" id="990"/>
+                <binding destination="963" name="contentArray" keyPath="selection.filters" id="996"/>
             </connections>
         </arrayController>
         <userDefaultsController representsSharedInstance="YES" id="1426"/>
