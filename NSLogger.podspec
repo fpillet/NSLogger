@@ -40,7 +40,7 @@ Pod::Spec.new do |s|
   # this is useful when other frameworks linked into the application dynamically look for
   # NSLogger functions and use them if present.
   s.subspec 'NoStrip' do |nostrip|
-    nostrip.source_files = 'Client Logger/iOS/*.{h,m,swift}'
+    nostrip.source_files = 'Client/iOS/*.{h,m,swift}'
     nostrip.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}" NSLOGGER_ALLOW_NOSTRIP=1'
     }
