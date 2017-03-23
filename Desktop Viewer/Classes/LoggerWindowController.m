@@ -168,6 +168,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	[self rebuildQuickFilterPopup];
 	[self updateFilterPredicate];
+		
 	[logTable sizeToFit];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -621,24 +622,24 @@ static NSArray *sXcodeFileExtensions = nil;
 //	tableNeedsTiling = YES;
 }
 
-- (void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize {
-    if (sender == splitView) {
-        NSSize newSize = sender.bounds.size;
-        
-        NSView *mainDisplay = [[sender subviews] objectAtIndex:1];
-        NSRect frame = mainDisplay.frame;
-        frame.size.width += newSize.width - oldSize.width;
-        frame.size.height = newSize.height;
-        [mainDisplay setFrame:frame];
-        
-        NSView *sidebar = [[sender subviews] objectAtIndex:0];
-        NSRect sidebarFrame = sidebar.frame;
-        sidebarFrame.size.height = newSize.height;
-        [sidebar setFrame:sidebarFrame];
-    } else {
-        [sender adjustSubviews];
-    }
-}
+//- (void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize {
+//    if (sender == splitView) {
+//        NSSize newSize = sender.bounds.size;
+//        
+//        NSView *mainDisplay = [[sender subviews] objectAtIndex:1];
+//        NSRect frame = mainDisplay.frame;
+//        frame.size.width += newSize.width - oldSize.width;
+//        frame.size.height = newSize.height;
+//        [mainDisplay setFrame:frame];
+//        
+//        NSView *sidebar = [[sender subviews] objectAtIndex:0];
+//        NSRect sidebarFrame = sidebar.frame;
+//        sidebarFrame.size.height = newSize.height;
+//        [sidebar setFrame:sidebarFrame];
+//    } else {
+//        [sender adjustSubviews];
+//    }
+//}
 
 // -----------------------------------------------------------------------------
 #pragma mark -
