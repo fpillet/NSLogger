@@ -101,7 +101,7 @@
 		int nadd = 1 + arc4random() % 150;
 		for (int i = 0; i < nadd; i++)
 			[s appendFormat:@"%c", 32 + (arc4random() % 27)];
-		int what = (arc4random() % 4);
+		int what = (arc4random() % 5);
 		if (what == 0)
 			LogMessage([tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
 		else if (what == 1)
@@ -113,6 +113,10 @@
 		{
 			// just log __FUNCTION__
 			LogMessageF(NULL, 0, __FUNCTION__, [tagsArray objectAtIndex:(arc4random() % [tagsArray count])], arc4random() % 3, s);
+		}
+		else if (what == 3)
+		{
+			NSLog(@"Some message to NSLog %d", (int)arc4random());
 		}
 		else
 		{
