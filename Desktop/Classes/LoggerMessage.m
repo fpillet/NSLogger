@@ -129,7 +129,7 @@ static NSMutableArray *sTags = nil;
 		[s appendFormat:NSLocalizedString(@"Raw data, %u bytes:\n", @""), dataLen];
 	while (dataLen)
 	{
-		int i, b = sprintf(buffer, " %0*x: ", offsetPad, offset);
+		int i, b = sprintf(buffer, " %0*x: ", offsetPad, (unsigned)offset);
 		for (i=0; i < 16 && i < dataLen; i++)
 			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
 		for (int j=i; j < 16; j++)
@@ -325,14 +325,14 @@ static NSMutableArray *sTags = nil;
 							@"Unknown");
 	NSString *desc;
 	if (contentsType == kMessageData)
-		desc = [NSString stringWithFormat:@"{data %u bytes}", [message length]];
+		desc = [NSString stringWithFormat:@"{data %u bytes}", (unsigned)[message length]];
 	else if (contentsType == kMessageImage)
-		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", [self imageSize].width, [self imageSize].height];
+		desc = [NSString stringWithFormat:@"{image w=%d h=%d}", (int)[self imageSize].width, (int)[self imageSize].height];
 	else
 		desc = (NSString *)message;
 	
 	return [NSString stringWithFormat:@"<%@ %p seq=%d type=%@ thread=%@ tag=%@ level=%d message=%@>",
-			[self class], self, sequence, typeString, threadID, tag, (int)level, desc];
+			[self class], self, (int)sequence, typeString, threadID, tag, (int)level, desc];
 }
 
 @end

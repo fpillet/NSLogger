@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface BWSplitView : NSSplitView 
+@interface BWSplitView : NSSplitView <NSSplitViewDelegate>
 {
 	NSColor *color;
 	BOOL colorIsEnabled, checkboxIsEnabled, dividerCanCollapse, collapsibleSubviewCollapsed;

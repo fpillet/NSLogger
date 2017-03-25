@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface BWAnchoredButtonBar : NSView 
+@interface BWAnchoredButtonBar : NSView <NSSplitViewDelegate>
 {
 	BOOL isResizable, isAtBottom, handleIsRightAligned;
 	int selectedIndex;

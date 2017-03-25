@@ -1350,14 +1350,14 @@ didReceiveMessages:(NSArray *)theMessages
 #pragma mark -
 #pragma mark NSTableDataSource
 // -----------------------------------------------------------------------------
-- (int)numberOfRowsInTableView:(NSTableView *)tableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
 	return [displayedMessages count];
 }
 
 - (id)tableView:(NSTableView *)tableView
 	objectValueForTableColumn:(NSTableColumn *)tableColumn
-	row:(int)rowIndex
+	row:(NSInteger)rowIndex
 {
 	if (rowIndex >= 0 && rowIndex < [displayedMessages count])
 		return [displayedMessages objectAtIndex:rowIndex];

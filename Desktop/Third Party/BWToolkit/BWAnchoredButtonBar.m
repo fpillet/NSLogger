@@ -98,7 +98,7 @@ static float scaleFactor = 0.0f;
 	if (splitView != nil && [splitView isVertical] && [self isResizable])
 	{
 		if ([splitView delegate] != nil && ([[splitView delegate] isKindOfClass:[BWAnchoredButtonBar class]] ||
-											[splitView isKindOfClass:[BWSplitView class]] && [[(BWSplitView *)splitView secondaryDelegate] isKindOfClass:[BWAnchoredButtonBar class]]))
+											([splitView isKindOfClass:[BWSplitView class]] && [[(BWSplitView *)splitView secondaryDelegate] isKindOfClass:[BWAnchoredButtonBar class]])))
 		{
 			// There's already an Anchored Button Bar set as the delegate so we need to set ourself as the split view delegate on
 			// the button bar. But since there can be multiple button bars, we need to set ourself as the delegate on the last
