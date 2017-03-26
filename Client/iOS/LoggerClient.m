@@ -974,7 +974,7 @@ static void LoggerLogToConsole(CFDataRef data)
 
 static void LoggerWriteMoreData(Logger *logger)
 {
-    boolean_t logToConsole = (logger->options & (kLoggerOption_LogToConsole | kLoggerOption_CaptureSystemConsole)) == kLoggerOption_LogToConsole;
+    BOOL logToConsole = (logger->options & (kLoggerOption_LogToConsole | kLoggerOption_CaptureSystemConsole)) == kLoggerOption_LogToConsole;
 	
 	if (!logger->connected)
 	{
@@ -1111,8 +1111,7 @@ static void LoggerWriteMoreData(Logger *logger)
 				// We need to reduce the remaining data on the first item so it can be taken
 				// care of at the next iteration. We take advantage of the fact that each item
 				// in the queue is actually a mutable data block
-				// @@@ NOTE: IF WE GET DISCONNECTED WHILE DOING THIS, THINGS WILL GO WRONG
-				// NEED TO UPDATE THIS LOGIC
+				// TODO: IF WE GET DISCONNECTED WHILE DOING THIS, THINGS WILL GO WRONG - NEED TO UPDATE THIS LOGIC
 				LOGGERDBG(CFSTR("Output pipe is full"));
 				CFDataReplaceBytes((CFMutableDataRef)sendFirstItem, CFRangeMake(0, written), NULL, 0);
 				return;
@@ -1128,9 +1127,9 @@ static void LoggerWriteMoreData(Logger *logger)
 		
 		pthread_mutex_lock(&logger->logQueueMutex);
 		CFIndex remainingMsgs = CFArrayGetCount(logger->logQueue);
-		pthread_mutex_unlock(&logger->logQueueMutex);
 		if (remainingMsgs == 0)
 			pthread_cond_broadcast(&logger->logQueueEmpty);
+		pthread_mutex_unlock(&logger->logQueueMutex);
 	}
 }
 
@@ -2159,7 +2158,7 @@ static void LoggerWriteStreamTerminated(Logger *logger)
 		CFRelease(logger->logStream);
 		logger->logStream = NULL;
 	}
-	
+
 	if (logger->bufferReadStream != NULL)
 	{
 		// In the case the connection drops before we have flushed the
