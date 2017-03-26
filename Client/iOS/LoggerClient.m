@@ -9,7 +9,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2016 Florent Pillet All Rights Reserved.
+ * Copyright (c) 2010-2017 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -130,7 +130,7 @@ struct Logger
 	CFMutableArrayRef bonjourServices;              // Services being tried
 	NSNetServiceBrowser *bonjourDomainBrowser;      // Domain browser
 	CFMutableArrayRef logQueue;                     // Message queue
-	pthread_mutex_t logQueueMutex;
+	pthread_mutex_t logQueueMutex;					// A mutex we use to protect access to the log queue and some critical variables
 	pthread_cond_t logQueueEmpty;
 	
 	dispatch_once_t workerThreadInit;               // Use this to ensure creation of the worker thread is ever done only once for a given logger
@@ -178,6 +178,7 @@ static void LoggerStopBonjourBrowsing(Logger *logger);
 static void LoggerBrowseBonjourForServices(Logger *logger, CFStringRef domainName);
 static void LoggerConnectToService(Logger *logger, NSNetService *service);
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service);
+
 @interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
 - (instancetype)initWithLogger:(Logger *)logger;
 @end
@@ -351,6 +352,8 @@ void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFString
 		logger = LoggerGetDefaultLogger();
 	if (logger != NULL)
 	{
+		pthread_mutex_lock(&logger->logQueueMutex);
+		
 		BOOL change = ((bonjourServiceName != NULL) != (logger->bonjourServiceName != NULL) ||
 					   (bonjourServiceName != NULL && CFStringCompare(bonjourServiceName, logger->bonjourServiceName, 0) != kCFCompareEqualTo))
 		||			((bonjourServiceType != NULL) != (logger->bonjourServiceType != NULL) ||
@@ -370,22 +373,28 @@ void LoggerSetupBonjour(Logger *logger, CFStringRef bonjourServiceType, CFString
 		logger->bonjourServiceName = bonjourServiceName;
 
 		if (change && logger->remoteOptionsChangedSource != NULL)
-		{
 			CFRunLoopSourceSignal(logger->remoteOptionsChangedSource);
-		}
+		
+		pthread_mutex_unlock(&logger->logQueueMutex);
 	}
 }
 
 CFStringRef LoggerGetBonjourServiceType(Logger *logger)
 {
 	logger = logger ?: LoggerGetDefaultLogger();
-	return logger ? logger->bonjourServiceType : NULL;
+	pthread_mutex_lock(&logger->logQueueMutex);
+	CFStringRef result = logger ? logger->bonjourServiceType : NULL;
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	return result;
 }
 
 CFStringRef LoggerGetBonjourServiceName(Logger *logger)
 {
 	logger = logger ?: LoggerGetDefaultLogger();
-	return logger ? logger->bonjourServiceName : NULL;
+	pthread_mutex_lock(&logger->logQueueMutex);
+	CFStringRef result = logger ? logger->bonjourServiceName : NULL;
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	return result;
 }
 
 /// Stringification, see this:
@@ -400,11 +409,10 @@ void LoggerSetupBonjourForBuildUser()
 
 void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 {
-	if (logger == NULL)
-		logger = LoggerGetDefaultLogger();
-	if (logger == NULL)
-		return;
+	logger = logger ?: LoggerGetDefaultLogger();
 
+	pthread_mutex_lock(&logger->logQueueMutex);
+	
 	CFStringRef previousHost = logger->host;
 	UInt32 previousPort = logger->port;
 
@@ -424,29 +432,33 @@ void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 		 
 	if (previousHost != NULL)
 		CFRelease(previousHost);
+
+	pthread_mutex_unlock(&logger->logQueueMutex);
 }
 
 CFStringRef LoggerGetViewerHostName(Logger *logger)
 {
 	logger = logger ?: LoggerGetDefaultLogger();
-	return logger ? logger->host : NULL;
+	pthread_mutex_lock(&logger->logQueueMutex);
+	CFStringRef result = logger ? logger->host : NULL;
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	return result;
 }
 
 UInt32 LoggerGetViewerPort(Logger *logger)
 {
 	logger = logger ?: LoggerGetDefaultLogger();
-	return logger ? logger->port : 0;
+	pthread_mutex_lock(&logger->logQueueMutex);
+	UInt32 result = logger ? logger->port : 0;
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	return result;
 }
 
 void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 {
-	if (logger == NULL)
-	{
-		logger = LoggerGetDefaultLogger();
-		if (logger == NULL)
-			return;
-	}
-
+	logger = logger ?: LoggerGetDefaultLogger();
+	pthread_mutex_lock(&logger->logQueueMutex);
+	
 	BOOL change = ((logger->bufferFile != NULL && absolutePath == NULL) ||
 				   (logger->bufferFile == NULL && absolutePath != NULL) ||
 				   (logger->bufferFile != NULL && absolutePath != NULL && CFStringCompare(logger->bufferFile, absolutePath, (CFStringCompareFlags) 0) != kCFCompareEqualTo));
@@ -459,15 +471,21 @@ void LoggerSetBufferFile(Logger *logger, CFStringRef absolutePath)
 		}
 		if (absolutePath != NULL)
 			logger->bufferFile = CFStringCreateCopy(NULL, absolutePath);
+
 		if (logger->bufferFileChangedSource != NULL)
 			CFRunLoopSourceSignal(logger->bufferFileChangedSource);
 	}
+
+	pthread_mutex_unlock(&logger->logQueueMutex);
 }
 
 CFStringRef LoggerGetBufferFile(Logger *logger)
 {
 	logger = logger ?: LoggerGetDefaultLogger();
-	return logger ? logger->bufferFile : NULL;
+	pthread_mutex_lock(&logger->logQueueMutex);
+	CFStringRef result = logger ? logger->bufferFile : NULL;
+	pthread_mutex_unlock(&logger->logQueueMutex);
+	return result;
 }
 
 Logger *LoggerStart(Logger *logger)
@@ -644,6 +662,9 @@ static void *LoggerWorkerThread(Logger *logger)
         (*registerThreadWithCollector_fn)();
 #endif
 
+	// access to the runloop sources is protected by our logQueue mutex
+	pthread_mutex_lock(&logger->logQueueMutex);
+
 	// Create the run loop source that signals when messages have been added to the runloop
 	// this will directly trigger a WriteMoreData() call, which will or won't write depending
 	// on whether we're connected and there's space available in the stream
@@ -666,6 +687,8 @@ static void *LoggerWorkerThread(Logger *logger)
 
 	// Create the runloop source that lets us know when remote (host, Bonjour) settings change
 	LoggerPrepareRunloopSource(logger, &logger->remoteOptionsChangedSource, &LoggerRemoteSettingsChanged);
+
+	pthread_mutex_unlock(&logger->logQueueMutex);
 	
 	// Start Reachability (when needed), which determines when we take the next step
 	// (once Reachability status is known, we'll decide to either start Bonjour browsing or
@@ -996,6 +1019,7 @@ static void LoggerWriteMoreData(Logger *logger)
 		if (logger->sendBufferUsed == 0)
 		{
 			// pull more data from the log queue
+			pthread_mutex_lock(&logger->logQueueMutex);
 			if (logger->bufferReadStream != NULL)
 			{
 				if (!CFReadStreamHasBytesAvailable(logger->bufferReadStream))
@@ -1012,7 +1036,6 @@ static void LoggerWriteMoreData(Logger *logger)
 			}
 			else
 			{
-				pthread_mutex_lock(&logger->logQueueMutex);
 				while (CFArrayGetCount(logger->logQueue))
 				{
 					CFDataRef d = (CFDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
@@ -1026,12 +1049,10 @@ static void LoggerWriteMoreData(Logger *logger)
 					CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 					logger->incompleteSendOfFirstItem = NO;
 				}
-				pthread_mutex_unlock(&logger->logQueueMutex);
 			}
 			if (logger->sendBufferUsed == 0) 
 			{
 				// are we done yet?
-				pthread_mutex_lock(&logger->logQueueMutex);
 				if (CFArrayGetCount(logger->logQueue) == 0)
 				{
 					pthread_mutex_unlock(&logger->logQueueMutex);
@@ -1042,9 +1063,9 @@ static void LoggerWriteMoreData(Logger *logger)
 				// first item is too big to fit in a single packet, send it separately
 				sendFirstItem = (CFMutableDataRef)CFArrayGetValueAtIndex(logger->logQueue, 0);
 				logger->incompleteSendOfFirstItem = YES;
-				pthread_mutex_unlock(&logger->logQueueMutex);
 				logger->sendBufferOffset = 0;
 			}
+			pthread_mutex_unlock(&logger->logQueueMutex);
 		}
 
 		// send data over the socket. We try hard to be failsafe and if we have to send
@@ -2638,7 +2659,6 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 		CFArrayInsertValueAtIndex(logger->logQueue, idx, message);
 	else
 		CFArrayAppendValue(logger->logQueue, message);
-	pthread_mutex_unlock(&logger->logQueueMutex);
 	
 	if (logger->messagePushedSource != NULL)
 	{
@@ -2652,15 +2672,14 @@ static void LoggerPushMessageToQueue(Logger *logger, CFDataRef message)
 	{
 		// In this case, a failure creating the message runLoop source forces us
 		// to always log to console
-		pthread_mutex_lock(&logger->logQueueMutex);
 		while (CFArrayGetCount(logger->logQueue))
 		{
 			LoggerLogToConsole(CFArrayGetValueAtIndex(logger->logQueue, 0));
 			CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 		}
-		pthread_mutex_unlock(&logger->logQueueMutex);
 		pthread_cond_broadcast(&logger->logQueueEmpty);		// in case other threads are waiting for a flush
 	}
+	pthread_mutex_unlock(&logger->logQueueMutex);
 }
 
 static void LogMessageRawTo_internal(Logger *logger,
