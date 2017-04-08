@@ -304,6 +304,9 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 - (IBAction)advancedColorsDel:(id)sender {
     NSArray *selection = [self.advancedColorsArrayController selectedObjects];
     [self.advancedColors removeObjectsInArray:selection];
+	if (self.advancedColors.count == 0) {
+		[self.advancedColors addObject:[self _blankAdvancedColor]];
+	}
     [self.advancedColorsArrayController rearrangeObjects];
     [self commitAdvancedColorsChanges];
 }
