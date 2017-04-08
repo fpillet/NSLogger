@@ -73,12 +73,6 @@ LoggerApp(1, @"Hello world! Today is: %@", [self myDate]);
 LoggerNetwork(1, @"Hello world! Today is: %@", [self myDate]);
 ```
 
-For **Android**:
-
-```java
-TO BE DEFINED…
-```
-
 
 
 # Installation
