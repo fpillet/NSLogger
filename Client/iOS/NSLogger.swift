@@ -1,14 +1,14 @@
 /*
  * NSLogger.swift
  *
- * version 1.7.0 23-MAY-2016
+ * version 1.8.0 26-MARCH-2017
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  *
- * Copyright (c) 2010-2016 Florent Pillet All Rights Reserved.
+ * Copyright (c) 2010-2017 Florent Pillet All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
