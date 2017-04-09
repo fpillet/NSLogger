@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 
         // Avoid NSLogger client to search on Bonjour.
-        LoggerSetViewerHost(nil, "localhost" as NSString, 50000)
+        //LoggerSetViewerHost(nil, "localhost" as NSString, 50000)
 
         Log(.App, .Important, "Hello, Swift Logger Tester! 🤖")
 
