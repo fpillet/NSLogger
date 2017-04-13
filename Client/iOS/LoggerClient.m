@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.8.0 26-MARCH-2017
+ * version 1.8.1 13-APRIL-2017
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -96,7 +96,7 @@
 // Set to 0 to disable internal debug completely
 // Set to 1 to activate console logs when running the logger itself
 // Set to 2 to see every logging call issued by the app, too
-#define LOGGER_DEBUG 0
+#define LOGGER_DEBUG 1
 #ifdef NSLog
 	#undef NSLog
 #endif
@@ -542,6 +542,7 @@ void LoggerStop(Logger *logger)
             LoggerStopGrabbingConsole(logger);
 			logger->quit = YES;
 			pthread_join(logger->workerThread, NULL);
+			logger->workerThread = NULL;
 		}
 
 		CFRelease(logger->bonjourServiceBrowsers);
@@ -749,7 +750,6 @@ static void *LoggerWorkerThread(Logger *logger)
 	// if the client ever tries to log again against us, make sure that logs at least
 	// go to console
 	logger->options |= kLoggerOption_LogToConsole;
-	logger->workerThread = NULL;
 	
 	LOGGERDBG(CFSTR("Stop LoggerWorkerThread"));
 	return NULL;
@@ -1137,19 +1137,10 @@ static void LoggerWriteMoreData(Logger *logger)
 #pragma mark -
 #pragma mark Console logs redirection support
 // -----------------------------------------------------------------------------
-static void LoggerLogMessageToConsoleGrabbers(CFStringRef tag, CFStringRef message)
-{
-	pthread_mutex_lock(&consoleGrabbersMutex);
-	for (unsigned i = 0; i < consoleGrabbersListLength; i++)
-	{
-		if (consoleGrabbersList[i] != NULL)
-			LogMessageRawToF(consoleGrabbersList[i], NULL, 0, NULL, (NSString *)tag, 0, (NSString *)message);
-	}
-	pthread_mutex_unlock(&consoleGrabbersMutex);
-}
-
 static void LoggerLogFromConsole(CFStringRef tag, int fd, int outfd, CFMutableDataRef data)
 {
+	// protected by `consoleGrabbersMutex`
+
 	const int BUFSIZE = 1000;
 	size_t prognameLength = strlen(getprogname());
 
@@ -1209,7 +1200,11 @@ static void LoggerLogFromConsole(CFStringRef tag, int fd, int outfd, CFMutableDa
 			CFStringRef message = CFStringCreateWithBytes(NULL, bytes+offset, pos-offset, kCFStringEncodingUTF8, false);
 			if (message != NULL)
 			{
-				LoggerLogMessageToConsoleGrabbers(tag, message);
+				for (unsigned i = 0; i < consoleGrabbersListLength; i++)
+				{
+					if (consoleGrabbersList[i] != NULL)
+						LogMessageRawToF(consoleGrabbersList[i], NULL, 0, NULL, (NSString *)tag, 0, (NSString *)message);
+				}
 				CFRelease(message);
 			}
 			else
@@ -1228,7 +1223,8 @@ static void LoggerLogFromConsole(CFStringRef tag, int fd, int outfd, CFMutableDa
 static void *LoggerConsoleGrabThread(void *context)
 {
 #pragma unused (context)
-	
+	pthread_mutex_lock(&consoleGrabbersMutex);
+
 	int fdout = sConsolePipes[0];
 	fcntl(fdout, F_SETFL, fcntl(fdout, F_GETFL, 0) | O_NONBLOCK);
 	
@@ -1238,7 +1234,11 @@ static void *LoggerConsoleGrabThread(void *context)
 	CFMutableDataRef stdoutData = CFDataCreateMutable(NULL, 0);
 	CFMutableDataRef stderrData = CFDataCreateMutable(NULL, 0);
 
-	while (numActiveConsoleGrabbers != 0)
+	unsigned activeGrabbers = numActiveConsoleGrabbers;
+	
+	pthread_mutex_unlock(&consoleGrabbersMutex);
+	
+	while (activeGrabbers != 0)
 	{
 		fd_set set;
 		FD_ZERO(&set);
@@ -1253,11 +1253,19 @@ static void *LoggerConsoleGrabThread(void *context)
 			// < 0: error occurred
 			break;
 		}
+
+		pthread_mutex_lock(&consoleGrabbersMutex);
 		
-		if (FD_ISSET(fdout, &set))
-			LoggerLogFromConsole(CFSTR("stdout"), fdout, sSTDOUT, stdoutData);
-		if (FD_ISSET(fderr, &set ))
-			LoggerLogFromConsole(CFSTR("stderr"), fderr, sSTDERR, stderrData);
+		activeGrabbers = numActiveConsoleGrabbers;
+		if (activeGrabbers != 0)
+		{
+			if (FD_ISSET(fdout, &set))
+				LoggerLogFromConsole(CFSTR("stdout"), fdout, sSTDOUT, stdoutData);
+			if (FD_ISSET(fderr, &set ))
+				LoggerLogFromConsole(CFSTR("stderr"), fderr, sSTDERR, stderrData);
+		}
+
+		pthread_mutex_unlock(&consoleGrabbersMutex);
 	}
 	
 	CFRelease(stdoutData);
@@ -1267,6 +1275,8 @@ static void *LoggerConsoleGrabThread(void *context)
 
 static void LoggerStartConsoleRedirection()
 {
+	// protected by `consoleGrabbersMutex`
+	
 	// keep the original pipes so we can still forward everything
 	// (i.e. to the running IDE that needs to display or interpret console messages)
 	// and remember the SIGPIPE settings, as we are going to clear them to prevent
@@ -1305,6 +1315,8 @@ static void LoggerStartConsoleRedirection()
 
 static void LoggerStopConsoleRedirection()
 {
+	// protected by consoleGrabbersMutex (see below)
+
 	// close the pipes - will force exiting the console logger thread
 	// assume the console grabber mutex has been acquired
 	dup2(sSTDOUT, STDOUT_FILENO);
@@ -1333,8 +1345,11 @@ static void LoggerStopConsoleRedirection()
 		close(sConsolePipes[1]);
 	}
 	sConsolePipes[0] = sConsolePipes[1] = sConsolePipes[2] = sConsolePipes[3] = -1;
-	
+	numActiveConsoleGrabbers = 0;
+
+	pthread_mutex_unlock(&consoleGrabbersMutex);
 	pthread_join(consoleGrabThread, NULL);
+	pthread_mutex_lock(&consoleGrabbersMutex);
 }
 
 static void LoggerStartGrabbingConsole(Logger *logger)
@@ -1363,119 +1378,34 @@ static void LoggerStartGrabbingConsole(Logger *logger)
 	
 	LoggerStartConsoleRedirection(); // Start redirection if necessary
 	
-	pthread_mutex_unlock( &consoleGrabbersMutex );
+	pthread_mutex_unlock(&consoleGrabbersMutex);
 }
 
 static void LoggerStopGrabbingConsole(Logger *logger)
 {
-	if (numActiveConsoleGrabbers == 0)
-		return;
-	
 	pthread_mutex_lock(&consoleGrabbersMutex);
 	
-	for (unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++)
+	if (numActiveConsoleGrabbers != 0)
 	{
-		if (consoleGrabbersList[grabberIndex] == logger)
+		for (unsigned grabberIndex = 0; grabberIndex < consoleGrabbersListLength; grabberIndex++)
 		{
-			consoleGrabbersList[grabberIndex] = NULL;
-			if (--numActiveConsoleGrabbers == 0)
+			if (consoleGrabbersList[grabberIndex] == logger)
 			{
-				consoleGrabbersListLength = 0;
-				free(consoleGrabbersList);
-				consoleGrabbersList = NULL;
-				LoggerStopConsoleRedirection();
+				consoleGrabbersList[grabberIndex] = NULL;
+				if (--numActiveConsoleGrabbers == 0)
+				{
+					consoleGrabbersListLength = 0;
+					free(consoleGrabbersList);
+					consoleGrabbersList = NULL;
+					LoggerStopConsoleRedirection();
+				}
+				break;
 			}
-			break;
 		}
 	}
 	
 	pthread_mutex_unlock(&consoleGrabbersMutex);
 }
-/*
-static dispatch_source_t LoggerStartGrabbingFD(int fd, CFStringRef tag)
-{
-	// console capture implementation derived from https://github.com/swisspol/XLFacility/blob/master/XLFacility/Core/XLFacility.m
-	// Copyright (c) 2014, Pierre-Olivier Latour
-	size_t prognameLength = strlen(getprogname());
-	
-	unsigned char* buffer = (unsigned char *)malloc(kFileDescriptorCaptureBufferSize);
-	CFMutableDataRef data = CFDataCreateMutable(NULL, 0);
-	
-	fcntl(fd, F_SETFL, O_NONBLOCK);
-	
-	dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, fd, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
-	dispatch_source_set_cancel_handler(source, ^{
-		free(buffer);
-	});
-	
-	dispatch_source_set_event_handler(source, ^{
-		// pump all outstanding data out of FD
-		for(;;)
-		{
-			ssize_t size = read(fd, buffer, kFileDescriptorCaptureBufferSize);
-			if (size > 0)
-				CFDataAppendBytes(data, buffer, size);
-			if (size < kFileDescriptorCaptureBufferSize)
-				break;
-		}
-		
-		// break into lines and push to log
-		for(;;)
-		{
-			// locate newline
-			const unsigned char *bytes = CFDataGetMutableBytePtr(data);
-			if (bytes == NULL)	// pointer may be null if data is empty
-				break;
-			NSInteger pos = 0, maxPos = CFDataGetLength(data);
-			while (pos < maxPos)
-			{
-				if (bytes[pos] == '\n')
-					break;
-				pos++;
-			}
-			if (pos == maxPos)
-				break;
-
-			NSUInteger offset = 0;
-			if (pos > 24 + prognameLength + 2)
-			{
-				// detect and remove NSLog header
-				// "yyyy-mm-dd HH:MM:ss.SSS progname[:] "
-				if ((bytes[4] == '-') && (bytes[7] == '-') && (bytes[10] == ' ') && (bytes[13] == ':') && (bytes[16] == ':') && (bytes[19] == '.'))
-				{
-					if ((bytes[23] == ' ') &&  (bytes[24 + prognameLength] == '['))
-					{
-						const char* found = strnstr((const char *)&bytes[24 + prognameLength + 1], "] ", maxPos - (24 + prognameLength + 1));
-						if (found)
-						{
-							offset = found - (const char *)bytes + 2;
-						}
-					}
-				}
-			}
-			
-			// output message to grabbers
-			CFStringRef message = CFStringCreateWithBytes(NULL, bytes+offset, pos-offset, kCFStringEncodingUTF8, false);
-			if (message != NULL)
-			{
-				LoggerLogMessageToConsoleGrabbers(tag, message);
-				CFRelease(message);
-			}
-			else
-			{
-				LOGGERDBG(CFSTR("failed extracting string of length %d from fd %d"), pos-offset, fd);
-			}
-
-			// drop all newlines and move on
-			while (++pos < maxPos && (bytes[pos] == '\n' || bytes[pos] == '\r'))
-				;
-			CFDataDeleteBytes(data, CFRangeMake(0, pos));
-		}
-	});
-	dispatch_resume(source);
-	return source;
-}
-*/
 
 // -----------------------------------------------------------------------------
 #pragma mark -

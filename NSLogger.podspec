@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target  = '10.10'
   s.tvos.deployment_target = '9.0'
   
-  s.ios.frameworks   = 'CFNetwork', 'SystemConfiguration'
+  s.ios.frameworks = 'CFNetwork', 'SystemConfiguration'
   s.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
   s.requires_arc = false
   
@@ -28,6 +28,8 @@ Pod::Spec.new do |s|
   # from the final build
   s.subspec 'Standard' do |standard|
     standard.source_files = 'Client/iOS/*.{h,m,swift}'
+	standard.ios.frameworks = 'UIKit'
+	standard.osx.frameworks = 'AppKit'
     standard.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
@@ -41,6 +43,8 @@ Pod::Spec.new do |s|
   # NSLogger functions and use them if present.
   s.subspec 'NoStrip' do |nostrip|
     nostrip.source_files = 'Client/iOS/*.{h,m,swift}'
+	nostrip.ios.frameworks = 'UIKit'
+	nostrip.osx.frameworks = 'AppKit'
     nostrip.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}" NSLOGGER_ALLOW_NOSTRIP=1'
     }
