@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name     = 'NSLogger'
-  s.version  = '1.8.0'
+  s.version  = '1.8.1'
   s.license  = 'BSD'
   s.summary  = 'A modern, flexible logging tool.'
   s.homepage = 'https://github.com/fpillet/NSLogger'
   s.author   = { 'Florent Pillet' => 'fpillet@gmail.com' }
-  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.8.0' }
+  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.8.1' }
   s.screenshot  = "https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png"
 
   s.description = 'NSLogger is a high perfomance logging utility which displays traces emitted by ' \
@@ -18,8 +18,6 @@ Pod::Spec.new do |s|
   s.osx.deployment_target  = '10.10'
   s.tvos.deployment_target = '9.0'
   
-  s.ios.frameworks = 'CFNetwork', 'SystemConfiguration'
-  s.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
   s.requires_arc = false
   
   s.default_subspec = 'Standard'
@@ -28,8 +26,8 @@ Pod::Spec.new do |s|
   # from the final build
   s.subspec 'Standard' do |standard|
     standard.source_files = 'Client/iOS/*.{h,m,swift}'
-	standard.ios.frameworks = 'UIKit'
-	standard.osx.frameworks = 'AppKit'
+	standard.ios.frameworks = 'CFNetwork', 'SystemConfiguration', 'UIKit'
+	standard.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices', 'AppKit'
     standard.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
@@ -43,8 +41,8 @@ Pod::Spec.new do |s|
   # NSLogger functions and use them if present.
   s.subspec 'NoStrip' do |nostrip|
     nostrip.source_files = 'Client/iOS/*.{h,m,swift}'
-	nostrip.ios.frameworks = 'UIKit'
-	nostrip.osx.frameworks = 'AppKit'
+	nostrip.ios.frameworks = 'CFNetwork', 'SystemConfiguration', 'UIKit'
+	nostrip.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices', 'AppKit'
     nostrip.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}" NSLOGGER_ALLOW_NOSTRIP=1'
     }
@@ -56,6 +54,8 @@ Pod::Spec.new do |s|
   # The 'NoSwift' subspec is the legacy ObjC only version: no Swift code will be added to your project.
   s.subspec 'NoSwift' do |noswift|
     noswift.source_files = 'Client/iOS/*.{h,m}'
+	noswift.ios.frameworks = 'CFNetwork', 'SystemConfiguration'
+	noswift.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices'
     noswift.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
