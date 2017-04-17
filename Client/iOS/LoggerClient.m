@@ -679,10 +679,6 @@ static void *LoggerWorkerThread(Logger *logger)
 		return NULL;
 	}
 
-	// Create the buffering stream if needed
-	if (logger->bufferFile != NULL)
-		LoggerCreateBufferWriteStream(logger);
-	
 	// Create the runloop source that lets us know when file buffering options change
 	LoggerPrepareRunloopSource(logger, &logger->bufferFileChangedSource, &LoggerFileBufferingOptionsChanged);
 
@@ -690,7 +686,11 @@ static void *LoggerWorkerThread(Logger *logger)
 	LoggerPrepareRunloopSource(logger, &logger->remoteOptionsChangedSource, &LoggerRemoteSettingsChanged);
 
 	pthread_mutex_unlock(&logger->logQueueMutex);
-	
+
+	// Create the buffering stream if needed
+	if (logger->bufferFile != NULL)
+		LoggerCreateBufferWriteStream(logger);
+
 	// Start Reachability (when needed), which determines when we take the next step
 	// (once Reachability status is known, we'll decide to either start Bonjour browsing or
 	// try connecting to a direct host)
