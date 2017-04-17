@@ -1055,8 +1055,8 @@ static void LoggerWriteMoreData(Logger *logger)
 				// are we done yet?
 				if (CFArrayGetCount(logger->logQueue) == 0)
 				{
-					pthread_mutex_unlock(&logger->logQueueMutex);
 					pthread_cond_broadcast(&logger->logQueueEmpty);
+					pthread_mutex_unlock(&logger->logQueueMutex);
 					return;
 				}
 
@@ -1121,8 +1121,8 @@ static void LoggerWriteMoreData(Logger *logger)
 			pthread_mutex_lock(&logger->logQueueMutex);
 			CFArrayRemoveValueAtIndex(logger->logQueue, 0);
 			logger->incompleteSendOfFirstItem = NO;
-			pthread_mutex_unlock(&logger->logQueueMutex);
 			logger->sendBufferOffset = 0;
+			pthread_mutex_unlock(&logger->logQueueMutex);
 		}
 		
 		pthread_mutex_lock(&logger->logQueueMutex);
