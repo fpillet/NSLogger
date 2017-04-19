@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
   s.name     = 'NSLogger'
-  s.version  = '1.8.1'
+  s.version  = '1.8.2'
   s.license  = 'BSD'
   s.summary  = 'A modern, flexible logging tool.'
   s.homepage = 'https://github.com/fpillet/NSLogger'
   s.author   = { 'Florent Pillet' => 'fpillet@gmail.com' }
-  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.8.1' }
+  s.source   = { :git => 'https://github.com/fpillet/NSLogger.git', :tag => 'v1.8.2' }
   s.screenshot  = "https://github.com/fpillet/NSLogger/raw/master/Screenshots/mainwindow.png"
 
   s.description = 'NSLogger is a high perfomance logging utility which displays traces emitted by ' \
