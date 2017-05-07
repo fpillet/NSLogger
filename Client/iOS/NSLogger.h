@@ -1,7 +1,7 @@
 /*
  * NSLogger.h
  *
- * version 1.7.0 23-MAY-2016
+ * version 1.8.3 8-MAY-2017
  *
  * Part of NSLogger (client side)
  * https://github.com/fpillet/NSLogger
