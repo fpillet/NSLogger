@@ -95,13 +95,14 @@ If your project is configured to use [CocoaPods](https://cocoapods.org/), just a
 pod "NSLogger"
 ```
 
-If you need a Swift-free version of NSLogger, just use the `NoSwift` pod:
+The above only includes C and Obj-C APIs and is suitable for use in applications without any Swift code.
+Swift APIs are added with the `Swift` subspec. If you're developing code in Swift or a mixed Swift / Obj-C environment, use:
 
 ```ruby
-pod "NSLogger/NoSwift"
+pod "NSLogger/Swift"
 ```
 
-If you are using frameworks or libraries that may use NSLogger, then you can use the `NoStrip` variant which forces the linker to keep all NSLogger functions in the final build, even those that your code doesn't use. Since linked in frameworks may dynamically check for the presence of NSLogger functions, this is required as the linker wouldn't see this use.
+Finally if you are using frameworks or libraries that may use NSLogger, then you can use the `NoStrip` variant which forces the linker to keep all NSLogger functions in the final build, even those that your code doesn't use. Since linked in frameworks may dynamically check for the presence of NSLogger functions, this is required as the linker wouldn't see this use.
 
 ```ruby
 pod "NSLogger/NoStrip"
