@@ -20,11 +20,13 @@ Pod::Spec.new do |s|
   
   s.requires_arc = false
   
-  s.default_subspec = 'Default'
+  s.default_subspec = 'ObjC'
 
-  # The 'Default' subspec is the default: has C / Obj-C support
+  #
+  # The 'Default' subspec is the default: only has C / Obj-C support
   # unused NSLogger functions will be stripped from the final build
-  s.subspec 'Default' do |ss|
+  #
+  s.subspec 'ObjC' do |ss|
     ss.source_files = 'Client/iOS/*.{h,m}'
 	ss.public_header_files = 'Client/iOS/*.h'
 	ss.ios.frameworks = 'CFNetwork', 'SystemConfiguration', 'UIKit'
@@ -32,29 +34,32 @@ Pod::Spec.new do |s|
     ss.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
+  end
+  
+  #
+  # The 'Swift' subspec builds on ObjC and offers a Swiftified (albeit limited) API
+  # Since there's a direct dependency on 'NSLogger/Default', Swift developers can simply include
+  # 'NSLogger/Swift' in their Podfile
+  #
+  # NSLogger is automatically disabled in Release builds. If you want to keep it enabled in release builds,
+  # you can define a NSLOGGER_ENABLED flag which forces calling into the framework.
+  #
+  s.subspec 'Swift' do |ss|
+	ss.dependency 'NSLogger/ObjC'
+    ss.source_files = 'Client/iOS/*.swift'
     ss.pod_target_xcconfig = {
         'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DISABLED'
     }
   end
-  
 
-  # The 'Swift' subspec is the legacy ObjC only version: no Swift code will be added to your project.
-  # Since there's a direct dependency on 'NSLogger/Default', Swift developers can simply include
-  # 'NSLogger/Swift' in their Podfile
-  s.subspec 'Swift' do |ss|
-    ss.ios.deployment_target  = '8.0'
-    ss.osx.deployment_target  = '10.10'
-    ss.tvos.deployment_target = '9.0'
-	ss.dependency 'NSLogger/Default'
-    ss.source_files = 'Client/iOS/*.swift'
-  end
-  
+  #
   # The 'NoStrip' subspec prevents unused functions from being stripped by the linker.
   # this is useful when other frameworks linked into the application dynamically look for
   # NSLogger functions and use them if present. Use 'NSLogger/NoStrip' instead of regular
   # 'NSLogger' pod, add 'NSLogger/Swift' as needed.
+  #
   s.subspec 'NoStrip' do |ss|
-  	ss.dependency 'NSLogger/Default'
+  	ss.dependency 'NSLogger/ObjC'
     ss.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_ALLOW_NOSTRIP=1'
     }
