@@ -122,7 +122,7 @@ Then run:
 $ carthage update
 ```
 
-
+Note that for Carthage, the `NSLogger.xcodeproj` top-level project offers two targets (`NSLogger` and `NSLoggerSwift`). Add the built framework that suits your needs to your project.
 
 # Advanced Usage
 
