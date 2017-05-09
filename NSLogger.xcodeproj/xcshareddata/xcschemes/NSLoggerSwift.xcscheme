@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0830"
+   LastUpgradeVersion = "0820"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3D0EE4BE1EC124A700D0FA63"
+               BlueprintIdentifier = "3D0EE4B11EC1241100D0FA63"
                BuildableName = "NSLogger.framework"
-               BlueprintName = "NSLogger-Swift OS X"
+               BlueprintName = "NSLoggerSwift"
                ReferencedContainer = "container:NSLogger.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3D0EE4BE1EC124A700D0FA63"
+            BlueprintIdentifier = "3D0EE4B11EC1241100D0FA63"
             BuildableName = "NSLogger.framework"
-            BlueprintName = "NSLogger-Swift OS X"
+            BlueprintName = "NSLoggerSwift"
             ReferencedContainer = "container:NSLogger.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "3D0EE4BE1EC124A700D0FA63"
+            BlueprintIdentifier = "3D0EE4B11EC1241100D0FA63"
             BuildableName = "NSLogger.framework"
-            BlueprintName = "NSLogger-Swift OS X"
+            BlueprintName = "NSLoggerSwift"
             ReferencedContainer = "container:NSLogger.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
