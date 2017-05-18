@@ -28,10 +28,11 @@ Pod::Spec.new do |s|
   #
   s.subspec 'ObjC' do |ss|
     ss.source_files = 'Client/iOS/*.{h,m}'
-	ss.public_header_files = 'Client/iOS/*.h'
-	ss.ios.frameworks = 'CFNetwork', 'SystemConfiguration', 'UIKit'
-	ss.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices', 'AppKit'
+    ss.public_header_files = 'Client/iOS/*.h'
+    ss.ios.frameworks = 'CFNetwork', 'SystemConfiguration', 'UIKit'
+    ss.osx.frameworks = 'CFNetwork', 'SystemConfiguration', 'CoreServices', 'AppKit'
     ss.xcconfig = {
+      'OTHER_CFLAGS' => '-Wno-nullability-completeness',
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_WAS_HERE=1 NSLOGGER_BUILD_USERNAME="${USER}"'
     }
   end
@@ -45,7 +46,7 @@ Pod::Spec.new do |s|
   # you can define a NSLOGGER_ENABLED flag which forces calling into the framework.
   #
   s.subspec 'Swift' do |ss|
-	ss.dependency 'NSLogger/ObjC'
+    ss.dependency 'NSLogger/ObjC'
     ss.source_files = 'Client/iOS/*.swift'
     ss.pod_target_xcconfig = {
         'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DISABLED'
@@ -59,7 +60,7 @@ Pod::Spec.new do |s|
   # 'NSLogger' pod, add 'NSLogger/Swift' as needed.
   #
   s.subspec 'NoStrip' do |ss|
-  	ss.dependency 'NSLogger/ObjC'
+    ss.dependency 'NSLogger/ObjC'
     ss.xcconfig = {
       'GCC_PREPROCESSOR_DEFINITIONS' => '${inherited} NSLOGGER_ALLOW_NOSTRIP=1'
     }

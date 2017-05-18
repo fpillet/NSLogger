@@ -90,6 +90,15 @@ extern "C" {
 #else
 #define NSLOGGER_NOSTRIP
 #endif
+    
+#define NSLOGGER_IGNORE_NULLABILITY_BEGIN \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Wnullability-completeness\"")
+    
+#define NSLOGGER_IGNORE_NULLABILITY_END \
+    _Pragma("clang diagnostic pop")
+    
+NSLOGGER_IGNORE_NULLABILITY_BEGIN
 
 // Set the default logger which will be the one used when passing NULL for logge
 extern void LoggerSetDefaultLogger(Logger *aLogger) NSLOGGER_NOSTRIP;
@@ -208,6 +217,32 @@ extern void LogEndBlockTo(Logger *logger) NSLOGGER_NOSTRIP;
 // Log a marker (text can be null)
 extern void LogMarker(NSString *text) NSLOGGER_NOSTRIP;
 extern void LogMarkerTo(Logger *logger, NSString *text) NSLOGGER_NOSTRIP;
+    
+NSLOGGER_IGNORE_NULLABILITY_END
+    
+// Swift fastpath logging functions
+extern void LogMessage_fast(NSString * _Nullable filename,
+                            NSInteger lineNumber,
+                            NSString * _Nullable functionName,
+                            NSString * _Nullable domain,
+                            NSInteger level,
+                            NSString * _Nonnull message) NSLOGGER_NOSTRIP;
+    
+extern void LogImage_fast(NSString * _Nullable filename,
+                          NSInteger lineNumber,
+                          NSString * _Nullable functionName,
+                          NSString * _Nullable domain,
+                          NSInteger level,
+                          NSInteger width,
+                          NSInteger height,
+                          NSData * _Nonnull data) NSLOGGER_NOSTRIP;
+    
+extern void LogData_fast(NSString * _Nullable filename,
+                         NSInteger lineNumber,
+                         NSString * _Nullable functionName,
+                         NSString * _Nullable domain,
+                         NSInteger level,
+                         NSData * _Nonnull data) NSLOGGER_NOSTRIP;
 
 #ifdef __cplusplus
 };
