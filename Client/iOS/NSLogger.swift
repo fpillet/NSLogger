@@ -124,7 +124,7 @@ public final class Logger {
                     _ line: Int = #line,
                     _ function: String = #function) {
         whenEnabled {
-            LogMessage_fast(file, line, function, domain.rawValue, level.rawValue, message())
+            LogMessage_noFormat(file, line, function, domain.rawValue, level.rawValue, message())
         }
     }
     
@@ -136,7 +136,7 @@ public final class Logger {
                     _ function: String = #function) {
         whenEnabled {
             guard let rawImage = imageData(image()) else { return }
-            LogImage_fast(file, line, function, domain.rawValue, level.rawValue, rawImage.width, rawImage.height, rawImage.data)
+            LogImage_noFormat(file, line, function, domain.rawValue, level.rawValue, rawImage.width, rawImage.height, rawImage.data)
         }
     }
     
@@ -147,7 +147,7 @@ public final class Logger {
                     _ line: Int = #line,
                     _ function: String = #function) {
         whenEnabled {
-            LogData_fast(file, line, function, domain.rawValue, level.rawValue, data())
+            LogData_noFormat(file, line, function, domain.rawValue, level.rawValue, data())
         }
     }
 }

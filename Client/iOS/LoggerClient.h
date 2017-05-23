@@ -221,28 +221,28 @@ extern void LogMarkerTo(Logger *logger, NSString *text) NSLOGGER_NOSTRIP;
 NSLOGGER_IGNORE_NULLABILITY_END
     
 // Swift fastpath logging functions
-extern void LogMessage_fast(NSString * _Nullable filename,
-                            NSInteger lineNumber,
-                            NSString * _Nullable functionName,
-                            NSString * _Nullable domain,
-                            NSInteger level,
-                            NSString * _Nonnull message) NSLOGGER_NOSTRIP;
+extern void LogMessage_noFormat(NSString * _Nullable filename,
+                                NSInteger lineNumber,
+                                NSString * _Nullable functionName,
+                                NSString * _Nullable domain,
+                                NSInteger level,
+                                NSString * _Nonnull message) NSLOGGER_NOSTRIP;
     
-extern void LogImage_fast(NSString * _Nullable filename,
-                          NSInteger lineNumber,
-                          NSString * _Nullable functionName,
-                          NSString * _Nullable domain,
-                          NSInteger level,
-                          NSInteger width,
-                          NSInteger height,
-                          NSData * _Nonnull data) NSLOGGER_NOSTRIP;
+extern void LogImage_noFormat(NSString * _Nullable filename,
+                              NSInteger lineNumber,
+                              NSString * _Nullable functionName,
+                              NSString * _Nullable domain,
+                              NSInteger level,
+                              NSInteger width,
+                              NSInteger height,
+                              NSData * _Nonnull data) NSLOGGER_NOSTRIP;
     
-extern void LogData_fast(NSString * _Nullable filename,
-                         NSInteger lineNumber,
-                         NSString * _Nullable functionName,
-                         NSString * _Nullable domain,
-                         NSInteger level,
-                         NSData * _Nonnull data) NSLOGGER_NOSTRIP;
+extern void LogData_noFormat(NSString * _Nullable filename,
+                             NSInteger lineNumber,
+                             NSString * _Nullable functionName,
+                             NSString * _Nullable domain,
+                             NSInteger level,
+                             NSData * _Nonnull data) NSLOGGER_NOSTRIP;
 
 #ifdef __cplusplus
 };

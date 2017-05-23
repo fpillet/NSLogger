@@ -2716,12 +2716,12 @@ static void LogMessageTo_internal(Logger *logger,
     }
 }
 
-void LogMessage_fast(NSString *filename,
-                     NSInteger lineNumber,
-                     NSString *functionName,
-                     NSString *domain,
-                     NSInteger level,
-                     NSString *message)
+void LogMessage_noFormat(NSString *filename,
+                         NSInteger lineNumber,
+                         NSString *functionName,
+                         NSString *domain,
+                         NSInteger level,
+                         NSString *message)
 {
     Logger *logger = LoggerStart(NULL);	// start if needed
     if (logger != NULL)
@@ -2805,14 +2805,14 @@ static void LogImageTo_internal(Logger *logger,
 	}
 }
 
-void LogImage_fast(NSString *filename,
-                   NSInteger lineNumber,
-                   NSString *functionName,
-                   NSString *domain,
-                   NSInteger level,
-                   NSInteger width,
-                   NSInteger height,
-                   NSData *data)
+void LogImage_noFormat(NSString *filename,
+                       NSInteger lineNumber,
+                       NSString *functionName,
+                       NSString *domain,
+                       NSInteger level,
+                       NSInteger width,
+                       NSInteger height,
+                       NSData *data)
 {
     Logger *logger = LoggerStart(NULL);		// start if needed
     if (logger != NULL)
@@ -2892,12 +2892,12 @@ static void LogDataTo_internal(Logger *logger,
     }
 }
 
-void LogData_fast(NSString *filename,
-                  NSInteger lineNumber,
-                  NSString *functionName,
-                  NSString *domain,
-                  NSInteger level,
-                  NSData *data)
+void LogData_noFormat(NSString *filename,
+                      NSInteger lineNumber,
+                      NSString *functionName,
+                      NSString *domain,
+                      NSInteger level,
+                      NSData *data)
 {
     Logger *logger = LoggerStart(NULL);		// start if needed
     if (logger != NULL)
