@@ -39,142 +39,117 @@ import Foundation
 #if os(iOS) || os(tvOS)
 
 import UIKit
+    
+public typealias Image = UIImage
 
 #endif
 #if os(OSX)
 
 import Cocoa
+public typealias Image = NSImage
 
 #endif
 
-public enum LoggerDomain {
-	case App
-	case View
-	case Layout
-	case Controller
-	case Routing
-	case Service
-	case Network
-	case Model
-	case Cache
-	case DB
-	case IO
-	case Custom(String)
 
-	var rawValue: String {
-		switch self {
-			case .App: return "App"
-			case .View: return "View"
-			case .Layout: return "Layout"
-			case .Controller: return "Controller"
-			case .Routing: return "Routing"
-			case .Service: return "Service"
-			case .Network: return "Network"
-			case .Model: return "Model"
-			case .Cache: return "Cache"
-			case .DB: return "DB"
-			case .IO: return "IO"
-			case let .Custom(customDomain): return customDomain
-		}
-	}
-}
-
-public enum LoggerLevel: Int32 {
-	case Error = 0
-	case Warning = 1
-	case Important = 2
-	case Info = 3
-	case Debug = 4
-	case Verbose = 5
-	case Noise = 6
-}
-
-/*
-* Log a string to display in the viewer
-*
-*/
-public func Log(_ domain: LoggerDomain, _ level: LoggerLevel, _ format: @autoclosure () -> String,
-				_ filename: String = #file, lineNumber: Int32 = #line, fnName: String = #function) {
-#if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
-	let vaArgs = getVaList([format()])
-
-	let fileNameCstr = stringToCStr(filename)
-	let fnNameCstr = stringToCStr(fnName)
-
-	LogMessageF_va(fileNameCstr, lineNumber, fnNameCstr,
-				   domain.rawValue, level.rawValue,
-				   "%@", vaArgs)
-
-#endif
-}
-
-/*
-* Log an iOS / tvOS UIImage to display in the viewer
-*
-*/
-#if os(iOS) || os(tvOS)
-
-public func LogImage(_ domain: LoggerDomain, _ level: LoggerLevel, _ image: @autoclosure () -> UIImage,
-					 _ filename: String = #file, lineNumber: Int32 = #line, fnName: String = #function) {
-#if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
-	let image = image()
-	let imageData = UIImagePNGRepresentation(image)
-	let fileNameCstr = stringToCStr(filename)
-	let fnNameCstr = stringToCStr(fnName)
-	LogImageDataF(fileNameCstr, lineNumber, fnNameCstr,
-				  domain.rawValue, level.rawValue,
-				  Int32(image.size.width), Int32(image.size.height), imageData)
-#endif
-}
-
-#endif
-
-/*
-* Log a macOS NSImage to display in the viewer
-*
-*/
-#if os(OSX)
-
-public func LogImage(_ domain: LoggerDomain, _ level: LoggerLevel, _ image: @autoclosure () -> NSImage,
-					 _ filename: String = #file, lineNumber: Int32 = #line, fnName: String = #function) {
-#if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
-	let image = image()
-	let width = image.size.width
-	let height = image.size.height
-	guard
-		let tiff = image.tiffRepresentation,
-		let bitmapRep = NSBitmapImageRep(data: tiff),
-		let imageData = bitmapRep.representation(using: NSPNGFileType, properties: [:]) else {
-		return
-	}
-	let fileNameCstr = stringToCStr(filename)
-	let fnNameCstr = stringToCStr(fnName)
-	LogImageDataF(fileNameCstr, lineNumber, fnNameCstr,
-				  domain.rawValue, level.rawValue,
-				  Int32(width), Int32(height), imageData)
-#endif
-}
-
-#endif
-
-/*
-* Log a binary block of data to a binary representation in the viewer
-*
-*/
-public func LogData(filename: String, lineNumber: Int32, functionName: String,
-					domain: LoggerDomain, level: LoggerLevel, data: @autoclosure () -> Data) {
-#if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
-	let fileNameCstr = stringToCStr(filename)
-	let functionNameCstr = stringToCStr(functionName)
-	LogDataF(fileNameCstr, lineNumber, functionNameCstr,
-			 domain.rawValue, level.rawValue, data())
-#endif
-}
-
-
-fileprivate func stringToCStr(_ string: String) -> UnsafePointer<Int8> {
-	let cfStr = string as NSString
-	return cfStr.cString(using: String.Encoding.ascii.rawValue)!
+/// The main NSLogger class, use `shared` property to obtain an instance
+public final class Logger {
+    
+    /// The current NSLogger
+    public static let shared = Logger()
+    
+    private init() {}
+    
+    public struct Domain: RawRepresentable {
+        public let rawValue: String
+        public init(rawValue: String) { self.rawValue = rawValue }
+        
+        public static let app = Domain(rawValue: "App")
+        public static let view = Domain(rawValue: "View")
+        public static let layout = Domain(rawValue: "Layout")
+        public static let controller = Domain(rawValue: "Controller")
+        public static let routing = Domain(rawValue: "Routing")
+        public static let service = Domain(rawValue: "Service")
+        public static let network = Domain(rawValue: "Network")
+        public static let model = Domain(rawValue: "Model")
+        public static let cache = Domain(rawValue: "Cache")
+        public static let db = Domain(rawValue: "DB")
+        public static let io = Domain(rawValue: "IO")
+        
+        public static func custom(_ value: String) -> Domain {
+            return Domain(rawValue: value)
+        }
+    }
+    public struct Level: RawRepresentable {
+        
+        public let rawValue: Int
+        public init(rawValue: Int) { self.rawValue = rawValue }
+        
+        public static let error = Level(rawValue: 0)
+        public static let warning = Level(rawValue: 1)
+        public static let important = Level(rawValue: 2)
+        public static let info = Level(rawValue: 3)
+        public static let debug = Level(rawValue: 4)
+        public static let verbose = Level(rawValue: 5)
+        public static let noise = Level(rawValue: 6)
+        
+        public static func custom(_ value: Int) -> Level {
+            return Level(rawValue: value)
+        }
+    }
+    
+    private func imageData(_ image: Image) -> (data: Data, width: Int, height: Int)? {
+        #if os(iOS) || os(tvOS)
+            guard let imageData = UIImagePNGRepresentation(image) else { return nil }
+            return (imageData, Int(image.size.width), Int(image.size.height))
+        #elseif os(OSX)
+            guard let tiff = image.tiffRepresentation,
+                let bitmapRep = NSBitmapImageRep(data: tiff),
+                let imageData = bitmapRep.representation(using: NSPNGFileType, properties: [:]) else { return nil }
+            return (imageData, Int(image.size.width), Int(image.size.height))
+        #else
+            "CompilationError: OS not handled !"
+        #endif
+    }
+    
+    private func whenEnabled(then execute: () -> Void) {
+        #if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
+            execute()
+        #endif
+    }
+    
+    public func log(_ domain: Domain,
+                    _ level: Level,
+                    _ message: @autoclosure () -> String,
+                    _ file: String = #file,
+                    _ line: Int = #line,
+                    _ function: String = #function) {
+        whenEnabled {
+            LogMessage_noFormat(file, line, function, domain.rawValue, level.rawValue, message())
+        }
+    }
+    
+    public func log(_ domain: Domain,
+                    _ level: Level,
+                    _ image: @autoclosure () -> Image,
+                    _ file: String = #file,
+                    _ line: Int = #line,
+                    _ function: String = #function) {
+        whenEnabled {
+            guard let rawImage = imageData(image()) else { return }
+            LogImage_noFormat(file, line, function, domain.rawValue, level.rawValue, rawImage.width, rawImage.height, rawImage.data)
+        }
+    }
+    
+    public func log(_ domain: Domain,
+                    _ level: Level,
+                    _ data: @autoclosure () -> Data,
+                    _ file: String = #file,
+                    _ line: Int = #line,
+                    _ function: String = #function) {
+        whenEnabled {
+            LogData_noFormat(file, line, function, domain.rawValue, level.rawValue, data())
+        }
+    }
 }
 
 

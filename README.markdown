@@ -56,10 +56,19 @@ import NSLogger
 
 […]
 
-Log(.Network, .Info, "Checking paper level…")
-Log(.Network, .Error, "Oups! " + "No more paper. 🐞")
-LogImage(.View, .Noise, myPrettyImage)
-LogData(.Custom("My Domain"), .Noise, someDataObject)
+// logging some messages
+Logger.shared.log(.network, .info, "Checking paper level…")
+
+// shorter static function way
+fileprivate let log = Logger.shared.log
+log(.network, .error, "Oups! " + "No more paper. 🐞")
+
+// logging image
+Logger.shared.log(.view, .noise, myPrettyImage)
+
+// logging data
+Logger.shared.log(.custom("My Domain"), .noise, someDataObject)
+
 ```
 
 **Objective-C** wrapper API:

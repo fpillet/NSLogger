@@ -2339,6 +2339,14 @@ static void LoggerMessageFinalize(CFMutableDataRef encoder)
 	}
 }
 
+static void LoggerMessageAddInteger(CFMutableDataRef encoder, NSInteger anInt, int key) {
+#if __LP64__
+    LoggerMessageAddInt64(encoder, anInt, key);
+#else
+    LoggerMessageAddInt32(encoder, anInt, key);
+#endif
+}
+
 static void LoggerMessageAddInt32(CFMutableDataRef encoder, int32_t anInt, int key)
 {
 	uint8_t *p = LoggerMessagePrepareForPart(encoder, 6);
@@ -2708,6 +2716,47 @@ static void LogMessageTo_internal(Logger *logger,
     }
 }
 
+void LogMessage_noFormat(NSString *filename,
+                         NSInteger lineNumber,
+                         NSString *functionName,
+                         NSString *domain,
+                         NSInteger level,
+                         NSString *message)
+{
+    Logger *logger = LoggerStart(NULL);	// start if needed
+    if (logger != NULL)
+    {
+        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
+        
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
+        if (encoder != NULL)
+        {
+            LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+            if (domain != nil && [domain length])
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
+            if (level)
+                LoggerMessageAddInteger(encoder, level, PART_KEY_LEVEL);
+            if (filename != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)filename, PART_KEY_FILENAME);
+            if (lineNumber)
+                LoggerMessageAddInteger(encoder, lineNumber, PART_KEY_LINENUMBER);
+            if (functionName != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)functionName, PART_KEY_FUNCTIONNAME);
+            
+            LoggerMessageAddString(encoder, (CFStringRef)message, PART_KEY_MESSAGE);
+            
+            LoggerMessageFinalize(encoder);
+            LoggerPushMessageToQueue(logger, encoder);
+            CFRelease(encoder);
+        }
+        else
+        {
+            LOGGERDBG2(CFSTR("-> failed creating encoder"));
+        }
+    }
+}
+
 static void LogImageTo_internal(Logger *logger,
 								const char *filename,
 								int lineNumber,
@@ -2756,6 +2805,53 @@ static void LogImageTo_internal(Logger *logger,
 	}
 }
 
+void LogImage_noFormat(NSString *filename,
+                       NSInteger lineNumber,
+                       NSString *functionName,
+                       NSString *domain,
+                       NSInteger level,
+                       NSInteger width,
+                       NSInteger height,
+                       NSData *data)
+{
+    Logger *logger = LoggerStart(NULL);		// start if needed
+    if (logger != NULL)
+    {
+        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        LOGGERDBG2(CFSTR("%ld LogImage"), seq);
+        
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
+        if (encoder != NULL)
+        {
+            LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+            if (domain != nil && [domain length])
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
+            if (level)
+                LoggerMessageAddInteger(encoder, level, PART_KEY_LEVEL);
+            if (width && height)
+            {
+                LoggerMessageAddInteger(encoder, width, PART_KEY_IMAGE_WIDTH);
+                LoggerMessageAddInteger(encoder, height, PART_KEY_IMAGE_HEIGHT);
+            }
+            if (filename != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)filename, PART_KEY_FILENAME);
+            if (lineNumber)
+                LoggerMessageAddInteger(encoder, lineNumber, PART_KEY_LINENUMBER);
+            if (functionName != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)functionName, PART_KEY_FUNCTIONNAME);
+            LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_IMAGE);
+            
+            LoggerMessageFinalize(encoder);
+            LoggerPushMessageToQueue(logger, encoder);
+            CFRelease(encoder);
+        }
+        else
+        {
+            LOGGERDBG2(CFSTR("-> failed creating encoder"));
+        }
+    }
+}
+
 static void LogDataTo_internal(Logger *logger,
 							   const char *filename,
 							   int lineNumber,
@@ -2786,6 +2882,46 @@ static void LogDataTo_internal(Logger *logger,
             LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
 
 			LoggerMessageFinalize(encoder);
+            LoggerPushMessageToQueue(logger, encoder);
+            CFRelease(encoder);
+        }
+        else
+        {
+            LOGGERDBG2(CFSTR("-> failed creating encoder"));
+        }
+    }
+}
+
+void LogData_noFormat(NSString *filename,
+                      NSInteger lineNumber,
+                      NSString *functionName,
+                      NSString *domain,
+                      NSInteger level,
+                      NSData *data)
+{
+    Logger *logger = LoggerStart(NULL);		// start if needed
+    if (logger != NULL)
+    {
+        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        LOGGERDBG2(CFSTR("%ld LogData"), seq);
+        
+        CFMutableDataRef encoder = LoggerMessageCreate(seq);
+        if (encoder != NULL)
+        {
+            LoggerMessageAddInt32(encoder, LOGMSG_TYPE_LOG, PART_KEY_MESSAGE_TYPE);
+            if (domain != nil && [domain length])
+                LoggerMessageAddString(encoder, (CFStringRef)domain, PART_KEY_TAG);
+            if (level)
+                LoggerMessageAddInteger(encoder, level, PART_KEY_LEVEL);
+            if (filename != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)filename, PART_KEY_FILENAME);
+            if (lineNumber)
+                LoggerMessageAddInteger(encoder, lineNumber, PART_KEY_LINENUMBER);
+            if (functionName != NULL)
+                LoggerMessageAddString(encoder, (CFStringRef)functionName, PART_KEY_FUNCTIONNAME);
+            LoggerMessageAddData(encoder, (CFDataRef)data, PART_KEY_MESSAGE, PART_TYPE_BINARY);
+            
+            LoggerMessageFinalize(encoder);
             LoggerPushMessageToQueue(logger, encoder);
             CFRelease(encoder);
         }
