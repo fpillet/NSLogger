@@ -46,7 +46,7 @@
 @interface LoggerWindowController ()
 @property (nonatomic, retain) NSString *info;
 @property (nonatomic, retain) NSString *filterString;
-@property (nonatomic, retain) NSString *filterTag;
+@property (nonatomic, retain) NSMutableSet *filterTags;
 - (void)rebuildQuickFilterPopup;
 - (void)updateClientInfo;
 - (void)updateFilterPredicate;
@@ -65,7 +65,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 @implementation LoggerWindowController
 
-@synthesize info, filterString, filterTag;
+@synthesize info, filterString, filterTags;
 @synthesize attachedConnection;
 @synthesize messagesSelected, hasQuickFilter;
 @synthesize threadColumnWidth;
@@ -82,6 +82,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		messageFilteringQueue = dispatch_queue_create("com.florentpillet.nslogger.messageFiltering", NULL);
 		displayedMessages = [[NSMutableArray alloc] initWithCapacity:4096];
 		tags = [[NSMutableSet alloc] init];
+		filterTags = [[NSMutableSet alloc] init];
 		[self setShouldCloseDocument:YES];
         threadColumnWidth = DEFAULT_THREAD_COLUMN_WIDTH;
 	}
@@ -102,7 +103,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	[attachedConnection release];
 	[info release];
 	[filterString release];
-	[filterTag release];
+	[filterTags release];
 	[filterPredicate release];
 	[displayedMessages release];
 	[tags release];
@@ -475,15 +476,20 @@ static NSArray *sXcodeFileExtensions = nil;
 																			   type:NSLessThanPredicateOperatorType
 																			options:0]];
 	}
-	if (filterTag != nil)
+	if (filterTags.count != 0)
 	{
-		NSExpression *lhs = [NSExpression expressionForKeyPath:@"tag"];
-		NSExpression *rhs = [NSExpression expressionForConstantValue:filterTag];
-		[andPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
-																	rightExpression:rhs
-																		   modifier:NSDirectPredicateModifier
-																			   type:NSEqualToPredicateOperatorType
-																			options:0]];
+		NSMutableArray *filterTagsPredicates = [[NSMutableArray alloc] initWithCapacity:filterTags.count];
+		for (NSString *filterTag in filterTags) {
+			NSExpression *lhs = [NSExpression expressionForKeyPath:@"tag"];
+			NSExpression *rhs = [NSExpression expressionForConstantValue:filterTag];
+			[filterTagsPredicates addObject:[NSComparisonPredicate predicateWithLeftExpression:lhs
+																			   rightExpression:rhs
+																					  modifier:NSDirectPredicateModifier
+																						  type:NSEqualToPredicateOperatorType
+																					   options:0]];
+		}
+		[andPredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:filterTagsPredicates]];
+		[filterTagsPredicates release];
 	}
 	if ([filterString length])
 	{
@@ -710,7 +716,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	NSString *tagTitle;
 	NSMenuItem *item = [[menu itemArray] lastObject];
-	if (filterTag == nil)
+	if (filterTags.count == 0)
 	{
 		[item setState:NSOnState];
 		tagTitle = [item title];
@@ -718,7 +724,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	else
 	{
 		[item setState:NSOffState];
-		tagTitle = [NSString stringWithFormat:NSLocalizedString(@"Tag: %@", @""), filterTag];
+		tagTitle = [NSString stringWithFormat:NSLocalizedString(@"Tag%@: %@", @""), filterTags.count > 1 ? @"s" : @"", [filterTags.allObjects componentsJoinedByString:@","]];
 	}
 
 	for (NSString *tag in [[tags allObjects] sortedArrayUsingSelector:@selector(localizedCompare:)])
@@ -726,7 +732,7 @@ static NSArray *sXcodeFileExtensions = nil;
 		item = [[NSMenuItem alloc] initWithTitle:tag action:@selector(selectQuickFilterTag:) keyEquivalent:@""];
 		[item setRepresentedObject:tag];
 		[item setIndentationLevel:1];
-		if ([filterTag isEqualToString:tag])
+		if ([filterTags containsObject:tag])
 			[item setState:NSOnState];
 		[menu addItem:item];
 		[item release];
@@ -734,7 +740,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 	[quickFilter setTitle:[NSString stringWithFormat:@"%@ | %@", levelTitle, tagTitle]];
 	
-	self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
+	self.hasQuickFilter = (filterString != nil || filterTags.count != 0 || logLevel != 0);
 }
 
 - (void)addTags:(NSArray *)newTags
@@ -749,12 +755,33 @@ static NSArray *sXcodeFileExtensions = nil;
 
 - (IBAction)selectQuickFilterTag:(id)sender
 {
-	if (filterTag != [sender representedObject])
-	{
-		self.filterTag = [sender representedObject];
-		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
-		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
+	NSString *newTag = [sender representedObject];
+
+	// Selected All Tags
+	if (newTag.length == 0) {
+		[filterTags removeAllObjects];
 	}
+	// Selected Specific Tag
+	else {
+		// Determine if Options key was pressed
+		NSUInteger flags = [[NSApp currentEvent] modifierFlags];
+		BOOL hasOptionKeyPressed = (flags & NSEventModifierFlagOption) != 0;
+
+		// Clear multiple selection or single selection with different tag
+		if (!hasOptionKeyPressed && (filterTags.count != 1 || ![filterTags containsObject:newTag])) {
+			[filterTags removeAllObjects];
+		}
+
+		// Toggle tag
+		if ([filterTags containsObject:newTag]) {
+			[filterTags removeObject:newTag];
+		} else {
+			[filterTags addObject:newTag];
+		}
+	}
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
+	[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
 }
 
 - (IBAction)selectQuickFilterLevel:(id)sender
@@ -772,8 +799,7 @@ static NSArray *sXcodeFileExtensions = nil;
 {
 	[filterString release];
 	filterString = @"";
-	[filterTag release];
-	filterTag = nil;
+	[filterTags removeAllObjects];
 	logLevel = 0;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
 	[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
@@ -1145,7 +1171,7 @@ void runSystemCommand(NSString *cmd)
 		filterString = [newString copy];
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshMessagesIfPredicateChanged) object:nil];
 		[self performSelector:@selector(refreshMessagesIfPredicateChanged) withObject:nil afterDelay:0];
-		self.hasQuickFilter = (filterString != nil || filterTag != nil || logLevel != 0);
+		self.hasQuickFilter = (filterString != nil || filterTags.count != 0 || logLevel != 0);
 	}
 }
 
@@ -1657,8 +1683,14 @@ didReceiveMessages:(NSArray *)theMessages
 	if (logLevel)
 		[predicates addObject:[NSPredicate predicateWithFormat:@"level <= %d", logLevel - 1]];
 
-	if (self.filterTag)
-		[predicates addObject:[NSPredicate predicateWithFormat:@"tag = %@", self.filterTag]];	
+	if (self.filterTags.count > 0) {
+		NSMutableArray *filterTagsPredicates = [[NSMutableArray alloc] initWithCapacity:self.filterTags.count];
+		for (NSString *filterTag in self.filterTags) {
+			[filterTagsPredicates addObject:[NSPredicate predicateWithFormat:@"tag = %@", filterTag]];
+		}
+		[predicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:filterTagsPredicates]];
+		[filterTagsPredicates release];
+	}
 	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",

@@ -70,7 +70,7 @@
 	NSPredicate *filterPredicate;				// created from current selected filters, + quick filter string / tag / log level
 
 	NSString *filterString;
-	NSString *filterTag;
+	NSMutableSet *filterTags;
 	int logLevel;
 
 	dispatch_queue_t messageFilteringQueue;
