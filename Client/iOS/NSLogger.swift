@@ -102,15 +102,23 @@ public final class Logger {
             guard let imageData = UIImagePNGRepresentation(image) else { return nil }
             return (imageData, Int(image.size.width), Int(image.size.height))
         #elseif os(OSX)
-            guard let tiff = image.tiffRepresentation,
-                let bitmapRep = NSBitmapImageRep(data: tiff),
-                let imageData = bitmapRep.representation(using: NSPNGFileType, properties: [:]) else { return nil }
-            return (imageData, Int(image.size.width), Int(image.size.height))
+          guard let tiff = image.tiffRepresentation,
+            let bitmapRep = NSBitmapImageRep(data: tiff) else { return nil }
+
+          let imageData: Data?
+          #if swift(>=3)
+            imageData = bitmapRep.representation(using: .PNG, properties: [:])
+          #else
+            imageData = bitmapRep.representation(using: NSPNGFileType, properties: [:])
+          #endif
+
+          guard let data = imageData  else { return nil }
+          return (data, Int(image.size.width), Int(image.size.height))
         #else
             "CompilationError: OS not handled !"
         #endif
     }
-    
+
     private func whenEnabled(then execute: () -> Void) {
         #if !NSLOGGER_DISABLED || NSLOGGER_ENABLED
             execute()
