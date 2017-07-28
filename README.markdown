@@ -57,17 +57,13 @@ import NSLogger
 […]
 
 // logging some messages
-Logger.shared.log(.network, .info, "Checking paper level…")
-
-// shorter static function way
-fileprivate let log = Logger.shared.log
-log(.network, .error, "Oups! " + "No more paper. 🐞")
+Log(.Network, .Info, "Checking paper level…")
 
 // logging image
-Logger.shared.log(.view, .noise, myPrettyImage)
+Log(.View, .Noise, myPrettyImage)
 
 // logging data
-Logger.shared.log(.custom("My Domain"), .noise, someDataObject)
+Log(.Custom("My Domain"), .Noise, someDataObject)
 
 ```
 
