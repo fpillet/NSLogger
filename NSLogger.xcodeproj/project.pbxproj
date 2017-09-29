@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAD0F961C4BE27B0042313D /* NSLogger.framework */; };
 		3D0EE4B31EC1241100D0FA63 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
 		3D0EE4B61EC1241100D0FA63 /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3D0EE4B71EC1241100D0FA63 /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -17,7 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		3D0EE4BC1EC1241100D0FA63 /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLoggerSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D0EE4DC1EC1255A00D0FA63 /* NSLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSLogger.swift; path = Client/iOS/NSLogger.swift; sourceTree = SOURCE_ROOT; };
 		DAAD0F961C4BE27B0042313D /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAAD0F9B1C4BE27B0042313D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -31,6 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,11 +46,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		123F1BCA1F7E8EC9008F260C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DAAD0F8C1C4BE27B0042313D = {
 			isa = PBXGroup;
 			children = (
 				DAAD0F981C4BE27B0042313D /* NSLogger */,
 				DAAD0F971C4BE27B0042313D /* Products */,
+				123F1BCA1F7E8EC9008F260C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -56,7 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				DAAD0F961C4BE27B0042313D /* NSLogger.framework */,
-				3D0EE4BC1EC1241100D0FA63 /* NSLogger.framework */,
+				3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -112,7 +122,7 @@
 			);
 			name = NSLoggerSwift;
 			productName = NSLogger;
-			productReference = 3D0EE4BC1EC1241100D0FA63 /* NSLogger.framework */;
+			productReference = 3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		DAAD0F951C4BE27B0042313D /* NSLogger */ = {
@@ -211,12 +221,16 @@
 		3D0EE4BA1EC1241100D0FA63 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
 			};
 			name = Debug;
 		};
 		3D0EE4BB1EC1241100D0FA63 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
 			};
 			name = Release;
 		};
