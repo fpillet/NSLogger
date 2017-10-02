@@ -35,6 +35,7 @@
  */
 
 import Foundation
+import NSLogger
 
 #if os(iOS) || os(tvOS)
 
