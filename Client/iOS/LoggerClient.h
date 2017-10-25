@@ -130,7 +130,7 @@ extern CFStringRef LoggerGetBonjourServiceName(Logger *logger) NSLOGGER_NOSTRIP;
 // Set Bonjour logging name to be the username who compiled the LoggerClient.m file.
 // This is useful when several NSLogger users are on the same network. This can only be
 // used when NSLogger is integrated as source code or via with CocoaPods.
-extern void LoggerSetupBonjourForBuildUser() NSLOGGER_NOSTRIP;
+extern void LoggerSetupBonjourForBuildUser(void) NSLOGGER_NOSTRIP;
 
 // Directly set the viewer host (hostname or IP address) and port we want to connect to. If set, LoggerStart() will
 // try to connect there first before trying Bonjour
