@@ -21,7 +21,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" style="plain" separatorStyle="none" allowsMultipleSelection="YES" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="5">
-                    <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
+                    <rect key="frame" x="0.0" y="20" width="768" height="1004"/>
                     <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                     <color key="separatorColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                     <connections>
@@ -35,7 +35,7 @@
                 <constraint firstAttribute="bottom" secondItem="5" secondAttribute="bottom" id="0wG-uq-G8d"/>
                 <constraint firstItem="5" firstAttribute="leading" secondItem="19" secondAttribute="leading" id="hXv-Og-CvO"/>
                 <constraint firstAttribute="trailing" secondItem="5" secondAttribute="trailing" id="qM6-hl-W6n"/>
-                <constraint firstItem="5" firstAttribute="top" secondItem="19" secondAttribute="top" id="rkg-sC-fue"/>
+                <constraint firstItem="5" firstAttribute="top" secondItem="19" secondAttribute="top" constant="20" id="rkg-sC-fue"/>
             </constraints>
         </view>
     </objects>
