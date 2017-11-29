@@ -697,18 +697,16 @@ static void *LoggerWorkerThread(Logger *logger)
 	LoggerStartReachabilityChecking(logger);
 
 	// Run logging thread until LoggerStop() is called
-	NSTimeInterval timeout = 0.10;
+	NSTimeInterval timeout = 0.05;
 	while (!logger->quit)
 	{
 		int result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeout, true);
 		if (result == kCFRunLoopRunFinished || result == kCFRunLoopRunStopped)
 			break;
 		if (result == kCFRunLoopRunHandledSource)
-		{
-			timeout = 0.0;
-			continue;
-		}
-		timeout = fmax(1.0, fmin(0.10, timeout+0.0005));
+            timeout = 0;
+        else
+            timeout = fmax(0.05, timeout+0.005);
 	}
 
 	// Cleanup
