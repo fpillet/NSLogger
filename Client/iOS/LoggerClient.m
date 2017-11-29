@@ -2168,6 +2168,31 @@ static void LoggerWriteStreamCallback(CFWriteStreamRef ws, CFStreamEventType eve
 #pragma mark -
 #pragma mark Internal encoding functions
 // -----------------------------------------------------------------------------
+
+#define WRITE_MISALIGNED_INT32(p,n) { \
+	uint32_t i32 = (uint32_t)(n); \
+	uint8_t *q32 = (uint8_t *)(p) + 3; \
+	*q32-- = (uint8_t)i32; i32 >>= 8; \
+	*q32-- = (uint8_t)i32; i32 >>= 8; \
+	*q32-- = (uint8_t)i32; i32 >>= 8; \
+	*q32 = (uint8_t)i32; \
+}
+
+#if __LP64__
+#define WRITE_MISALIGNED_INT64(p,n) { \
+	uint32_t i = (uint32_t)(n); \
+	uint8_t *q = (uint8_t *)(p) + 7; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q-- = (uint8_t)i; i >>= 8; \
+	*q = (uint8_t)i; \
+}
+#endif
+
 static uint8_t *LoggerMessagePrepareForPart(CFMutableDataRef encoder, uint32_t requiredExtraBytes)
 {
 	// Ensure a data block has the required storage capacity, update the total size and part count
@@ -2313,7 +2338,7 @@ static CFMutableDataRef LoggerMessageCreate(int32_t seq)
 				p[5] = 1;		// part count 0x0001
 				p[6] = (uint8_t)PART_KEY_MESSAGE_SEQ;
 				p[7] = (uint8_t)PART_TYPE_INT32;
-				*(uint32_t *)(p + 8) = htonl(seq);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+				*(uint32_t *)(p + 8) = htonl(seq);
 			}
 			else
 			{
@@ -2352,7 +2377,7 @@ static void LoggerMessageAddInt32(CFMutableDataRef encoder, int32_t anInt, int k
 	{
 		*p++ = (uint8_t)key;
 		*p++ = (uint8_t)PART_TYPE_INT32;
-		*(uint32_t *)p = htonl(anInt);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+		WRITE_MISALIGNED_INT32(p, anInt);
 	}
 }
 
@@ -2364,9 +2389,7 @@ static void LoggerMessageAddInt64(CFMutableDataRef encoder, int64_t anInt, int k
 	{
 		*p++ = (uint8_t)key;
 		*p++ = (uint8_t)PART_TYPE_INT64;
-		uint32_t *q = (uint32_t *)p;
-		*q++ = htonl((uint32_t)(anInt >> 32));	// ARMv6 and later, x86 processors do just fine with unaligned accesses
-		*q = htonl((uint32_t)anInt);
+		WRITE_MISALIGNED_INT64(p, anInt)
 	}
 }
 #endif
@@ -2399,7 +2422,7 @@ static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, 
 			{
 				*p++ = (uint8_t)key;
 				*p++ = (uint8_t)PART_TYPE_STRING;
-				*(uint32_t *)p = htonl(n);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+				WRITE_MISALIGNED_INT32(p, n)
 				memcpy(p + 4, buf, (size_t)n);
 			}
 		}
@@ -2433,7 +2456,7 @@ static void LoggerMessageAddString(CFMutableDataRef encoder, CFStringRef aString
 	{
 		*p++ = (uint8_t)key;
 		*p++ = (uint8_t)PART_TYPE_STRING;
-		*(uint32_t *)p = htonl(partSize);		// ARMv6 and later, x86 processors do just fine with unaligned accesses
+		WRITE_MISALIGNED_INT32(p, partSize)
 		if (partSize && bytes != NULL)
 			memcpy(p + 4, bytes, (size_t)partSize);
 	}
@@ -2452,7 +2475,7 @@ static void LoggerMessageAddData(CFMutableDataRef encoder, CFDataRef theData, in
 		{
 			*p++ = (uint8_t)key;
 			*p++ = (uint8_t)partType;
-			*((uint32_t *)p) = htonl(dataLength);	// ARMv6 and later, x86 processors do just fine with unaligned accesses
+			WRITE_MISALIGNED_INT32(p, dataLength)
 			if (dataLength)
 				memcpy(p + 4, CFDataGetBytePtr(theData), (size_t)dataLength);
 		}
