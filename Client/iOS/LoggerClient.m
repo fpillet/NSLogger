@@ -848,11 +848,15 @@ static void LoggerLogToConsole(CFDataRef data)
 				// trim whitespace and newline at both ends of the string
 				uint8_t *q = p;
 				uint32_t l = partSize;
-				while (l && (*q == ' ' || *q == '\t' || *q == '\n' || *q == '\r'))
-					q++, l--;
+                while (l && (*q == ' ' || *q == '\t' || *q == '\n' || *q == '\r')) {
+                    q++;
+                    l--;
+                }
 				uint8_t *r = q + l - 1;
-				while (l && (*r == ' ' || *r == '\t' || *r == '\n' || *r == '\r'))
-					r--, l--;
+                while (l && (*r == ' ' || *r == '\t' || *r == '\n' || *r == '\r')) {
+                    r--;
+                    l--;
+                }
 				part = CFStringCreateWithBytesNoCopy(NULL, q, (CFIndex)l, kCFStringEncodingUTF8, false, kCFAllocatorNull);
 			}
 			else if (partType == PART_TYPE_BINARY)
