@@ -219,6 +219,7 @@
 		3D0EE4BA1EC1241100D0FA63 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
 			};
@@ -227,6 +228,7 @@
 		3D0EE4BB1EC1241100D0FA63 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
 			};
