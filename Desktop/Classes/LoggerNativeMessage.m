@@ -2,7 +2,7 @@
  * LoggerNativeMessage.m
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
- * 
+ *
  * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,7 @@
  * LIABILITY,  WHETHER  IN CONTRACT,  STRICT  LIABILITY,  OR TORT  (INCLUDING
  * NEGLIGENCE  OR OTHERWISE)  ARISING  IN ANY  WAY  OUT OF  THE  USE OF  THIS
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
- * 
+ *
  */
 #import "LoggerNativeMessage.h"
 #import "LoggerCommon.h"
@@ -93,7 +93,7 @@
 				case PART_KEY_MESSAGE_TYPE:
 					type = (short)value32;
 					break;
-				case PART_KEY_MESSAGE_SEQ:			
+				case PART_KEY_MESSAGE_SEQ:
 					sequence = value32;
 					break;
 				case PART_KEY_TIMESTAMP_S:			// timestamp with seconds-level resolution
@@ -119,11 +119,11 @@
 					self.tag = (NSString *)part;
 					break;
 				case PART_KEY_LEVEL:
-                    if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
-                        level = (short)value32;
-                    else if (partType == PART_TYPE_INT64)
-                        level = (short)value64;
-                    break;
+					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
+						level = (short)value32;
+					else if (partType == PART_TYPE_INT64)
+						level = (short)value64;
+					break;
 				case PART_KEY_MESSAGE:
 					self.message = part;
 					if (partType == PART_TYPE_STRING)
