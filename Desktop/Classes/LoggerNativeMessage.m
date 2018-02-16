@@ -119,8 +119,11 @@
 					self.tag = (NSString *)part;
 					break;
 				case PART_KEY_LEVEL:
-					level = (short)value32;
-					break;
+                    if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
+                        level = (short)value32;
+                    else if (partType == PART_TYPE_INT64)
+                        level = (short)value64;
+                    break;
 				case PART_KEY_MESSAGE:
 					self.message = part;
 					if (partType == PART_TYPE_STRING)
