@@ -35,7 +35,9 @@
  */
 
 import Foundation
+#if !NSLOGGER_DONT_IMPORT_FRAMEWORK // this is purely for Crapthage which has two different frameworks and needs to import NSLogger
 import NSLogger
+#endif
 
 #if os(iOS) || os(tvOS)
 

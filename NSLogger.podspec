@@ -49,7 +49,8 @@ Pod::Spec.new do |s|
     ss.dependency 'NSLogger/ObjC'
     ss.source_files = 'Client/iOS/*.swift'
     ss.pod_target_xcconfig = {
-        'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DISABLED'
+        'OTHER_SWIFT_FLAGS' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK',
+        'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK -DNSLOGGER_DISABLED'
     }
   end
 
