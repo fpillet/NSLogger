@@ -55,6 +55,7 @@
 		DAAD0F8C1C4BE27B0042313D = {
 			isa = PBXGroup;
 			children = (
+				DAAD0F9B1C4BE27B0042313D /* Info.plist */,
 				DAAD0F981C4BE27B0042313D /* NSLogger */,
 				DAAD0F971C4BE27B0042313D /* Products */,
 				123F1BCA1F7E8EC9008F260C /* Frameworks */,
@@ -78,9 +79,9 @@
 				DAAD0FAC1C4BE55F0042313D /* NSLogger.h */,
 				123F1BCC1F7E994C008F260C /* NSLoggerSwift.h */,
 				3D0EE4DC1EC1255A00D0FA63 /* NSLogger.swift */,
-				DAAD0F9B1C4BE27B0042313D /* Info.plist */,
 			);
-			path = NSLogger;
+			name = NSLogger;
+			path = "Client Logger";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
