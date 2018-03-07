@@ -107,9 +107,11 @@ public final class Logger {
         #elseif os(OSX)
           guard let tiff = image.tiffRepresentation,
             let bitmapRep = NSBitmapImageRep(data: tiff) else { return nil }
-
+        #if swift(>=4.0)
           let imageData = bitmapRep.representation(using: .png, properties: [:])
-
+        #else
+          let imageData = bitmapRep.representation(using: .PNG, properties: [:])
+        #endif
           guard let data = imageData  else { return nil }
           return (data, Int(image.size.width), Int(image.size.height))
         #else
