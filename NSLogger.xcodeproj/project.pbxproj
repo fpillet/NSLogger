@@ -154,7 +154,7 @@
 				TargetAttributes = {
 					3D0EE4B11EC1241100D0FA63 = {
 						DevelopmentTeam = 8R58U9EQLP;
-						LastSwiftMigration = 0830;
+						LastSwiftMigration = 0930;
 					};
 					DAAD0F951C4BE27B0042313D = {
 						CreatedOnToolsVersion = 7.2;
@@ -223,6 +223,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -232,6 +234,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
 				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
