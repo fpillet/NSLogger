@@ -35,6 +35,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "NSLogger.h"
 
 //! Project version number for LoggerSwift.
 FOUNDATION_EXPORT double LoggerSwiftVersionNumber;

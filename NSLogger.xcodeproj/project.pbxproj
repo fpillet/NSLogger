@@ -3,13 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAD0F961C4BE27B0042313D /* NSLogger.framework */; };
 		123F1BCD1F7E994C008F260C /* NSLoggerSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 123F1BCC1F7E994C008F260C /* NSLoggerSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3D0EE4DD1EC1255A00D0FA63 /* NSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0EE4DC1EC1255A00D0FA63 /* NSLogger.swift */; };
+		3D8D66862051F58500B94C72 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
+		3D8D66872051F6DD00B94C72 /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3D8D66882051F6E200B94C72 /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAD1C4BE55F0042313D /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAE1C4BE55F0042313D /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
 		DAAD0FB01C4BE55F0042313D /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -19,7 +21,7 @@
 		123F1BCC1F7E994C008F260C /* NSLoggerSwift.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSLoggerSwift.h; path = Client/iOS/NSLoggerSwift.h; sourceTree = SOURCE_ROOT; };
 		3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLoggerSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D0EE4DC1EC1255A00D0FA63 /* NSLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NSLogger.swift; path = Client/iOS/NSLogger.swift; sourceTree = SOURCE_ROOT; };
-		DAAD0F961C4BE27B0042313D /* NSLogger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLogger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAAD0F961C4BE27B0042313D /* NSLoggerNoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NSLoggerNoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAAD0F9B1C4BE27B0042313D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DAAD0FA91C4BE55F0042313D /* LoggerClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerClient.h; path = Client/iOS/LoggerClient.h; sourceTree = SOURCE_ROOT; };
 		DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerClient.m; path = Client/iOS/LoggerClient.m; sourceTree = SOURCE_ROOT; };
@@ -31,7 +33,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,7 +66,7 @@
 		DAAD0F971C4BE27B0042313D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DAAD0F961C4BE27B0042313D /* NSLogger.framework */,
+				DAAD0F961C4BE27B0042313D /* NSLoggerNoSwift.framework */,
 				3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */,
 			);
 			name = Products;
@@ -92,6 +93,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				123F1BCD1F7E994C008F260C /* NSLoggerSwift.h in Headers */,
+				3D8D66882051F6E200B94C72 /* NSLogger.h in Headers */,
+				3D8D66872051F6DD00B94C72 /* LoggerClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,9 +128,9 @@
 			productReference = 3D0EE4BC1EC1241100D0FA63 /* NSLoggerSwift.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		DAAD0F951C4BE27B0042313D /* NSLogger */ = {
+		DAAD0F951C4BE27B0042313D /* NSLoggerNoSwift */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger" */;
+			buildConfigurationList = DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLoggerNoSwift" */;
 			buildPhases = (
 				DAAD0F911C4BE27B0042313D /* Sources */,
 				DAAD0F921C4BE27B0042313D /* Frameworks */,
@@ -138,9 +141,9 @@
 			);
 			dependencies = (
 			);
-			name = NSLogger;
+			name = NSLoggerNoSwift;
 			productName = NSLogger;
-			productReference = DAAD0F961C4BE27B0042313D /* NSLogger.framework */;
+			productReference = DAAD0F961C4BE27B0042313D /* NSLoggerNoSwift.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -149,7 +152,7 @@
 		DAAD0F8D1C4BE27B0042313D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Florent Pillet";
 				TargetAttributes = {
 					3D0EE4B11EC1241100D0FA63 = {
@@ -163,7 +166,7 @@
 				};
 			};
 			buildConfigurationList = DAAD0F901C4BE27B0042313D /* Build configuration list for PBXProject "NSLogger" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -174,7 +177,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DAAD0F951C4BE27B0042313D /* NSLogger */,
+				DAAD0F951C4BE27B0042313D /* NSLoggerNoSwift */,
 				3D0EE4B11EC1241100D0FA63 /* NSLoggerSwift */,
 			);
 		};
@@ -202,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D8D66862051F58500B94C72 /* LoggerClient.m in Sources */,
 				3D0EE4DD1EC1255A00D0FA63 /* NSLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,9 +225,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				PRODUCT_NAME = NSLoggerSwift;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -232,9 +234,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				PRODUCT_NAME = NSLoggerSwift;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
@@ -246,14 +246,20 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -284,12 +290,9 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
-				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VERSIONING_SYSTEM = "Semantic Versioning";
@@ -303,14 +306,20 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -336,12 +345,9 @@
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
-				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VALIDATE_PRODUCT = YES;
@@ -352,12 +358,16 @@
 		DAAD0F9F1C4BE27B0042313D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerNoSwift;
+				PRODUCT_NAME = NSLoggerNoSwift;
 			};
 			name = Debug;
 		};
 		DAAD0FA01C4BE27B0042313D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerNoSwift;
+				PRODUCT_NAME = NSLoggerNoSwift;
 			};
 			name = Release;
 		};
@@ -382,7 +392,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLogger" */ = {
+		DAAD0F9E1C4BE27B0042313D /* Build configuration list for PBXNativeTarget "NSLoggerNoSwift" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DAAD0F9F1C4BE27B0042313D /* Debug */,
