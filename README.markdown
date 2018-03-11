@@ -208,4 +208,4 @@ The *NSLogger* framework runs in its own thread in your application. It tries ha
 
 # Credits
 
-NSLogger is Copyright (c) 2010-2017 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application. The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
+NSLogger is Copyright (c) 2010-2018 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application. The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
