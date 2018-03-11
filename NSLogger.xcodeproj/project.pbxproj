@@ -3,13 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAAD0F961C4BE27B0042313D /* NSLogger.framework */; };
 		123F1BCD1F7E994C008F260C /* NSLoggerSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 123F1BCC1F7E994C008F260C /* NSLoggerSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3D0EE4DD1EC1255A00D0FA63 /* NSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0EE4DC1EC1255A00D0FA63 /* NSLogger.swift */; };
+		3D8D66862051F58500B94C72 /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
+		3D8D66872051F6DD00B94C72 /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3D8D66882051F6E200B94C72 /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAD1C4BE55F0042313D /* LoggerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FA91C4BE55F0042313D /* LoggerClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DAAD0FAE1C4BE55F0042313D /* LoggerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = DAAD0FAA1C4BE55F0042313D /* LoggerClient.m */; };
 		DAAD0FB01C4BE55F0042313D /* NSLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = DAAD0FAC1C4BE55F0042313D /* NSLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -31,7 +33,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				123F1BCB1F7E8EC9008F260C /* NSLogger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +93,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				123F1BCD1F7E994C008F260C /* NSLoggerSwift.h in Headers */,
+				3D8D66882051F6E200B94C72 /* NSLogger.h in Headers */,
+				3D8D66872051F6DD00B94C72 /* LoggerClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,7 +152,7 @@
 		DAAD0F8D1C4BE27B0042313D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Florent Pillet";
 				TargetAttributes = {
 					3D0EE4B11EC1241100D0FA63 = {
@@ -163,7 +166,7 @@
 				};
 			};
 			buildConfigurationList = DAAD0F901C4BE27B0042313D /* Build configuration list for PBXProject "NSLogger" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -202,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D8D66862051F58500B94C72 /* LoggerClient.m in Sources */,
 				3D0EE4DD1EC1255A00D0FA63 /* NSLogger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,9 +225,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				PRODUCT_NAME = NSLoggerSwift;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -232,9 +234,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLoggerSwift;
-				PRODUCT_MODULE_NAME = "$(PRODUCT_NAME:c99extidentifier)";
-				PRODUCT_NAME = "$(PROJECT_NAME)Swift";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				PRODUCT_NAME = NSLoggerSwift;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
@@ -246,14 +246,20 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -264,7 +270,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
-				DYLIB_CURRENT_VERSION = 1.8.3;
+				DYLIB_CURRENT_VERSION = 1.9.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -284,12 +290,9 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
-				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VERSIONING_SYSTEM = "Semantic Versioning";
@@ -303,14 +306,20 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -321,7 +330,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
-				DYLIB_CURRENT_VERSION = 1.8.3;
+				DYLIB_CURRENT_VERSION = 1.9.0;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -336,12 +345,9 @@
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
-				PRODUCT_NAME = "$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VALIDATE_PRODUCT = YES;
@@ -352,12 +358,16 @@
 		DAAD0F9F1C4BE27B0042313D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
+				PRODUCT_NAME = NSLogger;
 			};
 			name = Debug;
 		};
 		DAAD0FA01C4BE27B0042313D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
+				PRODUCT_NAME = NSLogger;
 			};
 			name = Release;
 		};
