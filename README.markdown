@@ -101,11 +101,13 @@ pod "NSLogger"
 ```
 
 The above only includes C and Obj-C APIs and is suitable for use in applications without any Swift code.
-Swift APIs are added with the `Swift` subspec. If you're developing code in Swift or a mixed Swift / Obj-C environment, use:
+Swift syntactic sugar APIs are added with the `Swift` subspec. If you're developing code in Swift or a mixed Swift / Obj-C environment, use:
 
 ```ruby
 pod "NSLogger/Swift"
 ```
+
+Note that you don't strictly need to include the `/Swift` variant for your Swift applications. You can perfectly develop your own extensions that call into NSLogger's C APIs without using the basic provided ones.
 
 Finally if you are using frameworks or libraries that may use NSLogger, then you can use the `NoStrip` variant which forces the linker to keep all NSLogger functions in the final build, even those that your code doesn't use. Since linked in frameworks may dynamically check for the presence of NSLogger functions, this is required as the linker wouldn't see this use.
 
@@ -115,11 +117,20 @@ pod "NSLogger/NoStrip"
 
 ### Carthage Install
 
-NSLogger is Carthage-compatible. To use it, add the following line to your `Cartfile`:
+NSLogger is Carthage-compatible. It builds two frameworks: `NSLogger` and `NSLoggerSwift`. You'll need to pick either one (but not both) to use in your application. Both can be used with Swift, the `NSLoggerSwift` variant adds a simple Swift layer to make NSLogger easier to use from Swift code. You can perfectly develop your own extensions that call into NSLogger's C APIs without using the basic provided ones, and just use the `NSLogger` framework.
+
+Depending on the framework you choose, your code will need to `import NSLogger` or `import NSLoggerSwift`. This is a difference with Cocoapods support where you always `import NSLogger`.
 
 ```
 github "fpillet/NSLogger"
 ```
+
+**or**
+
+```
+github "fpillet/NSLoggerSwift"
+```
+
 
 Then run:
 
@@ -127,7 +138,7 @@ Then run:
 $ carthage update
 ```
 
-Note that for Carthage, the `NSLogger.xcodeproj` top-level project offers two targets (`NSLogger` and `NSLoggerSwift`). Add the built framework that suits your needs to your project.
+Again, the `NSLogger.xcodeproj` top-level project offers two targets (`NSLogger` and `NSLoggerSwift`). Add the built framework that suits your needs.
 
 # Advanced Usage
 
