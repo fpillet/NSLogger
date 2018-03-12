@@ -57,13 +57,13 @@ import NSLogger
 […]
 
 // logging some messages
-Log(.Network, .Info, "Checking paper level…")
+Loggger.shared.log(.network, .info, "Checking paper level…")
 
 // logging image
-Log(.View, .Noise, myPrettyImage)
+Logger.shared.log(.view, .noise, myPrettyImage)
 
 // logging data
-Log(.Custom("My Domain"), .Noise, someDataObject)
+Logger.shared.log(.custom("My Domain"), .noise, someDataObject)
 
 ```
 
