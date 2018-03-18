@@ -118,7 +118,7 @@
 #endif
 
 #if defined(__has_feature) && __has_feature(objc_arc)
-#error LoggerClinet.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
+#error LoggerClient.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
 #endif
 
 struct Logger
