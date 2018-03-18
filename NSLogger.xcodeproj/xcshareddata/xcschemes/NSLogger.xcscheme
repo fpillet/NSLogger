@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DAAD0F951C4BE27B0042313D"
-               BuildableName = "NSLoggerNoSwift.framework"
+               BuildableName = "NSLogger.framework"
                BlueprintName = "NSLogger"
                ReferencedContainer = "container:NSLogger.xcodeproj">
             </BuildableReference>
@@ -48,7 +48,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DAAD0F951C4BE27B0042313D"
-            BuildableName = "NSLoggerNoSwift.framework"
+            BuildableName = "NSLogger.framework"
             BlueprintName = "NSLogger"
             ReferencedContainer = "container:NSLogger.xcodeproj">
          </BuildableReference>
@@ -66,7 +66,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DAAD0F951C4BE27B0042313D"
-            BuildableName = "NSLoggerNoSwift.framework"
+            BuildableName = "NSLogger.framework"
             BlueprintName = "NSLogger"
             ReferencedContainer = "container:NSLogger.xcodeproj">
          </BuildableReference>
