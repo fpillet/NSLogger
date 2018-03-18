@@ -46,6 +46,7 @@
 #import <sys/utsname.h>
 #import <dlfcn.h>
 #import <fcntl.h>
+#import <stdatomic.h>
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIDevice.h>
@@ -152,7 +153,7 @@ struct Logger
 	NSUInteger sendBufferUsed;                      // number of bytes of the send buffer currently in use
 	NSUInteger sendBufferOffset;                    // offset in sendBuffer to start sending at
 	
-	int32_t messageSeq;                             // sequential message number (added to each message sent)
+	_Atomic(int32_t) messageSeq;                    // sequential message number (added to each message sent)
 	
 	// settings
 	uint32_t options;                               // Flags, see enum above
@@ -2660,7 +2661,7 @@ static void LogMessageRawTo_internal(Logger *logger,
 	logger = LoggerStart(logger);	// start if needed
     if (logger != NULL)
 	{
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2705,7 +2706,7 @@ static void LogMessageTo_internal(Logger *logger,
 	logger = LoggerStart(logger);	// start if needed
     if (logger != NULL)
 	{
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
 
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2751,7 +2752,7 @@ void LogMessage_noFormat(NSString *filename,
     Logger *logger = LoggerStart(NULL);	// start if needed
     if (logger != NULL)
     {
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogMessage"), seq);
         
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2795,7 +2796,7 @@ static void LogImageTo_internal(Logger *logger,
 	logger = LoggerStart(logger);		// start if needed
 	if (logger != NULL)
 	{
-		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+		int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
 		LOGGERDBG2(CFSTR("%ld LogImage"), seq);
 
 		CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2842,7 +2843,7 @@ void LogImage_noFormat(NSString *filename,
     Logger *logger = LoggerStart(NULL);		// start if needed
     if (logger != NULL)
     {
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogImage"), seq);
         
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2887,7 +2888,7 @@ static void LogDataTo_internal(Logger *logger,
 	logger = LoggerStart(logger);		// start if needed
     if (logger != NULL)
     {
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogData"), seq);
 
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2927,7 +2928,7 @@ void LogData_noFormat(NSString *filename,
     Logger *logger = LoggerStart(NULL);		// start if needed
     if (logger != NULL)
     {
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogData"), seq);
         
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -2962,7 +2963,7 @@ static void LogStartBlockTo_internal(Logger *logger, NSString *format, va_list a
 	logger = LoggerStart(logger);		// start if needed
 	if (logger)
 	{
-		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+		int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
 		LOGGERDBG2(CFSTR("%ld LogStartBlock"), seq);
 
 		CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -3129,7 +3130,7 @@ void LogEndBlockTo(Logger *logger)
         if (logger->options & kLoggerOption_LogToConsole)
             return;
 
-        int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+        int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
         LOGGERDBG2(CFSTR("%ld LogEndBlock"), seq);
 
         CFMutableDataRef encoder = LoggerMessageCreate(seq);
@@ -3157,7 +3158,7 @@ void LogMarkerTo(Logger *logger, NSString *text)
 	logger = LoggerStart(logger);		// start if needed
 	if (logger != NULL)
 	{
-		int32_t seq = OSAtomicIncrement32Barrier(&logger->messageSeq);
+		int32_t seq = atomic_fetch_add(&logger->messageSeq, 1);
 		LOGGERDBG2(CFSTR("%ld LogMarker"), seq);
 
 		CFMutableDataRef encoder = LoggerMessageCreate(seq);
