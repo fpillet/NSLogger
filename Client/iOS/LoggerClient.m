@@ -181,6 +181,9 @@ static void LoggerConnectToService(Logger *logger, NSNetService *service);
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service);
 
 @interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
+{
+	Logger *_logger;
+}
 - (instancetype)initWithLogger:(Logger *)logger;
 @end
 
@@ -1691,9 +1694,6 @@ static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 }
 
 @implementation FPLLoggerBonjourDelegate
-{
-	Logger *_logger;
-}
 
 - (instancetype)initWithLogger:(Logger *)logger;
 {
