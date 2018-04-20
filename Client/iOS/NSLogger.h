@@ -46,7 +46,7 @@
 
 
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(NSLOGGER_ENABLED)
     #define NSLog(...)                      LogMessageF(__FILE__, __LINE__, __FUNCTION__, @"NSLog", 0, __VA_ARGS__)
     #define LoggerError(level, ...)         LogMessageF(__FILE__, __LINE__, __FUNCTION__, @"Error", level, __VA_ARGS__)
     #define LoggerApp(level, ...)           LogMessageF(__FILE__, __LINE__, __FUNCTION__, @"App", level, __VA_ARGS__)
