@@ -57,7 +57,7 @@ import NSLogger
 […]
 
 // logging some messages
-Loggger.shared.log(.network, .info, "Checking paper level…")
+Logger.shared.log(.network, .info, "Checking paper level…")
 
 // logging image
 Logger.shared.log(.view, .noise, myPrettyImage)
