@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'NSLogger'
-  s.version  = '1.9.0'
+  s.version  = '1.9.1.2'
   s.license  = 'BSD'
   s.summary  = 'A modern, flexible logging tool.'
   s.homepage = 'https://github.com/fpillet/NSLogger'
@@ -37,6 +37,8 @@ Pod::Spec.new do |s|
     }
   end
   
+  # To to do eventually is create an appstore/testlfight config that strips this out.
+  # for now we want it always enabled.
   #
   # The 'Swift' subspec builds on ObjC and offers a Swiftified (albeit limited) API
   # Since there's a direct dependency on 'NSLogger/Default', Swift developers can simply include
@@ -45,14 +47,14 @@ Pod::Spec.new do |s|
   # NSLogger is automatically disabled in Release builds. If you want to keep it enabled in release builds,
   # you can define a NSLOGGER_ENABLED flag which forces calling into the framework.
   #
-  s.subspec 'Swift' do |ss|
-    ss.dependency 'NSLogger/ObjC'
-    ss.source_files = 'Client/iOS/*.swift'
-    ss.pod_target_xcconfig = {
-        'OTHER_SWIFT_FLAGS' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK',
-        'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK -DNSLOGGER_DISABLED'
-    }
-  end
+  # s.subspec 'Swift' do |ss|
+  #  ss.dependency 'NSLogger/ObjC'
+  #  ss.source_files = 'Client/iOS/*.swift'
+  #  ss.pod_target_xcconfig = {
+  #      'OTHER_SWIFT_FLAGS' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK',
+  #      'OTHER_SWIFT_FLAGS[config=Release]' => '$(inherited) -DNSLOGGER_DONT_IMPORT_FRAMEWORK -DNSLOGGER_DISABLED'
+  #  }
+  # end
 
   #
   # The 'NoStrip' subspec prevents unused functions from being stripped by the linker.
