@@ -95,7 +95,11 @@ public final class Logger {
     
     private func imageData(_ image: Image) -> (data: Data, width: Int, height: Int)? {
         #if os(iOS) || os(tvOS)
-            guard let imageData = UIImagePNGRepresentation(image) else { return nil }
+			#if swift(>=4.2)
+				guard let imageData = image.pngData() else { return nil }
+			#else
+            	guard let imageData = UIImagePNGRepresentation(image) else { return nil }
+			#endif
             return (imageData, Int(image.size.width), Int(image.size.height))
         #elseif os(OSX)
           guard let tiff = image.tiffRepresentation,
