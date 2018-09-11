@@ -125,13 +125,6 @@ Depending on the framework you choose, your code will need to `import NSLogger` 
 github "fpillet/NSLogger"
 ```
 
-**or**
-
-```
-github "fpillet/NSLoggerSwift"
-```
-
-
 Then run:
 
 ```shell
