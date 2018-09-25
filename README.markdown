@@ -82,7 +82,7 @@ LoggerNetwork(1, @"Hello world! Today is: %@", [self myDate]);
 
 # Installation
 
-- **Step 1.** Download the *NSLogger desktop app* on your Mac.
+- **Step 1.** Download the [*NSLogger desktop app*](https://github.com/fpillet/NSLogger/releases) on your Mac.
 - **Step 2.** Add the *NSLogger framework* to your project.
 - **Step 3.** There is no step 3…
 
