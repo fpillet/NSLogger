@@ -186,6 +186,7 @@
 		3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDetailsWindowController.m; path = Classes/LoggerDetailsWindowController.m; sourceTree = "<group>"; };
 		3DE8CE7312AE49E7005C83D0 /* relaunch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = relaunch.m; path = Classes/relaunch.m; sourceTree = "<group>"; };
 		3DE8CE7812AE4A17005C83D0 /* relaunch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = relaunch; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CFECC4A21B9DB3D0040C795 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSColor+NSLogger.h"; path = "Classes/NSColor+NSLogger.h"; sourceTree = "<group>"; };
@@ -282,6 +283,7 @@
 		29B97314FDCFA39411CA2CEA /* NSLogger */ = {
 			isa = PBXGroup;
 			children = (
+				4CFECC4A21B9DB3D0040C795 /* README.txt */,
 				3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */,
 				3D65635B13EDA75800004DB6 /* Third Party */,
 				3D65635C13EDA78600004DB6 /* Shared */,
