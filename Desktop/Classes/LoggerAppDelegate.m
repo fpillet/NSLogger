@@ -78,7 +78,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[self defaultPreferences]];
 }
 
-- (id) init
+- (id)init
 {
 	if ((self = [super init]) != nil)
 	{
@@ -563,6 +563,10 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	}
 
 	return (serverCerts != NULL);
+}
+
+- (IBAction)openHelp:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/fpillet/NSLogger"]];
 }
 
 @end
