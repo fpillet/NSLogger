@@ -116,8 +116,6 @@
 - (IBAction)clearCurrentLog:(id)sender;
 - (IBAction)clearAllLogs:(id)sender;
 
-- (IBAction)collapseTaskbar:(id)sender;
-
 - (void)updateMenuBar:(BOOL)documentIsFront;
 
 @end
