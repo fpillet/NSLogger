@@ -37,6 +37,9 @@
 + (NSDictionary *)clientInfoAttributes:(BOOL)highlighted
 {
 	NSMutableDictionary *attrs = [[[[self defaultAttributes] objectForKey:@"text"] mutableCopy] autorelease];
+    if (@available(macOS 10_14, *)) {
+        attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
+    }
 	NSMutableParagraphStyle *style = [[attrs objectForKey:NSParagraphStyleAttributeName] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
 	[attrs setObject:style forKey:NSParagraphStyleAttributeName];
@@ -101,10 +104,14 @@
 												 227.0f / 255.0f,
 												 0.0f,
 												 1.0f);
-		backgroundColor = CGColorCreateGenericRGB(224.0f / 255.0f,
-												  1.0f,
-												  224.0f / 255.0f,
-												  1.0f);
+        if (@available(macOS 10_14, *)) {
+            backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
+        } else {
+            backgroundColor = CGColorCreateGenericRGB(224.0f / 255.0f,
+                                                      1.0f,
+                                                      224.0f / 255.0f,
+                                                      1.0f);
+        }
 	}
 
 	// Draw cell background and separators
