@@ -1,22 +1,7 @@
-This is the Mac OS X logs viewer source code (NSLogger)
+This is the macOS logs viewer source code (NSLogger)
 
-BUILDING NSLogger
+BUILDING NSLogger (Code signing your build)
 -----------------
-
-1) Make sure BWToolkit.ibplugin is installed
-
-NSLogger uses Brandon Walkin's BWToolkit in the user interface.
-To compile or open the xib files, you will need to install the BWToolkit IB plugin on your system.
-If you don't have it installed yet, take the following steps:
-
-- download the BWToolkit IB plugin from http://brandonwalkin.com/bwtoolkit/
-- copy it to your ~/Library/Application Support/Interface Builder 3.0/ folder
-- double click this copy
-
-It will install in Interface Builder.
-
-
-2) Code sign your build
 
 Since NSLogger generates a self-signed certificate for SSL connections, you'll want to codesign
 your build to avoid an issue with SSL connections failing the first time NSLogger is launched.
