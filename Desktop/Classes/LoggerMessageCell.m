@@ -66,8 +66,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (NSColor *)cellStandardBgColor
 {
 	static NSColor *sColor = nil;
-	if (sColor == nil)
-		sColor = [[NSColor colorWithCalibratedWhite:0.90 alpha:1.0] retain];
+    if (sColor == nil) {
+        sColor = NSColor.controlBackgroundColor;
+    }
 	return sColor;
 }
 
@@ -98,7 +99,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	[style setLineBreakMode:NSLineBreakByTruncatingTail];
 	NSMutableDictionary *textAttrs = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 									  defaultFont, NSFontAttributeName,
-									  [NSColor blackColor], NSForegroundColorAttributeName,
+									  [NSColor textColor], NSForegroundColorAttributeName,
 									  style, NSParagraphStyleAttributeName,
 									  nil];
 	[style release];
@@ -155,7 +156,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// File / Line / Function name attributes
 	dict = [textAttrs mutableCopy];
 	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
-	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+    [dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
 	NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
 												   green:(233.0f / 255.0f)
 													blue:(252.0f / 255.0f)
@@ -991,7 +992,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// Draw cell background
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
+        CGColorRef cellBgColor = CGColorCreateCopy(NSColor.controlBackgroundColor.CGColor);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);

@@ -428,7 +428,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	if (color == nil)
 	{
 		if ([attrName isEqualToString:NSForegroundColorAttributeName])
-			color = [NSColor blackColor];
+			color = [NSColor textColor];
 		else
 			color = [NSColor clearColor];
 	}
