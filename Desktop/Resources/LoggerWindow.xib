@@ -779,7 +779,6 @@
                                     </rowTemplates>
                                 </predicateEditor>
                             </subviews>
-                            <color key="backgroundColor" white="0.91000002619999998" alpha="1" colorSpace="calibratedWhite"/>
                         </clipView>
                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="590">
                             <rect key="frame" x="-100" y="-100" width="360" height="15"/>
