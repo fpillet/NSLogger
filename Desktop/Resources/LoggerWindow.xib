@@ -247,17 +247,6 @@
                                             <real value="490"/>
                                             <real value="250"/>
                                         </holdingPriorities>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="colorIsEnabled">
-                                                <bool key="value" value="NO"/>
-                                            </userDefinedRuntimeAttribute>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="dividerCanCollapse">
-                                                <bool key="value" value="NO"/>
-                                            </userDefinedRuntimeAttribute>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="collapsiblePopupSelection">
-                                                <integer key="value" value="2"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
                                     </splitView>
                                 </subviews>
                             </customView>
@@ -461,17 +450,6 @@
                             <real value="250"/>
                             <real value="250"/>
                         </holdingPriorities>
-                        <userDefinedRuntimeAttributes>
-                            <userDefinedRuntimeAttribute type="number" keyPath="colorIsEnabled">
-                                <bool key="value" value="YES"/>
-                            </userDefinedRuntimeAttribute>
-                            <userDefinedRuntimeAttribute type="number" keyPath="dividerCanCollapse">
-                                <bool key="value" value="NO"/>
-                            </userDefinedRuntimeAttribute>
-                            <userDefinedRuntimeAttribute type="number" keyPath="collapsiblePopupSelection">
-                                <integer key="value" value="1"/>
-                            </userDefinedRuntimeAttribute>
-                        </userDefinedRuntimeAttributes>
                     </splitView>
                 </subviews>
             </view>
