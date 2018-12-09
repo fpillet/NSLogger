@@ -42,7 +42,6 @@
 
 #define TIMESTAMP_COLUMN_WIDTH		85.0f
 
-static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
