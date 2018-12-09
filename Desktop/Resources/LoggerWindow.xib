@@ -276,8 +276,8 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="719" height="646"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
-                                                    <color key="backgroundColor" white="0.97000002860000001" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <color key="gridColor" red="0.93923854829999998" green="0.93923854829999998" blue="0.93923854829999998" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
                                                         <tableColumn identifier="message" width="716" minWidth="200" maxWidth="10000" id="482">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
