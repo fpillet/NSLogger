@@ -332,43 +332,62 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
     NSColor *color;
     BOOL isBold;
     for(NSDictionary *colorSpec in advancedColorsPrefs) {
+        NSString *colorName = [colorSpec objectForKey:@"colors"];
+        if ([colorName hasSuffix:@"Color"]) {
+            color = [self colorFor:colorName];
+        } else {
+            colorName = [colorName lowercaseString];
+            isBold = NO;
+            if ([colorName hasPrefix:@"bold"]) {
+                colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
+                isBold = YES;
+            }
+            if ([colorName hasPrefix:@"#"]) {
+                color = [self colorFromHexRGB:colorName];
+            } else if ([colorName hasPrefix:@"blue"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemBlueColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#0047AB"];
+                }
+            } else if ([colorName hasPrefix:@"red"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemRedColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#DC143C"];
+                }
+            } else if ([colorName hasPrefix:@"green"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemGreenColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#008000"];
+                }
+            } else {
+                NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
+                color = [self colorFor:selectorName];
+            }
+        }
         regexp = [[NSRegularExpression alloc] initWithPattern:[colorSpec objectForKey:@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
         if (! regexp) {
             NSLog(@"** Warning: invalid regular expression '%@': %@", [colorSpec objectForKey:@"regexp"], error);
             continue;
         }
-        NSString *colorName = [[colorSpec objectForKey:@"colors"] lowercaseString];
-        isBold = NO;
-        if ([colorName hasPrefix:@"bold"]) {
-            colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
-            isBold = YES;
-        }
-        if ([colorName hasPrefix:@"#"]) {
-            color = [self colorFromHexRGB:colorName];
-        } else if ([colorName hasPrefix:@"blue"]) {
-            color = [self colorFromHexRGB:@"#0047AB"];
-        } else if ([colorName hasPrefix:@"red"]) {
-            color = [self colorFromHexRGB:@"#DC143C"];
-        } else if ([colorName hasPrefix:@"green"]) {
-            color = [self colorFromHexRGB:@"#008000"];
-        } else {
-            NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
-            SEL colorSelector = NSSelectorFromString(selectorName);
-            if ([NSColor respondsToSelector:colorSelector]) {
-                color = [NSColor performSelector:colorSelector];
-            }
-			else {
-				color = nil;
-			}
-        }
         if (color == nil) {
             NSLog(@"** Warning: unexpected color spec '%@'", colorName);
-        }
-		else {
+        } else {
 			color.bold = isBold;
 			[advancedColors setObject:color forKey:regexp];
 		}
 		[regexp release];
+    }
+}
+
++ (NSColor*)colorFor:(NSString*)selectorName {
+    SEL colorSelector = NSSelectorFromString(selectorName);
+    if ([NSColor respondsToSelector:colorSelector]) {
+        return [NSColor performSelector:colorSelector];
+    } else {
+        return nil;
     }
 }
 

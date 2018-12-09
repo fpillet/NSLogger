@@ -292,7 +292,11 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 }
 
 - (NSMutableDictionary *)_blankAdvancedColor {
-    return [[[NSMutableDictionary alloc] initWithObjects:@[@"Any line", @"^.+$", @"black"] forKeys:@[@"comment", @"regexp", @"colors"]] autorelease];
+    NSString *color = @"black";
+    if (@available(macOS 10_10, *)) {
+        color = @"labelColor";
+    }
+    return [[[NSMutableDictionary alloc] initWithObjects:@[@"Any line", @"^.+$", color] forKeys:@[@"comment", @"regexp", @"colors"]] autorelease];
 }
 
 - (IBAction)advancedColorsAdd:(id)sender {
