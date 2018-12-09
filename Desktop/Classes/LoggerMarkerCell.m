@@ -40,7 +40,11 @@
 	{
 		attrs = [[attrs mutableCopy] autorelease];
 		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
-	}
+    } else {
+        if (@available(macOS 10_14, *)) {
+            attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
+        }
+    }
 	return attrs;
 }
 
@@ -83,11 +87,15 @@
 														174.0f / 255.0f,
 														10.0f / 255.0f,
 														1.0f);
-	CGColorRef backgroundColor = CGColorCreateGenericRGB(1.0f,
-														 1.0f,
-														 197.0f / 255.0f,
-														 1.0f);
-
+    CGColorRef backgroundColor;
+    if (@available(macOS 10_14, *)) {
+        backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
+    } else {
+        backgroundColor = CGColorCreateGenericRGB(1.0f,
+                                                  1.0f,
+                                                  197.0f / 255.0f,
+                                                  1.0f);
+    }
 	if (!highlighted)
 	{
 		CGContextSetFillColorWithColor(ctx, backgroundColor);
