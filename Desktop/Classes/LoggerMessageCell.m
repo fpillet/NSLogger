@@ -177,7 +177,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (sDefaultAttributes == nil)
 	{
 		// Try to load the default text attributes from user defaults
-		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:@"Message Attributes"];
+		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:[self messageAttributeKey]];
         if (data != nil) {
             sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
         }
@@ -243,8 +243,19 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	sDefaultAttributes = [newAttributes copy];
 	sMinimumHeightForCell = 0;
 	sDefaultFileLineFunctionHeight = 0;
-	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:@"Message Attributes"];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:[self messageAttributeKey]];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
+}
+
++ (NSString *)messageAttributeKey {
+    NSString *key = @"Message Attributes";
+    if (@available(macOS 10_14, *)) {
+        // In macOS Mojave we'll have 2 sets of settings, similarly to Xcode
+        if ([NSApplication sharedApplication].effectiveAppearance == [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]) {
+            return [@"Dark " stringByAppendingString:key];
+        }
+    }
+    return key;
 }
 
 + (NSColor *)defaultTagAndLevelColor
