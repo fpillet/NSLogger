@@ -30,7 +30,7 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" frameAutosaveName="" animationBehavior="default" id="222">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -103,7 +103,7 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" id="O6e-oj-TeH">
                         <rect key="frame" x="1" y="0.0" width="445" height="425"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="488" id="486">
                                 <rect key="frame" x="0.0" y="0.0" width="445" height="400"/>
@@ -251,8 +251,8 @@
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
-                        <binding destination="367" name="enabled" keyPath="selection.hasDirectTCPIPResponder" id="419"/>
                         <binding destination="367" name="value" keyPath="selection.directTCPIPResponderPort" id="418"/>
+                        <binding destination="367" name="enabled" keyPath="selection.hasDirectTCPIPResponder" id="419"/>
                     </connections>
                 </textField>
                 <textField verticalHuggingPriority="750" id="401">

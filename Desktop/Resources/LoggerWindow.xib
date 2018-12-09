@@ -155,6 +155,7 @@
                                                                     </connections>
                                                                 </tableView>
                                                             </subviews>
+                                                            <nil key="backgroundColor"/>
                                                         </clipView>
                                                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="957">
                                                             <rect key="frame" x="-100" y="-100" width="200" height="15"/>
@@ -224,6 +225,7 @@
                                                                     </connections>
                                                                 </tableView>
                                                             </subviews>
+                                                            <nil key="backgroundColor"/>
                                                         </clipView>
                                                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.38532110091743121" horizontal="YES" id="470">
                                                             <rect key="frame" x="-100" y="-100" width="200" height="15"/>
