@@ -31,7 +31,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="154" y="384" width="885" height="666"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3200" height="1800"/>
             <value key="minSize" type="size" width="700" height="500"/>
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="885" height="666"/>
@@ -553,7 +553,7 @@
             <windowStyleMask key="styleMask" titled="YES" resizable="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="183" y="289" width="480" height="270"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3200" height="1800"/>
             <value key="minSize" type="size" width="400" height="200"/>
             <view key="contentView" id="587">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
@@ -564,7 +564,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="1dY-6U-d7N">
                             <rect key="frame" x="1" y="1" width="480" height="160"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <predicateEditor verticalHuggingPriority="750" nestingMode="simple" rowHeight="25" id="591">
                                     <rect key="frame" x="0.0" y="0.0" width="480" height="160"/>
