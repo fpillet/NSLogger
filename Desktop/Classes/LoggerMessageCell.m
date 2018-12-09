@@ -178,10 +178,13 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	{
 		// Try to load the default text attributes from user defaults
 		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:@"Message Attributes"];
-		if (data != nil)
-			sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+        if (data != nil) {
+            sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+        }
 		if (sDefaultAttributes == nil)
-			[self setDefaultAttributes:[self defaultAttributesDictionary]];
+        {
+            [self setDefaultAttributes:[self defaultAttributesDictionary]];
+        }
 
 		// upgrade from pre-1.0b5, adding attributes for markers
 		if ([sDefaultAttributes objectForKey:@"mark"] == nil)
@@ -986,8 +989,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	BOOL highlighted = [self isHighlighted];
 
 	NSColor *highlightedTextColor = nil;
-	if (highlighted)
-		highlightedTextColor = [NSColor whiteColor];
+    if (highlighted)
+    {
+        highlightedTextColor = [NSColor whiteColor];
+    }
 
 	// Draw cell background
 	if (!highlighted)

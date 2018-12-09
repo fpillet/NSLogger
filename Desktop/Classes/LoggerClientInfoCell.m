@@ -42,7 +42,9 @@
 	[attrs setObject:style forKey:NSParagraphStyleAttributeName];
 	[style release];
 	if (highlighted)
-		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+    {
+        [attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+    }
 	return attrs;
 }
 
