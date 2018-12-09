@@ -52,10 +52,6 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
-                    <customView id="10" customClass="BWAddRegularBottomBar">
-                        <rect key="frame" x="76" y="7" width="46" height="46"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    </customView>
                     <textField verticalHuggingPriority="750" id="11">
                         <rect key="frame" x="17" y="9" width="423" height="17"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
