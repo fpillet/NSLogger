@@ -184,7 +184,7 @@
                         <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="496" customClass="BWAnchoredButton">
                             <rect key="frame" x="34" y="-1" width="32" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="497" customClass="BWAnchoredButtonCell">
+                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="497">
                                 <behavior key="behavior" lightByContents="YES"/>
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>
@@ -195,7 +195,7 @@
                         <button toolTip="Add a new filter" verticalHuggingPriority="750" id="495" customClass="BWAnchoredButton">
                             <rect key="frame" x="2" y="-1" width="32" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="498" customClass="BWAnchoredButtonCell">
+                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="498">
                                 <behavior key="behavior" lightByContents="YES"/>
                                 <font key="font" metaFont="smallSystem"/>
                             </buttonCell>

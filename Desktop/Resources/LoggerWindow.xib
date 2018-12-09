@@ -48,7 +48,7 @@
                                     <button toolTip="Add a new filter" verticalHuggingPriority="750" id="508">
                                         <rect key="frame" x="2" y="-1" width="32" height="24"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="509" customClass="BWAnchoredButtonCell">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="509">
                                             <behavior key="behavior" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
@@ -59,7 +59,7 @@
                                     <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="510">
                                         <rect key="frame" x="34" y="-1" width="32" height="24"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="511" customClass="BWAnchoredButtonCell">
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="511">
                                             <behavior key="behavior" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystem"/>
                                         </buttonCell>
@@ -75,7 +75,7 @@
                                             </binding>
                                         </connections>
                                     </button>
-                                    <splitView autosaveName="SidebarSplit" id="943" customClass="BWSplitView">
+                                    <splitView autosaveName="SidebarSplit" id="943">
                                         <rect key="frame" x="0.0" y="20" width="150" height="646"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
@@ -86,7 +86,7 @@
                                                     <button toolTip="Add a new filter set" verticalHuggingPriority="750" id="947">
                                                         <rect key="frame" x="2" y="-2" width="32" height="24"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="950" customClass="BWAnchoredButtonCell">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="950">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                             <font key="font" metaFont="smallSystem"/>
                                                         </buttonCell>
@@ -97,7 +97,7 @@
                                                     <button toolTip="Delete selected filter set" verticalHuggingPriority="750" id="948">
                                                         <rect key="frame" x="34" y="-2" width="32" height="24"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="949" customClass="BWAnchoredButtonCell">
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="949">
                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                             <font key="font" metaFont="smallSystem"/>
                                                         </buttonCell>
@@ -358,7 +358,7 @@
                                     <button toolTip="Show / Hide file, line and function names" verticalHuggingPriority="750" id="1206">
                                         <rect key="frame" x="34" y="-1" width="28" height="24"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="roundTextured" title="ƒ" bezelStyle="texturedRounded" alignment="center" controlSize="small" scrollable="YES" lineBreakMode="clipping" borderStyle="border" inset="2" id="1207" customClass="BWAnchoredButtonCell">
+                                        <buttonCell key="cell" type="roundTextured" title="ƒ" bezelStyle="texturedRounded" alignment="center" controlSize="small" scrollable="YES" lineBreakMode="clipping" borderStyle="border" inset="2" id="1207">
                                             <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="smallSystemBold"/>
                                         </buttonCell>
