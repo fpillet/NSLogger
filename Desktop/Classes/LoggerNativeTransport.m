@@ -197,7 +197,7 @@
 		for (int j=i; j < 16; j++)
 			strcat(buffer, "   ");
 
-		b = strlen(buffer);
+		b = (int)strlen(buffer);
 		buffer[b++] = '\'';
 		for (i=0; i < 16 && i < dataLen; i++, q++)
 		{

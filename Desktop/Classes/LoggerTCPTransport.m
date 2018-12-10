@@ -108,8 +108,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 		}
 		else
 		{
-			int port = [self tcpPort];
-			shouldRestart = (listenerPort != port);
+			shouldRestart = (listenerPort != [self tcpPort]);
 		}
 		if (shouldRestart)
 		{
@@ -305,7 +304,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			// compatibility with pre-1.0.
 			NSString *serviceType = [self bonjourServiceType];
 
-			// The service name is either the one defined in the prefs, of by default
+			// The service name is either the one defined in the prefs, or by default
 			// the local computer name (as defined in the sharing prefs panel
 			// (see Technical Q&A QA1228 http://developer.apple.com/library/mac/#qa/qa2001/qa1228.html )
 			NSString *serviceName = [[NSUserDefaults standardUserDefaults] objectForKey:kPrefBonjourServiceName];
@@ -319,12 +318,15 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 			bonjourService = [[NSNetService alloc] initWithDomain:@""
 															 type:(NSString *)serviceType
 															 name:(NSString *)serviceName
-															 port:listenerPort];
+															 port:(int)listenerPort];
 
 			// added in 1.5: let clients know that we have customized our service name and that they should connect to us
 			// only if their own settings match our name
 			if (!useDefaultServiceName)
-				[bonjourService setTXTRecordData:[NSNetService dataFromTXTRecordDictionary:@{@"filterClients": @"1"}]];
+			{
+				NSData *filterData = [@"1" dataUsingEncoding:NSASCIIStringEncoding];
+				[bonjourService setTXTRecordData:[NSNetService dataFromTXTRecordDictionary:@{@"filterClients": filterData}]];
+			}
 
 			[bonjourService setIncludesPeerToPeer:YES];
 			[bonjourService setDelegate:self];
@@ -404,7 +406,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 - (NSString *)description
 {
 	return [NSString stringWithFormat:@"<%@ %p listenerPort=%d publishBonjourService=%d secure=%d>", 
-			[self class], self, listenerPort, (int)publishBonjourService, (int)secure];
+			[self class], self, (int)listenerPort, (int)publishBonjourService, (int)secure];
 }
 
 - (BOOL)canDoSSL
@@ -603,7 +605,7 @@ static void AcceptSocketCallback(CFSocketRef sock, CFSocketCallBackType type, CF
 #endif
 	[self shutdown];
 	
-	int errorCode = [[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
+	int errorCode = (int)[[errorDict objectForKey:NSNetServicesErrorCode] integerValue];
 	if (errorCode == NSNetServicesCollisionError)
 		self.failureReason = NSLocalizedString(@"Duplicate Bonjour service name on your network", @"");
 	else if (errorCode == NSNetServicesBadArgumentError)

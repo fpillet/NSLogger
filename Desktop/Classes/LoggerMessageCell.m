@@ -455,7 +455,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		for (int j=i; j < 16; j++)
 			strcat(buffer, "   ");
 		
-		b = strlen(buffer);
+		b = (int)strlen(buffer);
 		buffer[b++] = '\'';
 		for (i=0; i < 16 && i < dataLen; i++, q++)
 		{
@@ -549,7 +549,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 		case kMessageData: {
 			NSUInteger numBytes = [(NSData *)aMessage.message length];
-			int nLines = (numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
+			int nLines = (int)(numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
 			if (nLines > MAX_DATA_LINES)
 				nLines = MAX_DATA_LINES + 1;
 			NSRect lr = [@"000:" boundingRectWithSize:sz

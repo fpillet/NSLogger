@@ -135,7 +135,7 @@ static NSMutableArray *sTags = nil;
 		for (int j=i; j < 16; j++)
 			strcat(buffer, "   ");
 		
-		b = strlen(buffer);
+		b = (int)strlen(buffer);
 		buffer[b++] = '\'';
 		for (i=0; i < 16 && i < dataLen; i++)
 		{
@@ -169,8 +169,8 @@ static NSMutableArray *sTags = nil;
 {
 	if ((self = [super init]) != nil)
 	{
-		timestamp.tv_sec = [decoder decodeInt64ForKey:@"s"];
-		timestamp.tv_usec = [decoder decodeInt64ForKey:@"us"];
+		timestamp.tv_sec = (__darwin_time_t)[decoder decodeInt64ForKey:@"s"];
+		timestamp.tv_usec = (__darwin_suseconds_t)[decoder decodeInt64ForKey:@"us"];
 		parts = [[decoder decodeObjectForKey:@"p"] retain];
 		message = [[decoder decodeObjectForKey:@"m"] retain];
 		sequence = [decoder decodeIntForKey:@"n"];
@@ -211,7 +211,7 @@ static NSMutableArray *sTags = nil;
 		[encoder encodeObject:parts forKey:@"p"];
 	if (message != nil)
 		[encoder encodeObject:message forKey:@"m"];
-	[encoder encodeInt:sequence forKey:@"n"];
+	[encoder encodeInt:(int)sequence forKey:@"n"];
 	if ([threadID length])
 		[encoder encodeObject:threadID forKey:@"t"];
 	if (level)

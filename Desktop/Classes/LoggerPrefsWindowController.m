@@ -344,7 +344,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (IBAction)selectFont:(id)sender
 {
-	currentFontSelection = [(NSView *)sender tag];
+	currentFontSelection = (int)[(NSView *)sender tag];
 	[[NSFontManager sharedFontManager] setTarget:self];
 	[[NSFontPanel sharedFontPanel] setPanelFont:[self fontForCurrentFontSelection] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
@@ -353,7 +353,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 - (IBAction)selectColor:(id)sender
 {
 	NSString *attrName = NSForegroundColorAttributeName, *dictName = nil, *dictName2 = nil;
-	int tag = [(NSView *)sender tag];
+	int tag = (int)[(NSView *)sender tag];
 	if (tag == kTimestampFontColor)
 		dictName = @"timestamp";
 	else if (tag == kThreadIDFontColor)

@@ -35,7 +35,7 @@ NSString *StringWithTimeDelta(struct timeval *td)
 	if (td->tv_sec)
 	{
 		int hrs,mn,s,ms;
-		hrs = td->tv_sec / 3600;
+		hrs = (int)(td->tv_sec / 3600);
 		mn = (td->tv_sec % 3600) / 60;
 		s = td->tv_sec % 60;
 		ms = td->tv_usec / 1000;

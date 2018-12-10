@@ -780,7 +780,7 @@ static NSArray *sXcodeFileExtensions = nil;
 
 - (IBAction)selectQuickFilterLevel:(id)sender
 {
-	int level = [(NSView *)sender tag];
+	int level = (int)[(NSView *)sender tag];
 	if (level != logLevel)
 	{
 		logLevel = level;
@@ -821,7 +821,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	{
 		[logTable noteNumberOfRowsChanged];
 	}
-	lastMessageRow = [displayedMessages count];
+	lastMessageRow = (int)[displayedMessages count];
 	self.info = [NSString stringWithFormat:NSLocalizedString(@"%u messages", @""), [displayedMessages count]];
 }
 
