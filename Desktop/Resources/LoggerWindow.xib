@@ -502,8 +502,8 @@
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9B2629AC-F52B-4881-AE8F-19A7A561CE6C" label="Application Runs" paletteLabel="Application Runs" id="1416">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="100" height="25"/>
-                        <size key="maxSize" width="100" height="25"/>
+                        <size key="minSize" width="102" height="25"/>
+                        <size key="maxSize" width="102" height="25"/>
                         <popUpButton key="view" verticalHuggingPriority="750" id="1410">
                             <rect key="frame" x="0.0" y="14" width="100" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
