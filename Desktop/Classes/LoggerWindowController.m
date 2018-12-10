@@ -665,26 +665,20 @@ static NSArray *sXcodeFileExtensions = nil;
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
 	[self updateMenuBar:YES];
-
-	NSColor *bgColor = [NSColor colorWithCalibratedRed:(218.0 / 255.0)
-												 green:(221.0 / 255.0)
-												  blue:(229.0 / 255.0)
-												 alpha:1.0f];
-	[filterSetsTable setBackgroundColor:bgColor];
-	[filterTable setBackgroundColor:bgColor];
+    [self setBackgroundColor];
 }
 
 - (void)windowDidResignMain:(NSNotification *)notification
 {
 	[self updateMenuBar:NO];
+    [self setBackgroundColor];
+}
 
-	// constants by Brandon Walkin
-	NSColor *bgColor = [NSColor colorWithCalibratedRed:(234.0 / 255.0)
-												 green:(234.0 / 255.0)
-												  blue:(234.0 / 255.0)
-												 alpha:1.0f];
-	[filterSetsTable setBackgroundColor:bgColor];
-	[filterTable setBackgroundColor:bgColor];
+- (void)setBackgroundColor
+{
+    NSColor *bgColor = [NSColor controlBackgroundColor];
+    [filterSetsTable setBackgroundColor:bgColor];
+    [filterTable setBackgroundColor:bgColor];
 }
 
 // -----------------------------------------------------------------------------
@@ -1964,24 +1958,6 @@ didReceiveMessages:(NSArray *)theMessages
 - (IBAction)clearAllLogs:(id)sender
 {
 	[(LoggerDocument *)[self document] clearLogs:YES];
-}
-
-#pragma mark - 
-#pragma mark - Collapsing Taskbar
-
-- (IBAction)collapseTaskbar:(id)sender{
-    
-    NSMenuItem *hideShowButton = [[[[NSApp mainMenu] itemWithTag:VIEW_MENU_ITEM_TAG] submenu] itemWithTag:TOOLS_MENU_HIDE_SHOW_TOOLBAR];
-    
-    if (![splitView collapsibleSubviewCollapsed]) {
-        [hideShowButton setTitle:NSLocalizedString(@"Show Taskbar", @"Show Taskbar")];
-    }
-    else{
-        [hideShowButton setTitle:NSLocalizedString(@"Hide Taskbar", @"Hide Taskbar")];
-    }
-
-    [splitView toggleCollapse:nil];
-
 }
 
 @end

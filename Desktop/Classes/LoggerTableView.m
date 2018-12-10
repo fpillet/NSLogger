@@ -35,7 +35,12 @@
 
 @synthesize timestampColumnWidth, threadIDColumnWidth;
 
-- (void) dealloc
+- (void)viewDidChangeEffectiveAppearance {
+    sDefaultAttributes = nil;
+    [self reloadData];
+}
+
+- (void)dealloc
 {
 	[tableTrackingArea release];
 	[timestampSeparatorTrackingArea release];

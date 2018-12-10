@@ -42,7 +42,6 @@
 
 #define TIMESTAMP_COLUMN_WIDTH		85.0f
 
-static NSMutableDictionary *sDefaultAttributes = nil;
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
@@ -66,8 +65,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (NSColor *)cellStandardBgColor
 {
 	static NSColor *sColor = nil;
-	if (sColor == nil)
-		sColor = [[NSColor colorWithCalibratedWhite:0.90 alpha:1.0] retain];
+    if (sColor == nil) {
+        sColor = NSColor.controlBackgroundColor;
+    }
 	return sColor;
 }
 
@@ -98,7 +98,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	[style setLineBreakMode:NSLineBreakByTruncatingTail];
 	NSMutableDictionary *textAttrs = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 									  defaultFont, NSFontAttributeName,
-									  [NSColor blackColor], NSForegroundColorAttributeName,
+									  [NSColor textColor], NSForegroundColorAttributeName,
 									  style, NSParagraphStyleAttributeName,
 									  nil];
 	[style release];
@@ -155,7 +155,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// File / Line / Function name attributes
 	dict = [textAttrs mutableCopy];
 	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
-	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+    [dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
 	NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
 												   green:(233.0f / 255.0f)
 													blue:(252.0f / 255.0f)
@@ -176,11 +176,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	if (sDefaultAttributes == nil)
 	{
 		// Try to load the default text attributes from user defaults
-		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:@"Message Attributes"];
-		if (data != nil)
-			sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:[self messageAttributeKey]];
+        if (data != nil) {
+            sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+        }
 		if (sDefaultAttributes == nil)
-			[self setDefaultAttributes:[self defaultAttributesDictionary]];
+        {
+            [self setDefaultAttributes:[self defaultAttributesDictionary]];
+        }
 
 		// upgrade from pre-1.0b5, adding attributes for markers
 		if ([sDefaultAttributes objectForKey:@"mark"] == nil)
@@ -239,8 +242,19 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	sDefaultAttributes = [newAttributes copy];
 	sMinimumHeightForCell = 0;
 	sDefaultFileLineFunctionHeight = 0;
-	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:@"Message Attributes"];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:[self messageAttributeKey]];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
+}
+
++ (NSString *)messageAttributeKey {
+    NSString *key = @"Message Attributes";
+    if (@available(macOS 10_14, *)) {
+        // In macOS Mojave we'll have 2 sets of settings, similarly to Xcode
+        if ([NSApplication sharedApplication].effectiveAppearance == [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]) {
+            return [@"Dark " stringByAppendingString:key];
+        }
+    }
+    return key;
 }
 
 + (NSColor *)defaultTagAndLevelColor
@@ -318,43 +332,62 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
     NSColor *color;
     BOOL isBold;
     for(NSDictionary *colorSpec in advancedColorsPrefs) {
+        NSString *colorName = [colorSpec objectForKey:@"colors"];
+        if ([colorName hasSuffix:@"Color"]) {
+            color = [self colorFor:colorName];
+        } else {
+            colorName = [colorName lowercaseString];
+            isBold = NO;
+            if ([colorName hasPrefix:@"bold"]) {
+                colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
+                isBold = YES;
+            }
+            if ([colorName hasPrefix:@"#"]) {
+                color = [self colorFromHexRGB:colorName];
+            } else if ([colorName hasPrefix:@"blue"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemBlueColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#0047AB"];
+                }
+            } else if ([colorName hasPrefix:@"red"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemRedColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#DC143C"];
+                }
+            } else if ([colorName hasPrefix:@"green"]) {
+                if (@available(macOS 10_10, *)) {
+                    color = NSColor.systemGreenColor;
+                } else {
+                    color = [self colorFromHexRGB:@"#008000"];
+                }
+            } else {
+                NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
+                color = [self colorFor:selectorName];
+            }
+        }
         regexp = [[NSRegularExpression alloc] initWithPattern:[colorSpec objectForKey:@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
         if (! regexp) {
             NSLog(@"** Warning: invalid regular expression '%@': %@", [colorSpec objectForKey:@"regexp"], error);
             continue;
         }
-        NSString *colorName = [[colorSpec objectForKey:@"colors"] lowercaseString];
-        isBold = NO;
-        if ([colorName hasPrefix:@"bold"]) {
-            colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
-            isBold = YES;
-        }
-        if ([colorName hasPrefix:@"#"]) {
-            color = [self colorFromHexRGB:colorName];
-        } else if ([colorName hasPrefix:@"blue"]) {
-            color = [self colorFromHexRGB:@"#0047AB"];
-        } else if ([colorName hasPrefix:@"red"]) {
-            color = [self colorFromHexRGB:@"#DC143C"];
-        } else if ([colorName hasPrefix:@"green"]) {
-            color = [self colorFromHexRGB:@"#008000"];
-        } else {
-            NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
-            SEL colorSelector = NSSelectorFromString(selectorName);
-            if ([NSColor respondsToSelector:colorSelector]) {
-                color = [NSColor performSelector:colorSelector];
-            }
-			else {
-				color = nil;
-			}
-        }
         if (color == nil) {
             NSLog(@"** Warning: unexpected color spec '%@'", colorName);
-        }
-		else {
+        } else {
 			color.bold = isBold;
 			[advancedColors setObject:color forKey:regexp];
 		}
 		[regexp release];
+    }
+}
+
++ (NSColor*)colorFor:(NSString*)selectorName {
+    SEL colorSelector = NSSelectorFromString(selectorName);
+    if ([NSColor respondsToSelector:colorSelector]) {
+        return [NSColor performSelector:colorSelector];
+    } else {
+        return nil;
     }
 }
 
@@ -985,13 +1018,15 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	BOOL highlighted = [self isHighlighted];
 
 	NSColor *highlightedTextColor = nil;
-	if (highlighted)
-		highlightedTextColor = [NSColor whiteColor];
+    if (highlighted)
+    {
+        highlightedTextColor = [NSColor whiteColor];
+    }
 
 	// Draw cell background
 	if (!highlighted)
 	{
-		CGColorRef cellBgColor = CGColorCreateGenericGray(0.97f, 1.0f);
+        CGColorRef cellBgColor = CGColorCreateCopy(NSColor.controlBackgroundColor.CGColor);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);

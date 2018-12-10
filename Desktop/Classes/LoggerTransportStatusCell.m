@@ -95,7 +95,7 @@
 	NSFont *descFont = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
 	NSFont *statusFont = [NSFont systemFontOfSize:[NSFont systemFontSize] - 2];
 	
-	NSColor *textColor = (highlighted ? [NSColor grayColor] : [NSColor whiteColor]);
+	NSColor *textColor = (highlighted ? [NSColor grayColor] : [NSColor textColor]);
 	NSDictionary *descAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
 							   descFont, NSFontAttributeName,
 							   textColor, NSForegroundColorAttributeName,

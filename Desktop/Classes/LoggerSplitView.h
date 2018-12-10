@@ -30,7 +30,7 @@
  */
 #import "BWToolkitFramework.h"
 
-@interface LoggerSplitView : BWSplitView
+@interface LoggerSplitView : NSSplitView
 {
 }
 

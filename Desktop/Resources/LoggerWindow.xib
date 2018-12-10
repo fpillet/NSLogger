@@ -1,14 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1108" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1060" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LoggerWindowController">
             <connections>
-                <outlet property="buttonBar" destination="458" id="934"/>
                 <outlet property="filterEditor" destination="591" id="815"/>
                 <outlet property="filterEditorWindow" destination="586" id="814"/>
                 <outlet property="filterListController" destination="532" id="702"/>
@@ -32,7 +31,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="154" y="384" width="885" height="666"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3200" height="1800"/>
             <value key="minSize" type="size" width="700" height="500"/>
             <view key="contentView" id="372">
                 <rect key="frame" x="0.0" y="0.0" width="885" height="666"/>
@@ -46,111 +45,89 @@
                                 <rect key="frame" x="0.0" y="0.0" width="150" height="673"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <customView misplaced="YES" id="458" customClass="BWAnchoredButtonBar">
-                                        <rect key="frame" x="0.0" y="0.0" width="200" height="23"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <subviews>
-                                            <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="510" customClass="BWAnchoredButton">
-                                                <rect key="frame" x="30" y="-1" width="32" height="24"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="511" customClass="BWAnchoredButtonCell">
-                                                    <behavior key="behavior" lightByContents="YES"/>
-                                                    <font key="font" metaFont="smallSystem"/>
-                                                </buttonCell>
-                                                <connections>
-                                                    <action selector="deleteSelectedFilters:" target="-2" id="926"/>
-                                                    <binding destination="532" name="enabled" keyPath="selectedObjects" id="985">
-                                                        <dictionary key="options">
-                                                            <integer key="NSNoSelectionPlaceholder" value="0"/>
-                                                            <integer key="NSNotApplicablePlaceholder" value="0"/>
-                                                            <integer key="NSNullPlaceholder" value="0"/>
-                                                            <string key="NSValueTransformerName">CanDeleteFilterSelection</string>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </button>
-                                            <button toolTip="Add a new filter" verticalHuggingPriority="750" id="508" customClass="BWAnchoredButton">
-                                                <rect key="frame" x="-1" y="-1" width="32" height="24"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="509" customClass="BWAnchoredButtonCell">
-                                                    <behavior key="behavior" lightByContents="YES"/>
-                                                    <font key="font" metaFont="smallSystem"/>
-                                                </buttonCell>
-                                                <connections>
-                                                    <action selector="addFilter:" target="-2" id="701"/>
-                                                </connections>
-                                            </button>
-                                        </subviews>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="selectedIndex">
-                                                <integer key="value" value="0"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </customView>
-                                    <splitView misplaced="YES" autosaveName="SidebarSplit" id="943" customClass="BWSplitView">
-                                        <rect key="frame" x="0.0" y="20" width="200" height="646"/>
+                                    <button toolTip="Add a new filter" verticalHuggingPriority="750" id="508">
+                                        <rect key="frame" x="2" y="-1" width="32" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="509">
+                                            <behavior key="behavior" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="addFilter:" target="-2" id="701"/>
+                                        </connections>
+                                    </button>
+                                    <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="510">
+                                        <rect key="frame" x="34" y="-1" width="32" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="511">
+                                            <behavior key="behavior" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="deleteSelectedFilters:" target="-2" id="926"/>
+                                            <binding destination="532" name="enabled" keyPath="selectedObjects" id="985">
+                                                <dictionary key="options">
+                                                    <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                    <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                    <integer key="NSNullPlaceholder" value="0"/>
+                                                    <string key="NSValueTransformerName">CanDeleteFilterSelection</string>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </button>
+                                    <splitView autosaveName="SidebarSplit" id="943">
+                                        <rect key="frame" x="0.0" y="20" width="150" height="646"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <customView id="944">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="280"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="150" height="280"/>
                                                 <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                                                 <subviews>
-                                                    <customView id="946" customClass="BWAnchoredButtonBar">
-                                                        <rect key="frame" x="0.0" y="0.0" width="201" height="24"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                        <subviews>
-                                                            <button toolTip="Delete selected filter set" verticalHuggingPriority="750" id="948" customClass="BWAnchoredButton">
-                                                                <rect key="frame" x="30" y="-1" width="32" height="24"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="949" customClass="BWAnchoredButtonCell">
-                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="smallSystem"/>
-                                                                </buttonCell>
-                                                                <connections>
-                                                                    <action selector="deleteSelectedFilterSet:" target="-2" id="975"/>
-                                                                    <binding destination="963" name="enabled" keyPath="selectedObjects" id="976">
-                                                                        <dictionary key="options">
-                                                                            <integer key="NSNoSelectionPlaceholder" value="0"/>
-                                                                            <integer key="NSNotApplicablePlaceholder" value="0"/>
-                                                                            <integer key="NSNullPlaceholder" value="0"/>
-                                                                            <string key="NSValueTransformerName">CanDeleteFilterSelection</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </button>
-                                                            <button toolTip="Add a new filter set" verticalHuggingPriority="750" id="947" customClass="BWAnchoredButton">
-                                                                <rect key="frame" x="-1" y="-1" width="32" height="24"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="950" customClass="BWAnchoredButtonCell">
-                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="smallSystem"/>
-                                                                </buttonCell>
-                                                                <connections>
-                                                                    <action selector="addFilterSet:" target="-2" id="974"/>
-                                                                </connections>
-                                                            </button>
-                                                        </subviews>
-                                                        <userDefinedRuntimeAttributes>
-                                                            <userDefinedRuntimeAttribute type="number" keyPath="selectedIndex">
-                                                                <integer key="value" value="2"/>
-                                                            </userDefinedRuntimeAttribute>
-                                                        </userDefinedRuntimeAttributes>
-                                                    </customView>
+                                                    <button toolTip="Add a new filter set" verticalHuggingPriority="750" id="947">
+                                                        <rect key="frame" x="2" y="-2" width="32" height="24"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="950">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="smallSystem"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="addFilterSet:" target="-2" id="974"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button toolTip="Delete selected filter set" verticalHuggingPriority="750" id="948">
+                                                        <rect key="frame" x="34" y="-2" width="32" height="24"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="949">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="smallSystem"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="deleteSelectedFilterSet:" target="-2" id="975"/>
+                                                            <binding destination="963" name="enabled" keyPath="selectedObjects" id="976">
+                                                                <dictionary key="options">
+                                                                    <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                                    <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                                    <integer key="NSNullPlaceholder" value="0"/>
+                                                                    <string key="NSValueTransformerName">CanDeleteFilterSelection</string>
+                                                                </dictionary>
+                                                            </binding>
+                                                        </connections>
+                                                    </button>
                                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="954">
-                                                        <rect key="frame" x="0.0" y="24" width="201" height="256"/>
+                                                        <rect key="frame" x="0.0" y="20" width="151" height="260"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <clipView key="contentView" drawsBackground="NO" id="kG7-zr-Qcb">
-                                                            <rect key="frame" x="0.0" y="0.0" width="201" height="256"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="151" height="260"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="20" headerView="955" id="956">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="201" height="233"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="151" height="237"/>
                                                                     <autoresizingMask key="autoresizingMask"/>
                                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                                     <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                     <tableColumns>
-                                                                        <tableColumn identifier="filtersets" width="198" minWidth="40" maxWidth="1000" id="959">
+                                                                        <tableColumn identifier="filtersets" width="148" minWidth="40" maxWidth="1000" id="959">
                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Application Sets">
                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -189,31 +166,31 @@
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <tableHeaderView key="headerView" focusRingType="exterior" id="955">
-                                                            <rect key="frame" x="0.0" y="0.0" width="201" height="23"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="151" height="23"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </tableHeaderView>
                                                     </scrollView>
                                                 </subviews>
                                             </customView>
                                             <customView id="945">
-                                                <rect key="frame" x="0.0" y="289" width="200" height="357"/>
+                                                <rect key="frame" x="0.0" y="289" width="150" height="357"/>
                                                 <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                                                 <subviews>
                                                     <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="468">
-                                                        <rect key="frame" x="0.0" y="1" width="201" height="356"/>
+                                                        <rect key="frame" x="0.0" y="1" width="151" height="356"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <clipView key="contentView" drawsBackground="NO" id="wkt-EL-SnZ">
-                                                            <rect key="frame" x="0.0" y="0.0" width="201" height="356"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="151" height="356"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <tableView toolTip="Select one or more items to filter log messages" focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" emptySelection="NO" autosaveColumns="NO" rowHeight="20" headerView="472" id="471">
-                                                                    <rect key="frame" x="0.0" y="0.0" width="201" height="333"/>
+                                                                    <rect key="frame" x="0.0" y="0.0" width="151" height="333"/>
                                                                     <autoresizingMask key="autoresizingMask"/>
                                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                                     <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                     <tableColumns>
-                                                                        <tableColumn identifier="filters" editable="NO" width="198" minWidth="40" maxWidth="1000" id="473">
+                                                                        <tableColumn identifier="filters" editable="NO" width="148" minWidth="40" maxWidth="1000" id="473">
                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Filters">
                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -259,7 +236,7 @@
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <tableHeaderView key="headerView" focusRingType="exterior" id="472">
-                                                            <rect key="frame" x="0.0" y="0.0" width="201" height="23"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="151" height="23"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </tableHeaderView>
                                                     </scrollView>
@@ -270,17 +247,6 @@
                                             <real value="490"/>
                                             <real value="250"/>
                                         </holdingPriorities>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="colorIsEnabled">
-                                                <bool key="value" value="NO"/>
-                                            </userDefinedRuntimeAttribute>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="dividerCanCollapse">
-                                                <bool key="value" value="NO"/>
-                                            </userDefinedRuntimeAttribute>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="collapsiblePopupSelection">
-                                                <integer key="value" value="2"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
                                     </splitView>
                                 </subviews>
                             </customView>
@@ -289,20 +255,20 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <scrollView borderType="none" horizontalLineScroll="46" horizontalPageScroll="10" verticalLineScroll="46" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="477">
-                                        <rect key="frame" x="0.0" y="22" width="734" height="644"/>
+                                        <rect key="frame" x="0.0" y="21" width="734" height="646"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <clipView key="contentView" copiesOnScroll="NO" id="AHv-vz-WNY">
-                                            <rect key="frame" x="0.0" y="0.0" width="734" height="644"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="719" height="646"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" columnReordering="NO" autosaveColumns="NO" typeSelect="NO" rowHeight="44" id="480" customClass="LoggerTableView">
-                                                    <rect key="frame" x="0.0" y="0.0" width="734" height="644"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="719" height="646"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
-                                                    <color key="backgroundColor" white="0.97000002860000001" alpha="1" colorSpace="calibratedWhite"/>
-                                                    <color key="gridColor" red="0.93923854829999998" green="0.93923854829999998" blue="0.93923854829999998" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn identifier="message" width="731" minWidth="200" maxWidth="10000" id="482">
+                                                        <tableColumn identifier="message" width="716" minWidth="200" maxWidth="10000" id="482">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -322,173 +288,161 @@
                                                     </connections>
                                                 </tableView>
                                             </subviews>
-                                            <color key="backgroundColor" white="0.97000002860000001" alpha="1" colorSpace="calibratedWhite"/>
                                         </clipView>
                                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.59969325153374209" horizontal="YES" id="479">
                                             <rect key="frame" x="-100" y="-100" width="650" height="15"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="0.97981366459627328" horizontal="NO" id="478">
-                                            <rect key="frame" x="718" y="0.0" width="16" height="644"/>
+                                            <rect key="frame" x="719" y="0.0" width="15" height="646"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                     </scrollView>
-                                    <customView focusRingType="none" id="493" customClass="BWAnchoredButtonBar">
-                                        <rect key="frame" x="0.0" y="0.0" width="734" height="23"/>
+                                    <popUpButton verticalHuggingPriority="750" id="1090">
+                                        <rect key="frame" x="2" y="-1" width="32" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="1094" id="1091">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="menu"/>
+                                            <menu key="menu" title="OtherViews" id="1092">
+                                                <items>
+                                                    <menuItem image="NSActionTemplate" hidden="YES" id="1094"/>
+                                                    <menuItem title="Open Details Window" keyEquivalent="i" id="1095">
+                                                        <connections>
+                                                            <action selector="openDetailsWindow:" target="-2" id="1100"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="1432"/>
+                                                    <menuItem title="Reset Quick Filter" enabled="NO" id="1093">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="resetQuickFilter:" target="-2" id="1099"/>
+                                                            <binding destination="-2" name="enabled" keyPath="hasQuickFilter" id="1098"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="New Filter from Quick Filter" enabled="NO" id="1245">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="createNewFilterFromQuickFilter:" target="-2" id="1248"/>
+                                                            <binding destination="-2" name="enabled" keyPath="hasQuickFilter" id="1247"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" id="1433"/>
+                                                    <menuItem title="Clear Log" enabled="NO" id="1434">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="clearCurrentLog:" target="-2" id="1443"/>
+                                                            <binding destination="-2" name="enabled" keyPath="canClearCurrentLog" id="1439"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Clear All Run Logs" enabled="NO" id="1435">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="clearAllLogs:" target="-2" id="1442"/>
+                                                            <binding destination="-2" name="enabled" keyPath="canClearAllLogs" id="1441"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                    </popUpButton>
+                                    <button toolTip="Show / Hide file, line and function names" verticalHuggingPriority="750" id="1206">
+                                        <rect key="frame" x="34" y="-1" width="28" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="roundTextured" title="ƒ" bezelStyle="texturedRounded" alignment="center" controlSize="small" scrollable="YES" lineBreakMode="clipping" borderStyle="border" inset="2" id="1207">
+                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="smallSystemBold"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <binding destination="-2" name="value" keyPath="showFunctionNames" id="1239">
+                                                <dictionary key="options">
+                                                    <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
+                                                    <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    <integer key="NSNullPlaceholder" value="0"/>
+                                                    <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </button>
+                                    <popUpButton toolTip="Refine filter to display only messages with the selected level and/or tag" verticalHuggingPriority="750" id="894">
+                                        <rect key="frame" x="566" y="-1" width="165" height="23"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <popUpButtonCell key="cell" type="roundRect" bezelStyle="roundedRect" imagePosition="below" alignment="center" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" preferredEdge="maxX" selectedItem="900" id="895">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <menu key="menu" title="OtherViews" id="896">
+                                                <items>
+                                                    <menuItem hidden="YES" id="900">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="916"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="All Levels" keyEquivalent="=" id="915">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="917"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Level 0" tag="1" keyEquivalent="0" indentationLevel="1" id="936">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="937"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Level ≤ 1" tag="2" keyEquivalent="1" indentationLevel="1" id="908">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="918"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Level ≤ 2" tag="3" keyEquivalent="2" indentationLevel="1" id="909">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="919"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Level ≤ 3" tag="4" keyEquivalent="3" indentationLevel="1" id="910">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="920"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Level ≤ 4" tag="5" keyEquivalent="4" indentationLevel="1" id="914">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterLevel:" target="-2" id="921"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem isSeparatorItem="YES" tag="-1" id="911"/>
+                                                    <menuItem title="All Tags" tag="-1" keyEquivalent="*" id="938">
+                                                        <connections>
+                                                            <action selector="selectQuickFilterTag:" target="-2" id="940"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                        <connections>
+                                            <binding destination="-2" name="selectedIndex" keyPath="logLevel" id="901">
+                                                <dictionary key="options">
+                                                    <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
+                                                    <bool key="NSConditionallySetsEnabled" value="NO"/>
+                                                    <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </popUpButton>
+                                    <textField toolTip="Number of messages displayed" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="488">
+                                        <rect key="frame" x="63" y="3" width="497" height="14"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                        <subviews>
-                                            <popUpButton verticalHuggingPriority="750" id="1090" customClass="BWAnchoredPopUpButton">
-                                                <rect key="frame" x="-1" y="-1" width="32" height="24"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <popUpButtonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" alignment="center" controlSize="small" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" selectedItem="1094" id="1091" customClass="BWAnchoredPopUpButtonCell">
-                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                    <font key="font" metaFont="menu"/>
-                                                    <menu key="menu" title="OtherViews" id="1092">
-                                                        <items>
-                                                            <menuItem image="NSActionTemplate" hidden="YES" id="1094"/>
-                                                            <menuItem title="Open Details Window" keyEquivalent="i" id="1095">
-                                                                <connections>
-                                                                    <action selector="openDetailsWindow:" target="-2" id="1100"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem isSeparatorItem="YES" id="1432"/>
-                                                            <menuItem title="Reset Quick Filter" enabled="NO" id="1093">
-                                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                                                <connections>
-                                                                    <action selector="resetQuickFilter:" target="-2" id="1099"/>
-                                                                    <binding destination="-2" name="enabled" keyPath="hasQuickFilter" id="1098"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="New Filter from Quick Filter" enabled="NO" id="1245">
-                                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                                                <connections>
-                                                                    <action selector="createNewFilterFromQuickFilter:" target="-2" id="1248"/>
-                                                                    <binding destination="-2" name="enabled" keyPath="hasQuickFilter" id="1247"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem isSeparatorItem="YES" id="1433"/>
-                                                            <menuItem title="Clear Log" enabled="NO" id="1434">
-                                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                                                <connections>
-                                                                    <action selector="clearCurrentLog:" target="-2" id="1443"/>
-                                                                    <binding destination="-2" name="enabled" keyPath="canClearCurrentLog" id="1439"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Clear All Run Logs" enabled="NO" id="1435">
-                                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                                                <connections>
-                                                                    <action selector="clearAllLogs:" target="-2" id="1442"/>
-                                                                    <binding destination="-2" name="enabled" keyPath="canClearAllLogs" id="1441"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                        </items>
-                                                    </menu>
-                                                </popUpButtonCell>
-                                            </popUpButton>
-                                            <button toolTip="Show / Hide file, line and function names" verticalHuggingPriority="750" id="1206" customClass="BWAnchoredButton">
-                                                <rect key="frame" x="30" y="-1" width="28" height="24"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="roundTextured" title="ƒ" bezelStyle="texturedRounded" alignment="center" controlSize="small" scrollable="YES" lineBreakMode="clipping" borderStyle="border" inset="2" id="1207" customClass="BWAnchoredButtonCell">
-                                                    <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
-                                                    <font key="font" metaFont="smallSystemBold"/>
-                                                </buttonCell>
-                                                <connections>
-                                                    <binding destination="-2" name="value" keyPath="showFunctionNames" id="1239">
-                                                        <dictionary key="options">
-                                                            <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
-                                                            <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                                            <integer key="NSNullPlaceholder" value="0"/>
-                                                            <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </button>
-                                            <textField toolTip="Number of messages displayed" verticalHuggingPriority="750" id="488">
-                                                <rect key="frame" x="63" y="3" width="485" height="14"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" id="489">
-                                                    <font key="font" metaFont="smallSystem"/>
-                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" red="1" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                </textFieldCell>
-                                                <connections>
-                                                    <binding destination="-2" name="value" keyPath="info" id="859">
-                                                        <dictionary key="options">
-                                                            <string key="NSNullPlaceholder">Logs from unidentified source</string>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </textField>
-                                            <popUpButton toolTip="Refine filter to display only messages with the selected level and/or tag" verticalHuggingPriority="750" id="894">
-                                                <rect key="frame" x="553" y="-1" width="165" height="23"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                <popUpButtonCell key="cell" type="roundRect" bezelStyle="roundedRect" imagePosition="below" alignment="center" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" preferredEdge="maxX" selectedItem="900" id="895">
-                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                    <font key="font" metaFont="smallSystem"/>
-                                                    <menu key="menu" title="OtherViews" id="896">
-                                                        <items>
-                                                            <menuItem hidden="YES" id="900">
-                                                                <modifierMask key="keyEquivalentModifierMask"/>
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="916"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="All Levels" keyEquivalent="=" id="915">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="917"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Level 0" tag="1" keyEquivalent="0" indentationLevel="1" id="936">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="937"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Level ≤ 1" tag="2" keyEquivalent="1" indentationLevel="1" id="908">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="918"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Level ≤ 2" tag="3" keyEquivalent="2" indentationLevel="1" id="909">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="919"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Level ≤ 3" tag="4" keyEquivalent="3" indentationLevel="1" id="910">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="920"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem title="Level ≤ 4" tag="5" keyEquivalent="4" indentationLevel="1" id="914">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterLevel:" target="-2" id="921"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                            <menuItem isSeparatorItem="YES" tag="-1" id="911"/>
-                                                            <menuItem title="All Tags" tag="-1" keyEquivalent="*" id="938">
-                                                                <connections>
-                                                                    <action selector="selectQuickFilterTag:" target="-2" id="940"/>
-                                                                </connections>
-                                                            </menuItem>
-                                                        </items>
-                                                    </menu>
-                                                </popUpButtonCell>
-                                                <connections>
-                                                    <binding destination="-2" name="selectedIndex" keyPath="logLevel" id="901">
-                                                        <dictionary key="options">
-                                                            <bool key="NSAllowsEditingMultipleValuesSelection" value="NO"/>
-                                                            <bool key="NSConditionallySetsEnabled" value="NO"/>
-                                                            <bool key="NSRaisesForNotApplicableKeys" value="NO"/>
-                                                        </dictionary>
-                                                    </binding>
-                                                </connections>
-                                            </popUpButton>
-                                        </subviews>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="number" keyPath="selectedIndex">
-                                                <integer key="value" value="1"/>
-                                            </userDefinedRuntimeAttribute>
-                                        </userDefinedRuntimeAttributes>
-                                    </customView>
+                                        <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" id="489">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" red="1" green="1" blue="0.40000000600000002" alpha="1" colorSpace="calibratedRGB"/>
+                                        </textFieldCell>
+                                        <connections>
+                                            <binding destination="-2" name="value" keyPath="info" id="859">
+                                                <dictionary key="options">
+                                                    <string key="NSNullPlaceholder">Logs from unidentified source</string>
+                                                </dictionary>
+                                            </binding>
+                                        </connections>
+                                    </textField>
                                 </subviews>
                             </customView>
                         </subviews>
@@ -496,17 +450,6 @@
                             <real value="250"/>
                             <real value="250"/>
                         </holdingPriorities>
-                        <userDefinedRuntimeAttributes>
-                            <userDefinedRuntimeAttribute type="number" keyPath="colorIsEnabled">
-                                <bool key="value" value="YES"/>
-                            </userDefinedRuntimeAttribute>
-                            <userDefinedRuntimeAttribute type="number" keyPath="dividerCanCollapse">
-                                <bool key="value" value="NO"/>
-                            </userDefinedRuntimeAttribute>
-                            <userDefinedRuntimeAttribute type="number" keyPath="collapsiblePopupSelection">
-                                <integer key="value" value="1"/>
-                            </userDefinedRuntimeAttribute>
-                        </userDefinedRuntimeAttributes>
                     </splitView>
                 </subviews>
             </view>
@@ -537,7 +480,7 @@
                     <toolbarItem implicitItemIdentifier="1982BF4A-3218-428E-B152-FE3A19027668" label="Quick Search" paletteLabel="Quick Search" toolTip="Refine by filtering the current filter/tag/level settings on a search term" id="1300">
                         <size key="minSize" width="96" height="22"/>
                         <size key="maxSize" width="162" height="22"/>
-                        <searchField key="view" verticalHuggingPriority="750" id="1298">
+                        <searchField key="view" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="1298">
                             <rect key="frame" x="0.0" y="14" width="117" height="22"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="1299">
@@ -559,8 +502,8 @@
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="9B2629AC-F52B-4881-AE8F-19A7A561CE6C" label="Application Runs" paletteLabel="Application Runs" id="1416">
                         <nil key="toolTip"/>
-                        <size key="minSize" width="100" height="25"/>
-                        <size key="maxSize" width="100" height="25"/>
+                        <size key="minSize" width="102" height="25"/>
+                        <size key="maxSize" width="102" height="25"/>
                         <popUpButton key="view" verticalHuggingPriority="750" id="1410">
                             <rect key="frame" x="0.0" y="14" width="100" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -604,12 +547,13 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="913"/>
             </connections>
+            <point key="canvasLocation" x="1706.5" y="40"/>
         </window>
-        <window title="Filter Editor" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="586" userLabel="Sheet (Filter Editor)">
+        <window title="Filter Editor" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="586" userLabel="Sheet (Filter Editor)">
             <windowStyleMask key="styleMask" titled="YES" resizable="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="183" y="289" width="480" height="270"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="3200" height="1800"/>
             <value key="minSize" type="size" width="400" height="200"/>
             <view key="contentView" id="587">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
@@ -620,7 +564,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="1dY-6U-d7N">
                             <rect key="frame" x="1" y="1" width="480" height="160"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <predicateEditor verticalHuggingPriority="750" nestingMode="simple" rowHeight="25" id="591">
                                     <rect key="frame" x="0.0" y="0.0" width="480" height="160"/>
@@ -835,7 +779,6 @@
                                     </rowTemplates>
                                 </predicateEditor>
                             </subviews>
-                            <color key="backgroundColor" white="0.91000002619999998" alpha="1" colorSpace="calibratedWhite"/>
                         </clipView>
                         <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="590">
                             <rect key="frame" x="-100" y="-100" width="360" height="15"/>
@@ -874,16 +817,16 @@ Gw
                             <action selector="cancelFilterEdition:" target="-2" id="817"/>
                         </connections>
                     </button>
-                    <textField verticalHuggingPriority="750" id="688">
+                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="688">
                         <rect key="frame" x="102" y="231" width="358" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="filter name" drawsBackground="YES" id="689">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" id="690">
+                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="690">
                         <rect key="frame" x="17" y="233" width="81" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Filter Name:" id="691">
@@ -895,7 +838,7 @@ Gw
                 </subviews>
             </view>
         </window>
-        <window title="New Mark" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="1104" userLabel="Sheet (Add Mark)">
+        <window title="New Mark" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1104" userLabel="Sheet (Add Mark)">
             <windowStyleMask key="styleMask" titled="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="183" y="448" width="480" height="111"/>
@@ -904,16 +847,16 @@ Gw
                 <rect key="frame" x="0.0" y="0.0" width="480" height="111"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField verticalHuggingPriority="750" id="1107">
+                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="1107">
                         <rect key="frame" x="94" y="72" width="366" height="22"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Mark title" drawsBackground="YES" id="1114">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" id="1108">
+                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" id="1108">
                         <rect key="frame" x="17" y="74" width="72" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="New mark:" id="1113">
@@ -982,7 +925,7 @@ Gw
         <image name="Load" width="48" height="48"/>
         <image name="NSActionTemplate" width="14" height="14"/>
         <image name="NSAddTemplate" width="11" height="11"/>
-        <image name="NSAdvanced" width="32" height="32"/>
+        <image name="NSAdvanced" width="128" height="128"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="Save" width="48" height="48"/>
     </resources>

@@ -32,6 +32,8 @@
 
 @class LoggerMessage;
 
+static NSMutableDictionary *sDefaultAttributes = nil;
+
 @interface LoggerMessageCell : NSCell
 {
 	LoggerMessage *message;
