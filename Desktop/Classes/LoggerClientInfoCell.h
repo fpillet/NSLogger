@@ -31,7 +31,5 @@
 #import "LoggerMessageCell.h"
 
 @interface LoggerClientInfoCell : LoggerMessageCell
-{
-}
 
 @end

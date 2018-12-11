@@ -32,7 +32,5 @@
 
 
 @interface LoggerIPConnection : LoggerConnection
-{
-}
 
 @end

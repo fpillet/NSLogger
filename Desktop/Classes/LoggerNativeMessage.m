@@ -91,59 +91,74 @@
 			switch (partKey)
 			{
 				case PART_KEY_MESSAGE_TYPE:
-					type = (short)value32;
+					self.type = (short)value32;
 					break;
 				case PART_KEY_MESSAGE_SEQ:
-					sequence = value32;
+					self.sequence = value32;
 					break;
-				case PART_KEY_TIMESTAMP_S:			// timestamp with seconds-level resolution
-					timestamp.tv_sec = (partType == PART_TYPE_INT64) ? (__darwin_time_t)value64 : (__darwin_time_t)value32;
+				case PART_KEY_TIMESTAMP_S:
+				{
+					// timestamp with seconds-level resolution
+					struct timeval ts = self.timestamp;
+					ts.tv_sec = (partType == PART_TYPE_INT64) ? (__darwin_time_t) value64 : (__darwin_time_t) value32;
+					self.timestamp = ts;
 					break;
-				case PART_KEY_TIMESTAMP_MS:			// millisecond part of the timestamp (optional)
-					timestamp.tv_usec = ((partType == PART_TYPE_INT64) ? (__darwin_suseconds_t)value64 : (__darwin_suseconds_t)value32) * 1000;
+				}
+				case PART_KEY_TIMESTAMP_MS:
+				{
+					// millisecond part of the timestamp (optional)
+					struct timeval ts = self.timestamp;
+					ts.tv_usec = ((partType == PART_TYPE_INT64) ? (__darwin_suseconds_t) value64 : (__darwin_suseconds_t) value32) * 1000;
+					self.timestamp = ts;
 					break;
-				case PART_KEY_TIMESTAMP_US:			// microsecond part of the timestamp (optional)
-					timestamp.tv_usec = (partType == PART_TYPE_INT64) ? (__darwin_suseconds_t)value64 : (__darwin_suseconds_t)value32;
+				}
+				case PART_KEY_TIMESTAMP_US:
+				{
+					// microsecond part of the timestamp (optional)
+					struct timeval ts = self.timestamp;
+					ts.tv_usec = (partType == PART_TYPE_INT64) ? (__darwin_suseconds_t) value64 : (__darwin_suseconds_t) value32;
+					self.timestamp = ts;
 					break;
+				}
 				case PART_KEY_THREAD_ID:
 					if (partType == PART_TYPE_INT32)
-						threadID = [[NSString alloc] initWithFormat:@"Thread 0x%x", value32];
+						self.threadID = [[NSString alloc] initWithFormat:@"Thread 0x%x", value32];
 					else if (partType == PART_TYPE_INT64)
-						threadID = [[NSString alloc] initWithFormat:@"Thread 0x%qx", value64];
+						self.threadID = [[NSString alloc] initWithFormat:@"Thread 0x%qx", value64];
 					else if (partType == PART_TYPE_STRING)
-						threadID = [part retain];
+						self.threadID = part;
 					else
-						threadID = @"";
+						self.threadID = @"";
 					break;
 				case PART_KEY_TAG:
 					self.tag = (NSString *)part;
 					break;
 				case PART_KEY_LEVEL:
 					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
-						level = (short)value32;
+						self.level = (short)value32;
 					else if (partType == PART_TYPE_INT64)
-						level = (short)value64;
+						self.level = (short)value64;
 					break;
 				case PART_KEY_MESSAGE:
 					self.message = part;
 					if (partType == PART_TYPE_STRING)
-						contentsType = kMessageString;
+						self.contentsType = kMessageString;
 					else if (partType == PART_TYPE_BINARY)
-						contentsType = kMessageData;
+						self.contentsType = kMessageData;
 					else if (partType == PART_TYPE_IMAGE)
-						contentsType = kMessageImage;
+						self.contentsType = kMessageImage;
 					break;
 				case PART_KEY_IMAGE_WIDTH:
 					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
-						imageSize.width = value32;
+						self.imageSize = NSMakeSize(value32, self.imageSize.height);
 					else if (partType == PART_TYPE_INT64)
-						imageSize.width = value64;
+						self.imageSize = NSMakeSize(value64, self.imageSize.height);
 					break;
 				case PART_KEY_IMAGE_HEIGHT:
 					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
-						imageSize.height = value32;
+						self.imageSize = NSMakeSize(self.imageSize.width, value32);
 					else if (partType == PART_TYPE_INT64)
-						imageSize.height = value64;
+						self.imageSize = NSMakeSize(self.imageSize.width,value64);
 					break;
 				case PART_KEY_FILENAME:
 					if (part != nil)
@@ -155,26 +170,24 @@
 					break;
 				case PART_KEY_LINENUMBER:
 					if (partType == PART_TYPE_INT16 || partType == PART_TYPE_INT32)
-						lineNumber = value32;
+						self.lineNumber = value32;
 					else if (partType == PART_TYPE_INT64)
-						lineNumber = (int)value64;
+						self.lineNumber = (int)value64;
 					break;
 				default: {
 					// all other keys are automatically added to the parts dictionary
-					if (parts == nil)
-						parts = [[NSMutableDictionary alloc] init];
+					if (self.parts == nil)
+						self.parts = [[NSMutableDictionary alloc] init];
 					NSNumber *partKeyNumber = [[NSNumber alloc] initWithUnsignedInteger:partKey];
 					if (partType == PART_TYPE_INT32)
 						part = [[NSNumber alloc] initWithInteger:value32];
 					else if (partType == PART_TYPE_INT64)
 						part = [[NSNumber alloc] initWithUnsignedLongLong:value64];
 					if (part != nil)
-						[parts setObject:part forKey:partKeyNumber];
-					[partKeyNumber release];
+						((NSMutableDictionary *) self.parts)[partKeyNumber] = part;
 					break;
 				}
 			}
-			[part release];
 		}
 	}
 #if 0

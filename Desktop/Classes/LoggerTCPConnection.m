@@ -39,8 +39,8 @@
 {
 	if ((self = [super initWithAddress:anAddress]) != nil)
 	{
-		readStream = [anInputStream retain];
-        writeStream = [anOutputStream retain];
+		readStream = anInputStream;
+        writeStream = anOutputStream;
 
 		tmpBufSize = TMP_BUF_SIZE;
 		tmpBuf = (uint8_t *)malloc(TMP_BUF_SIZE);
@@ -55,10 +55,8 @@
 - (void)dealloc
 {
 	assert(readStream == nil);
-	[buffer release];
 	if (tmpBuf != NULL)
 		free(tmpBuf);
-	[super dealloc];
 }
 
 - (void)shutdown
@@ -67,16 +65,14 @@
     {
         [writeStream close];
         [writeStream setDelegate:nil];
-        [writeStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [writeStream release];
-        writeStream = nil;
-    }
+        [writeStream removeFromRunLoop:NSRunLoop.currentRunLoop forMode:NSDefaultRunLoopMode];
+		writeStream = nil;
+	}
 	if (readStream != nil)
 	{
 		[readStream close];
 		[readStream setDelegate:nil];
-		[readStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-		[readStream release];
+		[readStream removeFromRunLoop:NSRunLoop.currentRunLoop forMode:NSDefaultRunLoopMode];
 		readStream = nil;
 	}
 	[buffer setLength:0];

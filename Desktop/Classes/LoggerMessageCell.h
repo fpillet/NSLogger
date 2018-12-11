@@ -35,19 +35,6 @@
 static NSMutableDictionary *sDefaultAttributes = nil;
 
 @interface LoggerMessageCell : NSCell
-{
-	LoggerMessage *message;
-	LoggerMessage *previousMessage;
-	
-	NSDictionary *messageAttributes;
-
-	// unused
-//	CGFloat timestampColumnWidth;
-//	CGFloat threadIDColumnWidth;
-	
-	BOOL shouldShowFunctionNames;
-    BOOL modifyingThreadColumnWidth;
-}
 
 @property (nonatomic, retain) LoggerMessage *message;
 @property (nonatomic, retain) LoggerMessage *previousMessage;

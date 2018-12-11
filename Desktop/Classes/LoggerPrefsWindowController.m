@@ -71,21 +71,17 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 @implementation LoggerPrefsWindowController
 
-@synthesize advancedColors = _advancedColors;
-@synthesize advancedColorsArrayController;
-@synthesize advancedColorsTableView;
-
 - (id)initWithWindowNibName:(NSString *)windowNibName
 {
 	if ((self = [super initWithWindowNibName:windowNibName]) != nil)
 	{
 		// Extract current prefs for bindings. We don't want to rely on a global NSUserDefaultsController
-		networkPrefs = [self copyNetworkPrefs];
+		_networkPrefs = [self copyNetworkPrefs];
 
 		// make a deep copy of default attributes by going back and forth with
 		// an archiver
 		NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributes]];
-		attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
+		_attributes = [NSKeyedUnarchiver unarchiveObjectWithData:data];
         _advancedColors = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"]];
 	}
 	return self;
@@ -93,22 +89,18 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (void)dealloc
 {
-	[fakeConnection release];
-	[attributes release];
-	[networkPrefs release];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSControlTextDidEndEditingNotification object:nil];
-	[super dealloc];
 }
 
 - (NSMutableDictionary *)copyNetworkPrefs
 {
 	NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-	return [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-			[ud objectForKey:kPrefPublishesBonjourService], kPrefPublishesBonjourService,
-			[ud objectForKey:kPrefBonjourServiceName], kPrefBonjourServiceName,
-			[ud objectForKey:kPrefHasDirectTCPIPResponder], kPrefHasDirectTCPIPResponder,
-			[ud objectForKey:kPrefDirectTCPIPResponderPort], kPrefDirectTCPIPResponderPort,
-			nil];
+	return [@{
+		kPrefPublishesBonjourService: [ud objectForKey:kPrefPublishesBonjourService],
+		kPrefBonjourServiceName: [ud objectForKey:kPrefBonjourServiceName],
+		kPrefHasDirectTCPIPResponder: [ud objectForKey:kPrefHasDirectTCPIPResponder],
+		kPrefDirectTCPIPResponderPort: [ud objectForKey:kPrefDirectTCPIPResponderPort]
+	} mutableCopy];
 }
 
 - (void)awakeFromNib
@@ -127,7 +119,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	}
 	prevMsg.timestamp = tv;
 
-	fakeConnection = [[LoggerConnection alloc] init];
+	_fakeConnection = [[LoggerConnection alloc] init];
 
 	LoggerMessage *msg = [[LoggerMessage alloc] init];
 	msg.timestamp = tv;
@@ -136,18 +128,16 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	msg.threadID = @"Main thread";
 	msg.level = 0;
 	msg.contentsType = kMessageString;
-	msg.cachedCellSize = sampleMessage.frame.size;
-	[msg setFilename:@"file.m" connection:fakeConnection];
+	msg.cachedCellSize = _sampleMessage.frame.size;
+	[msg setFilename:@"file.m" connection:_fakeConnection];
 	msg.lineNumber = 100;
-	[msg setFunctionName:@"-[MyClass aMethod:withParameters:]" connection:fakeConnection];
+	[msg setFunctionName:@"-[MyClass aMethod:withParameters:]" connection:_fakeConnection];
 
 	LoggerMessageCell *cell = [[LoggerMessageCell alloc] init];
 	cell.message = msg;
 	cell.previousMessage = prevMsg;
 	cell.shouldShowFunctionNames = YES;
-	[sampleMessage setCell:cell];
-	[cell release];
-	[msg release];
+	[_sampleMessage setCell:cell];
 
 	uint8_t bytes[32];
 	for (int i = 0; i < sizeof(bytes); i++)
@@ -161,17 +151,14 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	msg.threadID = @"Main thread";
 	msg.level = 1;
 	msg.contentsType = kMessageData;
-	msg.cachedCellSize = sampleDataMessage.frame.size;
+	msg.cachedCellSize = _sampleDataMessage.frame.size;
 	cell.message = msg;
 	cell.previousMessage = prevMsg;
-	[sampleDataMessage setCell:cell];
-	[cell release];
-	[msg release];
-	[prevMsg release];
+	[_sampleDataMessage setCell:cell];
 
 	[self updateUI];
-	[sampleMessage setNeedsDisplay];
-	[sampleDataMessage setNeedsDisplay];
+	[_sampleMessage setNeedsDisplay];
+	[_sampleDataMessage setNeedsDisplay];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(editingDidEnd:) name:NSControlTextDidEndEditingNotification object:nil];
 }
@@ -179,9 +166,9 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 - (BOOL)hasNetworkChanges
 {
 	// Check whether attributes or network settings have changed
-	for (NSString *key in networkPrefs)
+	for (NSString *key in self.networkPrefs)
 	{
-		if (![[[NSUserDefaults standardUserDefaults] objectForKey:key] isEqual:[networkPrefs objectForKey:key]])
+		if (![[[NSUserDefaults standardUserDefaults] objectForKey:key] isEqual:self.networkPrefs[key]])
 			return YES;
 	}
 	return NO;
@@ -189,7 +176,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (BOOL)hasFontChanges
 {
-	return (NO == [[LoggerMessageCell defaultAttributes] isEqual:attributes]);
+	return ![LoggerMessageCell.defaultAttributes isEqual:self.attributes];
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +185,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 // -----------------------------------------------------------------------------
 - (BOOL)windowShouldClose:(id)sender
 {
-	if (![networkDefaultsController commitEditing])
+	if (![self.networkDefaultsController commitEditing])
 		return NO;
 	if ([self hasNetworkChanges] || [self hasFontChanges])
 	{
@@ -211,7 +198,6 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 						  modalDelegate:self
 						 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
 							contextInfo:NULL];
-		[alert release];
 		return NO;
 	}
 	return YES;
@@ -247,22 +233,22 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 // -----------------------------------------------------------------------------
 - (IBAction)restoreNetworkDefaults:(id)sender
 {
-	[networkDefaultsController commitEditing];
+	[self.networkDefaultsController commitEditing];
 	NSDictionary *dict = [LoggerAppDelegate defaultPreferences];
 	for (NSString *key in dict)
 	{
-		if ([networkPrefs objectForKey:key] != nil)
-			[[networkDefaultsController selection] setValue:[dict objectForKey:key] forKey:key];
+		if (self.networkPrefs[key] != nil)
+			[[self.networkDefaultsController selection] setValue:dict[key] forKey:key];
 	}
 }
 
 - (void)applyNetworkChanges:(id)sender
 {
-	if ([networkDefaultsController commitEditing])
+	if ([self.networkDefaultsController commitEditing])
 	{
 		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-		for (NSString *key in [networkPrefs allKeys])
-			[ud setObject:[networkPrefs objectForKey:key] forKey:key];
+		for (NSString *key in [self.networkPrefs allKeys])
+			[ud setObject:self.networkPrefs[key] forKey:key];
 		[ud synchronize];
 		[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
 	}
@@ -274,20 +260,19 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 // -----------------------------------------------------------------------------
 - (IBAction)applyFontChanges:(id)sender
 {
-	[[LoggerMessageCell class] setDefaultAttributes:attributes];
+	[[LoggerMessageCell class] setDefaultAttributes:self.attributes];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
 }
 
 - (IBAction)restoreFontDefaults:(id)sender
 {
-	[attributes release];
 	NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[LoggerMessageCell defaultAttributesDictionary]];
-	attributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
-	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
-	[sampleMessage setNeedsDisplay];
-	[sampleDataMessage setNeedsDisplay];
+	self.attributes = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+	((LoggerMessageCell *)[self.sampleMessage cell]).messageAttributes = self.attributes;
+	((LoggerMessageCell *)[self.sampleDataMessage cell]).messageAttributes = self.attributes;
+	[self.sampleMessage setNeedsDisplay];
+	[self.sampleDataMessage setNeedsDisplay];
 	[self updateUI];
 }
 
@@ -296,7 +281,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
     if (@available(macOS 10_10, *)) {
         color = @"labelColor";
     }
-    return [[[NSMutableDictionary alloc] initWithObjects:@[@"Any line", @"^.+$", color] forKeys:@[@"comment", @"regexp", @"colors"]] autorelease];
+    return [@{@"comment": @"Any line", @"regexp": @"^.+$", @"colors": color} mutableCopy];
 }
 
 - (IBAction)advancedColorsAdd:(id)sender {
@@ -318,25 +303,25 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 - (NSFont *)fontForCurrentFontSelection
 {
 	NSFont *font;
-	switch (currentFontSelection)
+	switch (self.currentFontSelection)
 	{
 		case kTimestampFont:
-			font = [[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"timestamp"] objectForKey:NSFontAttributeName];
 			break;
 		case kThreadIDFont:
-			font = [[attributes objectForKey:@"threadID"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"threadID"] objectForKey:NSFontAttributeName];
 			break;
 		case kTagAndLevelFont:
-			font = [[attributes objectForKey:@"tag"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"tag"] objectForKey:NSFontAttributeName];
 			break;
 		case kDataFont:
-			font = [[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"data"] objectForKey:NSFontAttributeName];
 			break;
 		case kFileFunctionFont:
-			font = [[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"fileLineFunction"] objectForKey:NSFontAttributeName];
 			break;
 		default:
-			font = [[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName];
+			font = [self.attributes[@"text"] objectForKey:NSFontAttributeName];
 			break;
 	}
 	return font;	
@@ -344,7 +329,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (IBAction)selectFont:(id)sender
 {
-	currentFontSelection = (int)[(NSView *)sender tag];
+	self.currentFontSelection = (int)[(NSView *)sender tag];
 	[[NSFontManager sharedFontManager] setTarget:self];
 	[[NSFontPanel sharedFontPanel] setPanelFont:[self fontForCurrentFontSelection] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
@@ -376,48 +361,48 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 	}
 	if (dictName != nil)
 	{
-		[[attributes objectForKey:dictName] setObject:[sender color] forKey:attrName];
+		[self.attributes[dictName] setObject:[sender color] forKey:attrName];
 		if (dictName2 != nil)
-			[[attributes objectForKey:dictName2] setObject:[sender color] forKey:attrName];
-		((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
-		((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
-		[sampleMessage setNeedsDisplay];
-		[sampleDataMessage setNeedsDisplay];
+			[self.attributes[dictName2] setObject:[sender color] forKey:attrName];
+		((LoggerMessageCell *)[self.sampleMessage cell]).messageAttributes = self.attributes;
+		((LoggerMessageCell *)[self.sampleDataMessage cell]).messageAttributes = self.attributes;
+		[self.sampleMessage setNeedsDisplay];
+		[self.sampleDataMessage setNeedsDisplay];
 	}
 }
 
 - (void)changeFont:(id)sender
 {
     NSFont *newFont = [sender convertFont:[self fontForCurrentFontSelection]];
-	switch (currentFontSelection)
+	switch (self.currentFontSelection)
 	{
 		case kTimestampFont:
-			[[attributes objectForKey:@"timestamp"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"timedelta"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"timestamp"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"timedelta"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		case kThreadIDFont:
-			[[attributes objectForKey:@"threadID"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"threadID"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		case kTagAndLevelFont:
-			[[attributes objectForKey:@"tag"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"level"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"tag"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"level"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		case kDataFont:
-			[[attributes objectForKey:@"data"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"data"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		case kFileFunctionFont:
-			[[attributes objectForKey:@"fileLineFunction"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"fileLineFunction"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		default: {
-			[[attributes objectForKey:@"text"] setObject:newFont forKey:NSFontAttributeName];
-			[[attributes objectForKey:@"mark"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"text"] setObject:newFont forKey:NSFontAttributeName];
+			[self.attributes[@"mark"] setObject:newFont forKey:NSFontAttributeName];
 			break;
 		}
 	}
-	((LoggerMessageCell *)[sampleMessage cell]).messageAttributes = attributes;
-	((LoggerMessageCell *)[sampleDataMessage cell]).messageAttributes = attributes;
-	[sampleMessage setNeedsDisplay];
-	[sampleDataMessage setNeedsDisplay];
+	((LoggerMessageCell *)[self.sampleMessage cell]).messageAttributes = self.attributes;
+	((LoggerMessageCell *)[self.sampleDataMessage cell]).messageAttributes = self.attributes;
+	[self.sampleMessage setNeedsDisplay];
+	[self.sampleDataMessage setNeedsDisplay];
 	[self updateUI];
 }
 
@@ -428,7 +413,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (void)updateColor:(NSColorWell *)well ofDict:(NSString *)dictName attribute:(NSString *)attrName
 {
-	NSColor *color = [[attributes objectForKey:dictName] objectForKey:attrName];
+	NSColor *color = [self.attributes[dictName] objectForKey:attrName];
 	if (color == nil)
 	{
 		if ([attrName isEqualToString:NSForegroundColorAttributeName])
@@ -441,20 +426,20 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (void)updateUI
 {
-	[timestampFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"timestamp"] objectForKey:NSFontAttributeName]]];
-	[threadIDFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"threadID"] objectForKey:NSFontAttributeName]]];
-	[tagFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"tag"] objectForKey:NSFontAttributeName]]];
-	[textFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"text"] objectForKey:NSFontAttributeName]]];
-	[dataFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"data"] objectForKey:NSFontAttributeName]]];
-	[fileFunctionFontName setStringValue:[self fontNameForFont:[[attributes objectForKey:@"fileLineFunction"] objectForKey:NSFontAttributeName]]];
+	[self.timestampFontName setStringValue:[self fontNameForFont:[self.attributes[@"timestamp"] objectForKey:NSFontAttributeName]]];
+	[self.threadIDFontName setStringValue:[self fontNameForFont:[self.attributes[@"threadID"] objectForKey:NSFontAttributeName]]];
+	[self.tagFontName setStringValue:[self fontNameForFont:[self.attributes[@"tag"] objectForKey:NSFontAttributeName]]];
+	[self.textFontName setStringValue:[self fontNameForFont:[self.attributes[@"text"] objectForKey:NSFontAttributeName]]];
+	[self.dataFontName setStringValue:[self fontNameForFont:[self.attributes[@"data"] objectForKey:NSFontAttributeName]]];
+	[self.fileFunctionFontName setStringValue:[self fontNameForFont:[self.attributes[@"fileLineFunction"] objectForKey:NSFontAttributeName]]];
 
-	[self updateColor:timestampForegroundColor ofDict:@"timestamp" attribute:NSForegroundColorAttributeName];
-	[self updateColor:threadIDForegroundColor ofDict:@"threadID" attribute:NSForegroundColorAttributeName];
-	[self updateColor:tagLevelForegroundColor ofDict:@"tag" attribute:NSForegroundColorAttributeName];
-	[self updateColor:textForegroundColor ofDict:@"text" attribute:NSForegroundColorAttributeName];
-	[self updateColor:dataForegroundColor ofDict:@"data" attribute:NSForegroundColorAttributeName];
-	[self updateColor:fileFunctionForegroundColor ofDict:@"fileLineFunction" attribute:NSForegroundColorAttributeName];
-	[self updateColor:fileFunctionBackgroundColor ofDict:@"fileLineFunction" attribute:NSBackgroundColorAttributeName];
+	[self updateColor:self.timestampForegroundColor ofDict:@"timestamp" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.threadIDForegroundColor ofDict:@"threadID" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.tagLevelForegroundColor ofDict:@"tag" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.textForegroundColor ofDict:@"text" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.dataForegroundColor ofDict:@"data" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.fileFunctionForegroundColor ofDict:@"fileLineFunction" attribute:NSForegroundColorAttributeName];
+	[self updateColor:self.fileFunctionBackgroundColor ofDict:@"fileLineFunction" attribute:NSBackgroundColorAttributeName];
 }
 
 - (void)commitAdvancedColorsChanges

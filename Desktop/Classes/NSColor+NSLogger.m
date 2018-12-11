@@ -13,7 +13,7 @@
 - (BOOL)_setBold:(NSInteger)bold {
     static BOOL _bold = NO;
     if (bold >= 0) {
-        _bold = bold;
+        _bold = (BOOL) bold;
     }
     return _bold;
 }

@@ -30,14 +30,10 @@
  */
 
 @interface LoggerTableView : NSTableView
-{
-	NSTrackingArea *tableTrackingArea;
-	NSTrackingArea *timestampSeparatorTrackingArea;
-	NSTrackingArea *threadSeparatorTrackingArea;
 
-	CGFloat timestampColumnWidth;
-	CGFloat threadIDColumnWidth;
-}
+@property (nonatomic, retain) NSTrackingArea *tableTrackingArea;
+@property (nonatomic, retain) NSTrackingArea *timestampSeparatorTrackingArea;
+@property (nonatomic, retain) NSTrackingArea *threadSeparatorTrackingArea;
 
 @property (nonatomic, assign) CGFloat timestampColumnWidth;
 @property (nonatomic, assign) CGFloat threadIDColumnWidth;

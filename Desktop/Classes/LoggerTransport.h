@@ -32,21 +32,13 @@
 
 @class LoggerConnection;
 
-@interface LoggerTransport : NSObject 
-{
-	NSMutableArray *connections;
-	NSString *failureReason;
-	BOOL secure;
-	BOOL active;
-	BOOL ready;
-	BOOL failed;
-}
+@interface LoggerTransport : NSObject
 
 @property (nonatomic, assign) BOOL secure;
-@property (nonatomic, readonly) BOOL active;
-@property (nonatomic, readonly) BOOL failed;
-@property (nonatomic, readonly) BOOL ready;
-@property (nonatomic, readonly) NSMutableArray *connections;
+@property (nonatomic, assign) BOOL active;
+@property (nonatomic, assign) BOOL failed;
+@property (nonatomic, assign) BOOL ready;
+@property (nonatomic, readonly, retain) NSMutableArray *connections;
 @property (nonatomic, retain) NSString *failureReason;
 
 - (void)startup;

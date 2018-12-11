@@ -35,36 +35,26 @@
 
 @implementation LoggerTransport
 
-@synthesize connections;
-@synthesize secure, active, ready, failed, failureReason;
-
 - (id)init
 {
 	if ((self = [super init]) != nil)
 	{
-		connections = [[NSMutableArray alloc] init];
+		_connections = [[NSMutableArray alloc] init];
 	}
 	return self;
 }
 
-- (void)dealloc
-{
-	[failureReason release];
-	[connections release];
-	[super dealloc];
-}
-
 - (void)addConnection:(LoggerConnection *)aConnection
 {
-	[connections addObject:aConnection];
+	[self.connections addObject:aConnection];
 }
 
 - (void)removeConnection:(LoggerConnection *)aConnection
 {
-	if ([connections containsObject:aConnection])
+	if ([self.connections containsObject:aConnection])
 	{
 		[aConnection shutdown];
-		[connections removeObject:aConnection];
+		[self.connections removeObject:aConnection];
 	}
 }
 

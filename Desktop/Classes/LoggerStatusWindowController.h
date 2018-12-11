@@ -32,11 +32,9 @@
 @class LoggerTransportStatusCell;
 
 @interface LoggerStatusWindowController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
-{
-	LoggerTransportStatusCell *transportStatusCell;
-	
-	IBOutlet NSTableView *statusTable;
-}
+
+@property (nonatomic, retain) LoggerTransportStatusCell *transportStatusCell;
+@property (nonatomic, retain) IBOutlet NSTableView *statusTable;
 
 @end
 

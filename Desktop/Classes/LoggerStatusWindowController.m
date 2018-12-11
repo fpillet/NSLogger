@@ -40,14 +40,12 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 
 - (void)dealloc
 {
-	[transportStatusCell release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[super dealloc];
 }
 
 - (void)windowDidLoad
 {
-	transportStatusCell = [[LoggerTransportStatusCell alloc] init];
+	self.transportStatusCell = [[LoggerTransportStatusCell alloc] init];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(showStatus:)
@@ -60,7 +58,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 - (void)showStatus:(NSNotification *)notification
 {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[statusTable reloadData];
+		[self.statusTable reloadData];
 	});
 }
 
@@ -72,7 +70,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 - (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
 	if (row < [((LoggerAppDelegate *)[NSApp delegate]).transports count])
-		return transportStatusCell;
+		return self.transportStatusCell;
 	return nil;
 }
 
@@ -94,7 +92,7 @@ NSString * const kShowStatusInStatusWindowNotification = @"ShowStatusInStatusWin
 {
 	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
 	if (rowIndex >= 0 && rowIndex < [transports count])
-		return [NSNumber numberWithInteger:rowIndex];
+		return @(rowIndex);
 	return nil;
 }
 

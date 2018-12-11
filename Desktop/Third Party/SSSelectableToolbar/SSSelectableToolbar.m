@@ -18,18 +18,11 @@
 {
 	if (self = [super initWithIdentifier:identifier])
 	{
-		blankView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
+		_blankView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
 	}
 	return self;
 }
 
-- (void) dealloc
-{
-	[blankView release];
-	[window release];
-	[super dealloc];
-
-}
 -(IBAction)toolbarItemClicked:sender
 {
 	// this is really only here so I can set up a target / action which makes button clickable
@@ -99,7 +92,7 @@
 			winFrame.size.width = newFrame.size.width;
 			winFrame.size.height = newFrame.size.height + toolbarHeight;
 			winFrame.origin.y -=  NSHeight(winFrame) - NSHeight(oldWinFrame);
-			[window setContentView:blankView];
+			[window setContentView:self.blankView];
 			[window setFrame:winFrame display:YES animate:YES];
 			[window setContentView:view];
 			

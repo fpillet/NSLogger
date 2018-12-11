@@ -38,7 +38,7 @@
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
 	NSArray *transports = ((LoggerAppDelegate *)[NSApp delegate]).transports;
-	LoggerTransport *transport = [transports objectAtIndex:[[self objectValue] integerValue]];
+	LoggerTransport *transport = transports[[[self objectValue] unsignedIntegerValue]];
 
 	BOOL highlighted = [self isHighlighted];
 
@@ -59,15 +59,15 @@
 		szSSL = [sslImg size];
 	if (!transport.secure)
 		sslImg = nil;
-	CGFloat w = fmaxf(szSSL.width, sz.width) + 10;
+	CGFloat w = fmaxf((float) szSSL.width, (float) sz.width) + 10;
 
 	if (img != nil)
 	{
 		CGFloat h = sz.height;
 		if (sslImg)
 			h += szSSL.height;
-		[img drawInRect:NSMakeRect(NSMinX(cellFrame) + floorf((w - sz.width) / 2.0f),
-								   NSMinY(cellFrame) + floorf((NSHeight(cellFrame) - h) / 2.0f),
+		[img drawInRect:NSMakeRect(NSMinX(cellFrame) + floorf((float) ((w - sz.width) / 2.0f)),
+								   NSMinY(cellFrame) + floorf((float) ((NSHeight(cellFrame) - h) / 2.0f)),
 								   sz.width,
 								   sz.height)
 			   fromRect:NSMakeRect(0, 0, sz.width, sz.height)
@@ -77,8 +77,8 @@
 				  hints:nil];
 		if (sslImg != nil)
 		{
-			[sslImg drawInRect:NSMakeRect(NSMinX(cellFrame) + floorf((w - szSSL.width) / 2.0f),
-										  NSMinY(cellFrame) + floorf((NSHeight(cellFrame)-h) / 2.0f) + sz.height + 3,
+			[sslImg drawInRect:NSMakeRect(NSMinX(cellFrame) + floorf((float) ((w - szSSL.width) / 2.0f)),
+										  NSMinY(cellFrame) + floorf((float) ((NSHeight(cellFrame)-h) / 2.0f)) + sz.height + 3,
 										  szSSL.width,
 										  szSSL.height)
 					  fromRect:NSMakeRect(0, 0, szSSL.width, szSSL.height)
@@ -96,11 +96,11 @@
 	NSFont *statusFont = [NSFont systemFontOfSize:[NSFont systemFontSize] - 2];
 	
 	NSColor *textColor = (highlighted ? [NSColor grayColor] : [NSColor textColor]);
-	NSDictionary *descAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-							   descFont, NSFontAttributeName,
-							   textColor, NSForegroundColorAttributeName,
-							   [NSColor clearColor], NSBackgroundColorAttributeName,
-							   nil];
+	NSDictionary *descAttrs = @{
+		NSFontAttributeName: descFont,
+		NSForegroundColorAttributeName: textColor,
+		NSBackgroundColorAttributeName: [NSColor clearColor]
+	};
 	
 	if (!highlighted)
 	{
@@ -109,18 +109,18 @@
 		else
 			textColor = [NSColor grayColor];
 	}
-	NSDictionary *statusAttrs = [NSDictionary dictionaryWithObjectsAndKeys:
-								 statusFont, NSFontAttributeName,
-								 textColor, NSForegroundColorAttributeName,
-								 [NSColor clearColor], NSBackgroundColorAttributeName,
-								 nil];
+	NSDictionary *statusAttrs = @{
+		NSFontAttributeName: statusFont,
+		NSForegroundColorAttributeName: textColor,
+		NSBackgroundColorAttributeName: [NSColor clearColor]
+	};
 	
 	NSSize descSize = [desc sizeWithAttributes:descAttrs];
 	NSSize statusSize = [status sizeWithAttributes:statusAttrs];
 	
 	CGFloat h = descSize.height + statusSize.height + 2;
 	
-	NSRect r = NSMakeRect(NSMinX(cellFrame) + w, NSMinY(cellFrame) + floorf((NSHeight(cellFrame) - h) / 2.0f), NSWidth(cellFrame) - w, descSize.height);
+	NSRect r = NSMakeRect(NSMinX(cellFrame) + w, NSMinY(cellFrame) + floorf((float) ((NSHeight(cellFrame) - h) / 2.0f)), NSWidth(cellFrame) - w, descSize.height);
 	[desc drawInRect:r withAttributes:descAttrs];
 	r.origin.y += r.size.height + 2;
 	r.size.height = statusSize.height;

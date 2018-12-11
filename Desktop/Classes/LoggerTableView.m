@@ -40,14 +40,6 @@
     [self reloadData];
 }
 
-- (void)dealloc
-{
-	[tableTrackingArea release];
-	[timestampSeparatorTrackingArea release];
-	[threadSeparatorTrackingArea release];
-	[super dealloc];
-}
-
 #pragma mark -
 #pragma mark MouseOver support
 

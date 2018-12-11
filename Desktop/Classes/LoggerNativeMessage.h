@@ -33,8 +33,6 @@
 @class LoggerConnection;
 
 @interface LoggerNativeMessage : LoggerMessage
-{
-}
 
 - (id)initWithData:(NSData *)data connection:(LoggerConnection *)aConnection;
 

@@ -40,16 +40,10 @@
 @class LoggerTCPConnection;
 
 @interface LoggerTCPTransport : LoggerTransport <NSNetServiceDelegate, NSStreamDelegate>
-{
-	NSThread *listenerThread;
-	NSNetService *bonjourService;
-	CFSocketRef listenerSocket_ipv4;
-	CFSocketRef listenerSocket_ipv6;
-	NSString *bonjourServiceName;
-	NSInteger listenerPort;
-	BOOL publishBonjourService;
-}
 
+@property (nonatomic, retain) NSThread *listenerThread;
+@property (nonatomic, retain) NSNetService *bonjourService;
+@property (nonatomic, retain) NSString *bonjourServiceName;
 @property (nonatomic, assign) NSInteger listenerPort;
 @property (nonatomic, assign) BOOL publishBonjourService;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;
