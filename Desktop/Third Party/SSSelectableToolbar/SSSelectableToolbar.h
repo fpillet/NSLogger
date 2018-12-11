@@ -9,12 +9,9 @@
 #import <Cocoa/Cocoa.h>
 
 @interface SSSelectableToolbar : NSToolbar 
-{
-	NSWindow* window;
-	NSView* blankView;
-	NSInteger defaultItemIndex;
-}
+
 @property (nonatomic, retain) IBOutlet NSWindow* window;
+@property (nonatomic, retain) IBOutlet NSView* blankView;
 @property (nonatomic, assign) NSInteger defaultItemIndex;
 
 -(NSToolbarItem*)itemWithIdentifier:(NSString*)identifier;

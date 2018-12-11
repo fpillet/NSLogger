@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -36,8 +36,8 @@ NSString *StringWithTimeDelta(struct timeval *td)
 	{
 		int hrs,mn,s,ms;
 		hrs = (int)(td->tv_sec / 3600);
-		mn = (td->tv_sec % 3600) / 60;
-		s = td->tv_sec % 60;
+		mn = (int) ((td->tv_sec % 3600) / 60);
+		s = (int) (td->tv_sec % 60);
 		ms = td->tv_usec / 1000;
 		if (hrs != 0)
 			return [NSString stringWithFormat:@"+%dh %dmn %d.%03ds", hrs, mn, s, ms];

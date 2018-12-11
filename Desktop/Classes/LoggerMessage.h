@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -34,45 +34,22 @@
 @class LoggerConnection;
 
 @interface LoggerMessage : NSObject <NSCoding, NSCopying>
-{
-	struct timeval timestamp;	// seconds and microseconds
 
-	NSString *tag;				// non-retained (we use a global pool for domains)
-	NSString *filename;			// non-retained (we use a connection-attached pool for filenames)
-	NSString *functionName;		// non-retained (we use a connection-attached pool for function names)
-	NSMutableDictionary *parts;	// for non-standard parts transmitted by the clients, store the data in this dictionary
-	id message;					// NSString, NSData or image data
-	NSImage *image;				// if the message is an image, the image gets decoded once it's being accessed
-
-	NSUInteger sequence;		// message's number if order of reception
-
-	NSString *threadID;
-
-	int lineNumber;				// line number in the file, if filename != nil
-
-	short level;
-	short type;
-	short contentsType;			// the type of message data (string, data, image)
-
-	// unsaved cached data
-	NSSize imageSize;
-	NSSize cachedCellSize;		// we use this to cache the cell's height when recomputing if the width didn't change
-}
-
-@property (nonatomic, assign) short contentsType;
-@property (nonatomic, retain) NSDictionary *parts;
-@property (nonatomic, assign) struct timeval timestamp;	// full timestamp (seconds & microseconds)
-@property (nonatomic, retain) NSString *tag;
-@property (nonatomic, retain) id message;
+@property (nonatomic, assign) NSUInteger sequence;					// message's number if order of reception
+@property (nonatomic, assign) short contentsType;					// the type of message data (string, data, image)
+@property (nonatomic, retain) NSDictionary *parts;					// for non-standard parts transmitted by the clients, store the data in this dictionary
+@property (nonatomic, assign) struct timeval timestamp;				// full timestamp (seconds & microseconds)
+@property (nonatomic, assign) NSString *tag;						// non-retained (we use a global pool for tags)
+@property (nonatomic, retain) id message;							// NSString, NSData or image data
 @property (nonatomic, assign) short type;
 @property (nonatomic, assign) short level;
 @property (nonatomic, retain) NSString *threadID;
-@property (nonatomic, readonly) NSSize imageSize;
-@property (nonatomic, assign) NSSize cachedCellSize;
-@property (nonatomic, retain) NSImage *image;
+@property (nonatomic, assign) NSSize imageSize;						// (unsaved)
+@property (nonatomic, assign) NSSize cachedCellSize;				// (unsaved) we use this to cache the cell's height when recomputing if the width didn't change
+@property (nonatomic, retain) NSImage *image;						// if the message is an image, the image gets decoded once it's being accessed
 @property (nonatomic, readonly, assign) NSString *filename;
 @property (nonatomic, readonly, assign) NSString *functionName;
-@property (nonatomic, assign) int lineNumber;
+@property (nonatomic, assign) int lineNumber;						// line number in the file, if filename != nil
 
 - (void)computeTimeDelta:(struct timeval *)td since:(LoggerMessage *)previousMessage;
 - (NSString *)textRepresentation;

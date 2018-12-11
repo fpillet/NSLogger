@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -33,22 +33,14 @@
 @class LoggerConnection, LoggerTransport, LoggerStatusWindowController, LoggerPrefsWindowController;
 
 @interface LoggerAppDelegate : NSObject
-{
-	CFArrayRef serverCerts;
-	BOOL serverCertsLoadAttempted;
-	NSMutableArray *transports;
-	NSMutableArray *filterSets;
-	NSArray *filtersSortDescriptors;
-	LoggerStatusWindowController *statusController;
-	LoggerPrefsWindowController *prefsController;
-}
 
 @property (nonatomic, readonly) CFArrayRef serverCerts;
 @property (nonatomic, readonly) BOOL serverCertsLoadAttempted;
-@property (nonatomic, readonly) NSMutableArray *transports;
-@property (nonatomic, readonly) NSMutableArray *filterSets;
+@property (nonatomic, readonly, retain) NSMutableArray *transports;
+@property (nonatomic, readonly, retain) NSMutableArray *filterSets;
 @property (nonatomic, retain) NSArray *filtersSortDescriptors;
-@property (nonatomic, readonly) LoggerStatusWindowController *statusController;
+@property (nonatomic, readonly, retain) LoggerStatusWindowController *statusController;
+@property (nonatomic, readonly, retain) LoggerPrefsWindowController *prefsController;
 
 + (NSDictionary *)defaultPreferences;
 

@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,7 +28,6 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#import <Security/SecItem.h>
 #import <HockeySDK/HockeySDK.h>
 #import "LoggerAppDelegate.h"
 #import "LoggerNativeTransport.h"
@@ -59,16 +58,13 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	static NSDictionary *sDefaultPrefs = nil;
 	if (sDefaultPrefs == nil)
 	{
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		sDefaultPrefs = [[NSDictionary alloc] initWithObjectsAndKeys:
-						 //						 [NSNumber numberWithBool:NO], k
-						 [NSNumber numberWithBool:YES], kPrefPublishesBonjourService,
-						 [NSNumber numberWithBool:NO], kPrefHasDirectTCPIPResponder,
-						 [NSNumber numberWithInteger:50000], kPrefDirectTCPIPResponderPort,
-                         @"", kPrefBonjourServiceName,
-                         [NSNumber numberWithBool:YES], kPrefKeepMultipleRuns,
-						 nil];
-		[pool release];
+		sDefaultPrefs = @{
+						  kPrefPublishesBonjourService: @YES,
+						  kPrefHasDirectTCPIPResponder: @NO,
+						  kPrefDirectTCPIPResponderPort: @50000,
+						  kPrefBonjourServiceName: @"",
+						  kPrefKeepMultipleRuns: @YES
+						  };
 	}
 	return sDefaultPrefs;
 }
@@ -87,29 +83,26 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 		// default filter ordering. The first sort descriptor ensures that the object with
 		// uid 1 (the "Default Set" filter set or "All Logs" filter) is always on top. Other
 		// items are ordered by title.
-		self.filtersSortDescriptors = [NSArray arrayWithObjects:
-									   [NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES
-																	comparator:
-										^(id uid1, id uid2)
-		{
-			if ([uid1 integerValue] == 1)
-				return (NSComparisonResult)NSOrderedAscending;
-			if ([uid2 integerValue] == 1)
-				return (NSComparisonResult)NSOrderedDescending;
-			return (NSComparisonResult)NSOrderedSame;
-		}],
-									   [NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES],
-									   nil];
+		self.filtersSortDescriptors = @[
+			[NSSortDescriptor sortDescriptorWithKey:@"uid" ascending:YES comparator:
+				^(id uid1, id uid2) {
+					if ([uid1 integerValue] == 1)
+						return (NSComparisonResult) NSOrderedAscending;
+					if ([uid2 integerValue] == 1)
+						return (NSComparisonResult) NSOrderedDescending;
+					return (NSComparisonResult) NSOrderedSame;
+				}],
+			[NSSortDescriptor sortDescriptorWithKey:@"title" ascending:YES]
+		];
 		
 		// resurrect filters before the app nib loads
 		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 		NSData *filterSetsData = [defaults objectForKey:@"filterSets"];
 		if (filterSetsData != nil)
 		{
-			filterSets = [[NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData] retain];
+			filterSets = [NSKeyedUnarchiver unarchiveObjectWithData:filterSetsData];
 			if (![filterSets isKindOfClass:[NSMutableArray class]])
 			{
-				[filterSets release];
 				filterSets = nil;
 			}
 		}
@@ -132,26 +125,24 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 				// Create a default set
 				filters = [self defaultFilters];
 			}
-			NSMutableDictionary *defaultSet = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-											   NSLocalizedString(@"Default Set", @""), @"title",
-											   [NSNumber numberWithInteger:1], @"uid",
-											   filters, @"filters",
-											   nil];
-			[filterSets addObject:defaultSet];
-			[defaultSet release];
+			NSDictionary *defaultSet = @{
+										 @"title": NSLocalizedString(@"Default Set", @""),
+										 @"uid": @1,
+										 @"filters": filters
+										 };
+			[filterSets addObject:[defaultSet mutableCopy]];
 		}
 		
 		// fix for issue found by Stefan Neumärker: default filters in versions 1.0b7 were immutable,
 		// leading to a crash if the user tried to edit them
 		for (NSDictionary *dict in filterSets)
 		{
-			NSMutableArray *filters = [dict objectForKey:@"filters"];
+			NSMutableArray *filters = dict[@"filters"];
 			for (NSUInteger i = 0; i < [filters count]; i++)
 			{
-				if (![[filters objectAtIndex:i] isMemberOfClass:[NSMutableDictionary class]])
+				if (![filters[i] isMemberOfClass:[NSMutableDictionary class]])
 				{
-					[filters replaceObjectAtIndex:i
-									   withObject:[[[filters objectAtIndex:i] mutableCopy] autorelease]];
+					filters[i] = [filters[i] mutableCopy];
 				}
 			}
 		}
@@ -165,8 +156,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 {
 	if (serverCerts != NULL)
 		CFRelease(serverCerts);
-	[transports release];
-	[super dealloc];
 }
 
 - (void)saveFiltersDefinition
@@ -230,7 +219,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 {
 	// Initialize HockeyApp if properly configured
 	NSDictionary *hockeyConf = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"HockeyConf" ofType:@"plist"]];
-	NSString *hockeyAppID = [hockeyConf objectForKey:@"appID"];
+	NSString *hockeyAppID = hockeyConf[@"appID"];
 	if ([hockeyAppID isKindOfClass:[NSString class]] && [hockeyAppID length])
 	{
 		BITHockeyManager *shm = [BITHockeyManager sharedHockeyManager];
@@ -257,21 +246,18 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	t.publishBonjourService = YES;
 	t.secure = NO;
 	[transports addObject:t];
-	[t release];
 
 	// SSL Bonjour service
 	t = [[LoggerNativeTransport alloc] init];
 	t.publishBonjourService = YES;
 	t.secure = YES;
 	[transports addObject:t];
-	[t release];
 
 	// Direct TCP/IP service (SSL mandatory)
 	t = [[LoggerNativeTransport alloc] init];
 	t.listenerPort = [[NSUserDefaults standardUserDefaults] integerForKey:kPrefDirectTCPIPResponderPort];
 	t.secure = YES;
 	[transports addObject:t];
-	[t release];
 
 	// start transports
 	[self performSelector:@selector(startStopTransports) withObject:nil afterDelay:0];
@@ -321,7 +307,6 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	[docController addDocument:doc];
 	[doc makeWindowControllers];
 	[doc showWindows];
-	[doc release];
 }
 
 - (NSMutableArray *)defaultFilters
@@ -386,14 +371,14 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 	// since we're using basic NSDictionary to store filters, we add a filter
 	// identifier number so that no two filters are strictly identical -- makes
 	// things much easier wih NSArrayController
-	return [NSNumber numberWithInteger:[[filters valueForKeyPath:@"@max.uid"] integerValue] + 1];
+	return @([[filters valueForKeyPath:@"@max.uid"] integerValue] + 1);
 }
 
 - (IBAction)showPreferences:(id)sender
 {
-	if (prefsController == nil)
-		prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
-	[prefsController showWindow:sender];
+	if (_prefsController == nil)
+		_prefsController = [[LoggerPrefsWindowController alloc] initWithWindowNibName:@"LoggerPrefs"];
+	[_prefsController showWindow:sender];
 }
 
 - (IBAction)showStatus:(id)sender
@@ -503,7 +488,7 @@ NSString * const kPref_ApplicationFilterSet = @"appFilterSet";
 							 @"-batch",
 							 nil];
 			
-			NSTask *certTask = [[[NSTask alloc] init] autorelease];
+			NSTask *certTask = [[NSTask alloc] init];
 			[certTask setLaunchPath:@"/usr/bin/openssl"];
 			[certTask setCurrentDirectoryPath:tempDir];
 			[certTask setArguments:args];

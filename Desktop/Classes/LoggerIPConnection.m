@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -40,17 +40,17 @@
 	const void *address = NULL;
 	char ip[INET6_ADDRSTRLEN];
 	socklen_t size;
-	if (clientAddress.length == sizeof(struct sockaddr_in6))
+	if (self.clientAddress.length == sizeof(struct sockaddr_in6))
 	{
 		family = AF_INET6;
 		size = INET6_ADDRSTRLEN;
-		address = clientAddress.bytes + offsetof(struct sockaddr_in6, sin6_addr);
+		address = self.clientAddress.bytes + offsetof(struct sockaddr_in6, sin6_addr);
 	}
-	else if (clientAddress.length == sizeof(struct sockaddr_in))
+	else if (self.clientAddress.length == sizeof(struct sockaddr_in))
 	{
 		family = AF_INET;
 		size = INET_ADDRSTRLEN;
-		address = clientAddress.bytes + offsetof(struct sockaddr_in, sin_addr);
+		address = self.clientAddress.bytes + offsetof(struct sockaddr_in, sin_addr);
 	}
 	return address != NULL && inet_ntop(family, address, ip, size) ? @(ip) : nil;
 }

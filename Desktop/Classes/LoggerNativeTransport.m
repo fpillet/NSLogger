@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -53,23 +53,23 @@
 - (NSString *)transportInfoString
 {
 	// returns the text string displayed in the Logger Status window
-	if (publishBonjourService)
+	if (self.publishBonjourService)
 	{
-		NSString *name = bonjourServiceName;
+		NSString *name = self.bonjourServiceName;
 		if (![name length])
-			name = [bonjourService name];
+			name = [self.bonjourService name];
 		if ([name length])
 			return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (%@, port %d%s)", @"Named Bonjour transport info string"),
 					name,
-					listenerPort,
-					secure ? ", SSL" : ""];
+					self.listenerPort,
+					self.secure ? ", SSL" : ""];
 		return [NSString stringWithFormat:NSLocalizedString(@"Bonjour (port %d%s)", @"Bonjour transport (default name) info string"),
-				listenerPort,
-				secure ? ", SSL" : ""];
+				self.listenerPort,
+				self.secure ? ", SSL" : ""];
 	}
 	return [NSString stringWithFormat:NSLocalizedString(@"TCP/IP (port %d%s)", @"TCP/IP transport info string"),
-			listenerPort,
-			secure ? ", SSL" : ""];
+			self.listenerPort,
+			self.secure ? ", SSL" : ""];
 }
 
 - (NSString *)bonjourServiceName
@@ -81,7 +81,7 @@
 - (NSString *)bonjourServiceType
 {
 	// returns the Bonjour service type, depends on the exact type of service (encrypted or not)
-	return (NSString *)(secure ? LOGGER_SERVICE_TYPE_SSL : LOGGER_SERVICE_TYPE);
+	return (__bridge NSString *)(self.secure ? LOGGER_SERVICE_TYPE_SSL : LOGGER_SERVICE_TYPE);
 }
 
 - (NSInteger)tcpPort
@@ -91,7 +91,7 @@
 
 - (LoggerConnection *)connectionWithInputStream:(NSInputStream *)is outputStream:(NSOutputStream *)os clientAddress:(NSData *)addr
 {
-    return [[[LoggerTCPConnection alloc] initWithInputStream:is outputStream:os clientAddress:addr] autorelease];
+    return [[LoggerTCPConnection alloc] initWithInputStream:is outputStream:os clientAddress:addr];
 }
 
 - (void)processIncomingData:(LoggerTCPConnection *)cnx
@@ -118,7 +118,7 @@
 			// we receive a ClientInfo message only when the client connects. Once we get this message,
 			// the connection is considered being "live" (we need to wait a bit to let SSL negotiation to
 			// take place, and not open a window if it fails).
-			LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(NSData *) subset connection:cnx];
+			LoggerMessage *message = [[LoggerNativeMessage alloc] initWithData:(__bridge NSData *) subset connection:cnx];
 			CFRelease(subset);
 			if (message.type == LOGMSG_TYPE_CLIENTINFO)
 			{
@@ -131,7 +131,6 @@
 			{
 				[msgs addObject:message];
 			}
-			[message release];
 		}
 		[cnx.buffer replaceBytesInRange:NSMakeRange(0, length + 4) withBytes:NULL length:0];
 		bufferLength = [cnx.buffer length];
@@ -144,16 +143,16 @@
 - (NSString *)clientInfoStringForMessage:(LoggerMessage *)message
 {
 	NSDictionary *parts = message.parts;
-	NSString *clientName = [parts objectForKey:@(PART_KEY_CLIENT_NAME)];
-	NSString *clientVersion = [parts objectForKey:@(PART_KEY_CLIENT_VERSION)];
+	NSString *clientName = parts[@(PART_KEY_CLIENT_NAME)];
+	NSString *clientVersion = parts[@(PART_KEY_CLIENT_VERSION)];
 	NSString *clientAppInfo = @"";
 	if ([clientName length])
 		clientAppInfo = [NSString stringWithFormat:NSLocalizedString(@"Client connected: %@ %@", @""),
 						 clientName,
 						 clientVersion ? clientVersion : @""];
 
-	NSString *osName = [parts objectForKey:@(PART_KEY_OS_NAME)];
-	NSString *osVersion = [parts objectForKey:@(PART_KEY_OS_VERSION)];
+	NSString *osName = parts[@(PART_KEY_OS_NAME)];
+	NSString *osVersion = parts[@(PART_KEY_OS_VERSION)];
 	NSString *osInfo = @"";
 	if ([osName length])
 		osInfo = [NSString stringWithFormat:NSLocalizedString(@"%@ (%@ %@)", @""),
@@ -161,12 +160,12 @@
 				  osName,
 				  osVersion ? osVersion : @""];
 
-	NSString *hardware = [parts objectForKey:@(PART_KEY_CLIENT_MODEL)];
+	NSString *hardware = parts[@(PART_KEY_CLIENT_MODEL)];
 	NSString *hardwareInfo = @"";
 	if ([hardware length])
 		hardwareInfo = [NSString stringWithFormat:NSLocalizedString(@"\nHardware: %@", @""), hardware];
 
-	NSString *uniqueID = [parts objectForKey:@(PART_KEY_UNIQUEID)];
+	NSString *uniqueID = parts[@(PART_KEY_UNIQUEID)];
 	NSString *uniqueIDString = @"";
 	if ([uniqueID length])
 		uniqueIDString = [NSString stringWithFormat:NSLocalizedString(@"\nUDID: %@", @""), uniqueID];
@@ -214,13 +213,11 @@
 
 		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
 		[s appendString:str];
-		[str release];
 
 		dataLen -= i;
 		offset += i;
 	}
 	NSLog(@"Received bytes:\n%@", s);
-	[s release];
 }
 
 @end

@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -28,32 +28,28 @@
  * SOFTWARE,   EVEN  IF   ADVISED  OF   THE  POSSIBILITY   OF  SUCH   DAMAGE.
  * 
  */
-#include <time.h>
 #import "LoggerMessageCell.h"
 #import "LoggerMessage.h"
 #import "LoggerUtils.h"
 #import "LoggerWindowController.h"
 #import "NSColor+NSLogger.h"
 
-#define MAX_DATA_LINES				16				// max number of data lines to show
+#define MAX_DATA_LINES                16                // max number of data lines to show
 
-#define MINIMUM_CELL_HEIGHT			30.0f
-#define INDENTATION_TAB_WIDTH		10.0f			// in pixels
+#define MINIMUM_CELL_HEIGHT            30.0f
+#define INDENTATION_TAB_WIDTH        10.0f            // in pixels
 
-#define TIMESTAMP_COLUMN_WIDTH		85.0f
+#define TIMESTAMP_COLUMN_WIDTH        85.0f
 
 static NSColor *sDefaultTagAndLevelColor = nil;
 static CGFloat sMinimumHeightForCell = 0;
 static CGFloat sDefaultFileLineFunctionHeight = 0;
 static NSMutableDictionary *advancedColors = nil;
 
-NSString * const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
-NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
+NSString *const kMessageAttributesChangedNotification = @"MessageAttributesChangedNotification";
+NSString *const kMessageColumnWidthsChangedNotification = @"MessageColumnWidthsChangedNotification";
 
 @implementation LoggerMessageCell
-
-@synthesize message, previousMessage, messageAttributes, modifyingThreadColumnWidth;
-@synthesize shouldShowFunctionNames;
 
 // -----------------------------------------------------------------------------
 // Class methods
@@ -65,9 +61,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 + (NSColor *)cellStandardBgColor
 {
 	static NSColor *sColor = nil;
-    if (sColor == nil) {
-        sColor = NSColor.controlBackgroundColor;
-    }
+	if (sColor == nil)
+	{
+		sColor = NSColor.controlBackgroundColor;
+	}
 	return sColor;
 }
 
@@ -75,7 +72,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 {
 	static NSColor *sColor = nil;
 	if (sColor == nil)
-		sColor = [[NSColor colorWithCalibratedWhite:0.75 alpha:1.0] retain];
+		sColor = [NSColor colorWithCalibratedWhite:0.75 alpha:1.0];
 	return sColor;
 }
 
@@ -91,82 +88,71 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		defaultMonospacedFont = [NSFont fontWithName:@"Menlo" size:11];
 	if (defaultMonospacedFont == nil)
 		defaultMonospacedFont = [NSFont fontWithName:@"Courier" size:11];
-	
+
 	// Default text attributes
 	NSMutableDictionary *dict;
 	NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByTruncatingTail];
-	NSMutableDictionary *textAttrs = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-									  defaultFont, NSFontAttributeName,
-									  [NSColor textColor], NSForegroundColorAttributeName,
-									  style, NSParagraphStyleAttributeName,
-									  nil];
-	[style release];
-	
+	NSMutableDictionary *textAttrs = [@{
+		NSFontAttributeName: defaultFont,
+		NSForegroundColorAttributeName: [NSColor textColor],
+		NSParagraphStyleAttributeName: style
+	} mutableCopy];
+
 	// Timestamp attributes
-	[attrs setObject:textAttrs forKey:@"timestamp"];
-	
+	attrs[@"timestamp"] = textAttrs;
+
 	// Time Delta attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
-	[attrs setObject:dict forKey:@"timedelta"];
-	[dict release];
-	
+	dict[NSForegroundColorAttributeName] = NSColor.grayColor;
+	attrs[@"timedelta"] = dict;
+
 	// Thread ID attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
-	[attrs setObject:dict forKey:@"threadID"];
-	[dict release];
+	dict[NSForegroundColorAttributeName] = NSColor.grayColor;
+	attrs[@"threadID"] = dict;
 
 	// Tag and Level attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
-	[dict setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
-	[attrs setObject:dict forKey:@"tag"];
-	[attrs setObject:dict forKey:@"level"];
-	[dict release];
-	
+	dict[NSFontAttributeName] = defaultTagAndLevelFont;
+	dict[NSForegroundColorAttributeName] = NSColor.whiteColor;
+	attrs[@"tag"] = dict;
+	attrs[@"level"] = dict;
+
 	// Text message attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
-	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	dict[NSFontAttributeName] = defaultMonospacedFont;
+	style = [dict[NSParagraphStyleAttributeName] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByWordWrapping];
-	[dict setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
-	[attrs setObject:dict forKey:@"text"];
-	[dict release];
-	
+	dict[NSParagraphStyleAttributeName] = style;
+	attrs[@"text"] = dict;
+
 	// Data message attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
-	[attrs setObject:dict forKey:@"data"];
-	[dict release];
-	
+	dict[NSFontAttributeName] = defaultMonospacedFont;
+	attrs[@"data"] = dict;
+
 	// Mark attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:defaultMonospacedFont forKey:NSFontAttributeName];
-	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	dict[NSFontAttributeName] = defaultMonospacedFont;
+	style = [dict[NSParagraphStyleAttributeName] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
-	[dict setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
-	[attrs setObject:dict forKey:@"mark"];
-	[dict release];
+	dict[NSParagraphStyleAttributeName] = style;
+	attrs[@"mark"] = dict;
 
 	// File / Line / Function name attributes
 	dict = [textAttrs mutableCopy];
-	[dict setObject:defaultTagAndLevelFont forKey:NSFontAttributeName];
-    [dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+	dict[NSFontAttributeName] = defaultTagAndLevelFont;
+	dict[NSForegroundColorAttributeName] = NSColor.grayColor;
 	NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
 												   green:(233.0f / 255.0f)
 													blue:(252.0f / 255.0f)
 												   alpha:1.0f];
-	[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
-	style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	dict[NSBackgroundColorAttributeName] = fillColor;
+	style = [dict[NSParagraphStyleAttributeName] mutableCopy];
 	[style setLineBreakMode:NSLineBreakByTruncatingMiddle];
-	[dict setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
-	[attrs setObject:dict forKey:@"fileLineFunction"];
-	[dict release];
+	dict[NSParagraphStyleAttributeName] = style;
+	attrs[@"fileLineFunction"] = dict;
 
 	return attrs;
 }
@@ -177,60 +163,53 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	{
 		// Try to load the default text attributes from user defaults
 		NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:[self messageAttributeKey]];
-        if (data != nil) {
-            sDefaultAttributes = [[NSKeyedUnarchiver unarchiveObjectWithData:data] retain];
-        }
+		if (data != nil)
+		{
+			sDefaultAttributes = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+		}
 		if (sDefaultAttributes == nil)
-        {
-            [self setDefaultAttributes:[self defaultAttributesDictionary]];
-        }
+		{
+			[self setDefaultAttributes:[self defaultAttributesDictionary]];
+		}
 
 		// upgrade from pre-1.0b5, adding attributes for markers
-		if ([sDefaultAttributes objectForKey:@"mark"] == nil)
+		if (sDefaultAttributes[@"mark"] == nil)
 		{
 			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
-			NSMutableDictionary *dict = [[sDefaultAttributes objectForKey:@"text"] mutableCopy];
-			NSMutableParagraphStyle *style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+			NSMutableDictionary *dict = [sDefaultAttributes[@"text"] mutableCopy];
+			NSMutableParagraphStyle *style = [dict[NSParagraphStyleAttributeName] mutableCopy];
 			[style setAlignment:NSCenterTextAlignment];
-			[dict setObject:style forKey:NSParagraphStyleAttributeName];
-			[style release];
-			[attrs setObject:dict forKey:@"mark"];
-			[dict release];
+			dict[NSParagraphStyleAttributeName] = style;
+			attrs[@"mark"] = dict;
 			[self setDefaultAttributes:attrs];
-			[attrs release];
 		}
 
 		// update from pre-1.0b7, adding attributes for file / line / function
-		if ([sDefaultAttributes objectForKey:@"fileLineFunction"] == nil)
+		if (sDefaultAttributes[@"fileLineFunction"] == nil)
 		{
 			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
-			NSMutableDictionary *dict = [[attrs objectForKey:@"tag"] mutableCopy];
-			[dict setObject:[NSColor grayColor] forKey:NSForegroundColorAttributeName];
+			NSMutableDictionary *dict = [attrs[@"tag"] mutableCopy];
+			dict[NSForegroundColorAttributeName] = NSColor.grayColor;
 			NSColor *fillColor = [NSColor colorWithCalibratedRed:(239.0f / 255.0f)
 														   green:(233.0f / 255.0f)
 															blue:(252.0f / 255.0f)
 														   alpha:1.0f];
-			[dict setObject:fillColor forKey:NSBackgroundColorAttributeName];
-			[attrs setObject:dict forKey:@"fileLineFunction"];
-			[dict release];
+			dict[NSBackgroundColorAttributeName] = fillColor;
+			attrs[@"fileLineFunction"] = dict;
 			[self setDefaultAttributes:attrs];
-			[attrs release];
 		}
-		
+
 		// update from pre-1.0b9, setting middle truncation for file/line/function
-		NSParagraphStyle *style = [[sDefaultAttributes objectForKey:@"fileLineFunction"] objectForKey:NSParagraphStyleAttributeName];
+		NSParagraphStyle *style = [sDefaultAttributes[@"fileLineFunction"] objectForKey:NSParagraphStyleAttributeName];
 		if ([style lineBreakMode] != NSLineBreakByTruncatingMiddle)
 		{
 			NSMutableDictionary *attrs = [sDefaultAttributes mutableCopy];
-			NSMutableDictionary *dict = [[attrs objectForKey:@"fileLineFunction"] mutableCopy];
-			NSMutableParagraphStyle *style = [[dict objectForKey:NSParagraphStyleAttributeName] mutableCopy];
-			[style setLineBreakMode:NSLineBreakByTruncatingMiddle];
-			[dict setObject:style forKey:NSParagraphStyleAttributeName];
-			[style release];
-			[attrs setObject:dict forKey:@"fileLineFunction"];
-			[dict release];
+			NSMutableDictionary *dict = [attrs[@"fileLineFunction"] mutableCopy];
+			NSMutableParagraphStyle *paragraphStyle = [dict[NSParagraphStyleAttributeName] mutableCopy];
+			[paragraphStyle setLineBreakMode:NSLineBreakByTruncatingMiddle];
+			dict[NSParagraphStyleAttributeName] = paragraphStyle;
+			attrs[@"fileLineFunction"] = dict;
 			[self setDefaultAttributes:attrs];
-			[attrs release];
 		}
 	}
 	return sDefaultAttributes;
@@ -238,29 +217,31 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 + (void)setDefaultAttributes:(NSDictionary *)newAttributes
 {
-	[sDefaultAttributes release];
-	sDefaultAttributes = [newAttributes copy];
+	sDefaultAttributes = [[newAttributes copy] mutableCopy];
 	sMinimumHeightForCell = 0;
 	sDefaultFileLineFunctionHeight = 0;
 	[[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:sDefaultAttributes] forKey:[self messageAttributeKey]];
 	[[NSNotificationCenter defaultCenter] postNotificationName:kMessageAttributesChangedNotification object:nil];
 }
 
-+ (NSString *)messageAttributeKey {
-    NSString *key = @"Message Attributes";
-    if (@available(macOS 10_14, *)) {
-        // In macOS Mojave we'll have 2 sets of settings, similarly to Xcode
-        if ([NSApplication sharedApplication].effectiveAppearance == [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]) {
-            return [@"Dark " stringByAppendingString:key];
-        }
-    }
-    return key;
++ (NSString *)messageAttributeKey
+{
+	NSString *key = @"Message Attributes";
+	if (@available(macOS 10_14, *))
+	{
+		// In macOS Mojave we'll have 2 sets of settings, similarly to Xcode
+		if ([NSApplication sharedApplication].effectiveAppearance == [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua])
+		{
+			return [@"Dark " stringByAppendingString:key];
+		}
+	}
+	return key;
 }
 
 + (NSColor *)defaultTagAndLevelColor
 {
 	if (sDefaultTagAndLevelColor == nil)
-		sDefaultTagAndLevelColor = [[NSColor colorWithCalibratedRed:0.51f green:0.57f blue:0.79f alpha:1.0f] retain];
+		sDefaultTagAndLevelColor = [NSColor colorWithCalibratedRed:0.51f green:0.57f blue:0.79f alpha:1.0f];
 	return sDefaultTagAndLevelColor;
 }
 
@@ -269,161 +250,194 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	NSColor *result = nil;
 	unsigned int colorCode = 0;
 	unsigned char redByte, greenByte, blueByte;
-	
-    if ([colorString hasPrefix:@"#"]) {
-        colorString = [colorString substringFromIndex:1];
-    }
+
+	if ([colorString hasPrefix:@"#"])
+	{
+		colorString = [colorString substringFromIndex:1];
+	}
 	if (nil != colorString)
 	{
 		NSScanner *scanner = [NSScanner scannerWithString:colorString];
-		(void) [scanner scanHexInt:&colorCode];	// ignore error
+		(void) [scanner scanHexInt:&colorCode];    // ignore error
 	}
-	redByte		= (unsigned char) (colorCode >> 16);
-	greenByte	= (unsigned char) (colorCode >> 8);
-	blueByte	= (unsigned char) (colorCode);	// masks off high bits
+	redByte = (unsigned char) (colorCode >> 16);
+	greenByte = (unsigned char) (colorCode >> 8);
+	blueByte = (unsigned char) (colorCode);    // masks off high bits
 	result = [NSColor
-              colorWithCalibratedRed:		(float)redByte	/ 0xff
-              green:	(float)greenByte/ 0xff
-              blue:	(float)blueByte	/ 0xff
-              alpha:1.0];
+		colorWithCalibratedRed:(float) redByte / 0xff
+						 green:(float) greenByte / 0xff
+						  blue:(float) blueByte / 0xff
+						 alpha:1.0];
 	return result;
 }
 
 + (NSArray *)defaultAdvancedColorsPrefs
 {
-    NSDictionary *errorSpec = [@{@"comment": @"Errors",
-                                      @"regexp": @"level=0",
-                                      @"colors": @"bold red"} autorelease];
+	NSDictionary *errorSpec = @{@"comment": @"Errors",
+		@"regexp": @"level=0",
+		@"colors": @"bold red"};
 
-    NSDictionary *warningSpec = [@{@"comment": @"Warnings",
-                                   @"regexp": @"level=1",
-                                   @"colors": @"#eebb00"} autorelease];
+	NSDictionary *warningSpec = @{@"comment": @"Warnings",
+		@"regexp": @"level=1",
+		@"colors": @"#eebb00"};
 
-    NSDictionary *noiseSpec = [@{@"comment": @"Noise",
-                                   @"regexp": @"level=6",
-                                   @"colors": @"#aaaaaa"} autorelease];
+	NSDictionary *noiseSpec = @{@"comment": @"Noise",
+		@"regexp": @"level=6",
+		@"colors": @"#aaaaaa"};
 
-    return [[[NSArray alloc] initWithObjects:errorSpec, warningSpec, noiseSpec, nil] autorelease];
+	return @[errorSpec, warningSpec, noiseSpec];
 }
 
 + (NSArray *)loadAdvancedColorsPrefs
 {
-    NSArray *advancedColorsPrefs = [[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"];
+	NSArray *advancedColorsPrefs = [[NSUserDefaults standardUserDefaults] objectForKey:@"advancedColors"];
 
-    if (advancedColorsPrefs.count == 0) {
-        advancedColorsPrefs = [self defaultAdvancedColorsPrefs];
-        [[NSUserDefaults standardUserDefaults] setObject:advancedColorsPrefs
-                                                  forKey:@"advancedColors"];
-    }
+	if (advancedColorsPrefs.count == 0)
+	{
+		advancedColorsPrefs = [self defaultAdvancedColorsPrefs];
+		[[NSUserDefaults standardUserDefaults] setObject:advancedColorsPrefs
+												  forKey:@"advancedColors"];
+	}
 
-    return advancedColorsPrefs;
+	return advancedColorsPrefs;
 }
 
 + (void)loadAdvancedColors
 {
-    NSArray *advancedColorsPrefs = [self loadAdvancedColorsPrefs];
+	NSArray *advancedColorsPrefs = [self loadAdvancedColorsPrefs];
 
-    if (advancedColors) {
-        [advancedColors release];
-    }
-    advancedColors = [[NSMutableDictionary alloc] initWithCapacity:[advancedColorsPrefs count]];
-    NSError *error = nil;
-    NSRegularExpression *regexp;
-    NSColor *color;
-    BOOL isBold;
-    for(NSDictionary *colorSpec in advancedColorsPrefs) {
-        NSString *colorName = [colorSpec objectForKey:@"colors"];
-        if ([colorName hasSuffix:@"Color"]) {
-            color = [self colorFor:colorName];
-        } else {
-            colorName = [colorName lowercaseString];
-            isBold = NO;
-            if ([colorName hasPrefix:@"bold"]) {
-                colorName = [[colorName componentsSeparatedByString:@" "] objectAtIndex:1];
-                isBold = YES;
-            }
-            if ([colorName hasPrefix:@"#"]) {
-                color = [self colorFromHexRGB:colorName];
-            } else if ([colorName hasPrefix:@"blue"]) {
-                if (@available(macOS 10_10, *)) {
-                    color = NSColor.systemBlueColor;
-                } else {
-                    color = [self colorFromHexRGB:@"#0047AB"];
-                }
-            } else if ([colorName hasPrefix:@"red"]) {
-                if (@available(macOS 10_10, *)) {
-                    color = NSColor.systemRedColor;
-                } else {
-                    color = [self colorFromHexRGB:@"#DC143C"];
-                }
-            } else if ([colorName hasPrefix:@"green"]) {
-                if (@available(macOS 10_10, *)) {
-                    color = NSColor.systemGreenColor;
-                } else {
-                    color = [self colorFromHexRGB:@"#008000"];
-                }
-            } else {
-                NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
-                color = [self colorFor:selectorName];
-            }
-        }
-        regexp = [[NSRegularExpression alloc] initWithPattern:[colorSpec objectForKey:@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
-        if (! regexp) {
-            NSLog(@"** Warning: invalid regular expression '%@': %@", [colorSpec objectForKey:@"regexp"], error);
-            continue;
-        }
-        if (color == nil) {
-            NSLog(@"** Warning: unexpected color spec '%@'", colorName);
-        } else {
-			color.bold = isBold;
-			[advancedColors setObject:color forKey:regexp];
+	advancedColors = [[NSMutableDictionary alloc] initWithCapacity:[advancedColorsPrefs count]];
+	NSError *error = nil;
+	NSRegularExpression *regexp;
+	NSColor *color;
+	BOOL isBold = NO;
+	for (NSDictionary *colorSpec in advancedColorsPrefs)
+	{
+		NSString *colorName = colorSpec[@"colors"];
+		if ([colorName hasSuffix:@"Color"])
+		{
+			color = [self colorFor:colorName];
 		}
-		[regexp release];
-    }
+		else
+		{
+			colorName = [colorName lowercaseString];
+			isBold = NO;
+			if ([colorName hasPrefix:@"bold"])
+			{
+				colorName = [colorName componentsSeparatedByString:@" "][1];
+				isBold = YES;
+			}
+			if ([colorName hasPrefix:@"#"])
+			{
+				color = [self colorFromHexRGB:colorName];
+			}
+			else if ([colorName hasPrefix:@"blue"])
+			{
+				if (@available(macOS 10_10, *))
+				{
+					color = NSColor.systemBlueColor;
+				}
+				else
+				{
+					color = [self colorFromHexRGB:@"#0047AB"];
+				}
+			}
+			else if ([colorName hasPrefix:@"red"])
+			{
+				if (@available(macOS 10_10, *))
+				{
+					color = NSColor.systemRedColor;
+				}
+				else
+				{
+					color = [self colorFromHexRGB:@"#DC143C"];
+				}
+			}
+			else if ([colorName hasPrefix:@"green"])
+			{
+				if (@available(macOS 10_10, *))
+				{
+					color = NSColor.systemGreenColor;
+				}
+				else
+				{
+					color = [self colorFromHexRGB:@"#008000"];
+				}
+			}
+			else
+			{
+				NSString *selectorName = [NSString stringWithFormat:@"%@Color", colorName];
+				color = [self colorFor:selectorName];
+			}
+		}
+		regexp = [[NSRegularExpression alloc] initWithPattern:colorSpec[@"regexp"] options:NSRegularExpressionCaseInsensitive error:&error];
+		if (!regexp)
+		{
+			NSLog(@"** Warning: invalid regular expression '%@': %@", colorSpec[@"regexp"], error);
+			continue;
+		}
+		if (color == nil)
+		{
+			NSLog(@"** Warning: unexpected color spec '%@'", colorName);
+		}
+		else
+		{
+			color.bold = isBold;
+			advancedColors[regexp] = color;
+		}
+	}
 }
 
-+ (NSColor*)colorFor:(NSString*)selectorName {
-    SEL colorSelector = NSSelectorFromString(selectorName);
-    if ([NSColor respondsToSelector:colorSelector]) {
-        return [NSColor performSelector:colorSelector];
-    } else {
-        return nil;
-    }
++ (NSColor *)colorFor:(NSString *)selectorName
+{
+	SEL colorSelector = NSSelectorFromString(selectorName);
+	if ([NSColor respondsToSelector:colorSelector])
+	{
+		return [NSColor performSelector:colorSelector];
+	}
+	else
+	{
+		return nil;
+	}
 }
 
 + (NSColor *)colorForString:(NSString *)string
 {
-    if (!advancedColors) {
-        [self loadAdvancedColors];
-    }
-    NSRegularExpression *regexp;
-    NSArray *sortedRegexps = [[advancedColors allKeys] sortedArrayUsingComparator:
-                              ^NSComparisonResult(NSRegularExpression * _Nonnull regexp1,
-                                                  NSRegularExpression * _Nonnull regexp2) {
-                                  return [regexp1.pattern compare:regexp2.pattern];
-                              }];
+	if (!advancedColors)
+	{
+		[self loadAdvancedColors];
+	}
+	NSRegularExpression *regexp;
+	NSArray *sortedRegexps = [[advancedColors allKeys] sortedArrayUsingComparator:
+		^NSComparisonResult(NSRegularExpression *_Nonnull regexp1,
+							NSRegularExpression *_Nonnull regexp2) {
+			return [regexp1.pattern compare:regexp2.pattern];
+		}];
 
-    for(regexp in sortedRegexps) {
-        NSArray* chunks = [regexp matchesInString:string options:0 range:NSMakeRange(0, [string length])];
-        if ([chunks count] > 0) {
-            return [advancedColors objectForKey:regexp];
-        }
-    }
-    return nil;
+	for (regexp in sortedRegexps)
+	{
+		NSArray *chunks = [regexp matchesInString:string options:0 range:NSMakeRange(0, [string length])];
+		if ([chunks count] > 0)
+		{
+			return advancedColors[regexp];
+		}
+	}
+	return nil;
 }
 
 + (NSColor *)colorForTag:(NSString *)tag
 {
-    NSColor *color = [self colorForString:[NSString stringWithFormat:@"tag=%@", tag]];
-    if (! color ){
-        color = [self defaultTagAndLevelColor];
-    }
-    return color;
+	NSColor *color = [self colorForString:[NSString stringWithFormat:@"tag=%@", tag]];
+	if (!color)
+	{
+		color = [self defaultTagAndLevelColor];
+	}
+	return color;
 }
 
 + (NSColor *)colorForMessage:(LoggerMessage *)message
 {
-    return [self colorForString:message.description];
+	return [self colorForString:message.description];
 }
 
 #pragma mark -
@@ -435,7 +449,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	NSMutableArray *strings = [[NSMutableArray alloc] init];
 	NSUInteger offset = 0, dataLen = [data length];
 	NSString *str;
-	char buffer[6+16*3+1+16+1+1];
+	char buffer[6 + 16 * 3 + 1 + 16 + 1 + 1];
 	buffer[0] = '\0';
 	const unsigned char *q = [data bytes];
 	if (dataLen == 1)
@@ -449,34 +463,33 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			[strings addObject:NSLocalizedString(@"Double-click to see all data...", @"")];
 			break;
 		}
-		int i, b = sprintf(buffer,"%04x: ", (int)offset);
-		for (i=0; i < 16 && i < dataLen; i++)
-			sprintf(&buffer[b+3*i], "%02x ", (int)q[i]);
-		for (int j=i; j < 16; j++)
+		int i, b = sprintf(buffer, "%04x: ", (int) offset);
+		for (i = 0; i < 16 && i < dataLen; i++)
+			sprintf(&buffer[b + 3 * i], "%02x ", (int) q[i]);
+		for (int j = i; j < 16; j++)
 			strcat(buffer, "   ");
-		
-		b = (int)strlen(buffer);
+
+		b = (int) strlen(buffer);
 		buffer[b++] = '\'';
-		for (i=0; i < 16 && i < dataLen; i++, q++)
+		for (i = 0; i < 16 && i < dataLen; i++, q++)
 		{
 			if (*q >= 32 && *q < 128)
 				buffer[b++] = *q;
 			else
 				buffer[b++] = ' ';
 		}
-		for (int j=i; j < 16; j++)
+		for (int j = i; j < 16; j++)
 			buffer[b++] = ' ';
 		buffer[b++] = '\'';
 		buffer[b] = 0;
-		
+
 		str = [[NSString alloc] initWithBytes:buffer length:strlen(buffer) encoding:NSISOLatin1StringEncoding];
 		[strings addObject:str];
-		[str release];
-		
+
 		dataLen -= i;
 		offset += i;
 	}
-	return [strings autorelease];
+	return strings;
 }
 
 #pragma mark -
@@ -488,17 +501,17 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	{
 		NSRect r1 = [@"10:10:10.256" boundingRectWithSize:NSMakeSize(1024, 1024)
 												  options:NSStringDrawingUsesLineFragmentOrigin
-											   attributes:[[self defaultAttributes] objectForKey:@"timestamp"]];
+											   attributes:self.defaultAttributes[@"timestamp"]];
 		NSRect r2 = [@"+999ms" boundingRectWithSize:NSMakeSize(1024, 1024)
 											options:NSStringDrawingUsesLineFragmentOrigin
-										 attributes:[[self defaultAttributes] objectForKey:@"timedelta"]];
+										 attributes:self.defaultAttributes[@"timedelta"]];
 		NSRect r3 = [@"Main Thread" boundingRectWithSize:NSMakeSize(1024, 1024)
 												 options:NSStringDrawingUsesLineFragmentOrigin
-											  attributes:[[self defaultAttributes] objectForKey:@"threadID"]];
+											  attributes:self.defaultAttributes[@"threadID"]];
 		NSRect r4 = [@"qWTy" boundingRectWithSize:NSMakeSize(1024, 1024)
 										  options:NSStringDrawingUsesLineFragmentOrigin
-									   attributes:[[self defaultAttributes] objectForKey:@"tag"]];
-		sMinimumHeightForCell = fmaxf(NSHeight(r1) + NSHeight(r2), NSHeight(r3) + NSHeight(r4)) + 4;
+									   attributes:self.defaultAttributes[@"tag"]];
+		sMinimumHeightForCell = fmaxf((float) (NSHeight(r1) + NSHeight(r2)), (float) (NSHeight(r3) + NSHeight(r4))) + 4;
 	}
 	return sMinimumHeightForCell;
 }
@@ -509,7 +522,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	{
 		NSRect r = [@"file:100 funcQyTg" boundingRectWithSize:NSMakeSize(1024, 1024)
 													  options:NSStringDrawingUsesLineFragmentOrigin
-												   attributes:[[self defaultAttributes] objectForKey:@"fileLineFunction"]];
+												   attributes:self.defaultAttributes[@"fileLineFunction"]];
 		sDefaultFileLineFunctionHeight = NSHeight(r) + 6;
 	}
 	return sDefaultFileLineFunctionHeight;
@@ -534,7 +547,8 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 	switch (aMessage.contentsType)
 	{
-		case kMessageString: {
+		case kMessageString:
+		{
 			// restrict message length for very long contents
 			NSString *s = aMessage.message;
 			if ([s length] > 2048)
@@ -542,28 +556,30 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 			NSRect lr = [s boundingRectWithSize:sz
 										options:(NSStringDrawingOneShot | NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-									 attributes:[[self defaultAttributes] objectForKey:@"text"]];
-			sz.height = fminf(NSHeight(lr), sz.height);
+									 attributes:self.defaultAttributes[@"text"]];
+			sz.height = fminf((float) NSHeight(lr), (float) sz.height);
 			break;
 		}
 
-		case kMessageData: {
-			NSUInteger numBytes = [(NSData *)aMessage.message length];
-			int nLines = (int)(numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
+		case kMessageData:
+		{
+			NSUInteger numBytes = [(NSData *) aMessage.message length];
+			int nLines = (int) (numBytes >> 4) + ((numBytes & 15) ? 1 : 0) + 1;
 			if (nLines > MAX_DATA_LINES)
 				nLines = MAX_DATA_LINES + 1;
 			NSRect lr = [@"000:" boundingRectWithSize:sz
 											  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-										   attributes:[[self defaultAttributes] objectForKey:@"data"]];
+										   attributes:self.defaultAttributes[@"data"]];
 			sz.height = NSHeight(lr) * nLines;
 			break;
 		}
-			
-		case kMessageImage: {
+
+		case kMessageImage:
+		{
 			// approximate, compute ratio then refine height
 			NSSize imgSize = aMessage.imageSize;
-			CGFloat ratio = fmaxf(1.0f, fmaxf(imgSize.width / sz.width, imgSize.height / (sz.height / 2.0f)));
-			sz.height = ceilf(imgSize.height / ratio);
+			CGFloat ratio = fmaxf(1.0f, fmaxf((float) (imgSize.width / sz.width), (float) (imgSize.height / (sz.height / 2.0f))));
+			sz.height = ceilf((float) (imgSize.height / ratio));
 			break;
 		}
 		default:
@@ -573,9 +589,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	// If there is file / line / function information, add its height
 	if (showFunctionNames && ([aMessage.filename length] || [aMessage.functionName length]))
 		sz.height += [self heightForFileLineFunction];
-	
+
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 6, minimumHeight);
+	cellSize.height = fmaxf((float) (sz.height + 6), (float) minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -587,75 +603,67 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	LoggerMessageCell *c = [super copyWithZone:zone];
-	c->message = [message retain];
-	c->previousMessage = [previousMessage retain];
-	c->messageAttributes = [messageAttributes retain];
+	LoggerMessageCell *c = (LoggerMessageCell *) [super copyWithZone:zone];
+	c.message = self.message;
+	c.previousMessage = self.previousMessage;
+	c.messageAttributes = self.messageAttributes;
 	return c;
-}
-
-- (void)dealloc
-{
-	[message release];
-	[previousMessage release];
-	[messageAttributes release];
-	[super dealloc];
 }
 
 - (NSMutableDictionary *)timestampAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"timestamp"];
-	return [messageAttributes objectForKey:@"timestamp"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"timestamp"];
+	return [self.messageAttributes objectForKey:@"timestamp"];
 }
 
 - (NSMutableDictionary *)timedeltaAttributes
 {
-	if (messageAttributes == nil)
+	if (self.messageAttributes == nil)
 		return [[[self class] defaultAttributes] objectForKey:@"timedelta"];
-	return [messageAttributes objectForKey:@"timedelta"];
+	return [self.messageAttributes objectForKey:@"timedelta"];
 }
 
 - (NSMutableDictionary *)threadIDAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"threadID"];
-	return [messageAttributes objectForKey:@"threadID"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"threadID"];
+	return [self.messageAttributes objectForKey:@"threadID"];
 }
 
 - (NSMutableDictionary *)tagAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"tag"];
-	return [messageAttributes objectForKey:@"tag"];	
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"tag"];
+	return [self.messageAttributes objectForKey:@"tag"];
 }
 
 - (NSMutableDictionary *)levelAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"level"];
-	return [messageAttributes objectForKey:@"level"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"level"];
+	return [self.messageAttributes objectForKey:@"level"];
 }
 
 - (NSMutableDictionary *)messageTextAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"text"];
-	return [messageAttributes objectForKey:@"text"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"text"];
+	return [self.messageAttributes objectForKey:@"text"];
 }
 
 - (NSMutableDictionary *)messageDataAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"data"];
-	return [messageAttributes objectForKey:@"data"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"data"];
+	return [self.messageAttributes objectForKey:@"data"];
 }
 
 - (NSMutableDictionary *)fileLineFunctionAttributes
 {
-	if (messageAttributes == nil)
-		return [[[self class] defaultAttributes] objectForKey:@"fileLineFunction"];
-	return [messageAttributes objectForKey:@"fileLineFunction"];
+	if (self.messageAttributes == nil)
+		return [[self class] defaultAttributes][@"fileLineFunction"];
+	return [self.messageAttributes objectForKey:@"fileLineFunction"];
 }
 
 #pragma mark -
@@ -664,17 +672,17 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 - (void)drawTimestampAndDeltaInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor
 {
 	// Draw timestamp and time delta column
-	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+	CGContextRef ctx = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 	CGContextSaveGState(ctx);
 	CGContextClipToRect(ctx, NSRectToCGRect(r));
 	NSRect tr = NSInsetRect(r, 2, 0);
-	
+
 	// Prepare time delta between this message and the previous displayed (filtered) message
-	struct timeval tv = message.timestamp;
+	struct timeval tv = self.message.timestamp;
 	struct timeval td;
-	if (previousMessage != nil)
-		[message computeTimeDelta:&td since:previousMessage];
-	
+	if (self.previousMessage != nil)
+		[self.message computeTimeDelta:&td since:self.previousMessage];
+
 	time_t sec = tv.tv_sec;
 	struct tm *t = localtime(&sec);
 	NSString *timestampStr;
@@ -682,37 +690,37 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec];
 	else
 		timestampStr = [NSString stringWithFormat:@"%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, tv.tv_usec / 1000];
-	
+
 	NSString *timeDeltaStr = nil;
-	if (previousMessage != nil)
+	if (self.previousMessage != nil)
 		timeDeltaStr = StringWithTimeDelta(&td);
-	
+
 	NSMutableDictionary *attrs = [self timestampAttributes];
 	NSRect bounds = [timestampStr boundingRectWithSize:tr.size
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:attrs];
 	NSRect timeRect = NSMakeRect(NSMinX(tr), NSMinY(tr), NSWidth(tr), NSHeight(bounds));
-	NSRect deltaRect = NSMakeRect(NSMinX(tr), NSMaxY(timeRect)+1, NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
-	
+	NSRect deltaRect = NSMakeRect(NSMinX(tr), NSMaxY(timeRect) + 1, NSWidth(tr), NSHeight(tr) - NSHeight(bounds) - 1);
+
 	if (highlightedTextColor)
 	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+		attrs = [attrs mutableCopy];
+		attrs[NSForegroundColorAttributeName] = highlightedTextColor;
 	}
 	[timestampStr drawWithRect:timeRect
 					   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 					attributes:attrs];
-	
+
 	attrs = [self timedeltaAttributes];
 	if (highlightedTextColor)
 	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+		attrs = [attrs mutableCopy];
+		attrs[NSForegroundColorAttributeName] = highlightedTextColor;
 	}
 	[timeDeltaStr drawWithRect:deltaRect
 					   options:NSStringDrawingUsesLineFragmentOrigin
 					attributes:attrs];
-	CGContextRestoreGState(ctx);	
+	CGContextRestoreGState(ctx);
 }
 
 - (void)drawThreadIDAndTagInRect:(NSRect)drawRect highlightedTextColor:(NSColor *)highlightedTextColor
@@ -723,23 +731,23 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	NSMutableDictionary *attrs = [self threadIDAttributes];
 	if (highlightedTextColor != nil)
 	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+		attrs = [attrs mutableCopy];
+		attrs[NSForegroundColorAttributeName] = highlightedTextColor;
 	}
-	
-	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+
+	CGContextRef ctx = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 	CGContextSaveGState(ctx);
 	CGContextClipToRect(ctx, NSRectToCGRect(r));
-	r.size.height = [message.threadID boundingRectWithSize:r.size
+	r.size.height = [self.message.threadID boundingRectWithSize:r.size
 												   options:NSStringDrawingUsesLineFragmentOrigin
 												attributes:attrs].size.height;
-	[message.threadID drawWithRect:NSInsetRect(r, 3, 0)
+	[self.message.threadID drawWithRect:NSInsetRect(r, 3, 0)
 						   options:NSStringDrawingUsesLineFragmentOrigin
 						attributes:attrs];
 
 	// Draw tag and level, if provided
-	NSString *tag = message.tag;
-	int level = message.level;
+	NSString *tag = self.message.tag;
+	int level = self.message.level;
 	if ([tag length] || level)
 	{
 		LoggerWindowController *wc = [[[self controlView] window] windowController];
@@ -759,14 +767,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		if (level)
 		{
 			levelString = [NSString stringWithFormat:@"%d", level];
-            
+
 			levelSize = [levelString boundingRectWithSize:NSMakeSize(threadColumnWidth, NSHeight(drawRect) - NSHeight(r))
 												  options:NSStringDrawingUsesLineFragmentOrigin
 											   attributes:[self levelAttributes]].size;
 			levelSize.width += 4;
 			levelSize.height += 2;
 		}
-		CGFloat h = fmaxf(tagSize.height, levelSize.height);
+		CGFloat h = fmaxf((float) tagSize.height, (float) levelSize.height);
 		NSRect tagRect = NSMakeRect(NSMinX(r) + 3,
 									NSMinY(r),
 									tagSize.width,
@@ -776,7 +784,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 									  levelSize.width,
 									  h);
 		NSRect tagAndLevelRect = NSUnionRect(tagRect, levelRect);
-		
+
 		MakeRoundedPath(ctx, NSRectToCGRect(tagAndLevelRect), 3.0f);
 		CGColorRef fillColor = CreateCGColorFromNSColor([[self class] colorForTag:tag]);
 		CGContextSetFillColorWithColor(ctx, fillColor);
@@ -793,7 +801,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			CGContextFillPath(ctx);
 			CGContextRestoreGState(ctx);
 		}
-		
+
 		if (tagSize.width)
 		{
 			[tag drawWithRect:NSInsetRect(tagRect, 2, 1)
@@ -807,7 +815,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 						   attributes:[self levelAttributes]];
 		}
 	}
-	CGContextRestoreGState(ctx);	
+	CGContextRestoreGState(ctx);
 }
 
 - (void)drawMessageInRect:(NSRect)r highlightedTextColor:(NSColor *)highlightedTextColor
@@ -818,15 +826,15 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	 */
 	NSMutableDictionary *attrs;
 
-	if (message.contentsType == kMessageString)
+	if (self.message.contentsType == kMessageString)
 	{
 		attrs = [self messageTextAttributes];
 		// in case the message text is empty, use the function name as message text
 		// this is typically used to record a waypoint in the code flow
-		NSString *s = message.message;
-		if (![s length] && message.functionName)
-			s = message.functionName;
-		
+		NSString *s = self.message.message;
+		if (![s length] && self.message.functionName)
+			s = self.message.functionName;
+
 		// very long messages can't be displayed entirely. No need to compute their full size,
 		// it slows down the UI to no avail. Just cut the string to a reasonable size, and take
 		// the calculations from here.
@@ -836,24 +844,28 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			truncated = YES;
 			s = [s substringToIndex:2048];
 		}
-        
+
 		if (highlightedTextColor != nil)
 		{
-			attrs = [[attrs mutableCopy] autorelease];
-			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-		} else {
-            NSColor *color = [[self class] colorForMessage:self.message];
-            if (color) {
-                attrs = [[attrs mutableCopy] autorelease];
-                [attrs setObject:color forKey:NSForegroundColorAttributeName];
-                if (color.isBold) {
-                    NSFont *font = [attrs objectForKey:NSFontAttributeName];
-                    font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSFontBoldTrait];
-                    [attrs setObject:font forKey:NSFontAttributeName];
-                }
-            }
-        }
-		
+			attrs = [attrs mutableCopy];
+			attrs[NSForegroundColorAttributeName] = highlightedTextColor;
+		}
+		else
+		{
+			NSColor *color = [[self class] colorForMessage:self.message];
+			if (color)
+			{
+				attrs = [attrs mutableCopy];
+				attrs[NSForegroundColorAttributeName] = color;
+				if (color.isBold)
+				{
+					NSFont *font = attrs[NSFontAttributeName];
+					font = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSBoldFontMask];
+					attrs[NSFontAttributeName] = font;
+				}
+			}
+		}
+
 		// compute display string size, limit to cell height
 		NSRect lr = [s boundingRectWithSize:r.size
 									options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
@@ -862,10 +874,10 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			truncated = YES;
 		else
 		{
-			r.origin.y += floorf((NSHeight(r) - NSHeight(lr)) / 2.0f);
+			r.origin.y += floorf((float) ((NSHeight(r) - NSHeight(lr)) / 2.0f));
 			r.size.height = NSHeight(lr);
 		}
-		
+
 		CGFloat hintHeight = 0;
 		NSString *hint = nil;
 		NSMutableDictionary *hintAttrs = nil;
@@ -873,24 +885,24 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		{
 			// display a hint instructing user to double-click message in order
 			// to see all contents
-			hintAttrs = [[attrs mutableCopy] autorelease];
-			[hintAttrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
+			hintAttrs = [attrs mutableCopy];
+			hintAttrs[NSObliquenessAttributeName] = @(0.20f);
 			if (highlightedTextColor == nil)
-				[hintAttrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
-            NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
-            [style setAlignment:NSRightTextAlignment];
-            [hintAttrs setObject:style forKey:NSParagraphStyleAttributeName];
+				hintAttrs[NSForegroundColorAttributeName] = NSColor.darkGrayColor;
+			NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+			[style setAlignment:NSRightTextAlignment];
+			hintAttrs[NSParagraphStyleAttributeName] = style;
 			hint = NSLocalizedString(@"See all...", @"");
 			hintHeight = [hint boundingRectWithSize:r.size
 											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 										 attributes:hintAttrs].size.height;
 		}
-		
+
 		r.size.height -= hintHeight;
 		[s drawWithRect:r
 				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading | NSStringDrawingTruncatesLastVisibleLine)
 			 attributes:attrs];
-		
+
 		// Draw hint "Double click to see all text..." if needed
 		if (hint != nil)
 		{
@@ -901,14 +913,14 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 					attributes:hintAttrs];
 		}
 	}
-	else if (message.contentsType == kMessageData)
+	else if (self.message.contentsType == kMessageData)
 	{
-		NSArray *strings = [[self class] stringsWithData:(NSData *)message.message];
+		NSArray *strings = [[self class] stringsWithData:(NSData *) self.message.message];
 		attrs = [self messageDataAttributes];
 		if (highlightedTextColor != nil)
 		{
-			attrs = [[attrs mutableCopy] autorelease];
-			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
+			attrs = [attrs mutableCopy];
+			attrs[NSForegroundColorAttributeName] = highlightedTextColor;
 		}
 		CGFloat y = NSMinY(r);
 		CGFloat availHeight = NSHeight(r);
@@ -917,9 +929,9 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		{
 			if (lineIndex == 16)
 			{
-				attrs = [[attrs mutableCopy] autorelease];
-				[attrs setObject:[NSNumber numberWithFloat:0.20f] forKey:NSObliquenessAttributeName];
-				[attrs setObject:[NSColor darkGrayColor] forKey:NSForegroundColorAttributeName];
+				attrs = [attrs mutableCopy];
+				attrs[NSObliquenessAttributeName] = @0.20f;
+				attrs[NSForegroundColorAttributeName] = NSColor.darkGrayColor;
 			}
 			NSRect lr = [s boundingRectWithSize:r.size
 										options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
@@ -937,22 +949,22 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 			lineIndex++;
 		}
 	}
-	else if (message.contentsType == kMessageImage)
+	else if (self.message.contentsType == kMessageImage)
 	{
 		// Scale the image to fit in the cell. Since we're flipped, we also must vertically flip
 		// the image
 		r = NSInsetRect(r, 0, 1);
-		NSSize srcSize = message.imageSize;
-		CGFloat ratio = fmaxf(1.0f, fmaxf(srcSize.width / NSWidth(r), srcSize.height / NSHeight(r)));
-		CGSize newSize = CGSizeMake(floorf(srcSize.width / ratio), floorf(srcSize.height / ratio));
-		CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+		NSSize srcSize = self.message.imageSize;
+		CGFloat ratio = fmaxf(1.0f, fmaxf((float) (srcSize.width / NSWidth(r)), (float) (srcSize.height / NSHeight(r))));
+		CGSize newSize = CGSizeMake(floorf((float) (srcSize.width / ratio)), floorf((float) (srcSize.height / ratio)));
+		CGContextRef ctx = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(ctx);
 		CGContextTranslateCTM(ctx, NSMinX(r), NSMinY(r) + NSHeight(r));
 		CGContextScaleCTM(ctx, 1.0f, -1.0f);
-		[message.image drawInRect:NSMakeRect(0, 0, newSize.width, newSize.height)
-						 fromRect:NSMakeRect(0, 0, srcSize.width, srcSize.height)
-						operation:NSCompositeCopy
-						 fraction:1.0f];
+		[self.message.image drawInRect:NSMakeRect(0, 0, newSize.width, newSize.height)
+							  fromRect:NSMakeRect(0, 0, srcSize.width, srcSize.height)
+							 operation:NSCompositeCopy
+							  fraction:1.0f];
 		CGContextRestoreGState(ctx);
 	}
 }
@@ -964,7 +976,7 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	NSMutableDictionary *attrs = [self fileLineFunctionAttributes];
 	if (highlightedTextColor == nil)
 	{
-		NSColor *fillColor = [attrs objectForKey:NSBackgroundColorAttributeName];
+		NSColor *fillColor = attrs[NSBackgroundColorAttributeName];
 		if (fillColor != nil)
 		{
 			[fillColor set];
@@ -972,36 +984,36 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 		}
 	}
 	NSString *s = @"";
-	BOOL hasFilename = ([message.filename length] != 0);
-	BOOL hasFunction = ([message.functionName length] != 0);
+	BOOL hasFilename = ([self.message.filename length] != 0);
+	BOOL hasFunction = ([self.message.functionName length] != 0);
 	if (hasFunction && hasFilename)
 	{
-		if (message.lineNumber)
-			s = [NSString stringWithFormat:@"%@ (%@:%d)", message.functionName, [message.filename lastPathComponent], message.lineNumber];
+		if (self.message.lineNumber)
+			s = [NSString stringWithFormat:@"%@ (%@:%d)", self.message.functionName, [self.message.filename lastPathComponent], self.message.lineNumber];
 		else
-			s = [NSString stringWithFormat:@"%@ (%@)", message.functionName, [message.filename lastPathComponent]];
+			s = [NSString stringWithFormat:@"%@ (%@)", self.message.functionName, [self.message.filename lastPathComponent]];
 	}
 	else if (hasFunction)
 	{
-		if (message.lineNumber)
-			s = [NSString stringWithFormat:NSLocalizedString(@"%@ (line %d)", @""), message.functionName, message.lineNumber];
+		if (self.message.lineNumber)
+			s = [NSString stringWithFormat:NSLocalizedString(@"%@ (line %d)", @""), self.message.functionName, self.message.lineNumber];
 		else
-			s = message.functionName;
+			s = self.message.functionName;
 	}
 	else
 	{
-		if (message.lineNumber)
-			s = [NSString stringWithFormat:@"%@:%d", [message.filename lastPathComponent], message.lineNumber];
+		if (self.message.lineNumber)
+			s = [NSString stringWithFormat:@"%@:%d", [self.message.filename lastPathComponent], self.message.lineNumber];
 		else
-			s = [message.filename lastPathComponent];
+			s = [self.message.filename lastPathComponent];
 	}
 	if ([s length])
 	{
 		if (highlightedTextColor)
 		{
-			attrs = [[attrs mutableCopy] autorelease];
-			[attrs setObject:highlightedTextColor forKey:NSForegroundColorAttributeName];
-			[attrs setObject:[NSColor clearColor] forKey:NSBackgroundColorAttributeName];
+			attrs = [attrs mutableCopy];
+			attrs[NSForegroundColorAttributeName] = highlightedTextColor;
+			attrs[NSBackgroundColorAttributeName] = NSColor.clearColor;
 		}
 		[s drawWithRect:NSInsetRect(r, 4, 2)
 				options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
@@ -1011,22 +1023,22 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	cellFrame.size = message.cachedCellSize;
+	cellFrame.size = self.message.cachedCellSize;
 
-	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+	CGContextRef ctx = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 
 	BOOL highlighted = [self isHighlighted];
 
 	NSColor *highlightedTextColor = nil;
-    if (highlighted)
-    {
-        highlightedTextColor = [NSColor whiteColor];
-    }
+	if (highlighted)
+	{
+		highlightedTextColor = [NSColor whiteColor];
+	}
 
 	// Draw cell background
 	if (!highlighted)
 	{
-        CGColorRef cellBgColor = CGColorCreateCopy(NSColor.controlBackgroundColor.CGColor);
+		CGColorRef cellBgColor = CGColorCreateCopy(NSColor.controlBackgroundColor.CGColor);
 		CGContextSetFillColorWithColor(ctx, cellBgColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 		CGColorRelease(cellBgColor);
@@ -1048,23 +1060,23 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 	CGContextBeginPath(ctx);
 
 	// horizontal bottom separator
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
-	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
-	
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf((float) NSMaxY(cellFrame)));
+	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf((float) NSMaxY(cellFrame)));
+
 	// timestamp/thread separator
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH), floorf(NSMaxY(cellFrame)-1));
-	
+	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH)), floorf((float) (NSMaxY(cellFrame) - 1)));
+
 	// thread/message separator
-    LoggerWindowController *wc = [[[self controlView] window] windowController];
+	LoggerWindowController *wc = [[[self controlView] window] windowController];
 	CGFloat threadColumnWidth = ([wc isKindOfClass:[LoggerWindowController class]]) ? wc.threadColumnWidth : DEFAULT_THREAD_COLUMN_WIDTH;
-	CGContextMoveToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), NSMinY(cellFrame));
-	CGContextAddLineToPoint(ctx, floorf(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth), floorf(NSMaxY(cellFrame)-1));
+	CGContextMoveToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), NSMinY(cellFrame));
+	CGContextAddLineToPoint(ctx, floorf((float) (NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth)), floorf((float) (NSMaxY(cellFrame) - 1)));
 	CGContextStrokePath(ctx);
-    
+
 	// restore antialiasing
 	CGContextSetShouldAntialias(ctx, true);
-	
+
 	// Draw timestamp and time delta column
 	NSRect r = NSMakeRect(NSMinX(cellFrame),
 						  NSMinY(cellFrame),
@@ -1078,21 +1090,21 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 				   threadColumnWidth,
 				   NSHeight(cellFrame));
 	[self drawThreadIDAndTagInRect:r highlightedTextColor:highlightedTextColor];
-	
+
 	// Draw message
 	r = NSMakeRect(NSMinX(cellFrame) + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 3,
 				   NSMinY(cellFrame),
 				   NSWidth(cellFrame) - (TIMESTAMP_COLUMN_WIDTH + threadColumnWidth) - 6,
 				   NSHeight(cellFrame));
 	CGFloat fileLineFunctionHeight = 0;
-	if (shouldShowFunctionNames && ([message.filename length] || [message.functionName length]))
+	if (self.shouldShowFunctionNames && ([self.message.filename length] || [self.message.functionName length]))
 	{
 		fileLineFunctionHeight = [[self class] heightForFileLineFunction];
 		r.size.height -= fileLineFunctionHeight;
 		r.origin.y += fileLineFunctionHeight;
 	}
 	[self drawMessageInRect:r highlightedTextColor:highlightedTextColor];
-	
+
 	// Draw File / Line / Function
 	if (fileLineFunctionHeight)
 	{
@@ -1106,67 +1118,65 @@ NSString * const kMessageColumnWidthsChangedNotification = @"MessageColumnWidths
 
 - (BOOL)isColumnResizingHotPoint:(NSPoint)mouseDownPoint inView:(NSView *)controlView
 {
-    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
-    // converting the startPoint in the cell coordinates is not that easy!
+	// BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+	// converting the startPoint in the cell coordinates is not that easy!
 
-    LoggerWindowController *wc = [[[self controlView] window] windowController];
+	LoggerWindowController *wc = [[[self controlView] window] windowController];
 	if (![wc isKindOfClass:[LoggerWindowController class]])
-		return NO;		// we may be in the Preferences window fake log message display
+		return NO;        // we may be in the Preferences window fake log message display
 
-    CGFloat threadColumnWidth = wc.threadColumnWidth;
-    if(mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.))
-        return YES;
+	CGFloat threadColumnWidth = wc.threadColumnWidth;
+	return mouseDownPoint.x >= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth - 5.) && mouseDownPoint.x <= (0. + TIMESTAMP_COLUMN_WIDTH + threadColumnWidth + 5.);
 
-    return NO;
 }
 
 - (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView
 {
-    // BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
-    // converting the startPoint in the cell coordinates is not that easy!
-    
-    // if clicking around the thread / message separator, then track
-    if([self isColumnResizingHotPoint:startPoint inView:controlView])
-    {
-        [[NSCursor resizeLeftRightCursor] push];
-        self.modifyingThreadColumnWidth = YES;
-        return YES;
-    }
+	// BEWARE This works since the cell origin.x is the same as the controlView (the tableview) origin.x. The startPoint is in the control view coordinates, so this is a special case.
+	// converting the startPoint in the cell coordinates is not that easy!
 
-    return [super startTrackingAt:startPoint inView:controlView];
+	// if clicking around the thread / message separator, then track
+	if ([self isColumnResizingHotPoint:startPoint inView:controlView])
+	{
+		[[NSCursor resizeLeftRightCursor] push];
+		self.modifyingThreadColumnWidth = YES;
+		return YES;
+	}
+
+	return [super startTrackingAt:startPoint inView:controlView];
 }
 
 - (BOOL)continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView
 {
-    if(self.modifyingThreadColumnWidth == YES)
-    {
-        LoggerWindowController *wc = [[[self controlView] window] windowController];
-        CGFloat threadColumnWidth = wc.threadColumnWidth;
+	if (self.modifyingThreadColumnWidth)
+	{
+		LoggerWindowController *wc = [[[self controlView] window] windowController];
+		CGFloat threadColumnWidth = wc.threadColumnWidth;
 
-        CGFloat currentColWidth = threadColumnWidth;
-        CGFloat difference = currentPoint.x - lastPoint.x;
-        
-        if(currentColWidth + difference > 20.) // avoids tiny column
-        {
-            wc.threadColumnWidth = currentColWidth + difference;
-            [controlView setNeedsDisplay:YES];
-        }
-        
-        return YES;
-    }
-    
-    return [super continueTracking:(NSPoint)lastPoint at:(NSPoint)currentPoint inView:(NSView *)controlView];
+		CGFloat currentColWidth = threadColumnWidth;
+		CGFloat difference = currentPoint.x - lastPoint.x;
+
+		if (currentColWidth + difference > 20.) // avoids tiny column
+		{
+			wc.threadColumnWidth = currentColWidth + difference;
+			[controlView setNeedsDisplay:YES];
+		}
+
+		return YES;
+	}
+
+	return [super continueTracking:(NSPoint) lastPoint at:(NSPoint) currentPoint inView:(NSView *) controlView];
 }
 
 - (void)stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag
 {
-    if(self.modifyingThreadColumnWidth == YES)
-    {
-        self.modifyingThreadColumnWidth = NO;
-        [[NSCursor resizeLeftRightCursor] pop];
-    }
-    
-    [super stopTracking:(NSPoint)lastPoint at:(NSPoint)stopPoint inView:(NSView *)controlView mouseIsUp:(BOOL)flag];
+	if (self.modifyingThreadColumnWidth)
+	{
+		self.modifyingThreadColumnWidth = NO;
+		[[NSCursor resizeLeftRightCursor] pop];
+	}
+
+	[super stopTracking:(NSPoint) lastPoint at:(NSPoint) stopPoint inView:(NSView *) controlView mouseIsUp:(BOOL) flag];
 }
 
 #pragma mark -

@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -44,7 +44,7 @@
 	[self performSelector:@selector(sendTableRetileNotification)
 			   withObject:nil
 			   afterDelay:0
-				  inModes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
+				  inModes:@[NSDefaultRunLoopMode]];
 	[super mouseDown:theEvent];
 }
 

@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -36,12 +36,6 @@
 
 @implementation LoggerDetailsWindowController
 
-- (void)dealloc
-{
-	dispatch_release(detailsQueue);
-	[super dealloc];
-}
-
 - (NSString *)windowTitleForDocumentDisplayName:(NSString *)displayName
 {
 	return [[[self document] mainWindowController] windowTitleForDocumentDisplayName:displayName];
@@ -49,7 +43,7 @@
 
 - (void)windowDidLoad
 {
-	[detailsView setTextContainerInset:NSMakeSize(2, 2)];
+	[self.detailsView setTextContainerInset:NSMakeSize(2, 2)];
 }
 
 - (void)windowDidBecomeMain:(NSNotification *)notification
@@ -65,16 +59,16 @@
 - (void)setMessages:(NSArray *)messages
 {
 	// defer text generation to queues
-	NSTextStorage *storage = [detailsView textStorage];
+	NSTextStorage *storage = [self.detailsView textStorage];
 	[storage replaceCharactersInRange:NSMakeRange(0, [storage length]) withString:@""];
 
 	NSUInteger numMessages = [messages count];
-	[detailsInfo setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Details for %d log messages", @""), numMessages]];
-	[progressIndicator setHidden:NO];
-	[progressIndicator startAnimation:self];
+	[self.detailsInfo setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Details for %d log messages", @""), numMessages]];
+	[self.progressIndicator setHidden:NO];
+	[self.progressIndicator startAnimation:self];
 
-	NSDictionary *textAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"text"];
-	NSDictionary *dataAttributes = [[LoggerMessageCell defaultAttributes] objectForKey:@"data"];
+	NSDictionary *textAttributes = LoggerMessageCell.defaultAttributes[@"text"];
+	NSDictionary *dataAttributes = LoggerMessageCell.defaultAttributes[@"data"];
 
 	NSUInteger i = 0;
 	while (i < numMessages)
@@ -84,17 +78,16 @@
 			break;
 		i += range.length;
 
-		if (detailsQueue == NULL)
-			detailsQueue = dispatch_queue_create("com.florentpillet.nslogger.detailsQueue", NULL);
+		if (self.detailsQueue == nil)
+			self.detailsQueue = dispatch_queue_create("com.florentpillet.nslogger.detailsQueue", NULL);
 		
-		dispatch_async(detailsQueue, ^{
+		dispatch_async(self.detailsQueue, ^{
 			NSMutableArray *strings = [[NSMutableArray alloc] initWithCapacity:range.length];
 			for (LoggerMessage *msg in [messages subarrayWithRange:range])
 			{
 				NSAttributedString *as = [[NSAttributedString alloc] initWithString:[msg textRepresentation]
 																		 attributes:(msg.contentsType == kMessageString) ? textAttributes : dataAttributes];
 				[strings addObject:as];
-				[as release];
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[storage beginEditing];
@@ -103,11 +96,10 @@
 				[storage endEditing];
 				if ((range.location + range.length) >= numMessages)
 				{
-					[progressIndicator stopAnimation:self];
-					[progressIndicator setHidden:YES];
+					[self.progressIndicator stopAnimation:self];
+					[self.progressIndicator setHidden:YES];
 				}
 			});
-			[strings release];
 		});
 	}
 }

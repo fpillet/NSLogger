@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -36,17 +36,16 @@
 
 + (NSDictionary *)clientInfoAttributes:(BOOL)highlighted
 {
-	NSMutableDictionary *attrs = [[[[self defaultAttributes] objectForKey:@"text"] mutableCopy] autorelease];
+	NSMutableDictionary *attrs = [self.defaultAttributes[@"text"] mutableCopy];
     if (@available(macOS 10_14, *)) {
         attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
     }
-	NSMutableParagraphStyle *style = [[attrs objectForKey:NSParagraphStyleAttributeName] mutableCopy];
+	NSMutableParagraphStyle *style = [attrs[NSParagraphStyleAttributeName] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
-	[attrs setObject:style forKey:NSParagraphStyleAttributeName];
-	[style release];
+	attrs[NSParagraphStyleAttributeName] = style;
 	if (highlighted)
     {
-        [attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
+        attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
     }
 	return attrs;
 }
@@ -71,10 +70,10 @@
 	NSRect lr = [aMessage.message boundingRectWithSize:sz
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:[self clientInfoAttributes:NO]];
-	sz.height = fminf(NSHeight(lr), sz.height);			
+	sz.height = fminf((float) NSHeight(lr), (float) sz.height);
 
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
+	cellSize.height = fmaxf((float) (sz.height + 4), (float) minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
@@ -82,7 +81,7 @@
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
 	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-	BOOL disconnected = (message.type == LOGMSG_TYPE_DISCONNECT);
+	BOOL disconnected = (self.message.type == LOGMSG_TYPE_DISCONNECT);
 	BOOL highlighted = [self isHighlighted];
 
 	// background and separators colors (thank you, Xcode build window)
@@ -128,10 +127,10 @@
 	CGContextBeginPath(ctx);
 
 	// horizontal bottom separator
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMinY(cellFrame)));
-	CGContextAddLineToPoint(ctx, floorf(NSMaxX(cellFrame)), floorf(NSMinY(cellFrame)));
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
-	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf((float) NSMinY(cellFrame)));
+	CGContextAddLineToPoint(ctx, floorf((float) NSMaxX(cellFrame)), floorf((float) NSMinY(cellFrame)));
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf((float) NSMaxY(cellFrame)));
+	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf((float) NSMaxY(cellFrame)));
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
 	
@@ -149,16 +148,16 @@
 						  NSHeight(cellFrame));
 
 	NSDictionary *attrs = [[self class] clientInfoAttributes:highlighted];
-	NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
-														  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-													   attributes:attrs];
+	NSRect lr = [(NSString *) self.message.message boundingRectWithSize:r.size
+																options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+															 attributes:attrs];
 	r.size.height = lr.size.height;
-	CGFloat offset = floorf((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f);
+	CGFloat offset = floorf((float) ((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f));
 	if (offset > 0)
 		r.origin.y += offset;
-	[(NSString *)message.message drawWithRect:r
-									  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-								   attributes:attrs];
+	[(NSString *) self.message.message drawWithRect:r
+											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+										 attributes:attrs];
 }
 
 @end

@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -33,12 +33,9 @@
 @class LoggerWindowController;
 
 @interface LoggerDocument : NSDocument <LoggerConnectionDelegate>
-{
-	NSMutableArray *attachedLogs;
-	LoggerConnection *currentConnection;			// the connection currently visible in the main window
-}
 
-@property (nonatomic, readonly) NSArray *attachedLogs;
+@property (nonatomic, retain) LoggerConnection *currentConnection;			// the connection currently visible in the main window
+@property (nonatomic, readonly) NSMutableArray *attachedLogs;
 @property (nonatomic, retain) NSNumber *indexOfCurrentVisibleLog;
 
 - (id)initWithConnection:(LoggerConnection *)aConnection;

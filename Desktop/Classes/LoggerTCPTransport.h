@@ -8,7 +8,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -40,16 +40,10 @@
 @class LoggerTCPConnection;
 
 @interface LoggerTCPTransport : LoggerTransport <NSNetServiceDelegate, NSStreamDelegate>
-{
-	NSThread *listenerThread;
-	NSNetService *bonjourService;
-	CFSocketRef listenerSocket_ipv4;
-	CFSocketRef listenerSocket_ipv6;
-	NSString *bonjourServiceName;
-	NSInteger listenerPort;
-	BOOL publishBonjourService;
-}
 
+@property (nonatomic, retain) NSThread *listenerThread;
+@property (nonatomic, retain) NSNetService *bonjourService;
+@property (nonatomic, retain) NSString *bonjourServiceName;
 @property (nonatomic, assign) NSInteger listenerPort;
 @property (nonatomic, assign) BOOL publishBonjourService;
 @property (nonatomic, readonly) CFSocketRef listenerSocket_ipv4;

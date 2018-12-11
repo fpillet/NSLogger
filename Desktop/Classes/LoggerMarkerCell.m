@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -35,16 +35,16 @@
 
 + (NSDictionary *)markAttributes:(BOOL)highlighted
 {
-	NSMutableDictionary *attrs = [[self defaultAttributes] objectForKey:@"mark"];
+	NSMutableDictionary *attrs = self.defaultAttributes[@"mark"];
 	if (highlighted)
 	{
-		attrs = [[attrs mutableCopy] autorelease];
-		[attrs setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
-    } else {
-        if (@available(macOS 10_14, *)) {
-            attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
-        }
-    }
+		attrs = [attrs mutableCopy];
+		attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
+	}
+	else if (@available(macOS 10_14, *))
+	{
+		attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
+	}
 	return attrs;
 }
 
@@ -55,89 +55,92 @@
 	NSSize cellSize = aMessage.cachedCellSize;
 	if (cellSize.width == sz.width)
 		return cellSize.height;
-	
+
 	cellSize.width = sz.width;
-	
+
 	// new width is larger, but cell already at minimum height, don't recompute
 	if (cellSize.width > 0 && cellSize.width < sz.width && cellSize.height == minimumHeight)
 		return minimumHeight;
-	
+
 	sz.width -= 8;
 	sz.height -= 4;
-	
+
 	NSRect lr = [aMessage.message boundingRectWithSize:sz
 											   options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
 											attributes:[self markAttributes:NO]];
-	sz.height = fminf(NSHeight(lr), sz.height);			
-	
+	sz.height = fminf((float) NSHeight(lr), (float) sz.height);
+
 	// cache and return cell height
-	cellSize.height = fmaxf(sz.height + 4, minimumHeight);
+	cellSize.height = fmaxf((float) (sz.height + 4), (float) minimumHeight);
 	aMessage.cachedCellSize = cellSize;
 	return cellSize.height;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	cellFrame.size = message.cachedCellSize;
+	cellFrame.size = self.message.cachedCellSize;
 
-	CGContextRef ctx = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+	CGContextRef ctx = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 	BOOL highlighted = [self isHighlighted];
-	
+
 	CGColorRef separatorColor = CGColorCreateGenericRGB(162.0f / 255.0f,
 														174.0f / 255.0f,
 														10.0f / 255.0f,
 														1.0f);
-    CGColorRef backgroundColor;
-    if (@available(macOS 10_14, *)) {
-        backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
-    } else {
-        backgroundColor = CGColorCreateGenericRGB(1.0f,
-                                                  1.0f,
-                                                  197.0f / 255.0f,
-                                                  1.0f);
-    }
+	CGColorRef backgroundColor;
+	if (@available(macOS 10_14, *))
+	{
+		backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
+	}
+	else
+	{
+		backgroundColor = CGColorCreateGenericRGB(1.0f,
+												  1.0f,
+												  197.0f / 255.0f,
+												  1.0f);
+	}
 	if (!highlighted)
 	{
 		CGContextSetFillColorWithColor(ctx, backgroundColor);
 		CGContextFillRect(ctx, NSRectToCGRect(cellFrame));
 	}
-	
+
 	CGContextSetShouldAntialias(ctx, false);
 	CGContextSetLineWidth(ctx, 1.0f);
 	CGContextSetLineCap(ctx, kCGLineCapSquare);
 	CGContextSetStrokeColorWithColor(ctx, separatorColor);
 
 	CGContextBeginPath(ctx);
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMinY(cellFrame)));
-	CGContextAddLineToPoint(ctx, floorf(NSMaxX(cellFrame)), floorf(NSMinY(cellFrame)));
-	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf(NSMaxY(cellFrame)));
-	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf(NSMaxY(cellFrame)));
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf((float) NSMinY(cellFrame)));
+	CGContextAddLineToPoint(ctx, floorf((float) NSMaxX(cellFrame)), floorf((float) NSMinY(cellFrame)));
+	CGContextMoveToPoint(ctx, NSMinX(cellFrame), floorf((float) NSMaxY(cellFrame)));
+	CGContextAddLineToPoint(ctx, NSMaxX(cellFrame), floorf((float) NSMaxY(cellFrame)));
 	CGContextStrokePath(ctx);
 	CGContextSetShouldAntialias(ctx, true);
-	
+
 	CGColorRelease(separatorColor);
 	CGColorRelease(backgroundColor);
-	
+
 	// If the window is not main, don't change the text color
 	if (highlighted && ![[controlView window] isMainWindow])
 		highlighted = NO;
-	
+
 	NSRect r = NSMakeRect(NSMinX(cellFrame) + 3,
 						  NSMinY(cellFrame),
 						  NSWidth(cellFrame) - 6,
 						  NSHeight(cellFrame));
-	
+
 	NSDictionary *attrs = [[self class] markAttributes:highlighted];
-	NSRect lr = [(NSString *)message.message boundingRectWithSize:r.size
-														  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-													   attributes:attrs];
+	NSRect lr = [(NSString *) self.message.message boundingRectWithSize:r.size
+																options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+															 attributes:attrs];
 	r.size.height = lr.size.height;
-	CGFloat offset = floorf((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f);
+	CGFloat offset = floorf((float) ((NSHeight(cellFrame) - NSHeight(lr)) / 2.0f));
 	if (offset > 0)
 		r.origin.y += offset;
-	[(NSString *)message.message drawWithRect:r
-									  options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
-								   attributes:attrs];
+	[(NSString *) self.message.message drawWithRect:r
+											options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+										 attributes:attrs];
 }
 
 @end
