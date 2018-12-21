@@ -42,6 +42,11 @@ Here is what it looks like in action:
 </p>
 
 
+And with macOS Mojave and later's dark mode:
+
+<p align="center">
+  <img src="Screenshots/mainwindow-dark.png" title="Desktop Viewer (main window)">
+</p>
 
 # Basic Usage
 
