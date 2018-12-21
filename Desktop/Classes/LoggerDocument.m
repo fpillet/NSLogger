@@ -86,7 +86,7 @@
 		return;
 	if (runIndex < 0 || runIndex >= [self.attachedLogs count])
 		runIndex = [self.attachedLogs count] - 1;
-	self.currentConnection = [self.attachedLogs objectAtIndex:runIndex];
+	self.currentConnection = self.attachedLogs[runIndex];
 }
 
 - (NSArray *)attachedLogsPopupNames
@@ -211,7 +211,7 @@
 		// changing while we're processing it
 		NSInteger connectionIndex = [[self indexOfCurrentVisibleLog] integerValue];
 		assert(connectionIndex != NSNotFound);
-		LoggerConnection *connection = self.attachedLogs[connectionIndex];
+		LoggerConnection *connection = self.attachedLogs[(NSUInteger) connectionIndex];
 		__block NSArray *allMessages = nil;
 		dispatch_sync(connection.messageProcessingQueue , ^{
 			allMessages = [[NSArray alloc] initWithArray:connection.messages];

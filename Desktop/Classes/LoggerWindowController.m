@@ -234,6 +234,8 @@ static NSArray *sXcodeFileExtensions = nil;
 				case LOGMSG_TYPE_MARK:
 					newHeight = [LoggerMarkerCell heightForCellWithMessage:msg threadColumnWidth:_threadColumnWidth maxSize:maxCellSize showFunctionNames:_showFunctionNames];
 					break;
+				default:
+					break;
 			}
 			if (newHeight != cachedHeight)
 				[updatedMessages addObject:msg];
@@ -477,8 +479,7 @@ static NSArray *sXcodeFileExtensions = nil;
 																					   type:NSContainsPredicateOperatorType
 																					options:NSCaseInsensitivePredicateOption];
 		
-		[andPredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:
-								  [NSArray arrayWithObjects:messagePredicate, functionPredicate, nil]]];
+		[andPredicates addObject:[NSCompoundPredicate orPredicateWithSubpredicates:@[messagePredicate, functionPredicate]]];
 	}
 	if ([andPredicates count])
 	{
@@ -489,7 +490,7 @@ static NSArray *sXcodeFileExtensions = nil;
 	if (p == nil)
 		p = [NSPredicate predicateWithValue:YES];
 	else
-		p = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray arrayWithObjects:[self alwaysVisibleEntriesPredicate], p, nil]];
+		p = [NSCompoundPredicate orPredicateWithSubpredicates:@[[self alwaysVisibleEntriesPredicate], p]];
 	self.filterPredicate = p;
 }
 
@@ -1231,7 +1232,7 @@ didReceiveMessages:(NSArray *)theMessages
 {
 	if (tableView == _logTable && row >= 0 && row < [_displayedMessages count])
 	{
-		LoggerMessage *msg = _displayedMessages[row];
+		LoggerMessage *msg = _displayedMessages[(NSUInteger) row];
 		switch (msg.type)
 		{
 			case LOGMSG_TYPE_LOG:
@@ -1340,7 +1341,7 @@ didReceiveMessages:(NSArray *)theMessages
 	row:(NSInteger)rowIndex
 {
 	if (rowIndex >= 0 && rowIndex < [_displayedMessages count])
-		return _displayedMessages[rowIndex];
+		return _displayedMessages[(NSUInteger) rowIndex];
 	return nil;
 }
 
@@ -1403,7 +1404,7 @@ didReceiveMessages:(NSArray *)theMessages
 	{
 		// Only add those filters which don't exist yet
 		NSArray *filterSets = [_filterSetsListController arrangedObjects];
-		NSMutableDictionary *filterSet = filterSets[row];
+		NSMutableDictionary *filterSet = filterSets[(NSUInteger) row];
 		NSMutableArray *existingFilters = [filterSet mutableArrayValueForKey:@"filters"];
 		for (NSMutableDictionary *filter in newFilters)
 		{
@@ -1584,10 +1585,10 @@ didReceiveMessages:(NSArray *)theMessages
 	NSDictionary *filterSet = [[_filterSetsListController selectedObjects] lastObject];
 	assert(filterSet != nil);
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
-						  NSLocalizedString(@"New filter", @""), @"title",
-						  [NSCompoundPredicate andPredicateWithSubpredicates:[NSArray array]], @"predicate",
-						  nil];
+		[(LoggerAppDelegate *) NSApp.delegate nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
+			NSLocalizedString(@"New filter", @""), @"title",
+		[NSCompoundPredicate andPredicateWithSubpredicates:NSArray.array], @"predicate",
+			nil];
 	[self openFilterEditSheet:dict];
 	[_filterEditor addRow:self];
 }
@@ -1642,9 +1643,9 @@ didReceiveMessages:(NSArray *)theMessages
 	}
 	
 	NSDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-						  [(LoggerAppDelegate *)[NSApp delegate] nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
-						  newFilterTitle, @"title",
-						  [NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
+		[(LoggerAppDelegate *) NSApp.delegate nextUniqueFilterIdentifier:[filterSet objectForKey:@"filters"]], @"uid",
+		newFilterTitle, @"title",
+		[NSCompoundPredicate andPredicateWithSubpredicates:predicates], @"predicate",
 						  nil];
 	[self openFilterEditSheet:dict];
 }
