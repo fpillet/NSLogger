@@ -16,12 +16,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // Avoid NSLogger client to search on Bonjour.
         //LoggerSetViewerHost(nil, "localhost" as NSString, 50000)
 
-        Log(.App, .Important, "Hello, Swift Logger Tester! 🤖")
+        Logger.shared.log(.app, .important, "Hello, Swift Logger Tester! 🤖")
 
         return true
     }
