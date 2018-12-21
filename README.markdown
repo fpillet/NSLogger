@@ -16,7 +16,7 @@
 The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or *Eclipse* consoles. It provides powerful additions like display filtering, defining log domain and level, image and binary logging, message coloring, traces buffering, timing information, link with source code, etc.
 
 <p align="center">
-  <img src="https://github.com/MonsieurDart/NSLogger/raw/swiftiosclient/Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
+  <img src="Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
 </p>
 
 **NSLogger** feature summary:
@@ -201,4 +201,4 @@ The *NSLogger* framework runs in its own thread in your application. It tries ha
 
 # Credits
 
-NSLogger is Copyright (c) 2010-2018 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application. The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
+NSLogger is Copyright (c) 2010-2018 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
