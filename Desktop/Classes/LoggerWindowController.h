@@ -82,8 +82,8 @@
 
 @property (nonatomic, assign) CGFloat threadColumnWidth;
 
-@property (nonatomic, assign) dispatch_queue_t messageFilteringQueue;
-@property (nonatomic, assign) dispatch_group_t lastTilingGroup;
+@property (nonatomic, retain) dispatch_queue_t messageFilteringQueue;
+@property (nonatomic, retain) dispatch_group_t lastTilingGroup;
 
 - (IBAction)openDetailsWindow:(id)sender;
 

@@ -67,11 +67,6 @@ char sConnectionAssociatedObjectKey = 1;
 	return self;
 }
 
-- (void)dealloc
-{
-	dispatch_release(_messageProcessingQueue);
-}
-
 - (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection
 {
 	// Try to detect if a connection is a new run of an older, disconnected session
@@ -126,16 +121,16 @@ char sConnectionAssociatedObjectKey = 1;
 		if (addrSize == sizeof(struct sockaddr_in))
 		{
 			struct sockaddr_in addra, addrb;
-			[_clientAddress getBytes:&addra];
-			[aConnection.clientAddress getBytes:&addrb];
+			[_clientAddress getBytes:&addra length:addrSize];
+			[aConnection.clientAddress getBytes:&addrb length:MIN([aConnection.clientAddress length], sizeof(addrb))];
 			if (memcmp(&addra.sin_addr, &addrb.sin_addr, sizeof(addra.sin_addr)))
 				return NO;
 		}
 		else if (addrSize == sizeof(struct sockaddr_in6))
 		{
 			struct sockaddr_in6 addr6a, addr6b;
-			[_clientAddress getBytes:&addr6a];
-			[aConnection.clientAddress getBytes:&addr6b];
+			[_clientAddress getBytes:&addr6a length:addrSize];
+			[aConnection.clientAddress getBytes:&addr6b length:MIN([aConnection.clientAddress length], sizeof(addr6b))];
 			if (memcmp(&addr6a.sin6_addr, &addr6b.sin6_addr, sizeof(addr6a.sin6_addr)))
 				return NO;
 		}
@@ -205,7 +200,6 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	// Clear the backlog of _messages, only keeping the top (client info) message
 	// This MUST be called on the _messageProcessingQueue
-	assert(dispatch_get_current_queue() == _messageProcessingQueue);
 	if (![_messages count])
 		return;
 

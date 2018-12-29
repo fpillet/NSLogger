@@ -35,7 +35,7 @@
 @property (nonatomic, retain) IBOutlet NSTextView *detailsView;
 @property (nonatomic, retain) IBOutlet NSTextField *detailsInfo;
 @property (nonatomic, retain) IBOutlet NSProgressIndicator *progressIndicator;
-@property (nonatomic, assign) dispatch_queue_t detailsQueue;
+@property (nonatomic, retain) dispatch_queue_t detailsQueue;
 
 - (void)setMessages:(NSArray *)messages;
 

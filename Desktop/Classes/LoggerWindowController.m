@@ -90,9 +90,6 @@ static NSArray *sXcodeFileExtensions = nil;
 	[_filterSetsListController removeObserver:self forKeyPath:@"arrangedObjects"];
 	[_filterSetsListController removeObserver:self forKeyPath:@"selectedObjects"];
 	[_filterListController removeObserver:self forKeyPath:@"selectedObjects"];
-	dispatch_release(_messageFilteringQueue);
-	if (_lastTilingGroup != NULL)
-		dispatch_release(_lastTilingGroup);
 
     _logTable.delegate = nil;
     _logTable.dataSource = nil;
@@ -273,7 +270,6 @@ static NSArray *sXcodeFileExtensions = nil;
 			// by clearing the context, all further tasks on this group will cancel their work
 			// wait until they all went through cancellation before removing the group
 			dispatch_group_wait(leaveGroup, 0);
-			dispatch_release(leaveGroup);
 		});
 	}
 	_lastTilingGroup = NULL;
@@ -1085,7 +1081,6 @@ void runSystemCommand(NSString *cmd)
 		if (_lastTilingGroup != NULL)
 		{
 			dispatch_set_context(_lastTilingGroup, NULL);
-			dispatch_release(_lastTilingGroup);
 			_lastTilingGroup = NULL;
 		}
 		
