@@ -1753,7 +1753,7 @@ didReceiveMessages:(NSArray *)theMessages
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[[self document] updateChangeCount:NSChangeDone];
-				[self refreshAllMessages:@[mark, beforeMessage]];
+                [self refreshAllMessages:[NSArray arrayWithObjects: mark, beforeMessage, nil]]; // warning: don't convert to @[] as beforeMessage may be nil
 			});
 		});
 	});
