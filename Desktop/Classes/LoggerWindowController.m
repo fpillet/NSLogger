@@ -1755,12 +1755,13 @@ didReceiveMessages:(NSArray *)theMessages
 												  dateStyle:NSDateFormatterShortStyle
 												  timeStyle:NSDateFormatterMediumStyle]];
 	[_markTitleField setStringValue:s];
-	
-	[NSApp beginSheet:_markTitleWindow
-	   modalForWindow:[self window]
-		modalDelegate:self
-	   didEndSelector:@selector(addMarkSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:(__bridge_retained void *)aMessage];
+
+    [self.window beginSheet:_markTitleWindow
+          completionHandler:^(NSModalResponse returnCode) {
+              if (returnCode)
+                  [self addMarkWithTitleString:[self.markTitleField stringValue] beforeMessage:aMessage];
+              [self.markTitleWindow orderOut:self];
+          }];
 }
 
 - (IBAction)addMark:(id)sender
@@ -1813,14 +1814,6 @@ didReceiveMessages:(NSArray *)theMessages
 - (IBAction)validateAddMark:(id)sender
 {
 	[NSApp endSheet:_markTitleWindow returnCode:1];
-}
-
-- (void)addMarkSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	LoggerMessage *message = (__bridge_transfer LoggerMessage *)contextInfo;
-	if (returnCode)
-		[self addMarkWithTitleString:[_markTitleField stringValue] beforeMessage:message];
-	[_markTitleWindow orderOut:self];
 }
 
 // -----------------------------------------------------------------------------
