@@ -185,7 +185,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 // -----------------------------------------------------------------------------
 - (BOOL)windowShouldClose:(id)sender
 {
-	if (![self.networkDefaultsController commitEditing])
+	if (![self commitNetworkEditing])
 		return NO;
 	if ([self hasNetworkChanges] || [self hasFontChanges])
 	{
@@ -193,38 +193,34 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 		[alert setMessageText:NSLocalizedString(@"Would you like to apply your changes before closing the Preferences window?", @"")];
 		[alert addButtonWithTitle:NSLocalizedString(@"Apply", @"")];
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"")];
-		[alert addButtonWithTitle:NSLocalizedString(@"Don't Apply", @"")];
-		[alert beginSheetModalForWindow:[self window]
-						  modalDelegate:self
-						 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
-							contextInfo:NULL];
+		[alert addButtonWithTitle:NSLocalizedString(@"Ignore", @"")];
+        [self.window beginSheet:alert.window
+              completionHandler:^(NSModalResponse returnCode) {
+                  [alert.window orderOut:self];
+                  if (returnCode == NSAlertFirstButtonReturn)
+                  {
+                      // Apply (and close window)
+                      if ([self hasNetworkChanges])
+                          [self applyNetworkChanges:nil];
+                      if ([self hasFontChanges])
+                          [self applyFontChanges:nil];
+                      [[self window] performSelector:@selector(close) withObject:nil afterDelay:0];
+                  }
+                  else if (returnCode == NSAlertSecondButtonReturn)
+                  {
+                      // Cancel (don't close window)
+                      // nothing more to do
+                  }
+                  else
+                  {
+                      // Don't Apply (and close window)
+                      [self cancelNetworkChanges];
+                      [self.window performSelector:@selector(close) withObject:nil afterDelay:0];
+                  }
+              }];
 		return NO;
 	}
 	return YES;
-}
-
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	[[alert window] orderOut:self];
-	if (returnCode == NSAlertFirstButtonReturn)
-	{
-		// Apply (and close window)
-		if ([self hasNetworkChanges])
-			[self applyNetworkChanges:nil];
-		if ([self hasFontChanges])
-			[self applyFontChanges:nil];
-		[[self window] performSelector:@selector(close) withObject:nil afterDelay:0];
-	}
-	else if (returnCode == NSAlertSecondButtonReturn)
-	{
-		// Cancel (don't close window)
-		// nothing more to do
-	}
-	else
-	{
-		// Don't Apply (and close window)
-		[[self window] performSelector:@selector(close) withObject:nil afterDelay:0];
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -233,7 +229,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 // -----------------------------------------------------------------------------
 - (IBAction)restoreNetworkDefaults:(id)sender
 {
-	[self.networkDefaultsController commitEditing];
+	[self commitNetworkEditing];
 	NSDictionary *dict = [LoggerAppDelegate defaultPreferences];
 	for (NSString *key in dict)
 	{
@@ -244,7 +240,7 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 
 - (void)applyNetworkChanges:(id)sender
 {
-	if ([self.networkDefaultsController commitEditing])
+	if ([self commitNetworkEditing])
 	{
 		NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
 		for (NSString *key in [self.networkPrefs allKeys])
@@ -252,6 +248,24 @@ void *advancedColorsArrayControllerDidChange = &advancedColorsArrayControllerDid
 		[ud synchronize];
 		[[NSNotificationCenter defaultCenter] postNotificationName:kPrefsChangedNotification object:self];
 	}
+}
+
+- (void)cancelNetworkChanges
+{
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    for (NSString *key in [self.networkPrefs allKeys])
+        self.networkPrefs[key] = [ud objectForKey:key];
+}
+
+- (BOOL)commitNetworkEditing
+{
+    // due to an issue with bindings, if a field is cleared it is considered "null" and
+    // isn't committed. We need to manually make sure that we put empty strings instead
+    BOOL result = [self.networkDefaultsController commitEditing];
+    if (self.networkPrefs[kPrefBonjourServiceName] == nil) {
+        self.networkPrefs[kPrefBonjourServiceName] = @"";
+    }
+    return result;
 }
 
 // -----------------------------------------------------------------------------
