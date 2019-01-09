@@ -1534,40 +1534,33 @@ didReceiveMessages:(NSArray *)theMessages
 	NSPredicate *predicate = dict[@"predicate"];
 	[_filterEditor setObjectValue:[predicate copy]];
 
-	[NSApp beginSheet:_filterEditorWindow
-	   modalForWindow:[self window]
-		modalDelegate:self
-	   didEndSelector:@selector(filterEditSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:(__bridge void *)dict];
-}
+    [self.window beginSheet:_filterEditorWindow
+          completionHandler:^(NSModalResponse returnCode) {
+              if (returnCode) {
+                  BOOL exists = [[self.filterListController content] containsObject:dict];
 
-- (void)filterEditSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	NSDictionary *contextDict = (__bridge_transfer NSDictionary *)contextInfo;
-	if (returnCode)
-	{
-		NSMutableDictionary *dict = [contextDict mutableCopy];
-		BOOL exists = [[_filterListController content] containsObject:(__bridge id)contextInfo];
-		
-		NSPredicate *predicate = [_filterEditor predicate];
-		if (predicate == nil)
-			predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
-		dict[@"predicate"] = predicate;
-		
-		NSString *title = [[_filterName stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-		if ([title length])
-			dict[@"title"] = title;
-		
-		if (exists)
-			[self undoableModifyFilter:dict];
-		else
-			[self undoableCreateFilter:dict];
-		
-		[_filterListController setSelectedObjects:@[dict]];
+                  NSPredicate *predicate = [self.filterEditor predicate];
+                  if (predicate == nil)
+                      predicate = [NSCompoundPredicate orPredicateWithSubpredicates:[NSArray array]];
 
-		[(LoggerAppDelegate *) [NSApp delegate] saveFiltersDefinition];
-	}
-	[_filterEditorWindow orderOut:self];
+                  NSMutableDictionary *newDict = [dict mutableCopy];
+                  newDict[@"predicate"] = predicate;
+
+                  NSString *title = [[self.filterName stringValue] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+                  if ([title length])
+                      newDict[@"title"] = title;
+
+                  if (exists)
+                      [self undoableModifyFilter:newDict];
+                  else
+                      [self undoableCreateFilter:newDict];
+
+                  [self.filterListController setSelectedObjects:@[newDict]];
+
+                  [(LoggerAppDelegate *)NSApp.delegate saveFiltersDefinition];
+              }
+              [self.filterEditorWindow orderOut:self];
+          }];
 }
 
 - (IBAction)deleteSelectedFilters:(id)sender
