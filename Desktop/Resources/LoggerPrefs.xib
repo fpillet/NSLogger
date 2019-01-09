@@ -78,6 +78,7 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="392"/>
             </connections>
+            <point key="canvasLocation" x="142" y="395"/>
         </window>
         <objectController id="367" userLabel="Network Prefs Controller">
             <declaredKeys>
@@ -103,7 +104,7 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <clipView key="contentView" id="O6e-oj-TeH">
                         <rect key="frame" x="1" y="0.0" width="445" height="425"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="488" id="486">
                                 <rect key="frame" x="0.0" y="0.0" width="445" height="400"/>
@@ -177,40 +178,30 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </tableHeaderView>
                 </scrollView>
-                <customView id="494" customClass="BWAnchoredButtonBar">
-                    <rect key="frame" x="0.0" y="0.0" width="447" height="23"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                    <subviews>
-                        <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="496" customClass="BWAnchoredButton">
-                            <rect key="frame" x="34" y="-1" width="32" height="24"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" controlSize="small" borderStyle="border" inset="2" id="497">
-                                <behavior key="behavior" lightByContents="YES"/>
-                                <font key="font" metaFont="smallSystem"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="advancedColorsDel:" target="-2" id="509"/>
-                            </connections>
-                        </button>
-                        <button toolTip="Add a new filter" verticalHuggingPriority="750" id="495" customClass="BWAnchoredButton">
-                            <rect key="frame" x="2" y="-1" width="32" height="24"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" controlSize="small" borderStyle="border" inset="2" id="498">
-                                <behavior key="behavior" lightByContents="YES"/>
-                                <font key="font" metaFont="smallSystem"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="advancedColorsAdd:" target="-2" id="508"/>
-                            </connections>
-                        </button>
-                    </subviews>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="number" keyPath="selectedIndex">
-                            <integer key="value" value="0"/>
-                        </userDefinedRuntimeAttribute>
-                    </userDefinedRuntimeAttributes>
-                </customView>
+                <button toolTip="Add a new filter" verticalHuggingPriority="750" id="495">
+                    <rect key="frame" x="0.0" y="0.0" width="32" height="23"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="498">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="advancedColorsAdd:" target="-2" id="508"/>
+                    </connections>
+                </button>
+                <button toolTip="Delete selected filter" verticalHuggingPriority="750" id="496">
+                    <rect key="frame" x="31" y="0.0" width="32" height="23"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="497">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="advancedColorsDel:" target="-2" id="509"/>
+                    </connections>
+                </button>
             </subviews>
+            <point key="canvasLocation" x="122" y="832"/>
         </customView>
         <customView id="397" userLabel="Network Prefs Panel">
             <rect key="frame" x="0.0" y="0.0" width="487" height="275"/>
@@ -273,7 +264,11 @@
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                     <connections>
-                        <binding destination="367" name="value" keyPath="selection.bonjourServiceName" id="415"/>
+                        <binding destination="367" name="value" keyPath="selection.bonjourServiceName" id="Z0X-Fa-tQG">
+                            <dictionary key="options">
+                                <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                            </dictionary>
+                        </binding>
                     </connections>
                 </textField>
                 <textField verticalHuggingPriority="750" id="403">
@@ -315,6 +310,7 @@ Gw
                     </connections>
                 </button>
             </subviews>
+            <point key="canvasLocation" x="142" y="1"/>
         </customView>
         <view id="394" userLabel="Font Prefs Panel">
             <rect key="frame" x="0.0" y="0.0" width="548" height="397"/>
@@ -587,13 +583,14 @@ Gw
                     </connections>
                 </button>
             </subviews>
+            <point key="canvasLocation" x="172" y="1320"/>
         </view>
         <customView id="479" userLabel="General Prefs Panel">
-            <rect key="frame" x="0.0" y="0.0" width="487" height="209"/>
+            <rect key="frame" x="0.0" y="0.0" width="487" height="236"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <textField verticalHuggingPriority="750" id="480">
-                    <rect key="frame" x="37" y="118" width="438" height="34"/>
+                    <rect key="frame" x="37" y="145" width="438" height="34"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="NSLogger will remember each run and let you access it from the Runs pop-up menu in the toolbar" id="483">
                         <font key="font" metaFont="system"/>
@@ -602,7 +599,7 @@ Gw
                     </textFieldCell>
                 </textField>
                 <button id="481" userLabel="Check Box">
-                    <rect key="frame" x="18" y="142" width="451" height="49"/>
+                    <rect key="frame" x="18" y="169" width="451" height="49"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Keep previous run logs of same application" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="482">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -617,7 +614,7 @@ Gw
                     </connections>
                 </button>
                 <button id="519" userLabel="Check Box">
-                    <rect key="frame" x="18" y="63" width="451" height="49"/>
+                    <rect key="frame" x="18" y="90" width="451" height="49"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="check" title="Close without saving" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="520">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -631,8 +628,26 @@ Gw
                         </binding>
                     </connections>
                 </button>
+                <textField verticalHuggingPriority="750" id="525">
+                    <rect key="frame" x="18" y="67" width="175" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Maximum Table Row Height:" id="526">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="nfh-tM-FQj">
+                    <rect key="frame" x="37" y="25" width="438" height="34"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="NSLogger can limit the height of each row to make the list easier to read when long log entries are displayed" id="4lL-dz-C72">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
                 <textField verticalHuggingPriority="750" id="523">
-                    <rect key="frame" x="240" y="37" width="68" height="22"/>
+                    <rect key="frame" x="199" y="64" width="68" height="22"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="524">
                         <font key="font" metaFont="system"/>
@@ -643,16 +658,8 @@ Gw
                         <binding destination="475" name="value" keyPath="values.maxTableRowHeight" id="527"/>
                     </connections>
                 </textField>
-                <textField verticalHuggingPriority="750" id="525">
-                    <rect key="frame" x="37" y="40" width="198" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Maximum Table Row Height:" id="526">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
             </subviews>
+            <point key="canvasLocation" x="145.5" y="-309"/>
         </customView>
         <userDefaultsController representsSharedInstance="YES" id="475"/>
         <arrayController id="503" userLabel="Advanced Colors Array Controller">
@@ -668,9 +675,9 @@ Gw
     </objects>
     <resources>
         <image name="NSAddTemplate" width="11" height="11"/>
-        <image name="NSColorPanel" width="128" height="128"/>
-        <image name="NSNetwork" width="128" height="128"/>
-        <image name="NSPreferencesGeneral" width="128" height="128"/>
+        <image name="NSColorPanel" width="32" height="32"/>
+        <image name="NSNetwork" width="32" height="32"/>
+        <image name="NSPreferencesGeneral" width="32" height="32"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="ToolbarItemFonts" width="32" height="32"/>
     </resources>
