@@ -156,6 +156,21 @@ This will allow the traces to be received only by the computer of the user who c
 
 *This only work when NSLogger has been added to your project using CocoaPods*.
 
+## Set up logger options
+
+For example if you don't want to disable OS_ACTIVITY_MODE for your scheme because you need that logs. And you wanna have only your logs in NSLogger in Swift call init function:
+
+```Swift
+func LoggerInit() {
+    let pointer = LoggerGetDefaultLogger()
+    var options = LoggerGetOptions(pointer)
+    
+    options ^= UInt32(kLoggerOption_CaptureSystemConsole) // disable that option
+    
+    LoggerSetOptions(pointer, options)
+}
+```
+
 ## Manual Framework Install
 
 When using NSLogger without CocoaPods, add `LoggerClient.h`, `LoggerClient.m` and `LoggerCommon.h` (as well as add the `CFNetwork.framework` and `SystemConfiguration.framework` frameworks) to your iOS or Mac OS X application, then replace your *NSLog()* calls with *LogMessageCompat()* calls. We recommend using a macro, so you can turn off logs when building the distribution version of your application.
