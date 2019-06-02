@@ -46,7 +46,7 @@ class ViewController: UIViewController {
 			randomized.append(UInt8.random(in: 0 ... 255))
 		}
 		
-		Logger.shared.log(.io, .verbose, Data(bytes: randomized))
+		Logger.shared.log(.io, .verbose, Data(randomized))
 	}
 	
 }
