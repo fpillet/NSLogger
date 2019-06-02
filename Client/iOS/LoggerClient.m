@@ -432,7 +432,9 @@ void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 		(logger->port != previousPort ||
 		 ((hostName == NULL) != (previousHost == NULL)) ||
 		 (hostName != NULL && CFStringCompare(hostName, previousHost, kCFCompareCaseInsensitive) != kCFCompareEqualTo)))
+    {
 		CFRunLoopSourceSignal(logger->remoteOptionsChangedSource);
+    }
 		 
 	if (previousHost != NULL)
 		CFRelease(previousHost);
