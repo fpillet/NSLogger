@@ -359,7 +359,6 @@
 		if ([controller isKindOfClass:[LoggerWindowController class]])
 			return controller;
 	}
-	assert(false);
 	return nil;
 }
 
