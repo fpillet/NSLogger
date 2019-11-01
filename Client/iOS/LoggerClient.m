@@ -1,7 +1,7 @@
 /*
  * LoggerClient.m
  *
- * version 1.9.0 25-FEB-2018
+ * version 1.9.7 09-JAN-2019
  *
  * Main implementation of the NSLogger client side code
  * Part of NSLogger (client side)
@@ -118,7 +118,7 @@
 #endif
 
 #if defined(__has_feature) && __has_feature(objc_arc)
-#error LoggerClinet.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
+#error LoggerClient.m must be compiled without Objective-C Automatic Reference Counting (CLANG_ENABLE_OBJC_ARC=NO)
 #endif
 
 struct Logger
@@ -181,6 +181,9 @@ static void LoggerConnectToService(Logger *logger, NSNetService *service);
 static void LoggerDisconnectFromService(Logger *logger, NSNetService *service);
 
 @interface FPLLoggerBonjourDelegate : NSObject <NSNetServiceBrowserDelegate>
+{
+	Logger *_logger;
+}
 - (instancetype)initWithLogger:(Logger *)logger;
 @end
 
@@ -937,10 +940,9 @@ static void LoggerLogToConsole(CFDataRef data)
 
 	char buf[32];
 	struct tm t;
-	gmtime_r(&timestamp.tv_sec, &t);
+	localtime_r(&timestamp.tv_sec, &t);
 	strftime(buf, sizeof(buf)-1, "%T", &t);
-	CFStringRef ts = CFStringCreateWithBytesNoCopy(
-                                                   NULL,
+	CFStringRef ts = CFStringCreateWithBytesNoCopy(NULL,
                                                    (const UInt8 *)buf,
                                                    (CFIndex)strlen(buf),
                                                    kCFStringEncodingASCII,
@@ -1691,9 +1693,6 @@ static void LoggerDisconnectFromService(Logger *logger, NSNetService *service)
 }
 
 @implementation FPLLoggerBonjourDelegate
-{
-	Logger *_logger;
-}
 
 - (instancetype)initWithLogger:(Logger *)logger;
 {

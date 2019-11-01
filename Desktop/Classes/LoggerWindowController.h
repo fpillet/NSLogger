@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -36,59 +36,54 @@
 
 @interface LoggerWindowController : NSWindowController <NSWindowDelegate, LoggerConnectionDelegate, NSTableViewDataSource, NSTableViewDelegate, NSSplitViewDelegate>
 {
-	IBOutlet LoggerTableView *logTable;
-	IBOutlet NSTableView *filterSetsTable;
-	IBOutlet NSTableView *filterTable;
-	IBOutlet NSPopUpButton *quickFilter;
-	IBOutlet NSButton *showFunctionNamesButton;
-	IBOutlet NSSearchField *quickFilterTextField;
-	IBOutlet BWAnchoredButtonBar *buttonBar;
-
-	IBOutlet NSArrayController *filterSetsListController;
-	IBOutlet NSArrayController *filterListController;
-
-	IBOutlet NSWindow *filterEditorWindow;
-	IBOutlet NSPredicateEditor *filterEditor;
-	IBOutlet NSTextField *filterName;
-	
-	IBOutlet NSWindow *markTitleWindow;
-	IBOutlet NSTextField *markTitleField;
-    IBOutlet LoggerSplitView *splitView;
-
-	LoggerConnection *attachedConnection;
-	LoggerDetailsWindowController *detailsWindowController;
-
-	LoggerMessageCell *messageCell;
-	LoggerClientInfoCell *clientInfoCell;
-	LoggerMarkerCell *markerCell;
-    CGFloat threadColumnWidth;
-
-	NSString *info;
-	NSMutableArray *displayedMessages;
-	NSMutableSet *tags;
-
-	NSPredicate *filterPredicate;				// created from current selected filters, + quick filter string / tag / log level
-
-	NSString *filterString;
-	NSMutableSet *filterTags;
-	int logLevel;
-
-	dispatch_queue_t messageFilteringQueue;
-	dispatch_group_t lastTilingGroup;
-
-	int lastMessageRow;
-	BOOL messagesSelected;
-	BOOL hasQuickFilter;
-	BOOL initialRefreshDone;
-	BOOL showFunctionNames;
-	BOOL clientAppSettingsRestored;
+	BOOL _showFunctionNames;
 }
+
+@property (nonatomic, weak) IBOutlet LoggerTableView *logTable;
+@property (nonatomic, weak) IBOutlet NSTableView *filterSetsTable;
+@property (nonatomic, weak) IBOutlet NSTableView *filterTable;
+@property (nonatomic, weak) IBOutlet NSPopUpButton *quickFilter;
+@property (nonatomic, weak) IBOutlet NSButton *showFunctionNamesButton;
+@property (nonatomic, weak) IBOutlet NSSearchField *quickFilterTextField;
+
+@property (nonatomic, retain) IBOutlet NSArrayController *filterSetsListController;
+@property (nonatomic, retain) IBOutlet NSArrayController *filterListController;
+
+@property (nonatomic, retain) IBOutlet NSWindow *filterEditorWindow;
+@property (nonatomic, retain) IBOutlet NSPredicateEditor *filterEditor;
+@property (nonatomic, retain) IBOutlet NSTextField *filterName;
+
+@property (nonatomic, retain) IBOutlet NSWindow *markTitleWindow;
+@property (nonatomic, retain) IBOutlet NSTextField *markTitleField;
+@property (nonatomic, retain) IBOutlet LoggerSplitView *splitView;
+
+@property (nonatomic, retain) LoggerDetailsWindowController *detailsWindowController;
 
 @property (nonatomic, retain) LoggerConnection *attachedConnection;
 @property (nonatomic, assign) BOOL messagesSelected;
 @property (nonatomic, assign) BOOL hasQuickFilter;
-@property (nonatomic, assign) NSNumber* showFunctionNames;
+@property (nonatomic, assign) BOOL initialRefreshDone;
+@property (nonatomic, assign) BOOL clientAppSettingsRestored;
+@property (nonatomic, retain) NSNumber* showFunctionNames;
+@property (nonatomic, assign) int lastMessageRow;
+
+@property (nonatomic, retain) NSString *filterString;
+@property (nonatomic, retain) NSMutableSet *filterTags;
+@property (nonatomic, assign) int logLevel;
+
+@property (nonatomic, retain) NSString *info;
+@property (nonatomic, retain) NSMutableArray *displayedMessages;
+@property (nonatomic, retain) NSMutableSet *tags;
+
+@property (nonatomic, retain) NSPredicate *filterPredicate;				// created from current selected filters, + quick filter string / tag / log level
+@property (nonatomic, retain) LoggerMessageCell *messageCell;
+@property (nonatomic, retain) LoggerClientInfoCell *clientInfoCell;
+@property (nonatomic, retain) LoggerMarkerCell *markerCell;
+
 @property (nonatomic, assign) CGFloat threadColumnWidth;
+
+@property (nonatomic, retain) dispatch_queue_t messageFilteringQueue;
+@property (nonatomic, retain) dispatch_group_t lastTilingGroup;
 
 - (IBAction)openDetailsWindow:(id)sender;
 
@@ -115,8 +110,6 @@
 
 - (IBAction)clearCurrentLog:(id)sender;
 - (IBAction)clearAllLogs:(id)sender;
-
-- (IBAction)collapseTaskbar:(id)sender;
 
 - (void)updateMenuBar:(BOOL)documentIsFront;
 

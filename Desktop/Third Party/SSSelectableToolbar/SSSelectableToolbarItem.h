@@ -10,9 +10,6 @@
 
 
 @interface SSSelectableToolbarItem : NSToolbarItem 
-{
-	NSView* linkedView;
-}
 
 @property (nonatomic, retain) IBOutlet NSView* linkedView;
 

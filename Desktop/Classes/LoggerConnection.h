@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -49,31 +49,6 @@
 // NSLoggerConnection class
 // -----------------------------------------------------------------------------
 @interface LoggerConnection : NSObject <NSCoding>
-{
-	id<LoggerConnectionDelegate> delegate;
-
-	// Client info, as transmitted
-	NSString *clientName;
-	NSString *clientVersion;
-	NSString *clientOSName;
-	NSString *clientOSVersion;
-	NSString *clientDevice;
-	NSString *clientUDID;
-
-	NSMutableSet *filenames;			// pool of unique file names
-	NSMutableSet *functionNames;		// pool of unique function names
-
-	NSData *clientAddress;				// depends on the underlying protocol
-
-	NSMutableArray *messages;
-	NSMutableArray *parentIndexesStack;	// during messages receive, use this to quickly locate parent indexes in groups
-	dispatch_queue_t messageProcessingQueue;
-
-	int reconnectionCount;				// when a reconnection is detected (same client, disconnects then reconnects), the # reconnection for this connection
-	BOOL connected;
-	BOOL restoredFromSave;
-	BOOL attachedToWindow;
-}
 
 @property (retain) id <LoggerConnectionDelegate> delegate;
 
@@ -84,15 +59,17 @@
 @property (nonatomic, retain) NSString *clientDevice;
 @property (nonatomic, retain) NSString *clientUDID;
 
-@property (nonatomic, readonly) NSData *clientAddress;
-@property (nonatomic, readonly) NSMutableSet *filenames;
-@property (nonatomic, readonly) NSMutableSet *functionNames;
+@property (nonatomic, readonly) NSData *clientAddress;			// depends on the underlying protocol
+@property (nonatomic, readonly) NSMutableSet *filenames;		// pool of unique file names
+@property (nonatomic, readonly) NSMutableSet *functionNames;	// pool of unique function names
 
 @property (nonatomic, readonly) NSMutableArray *messages;
-@property (nonatomic, assign) int reconnectionCount;
+@property (nonatomic, assign) int reconnectionCount;			// when a reconnection is detected (same client, disconnects then reconnects), the # reconnection for this connection
 @property (nonatomic, assign) BOOL connected;
 @property (nonatomic, readonly) BOOL restoredFromSave;
 @property (nonatomic, assign) BOOL attachedToWindow;
+
+@property (nonatomic, readonly, retain) NSMutableArray *parentIndexesStack;	// during messages receive, use this to quickly locate parent indexes in groups
 @property (nonatomic, readonly) dispatch_queue_t messageProcessingQueue;
 
 - (id)initWithAddress:(NSData *)anAddress;

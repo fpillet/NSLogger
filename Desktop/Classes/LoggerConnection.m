@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -40,22 +40,15 @@ char sConnectionAssociatedObjectKey = 1;
 
 @implementation LoggerConnection
 
-@synthesize delegate;
-@synthesize messages;
-@synthesize reconnectionCount, connected, restoredFromSave, attachedToWindow;
-@synthesize clientName, clientVersion, clientOSName, clientOSVersion, clientDevice, clientAddress, clientUDID;
-@synthesize messageProcessingQueue;
-@synthesize filenames, functionNames;
-
 - (id)init
 {
 	if ((self = [super init]) != nil)
 	{
-		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
-		messages = [[NSMutableArray alloc] initWithCapacity:1024];
-		parentIndexesStack = [[NSMutableArray alloc] init];
-		filenames = [[NSMutableSet alloc] init];
-		functionNames = [[NSMutableSet alloc] init];
+		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger._messageProcessingQueue", NULL);
+		_messages = [[NSMutableArray alloc] initWithCapacity:1024];
+		_parentIndexesStack = [[NSMutableArray alloc] init];
+		_filenames = [[NSMutableSet alloc] init];
+		_functionNames = [[NSMutableSet alloc] init];
 	}
 	return self;
 }
@@ -64,38 +57,21 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	if ((self = [super init]) != nil)
 	{
-		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
-		messages = [[NSMutableArray alloc] initWithCapacity:1024];
-		parentIndexesStack = [[NSMutableArray alloc] init];
-		clientAddress = [anAddress copy];
-		filenames = [[NSMutableSet alloc] init];
-		functionNames = [[NSMutableSet alloc] init];
+		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger._messageProcessingQueue", NULL);
+		_messages = [[NSMutableArray alloc] initWithCapacity:1024];
+		_parentIndexesStack = [[NSMutableArray alloc] init];
+		_clientAddress = [anAddress copy];
+		_filenames = [[NSMutableSet alloc] init];
+		_functionNames = [[NSMutableSet alloc] init];
 	}
 	return self;
-}
-
-- (void)dealloc
-{
-	dispatch_release(messageProcessingQueue);
-	[messages release];
-	[parentIndexesStack release];
-	[clientName release];
-	[clientVersion release];
-	[clientOSName release];
-	[clientOSVersion release];
-	[clientDevice release];
-	[clientAddress release];
-	[clientUDID release];
-	[filenames release];
-	[functionNames release];
-	[super dealloc];
 }
 
 - (BOOL)isNewRunOfClient:(LoggerConnection *)aConnection
 {
 	// Try to detect if a connection is a new run of an older, disconnected session
 	// (goal is to detect restarts, so as to replace logs in the same window)
-	assert(restoredFromSave == NO);
+	assert(_restoredFromSave == NO);
 
 	// exclude files loaded from disk
 	if (aConnection.restoredFromSave)
@@ -115,11 +91,11 @@ char sConnectionAssociatedObjectKey = 1;
 		return YES;	// s1 and d2 either nil or same
 	};
 
-	if (!isSame(clientName, aConnection.clientName) ||
-		!isSame(clientVersion, aConnection.clientVersion) ||
-		!isSame(clientOSName, aConnection.clientOSName) ||
-		!isSame(clientOSVersion, aConnection.clientOSVersion) ||
-		!isSame(clientDevice, aConnection.clientDevice))
+	if (!isSame(_clientName, aConnection.clientName) ||
+		!isSame(_clientVersion, aConnection.clientVersion) ||
+		!isSame(_clientOSName, aConnection.clientOSName) ||
+		!isSame(_clientOSVersion, aConnection.clientOSVersion) ||
+		!isSame(_clientDevice, aConnection.clientDevice))
 	{
 		return NO;
 	}
@@ -127,16 +103,16 @@ char sConnectionAssociatedObjectKey = 1;
 	// check whether address is the same, OR hardware ID (if present) is the same.
 	// hardware ID wins (on desktop, iOS simulator can connect have different
 	// addresses from run to run if the computer has multiple network interfaces / VMs installed
-	if (clientUDID != nil && isSame(clientUDID, aConnection.clientUDID))
+	if (_clientUDID != nil && isSame(_clientUDID, aConnection.clientUDID))
 		return YES;
 	
-	if ((clientAddress != nil) != (aConnection.clientAddress != nil))
+	if ((_clientAddress != nil) != (aConnection.clientAddress != nil))
 		return NO;
 
-	if (clientAddress != nil)
+	if (_clientAddress != nil)
 	{
 		// compare address blocks sizes (ipv4 vs. ipv6)
-		NSUInteger addrSize = [clientAddress length];
+		NSUInteger addrSize = [_clientAddress length];
 		if (addrSize != [aConnection.clientAddress length])
 			return NO;
 		
@@ -145,20 +121,20 @@ char sConnectionAssociatedObjectKey = 1;
 		if (addrSize == sizeof(struct sockaddr_in))
 		{
 			struct sockaddr_in addra, addrb;
-			[clientAddress getBytes:&addra];
-			[aConnection.clientAddress getBytes:&addrb];
+			[_clientAddress getBytes:&addra length:addrSize];
+			[aConnection.clientAddress getBytes:&addrb length:MIN([aConnection.clientAddress length], sizeof(addrb))];
 			if (memcmp(&addra.sin_addr, &addrb.sin_addr, sizeof(addra.sin_addr)))
 				return NO;
 		}
 		else if (addrSize == sizeof(struct sockaddr_in6))
 		{
 			struct sockaddr_in6 addr6a, addr6b;
-			[clientAddress getBytes:&addr6a];
-			[aConnection.clientAddress getBytes:&addr6b];
+			[_clientAddress getBytes:&addr6a length:addrSize];
+			[aConnection.clientAddress getBytes:&addr6b length:MIN([aConnection.clientAddress length], sizeof(addr6b))];
 			if (memcmp(&addr6a.sin6_addr, &addr6b.sin6_addr, sizeof(addr6a.sin6_addr)))
 				return NO;
 		}
-		else if (![clientAddress isEqualToData:aConnection.clientAddress])
+		else if (![_clientAddress isEqualToData:aConnection.clientAddress])
 			return NO;		// we only support ipv4 and ipv6, so this should not happen
 	}
 	
@@ -167,13 +143,13 @@ char sConnectionAssociatedObjectKey = 1;
 
 - (void)messagesReceived:(NSArray *)msgs
 {
-	dispatch_async(messageProcessingQueue, ^{
+	dispatch_async(_messageProcessingQueue, ^{
 		/* Code not functional yet
 		 *
-		NSRange range = NSMakeRange([messages count], [msgs count]);
+		NSRange range = NSMakeRange([_messages count], [msgs count]);
 		NSUInteger lastParent = NSNotFound;
-		if ([parentIndexesStack count])
-			lastParent = [[parentIndexesStack lastObject] intValue];
+		if ([_parentIndexesStack count])
+			lastParent = [[_parentIndexesStack lastObject] intValue];
 		
 		for (NSUInteger i = 0, count = [msgs count]; i < count; i++)
 		{
@@ -182,16 +158,16 @@ char sConnectionAssociatedObjectKey = 1;
 			switch (message.type)
 			{
 				case LOGMSG_TYPE_BLOCKSTART:
-					[parentIndexesStack addObject:[NSNumber numberWithInt:range.location+i]];
+					[_parentIndexesStack addObject:[NSNumber numberWithInt:range.location+i]];
 					lastParent = range.location + i;
 					break;
 					
 				case LOGMSG_TYPE_BLOCKEND:
-					if ([parentIndexesStack count])
+					if ([_parentIndexesStack count])
 					{
-						[parentIndexesStack removeLastObject];
-						if ([parentIndexesStack count])
-							lastParent = [[parentIndexesStack lastObject] intValue];
+						[_parentIndexesStack removeLastObject];
+						if ([_parentIndexesStack count])
+							lastParent = [[_parentIndexesStack lastObject] intValue];
 						else
 							lastParent = NSNotFound;
 					}
@@ -201,7 +177,7 @@ char sConnectionAssociatedObjectKey = 1;
 					if (lastParent != NSNotFound)
 					{
 						message.distanceFromParent = range.location + i - lastParent;
-						message.indent = [parentIndexesStack count];
+						message.indent = [_parentIndexesStack count];
 					}
 					break;
 			}
@@ -209,30 +185,29 @@ char sConnectionAssociatedObjectKey = 1;
 		 *
 		 */
 		NSRange range;
-		@synchronized (messages)
+		@synchronized (self.messages)
 		{
-			range = NSMakeRange([messages count], [msgs count]);
-			[messages addObjectsFromArray:msgs];
+			range = NSMakeRange([self.messages count], [msgs count]);
+			[self.messages addObjectsFromArray:msgs];
 		}
 		
-		if (attachedToWindow)
+		if (self.attachedToWindow)
 			[self.delegate connection:self didReceiveMessages:msgs range:range];
 	});
 }
 
 - (void)clearMessages
 {
-	// Clear the backlog of messages, only keeping the top (client info) message
-	// This MUST be called on the messageProcessingQueue
-	assert(dispatch_get_current_queue() == messageProcessingQueue);
-	if (![messages count])
+	// Clear the backlog of _messages, only keeping the top (client info) message
+	// This MUST be called on the _messageProcessingQueue
+	if (![_messages count])
 		return;
 
 	// Locate the clientInfo message
-	if (((LoggerMessage *)[messages objectAtIndex:0]).type == LOGMSG_TYPE_CLIENTINFO)
-		[messages removeObjectsInRange:NSMakeRange(1, [messages count]-1)];
+	if (((LoggerMessage *) _messages[0]).type == LOGMSG_TYPE_CLIENTINFO)
+		[_messages removeObjectsInRange:NSMakeRange(1, [_messages count]-1)];
 	else
-		[messages removeAllObjects];
+		[_messages removeAllObjects];
 }
 
 - (void)clientInfoReceived:(LoggerMessage *)message
@@ -240,12 +215,12 @@ char sConnectionAssociatedObjectKey = 1;
 	// Insert message at first position in the message list. In the unlikely event there is
 	// an existing ClientInfo message at this position, just replace it. Also, don't fire
 	// a "didReceiveMessages". The rationale behind this is that if the connection just came in,
-	// we are not yet attached to a window and when attaching, the window will refresh all messages.
-	dispatch_async(messageProcessingQueue, ^{
-		@synchronized (messages)
+	// we are not yet attached to a window and when attaching, the window will refresh all _messages.
+	dispatch_async(_messageProcessingQueue, ^{
+		@synchronized (self.messages)
 		{
-			if ([messages count] == 0 || ((LoggerMessage *)[messages objectAtIndex:0]).type != LOGMSG_TYPE_CLIENTINFO)
-				[messages insertObject:message atIndex:0];
+			if ([self.messages count] == 0 || ((LoggerMessage *) self.messages[0]).type != LOGMSG_TYPE_CLIENTINFO)
+				[self.messages insertObject:message atIndex:0];
 		}
 	});
 
@@ -253,22 +228,22 @@ char sConnectionAssociatedObjectKey = 1;
 	// while the UI reads them
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSDictionary *parts = message.parts;
-		id value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_NAME]];
+		id value = parts[@PART_KEY_CLIENT_NAME];
 		if (value != nil)
 			self.clientName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_VERSION]];
+		value = parts[@PART_KEY_CLIENT_VERSION];
 		if (value != nil)
 			self.clientVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_NAME]];
+		value = parts[@PART_KEY_OS_NAME];
 		if (value != nil)
 			self.clientOSName = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_OS_VERSION]];
+		value = parts[@PART_KEY_OS_VERSION];
 		if (value != nil)
 			self.clientOSVersion = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_CLIENT_MODEL]];
+		value = parts[@PART_KEY_CLIENT_MODEL];
 		if (value != nil)
 			self.clientDevice = value;
-		value = [parts objectForKey:[NSNumber numberWithInteger:PART_KEY_UNIQUEID]];
+		value = parts[@PART_KEY_UNIQUEID];
 		if (value != nil)
 			self.clientUDID = value;
 
@@ -281,17 +256,17 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	// enforce thread safety (only on main thread)
 	assert([NSThread isMainThread]);
-	NSMutableString *s = [[[NSMutableString alloc] init] autorelease];
-	if (clientName != nil)
-		[s appendString:clientName];
-	if (clientVersion != nil)
-		[s appendFormat:@" %@", clientVersion];
-	if (clientName == nil && clientVersion == nil)
+	NSMutableString *s = [[NSMutableString alloc] init];
+	if (_clientName != nil)
+		[s appendString:_clientName];
+	if (_clientVersion != nil)
+		[s appendFormat:@" %@", _clientVersion];
+	if (_clientName == nil && _clientVersion == nil)
 		[s appendString:NSLocalizedString(@"<unknown>", @"")];
-	if (clientOSName != nil && clientOSVersion != nil)
-		[s appendFormat:@"%@(%@ %@)", [s length] ? @" " : @"", clientOSName, clientOSVersion];
-	else if (clientOSName != nil)
-		[s appendFormat:@"%@(%@)", [s length] ? @" " : @"", clientOSName];
+	if (_clientOSName != nil && _clientOSVersion != nil)
+		[s appendFormat:@"%@(%@ %@)", [s length] ? @" " : @"", _clientOSName, _clientOSVersion];
+	else if (_clientOSName != nil)
+		[s appendFormat:@"%@(%@)", [s length] ? @" " : @"", _clientOSName];
 
 	return s;
 }
@@ -316,7 +291,7 @@ char sConnectionAssociatedObjectKey = 1;
 	// status is being observed by LoggerStatusWindowController and changes once
 	// when the connection gets disconnected
 	NSString *format;
-	if (connected)
+	if (_connected)
 		format = NSLocalizedString(@"%@ connected", @"");
 	else
 		format = NSLocalizedString(@"%@ disconnected", @"");
@@ -324,19 +299,19 @@ char sConnectionAssociatedObjectKey = 1;
 		return [NSString stringWithFormat:format, [self clientDescription]];
 	__block NSString *status;
 	dispatch_sync(dispatch_get_main_queue(), ^{
-		status = [[NSString stringWithFormat:format, [self clientDescription]] retain];
+		status = [NSString stringWithFormat:format, [self clientDescription]];
 	});
-	return [status autorelease];
+	return status;
 }
 
 - (void)setConnected:(BOOL)newConnected
 {
-	if (connected != newConnected)
+	if (_connected != newConnected)
 	{
-		connected = newConnected;
+		_connected = newConnected;
 		
-		if (!connected && [(id)delegate respondsToSelector:@selector(remoteDisconnected:)])
-			[(id)delegate performSelectorOnMainThread:@selector(remoteDisconnected:) withObject:self waitUntilDone:NO];
+		if (!_connected && [(id)_delegate respondsToSelector:@selector(remoteDisconnected:)])
+			[(id)_delegate performSelectorOnMainThread:@selector(remoteDisconnected:) withObject:self waitUntilDone:NO];
 
 		[[NSNotificationCenter defaultCenter] postNotificationName:kShowStatusInStatusWindowNotification
 															object:self];
@@ -356,52 +331,67 @@ char sConnectionAssociatedObjectKey = 1;
 {
 	if ((self = [super init]) != nil)
 	{
-		clientName = [[aDecoder decodeObjectForKey:@"clientName"] retain];
-		clientVersion = [[aDecoder decodeObjectForKey:@"clientVersion"] retain];
-		clientOSName = [[aDecoder decodeObjectForKey:@"clientOSName"] retain];
-		clientOSVersion = [[aDecoder decodeObjectForKey:@"clientOSVersion"] retain];
-		clientDevice = [[aDecoder decodeObjectForKey:@"clientDevice"] retain];
-		clientUDID = [[aDecoder decodeObjectForKey:@"clientUDID"] retain];
-		parentIndexesStack = [[aDecoder decodeObjectForKey:@"parentIndexes"] retain];
-		filenames = [[aDecoder decodeObjectForKey:@"filenames"] retain];
-		if (filenames == nil)
-			filenames = [[NSMutableSet alloc] init];
-		functionNames = [[aDecoder decodeObjectForKey:@"functionNames"] retain];
-		if (functionNames == nil)
-			functionNames = [[NSMutableSet alloc] init];
+		_clientName = [aDecoder decodeObjectForKey:@"_clientName"];
+		// When the code was converted to ARC, some of the keys have changed.
+		// In order to be backward compatible, we also need to check if the coder
+		// is using the old keys.
+		if (_clientName == nil)
+			_clientName = [aDecoder decodeObjectForKey:@"clientName"];
+
+		_clientVersion = [aDecoder decodeObjectForKey:@"_clientVersion"];
+		if (_clientVersion == nil)
+			_clientVersion = [aDecoder decodeObjectForKey:@"clientVersion"];
+
+		_clientOSName = [aDecoder decodeObjectForKey:@"clientOSName"];
+		_clientOSVersion = [aDecoder decodeObjectForKey:@"clientOSVersion"];
+		_clientDevice = [aDecoder decodeObjectForKey:@"clientDevice"];
+		_clientUDID = [aDecoder decodeObjectForKey:@"clientUDID"];
+		_parentIndexesStack = [aDecoder decodeObjectForKey:@"parentIndexes"];
+		_filenames = [aDecoder decodeObjectForKey:@"_filenames"];
+		if (_filenames == nil)
+			_filenames = [aDecoder decodeObjectForKey:@"filenames"];
+		if (_filenames == nil)
+			_filenames = [[NSMutableSet alloc] init];
+		_functionNames = [aDecoder decodeObjectForKey:@"_functionNames"];
+		if (_functionNames == nil)
+			_functionNames = [aDecoder decodeObjectForKey:@"functionNames"];
+		if (_functionNames == nil)
+			_functionNames = [[NSMutableSet alloc] init];
 		objc_setAssociatedObject(aDecoder, &sConnectionAssociatedObjectKey, self, OBJC_ASSOCIATION_ASSIGN);
-		messages = [[aDecoder decodeObjectForKey:@"messages"] retain];
-		reconnectionCount = [aDecoder decodeIntForKey:@"reconnectionCount"];
-		restoredFromSave = YES;
+		_messages = [aDecoder decodeObjectForKey:@"_messages"];
+		if (_messages == nil)
+			_messages = [aDecoder decodeObjectForKey:@"messages"];
+		_reconnectionCount = [aDecoder decodeIntForKey:@"reconnectionCount"];
+		_restoredFromSave = YES;
 		
-		// we need a messageProcessingQueue just for the ability to add/insert marks
+		// we need a _messageProcessingQueue just for the ability to add/insert marks
 		// when user does post-mortem investigation
-		messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger.messageProcessingQueue", NULL);
+		_messageProcessingQueue = dispatch_queue_create("com.florentpillet.nslogger._messageProcessingQueue", NULL);
 	}
 	return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder
 {
-	if (clientName != nil)
-		[aCoder encodeObject:clientName forKey:@"clientName"];
-	if (clientVersion != nil)
-		[aCoder encodeObject:clientVersion forKey:@"clientVersion"];
-	if (clientOSName != nil)
-		[aCoder encodeObject:clientOSName forKey:@"clientOSName"];
-	if (clientOSVersion != nil)
-		[aCoder encodeObject:clientOSVersion forKey:@"clientOSVersion"];
-	if (clientDevice != nil)
-		[aCoder encodeObject:clientDevice forKey:@"clientDevice"];
-	if (clientUDID != nil)
-		[aCoder encodeObject:clientUDID forKey:@"clientUDID"];
-	[aCoder encodeObject:filenames forKey:@"filenames"];
-	[aCoder encodeObject:functionNames forKey:@"functionNames"];
-	[aCoder encodeInt:reconnectionCount forKey:@"reconnectionCount"];
-	@synchronized (messages)
+	if (_clientName != nil)
+		[aCoder encodeObject:_clientName forKey:@"_clientName"];
+	if (_clientVersion != nil)
+		[aCoder encodeObject:_clientVersion forKey:@"_clientVersion"];
+	if (_clientOSName != nil)
+		[aCoder encodeObject:_clientOSName forKey:@"clientOSName"];
+	if (_clientOSVersion != nil)
+		[aCoder encodeObject:_clientOSVersion forKey:@"clientOSVersion"];
+	if (_clientDevice != nil)
+		[aCoder encodeObject:_clientDevice forKey:@"clientDevice"];
+	if (_clientUDID != nil)
+		[aCoder encodeObject:_clientUDID forKey:@"clientUDID"];
+	[aCoder encodeObject:_filenames forKey:@"_filenames"];
+	[aCoder encodeObject:_functionNames forKey:@"_functionNames"];
+	[aCoder encodeInt:_reconnectionCount forKey:@"reconnectionCount"];
+	@synchronized (_messages)
 	{
-		[aCoder encodeObject:messages forKey:@"messages"];
-		[aCoder encodeObject:parentIndexesStack forKey:@"parentIndexes"];
+		[aCoder encodeObject:_messages forKey:@"_messages"];
+		[aCoder encodeObject:_parentIndexesStack forKey:@"parentIndexes"];
 	}
 }
 

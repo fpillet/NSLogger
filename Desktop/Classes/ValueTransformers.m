@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -36,7 +36,6 @@
 {
 	CanFilterSelectionBeDeletedValueTransformer *t = [[self alloc] init];
 	[NSValueTransformer setValueTransformer:t forName:@"CanDeleteFilterSelection"];
-	[t release];
 }
 
 + (Class)transformedValueClass
@@ -55,7 +54,7 @@
 		result = (([selection count] > 1) ||
 				  ([[[selection lastObject] objectForKey:@"uid"] integerValue] != 1));
 	}
-	return [NSNumber numberWithBool:result];
+	return @(result);
 }
 
 @end
@@ -66,7 +65,6 @@
 {
 	FilterColumnHeaderValueTransformer *t = [[self alloc] init];
 	[NSValueTransformer setValueTransformer:t forName:@"FilterColumnHeader"];
-	[t release];
 }
 
 + (Class)transformedValueClass
@@ -86,7 +84,6 @@
 {
 	BonjourServiceNameValueTransformer *t = [[self alloc] init];
 	[NSValueTransformer setValueTransformer:t forName:@"TrimmedBonjourServiceName"];
-	[t release];
 }
 
 + (Class)transformedValueClass

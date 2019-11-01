@@ -3,7 +3,7 @@
  *
  * BSD license follows (http://www.opensource.org/licenses/bsd-license.php)
  * 
- * Copyright (c) 2010-2017 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
+ * Copyright (c) 2010-2018 Florent Pillet <fpillet@gmail.com> All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -33,41 +33,35 @@
 @class LoggerConnection;
 
 @interface LoggerPrefsWindowController : NSWindowController <NSWindowDelegate>
-{
-	IBOutlet NSObjectController *networkDefaultsController;
 
-	IBOutlet NSControl *sampleMessage;
-	IBOutlet NSControl *sampleDataMessage;
-	
-	IBOutlet NSTextField *timestampFontName;
-	IBOutlet NSTextField *threadIDFontName;
-	IBOutlet NSTextField *tagFontName;
-	IBOutlet NSTextField *textFontName;
-	IBOutlet NSTextField *dataFontName;
-	IBOutlet NSTextField *fileFunctionFontName;
-	
-	IBOutlet NSColorWell *timestampForegroundColor;
-	IBOutlet NSColorWell *threadIDForegroundColor;
-	IBOutlet NSColorWell *tagLevelForegroundColor;
-	IBOutlet NSColorWell *textForegroundColor;
-	IBOutlet NSColorWell *dataForegroundColor;
-	IBOutlet NSColorWell *fileFunctionForegroundColor;
-	IBOutlet NSColorWell *fileFunctionBackgroundColor;
+@property (nonatomic, retain) IBOutlet NSObjectController *networkDefaultsController;
+@property (nonatomic, retain) IBOutlet NSControl *sampleMessage;
+@property (nonatomic, retain) IBOutlet NSControl *sampleDataMessage;
 
-	LoggerConnection *fakeConnection;
-	
-	int currentFontSelection;
-	NSDictionary *attributes;
+@property (nonatomic, retain) IBOutlet NSTextField *timestampFontName;
+@property (nonatomic, retain) IBOutlet NSTextField *threadIDFontName;
+@property (nonatomic, retain) IBOutlet NSTextField *tagFontName;
+@property (nonatomic, retain) IBOutlet NSTextField *textFontName;
+@property (nonatomic, retain) IBOutlet NSTextField *dataFontName;
+@property (nonatomic, retain) IBOutlet NSTextField *fileFunctionFontName;
 
-	NSMutableDictionary *networkPrefs;
-    NSMutableArray *_advancedColors;
-    NSArrayController *advancedColorsArrayController;
-    NSTableView *advancedColorsTableView;
-}
+@property (nonatomic, retain) IBOutlet NSColorWell *timestampForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *threadIDForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *tagLevelForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *textForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *dataForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *fileFunctionForegroundColor;
+@property (nonatomic, retain) IBOutlet NSColorWell *fileFunctionBackgroundColor;
 
-@property(nonatomic, retain) NSMutableArray *advancedColors;
-@property (assign) IBOutlet NSArrayController *advancedColorsArrayController;
-@property (assign) IBOutlet NSTableView *advancedColorsTableView;
+@property (nonatomic, retain) IBOutlet NSArrayController *advancedColorsArrayController;
+@property (nonatomic, retain) IBOutlet NSTableView *advancedColorsTableView;
+
+@property (nonatomic, retain) LoggerConnection *fakeConnection;
+@property (nonatomic, assign) int currentFontSelection;
+@property (nonatomic, retain) NSDictionary *attributes;
+
+@property (nonatomic, retain) NSMutableArray *advancedColors;
+@property (nonatomic, retain) NSMutableDictionary *networkPrefs;
 
 - (IBAction)selectFont:(id)sender;
 - (IBAction)selectColor:(id)sender;

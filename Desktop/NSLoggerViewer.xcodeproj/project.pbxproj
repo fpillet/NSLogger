@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 48;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,8 +14,6 @@
 		3D027B2F12663E3F00E6F241 /* LoggerPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D027B2E12663E3F00E6F241 /* LoggerPrefsWindowController.m */; };
 		3D062E7B129D18160067DB8C /* NSLoggerCertReq.conf in Resources */ = {isa = PBXBuildFile; fileRef = 3D062E75129D17640067DB8C /* NSLoggerCertReq.conf */; };
 		3D18EFA10F553B3800EC6DCC /* LoggerUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */; };
-		3D24C40C125638A500435837 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; };
-		3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D24C4091256387900435837 /* BWToolkitFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3D369CB71290009800462E79 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D369CB61290009800462E79 /* Security.framework */; };
 		3D4EA0580F3768EA00DF81E6 /* LoggerMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA0570F3768EA00DF81E6 /* LoggerMessage.m */; };
 		3D4EA05B0F3769B000DF81E6 /* LoggerNativeMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EA05A0F3769B000DF81E6 /* LoggerNativeMessage.m */; };
@@ -63,20 +61,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3D24C4081256387900435837 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 53DF68FD067E5B5A0090B5B0;
-			remoteInfo = BWToolkitFramework;
-		};
-		3D6A34A01262FCB100D0EC3A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 53DF68FC067E5B5A0090B5B0;
-			remoteInfo = BWToolkitFramework;
-		};
 		3DE8CE8A12AE4A96005C83D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -93,7 +77,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				3D24C4A812563DCF00435837 /* BWToolkitFramework.framework in CopyFiles */,
 				3DC4A4C4175BC1DF004A3A34 /* HockeySDK.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,7 +110,6 @@
 		3D18EF9F0F553B3800EC6DCC /* LoggerUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerUtils.h; path = Classes/LoggerUtils.h; sourceTree = "<group>"; };
 		3D18EFA00F553B3800EC6DCC /* LoggerUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerUtils.m; path = Classes/LoggerUtils.m; sourceTree = "<group>"; };
 		3D24C36912560C1700435837 /* LoggerCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerCommon.h; path = ../Client/iOS/LoggerCommon.h; sourceTree = SOURCE_ROOT; };
-		3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BWToolkit.xcodeproj; path = "Third Party/BWToolkit/BWToolkit.xcodeproj"; sourceTree = "<group>"; };
 		3D369CB61290009800462E79 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		3D4EA0560F3768EA00DF81E6 /* LoggerMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerMessage.h; path = Classes/LoggerMessage.h; sourceTree = "<group>"; };
 		3D4EA0570F3768EA00DF81E6 /* LoggerMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerMessage.m; path = Classes/LoggerMessage.m; sourceTree = "<group>"; };
@@ -140,7 +122,7 @@
 		3D65635413ED9C6600004DB6 /* LoggerDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDocumentController.m; path = Classes/LoggerDocumentController.m; sourceTree = "<group>"; };
 		3D6A34681262F60400D0EC3A /* LoggerDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerDocument.h; path = Classes/LoggerDocument.h; sourceTree = "<group>"; };
 		3D6A34691262F60400D0EC3A /* LoggerDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDocument.m; path = Classes/LoggerDocument.m; sourceTree = "<group>"; };
-		3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Resources/InfoPlist.strings; sourceTree = "<group>"; };
+		3D6A34A31262FD5500D0EC3A /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 2483028224; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Resources/InfoPlist.strings; sourceTree = "<group>"; };
 		3D6A34A51262FD5500D0EC3A /* LoggerWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = LoggerWindow.xib; path = Resources/LoggerWindow.xib; sourceTree = "<group>"; };
 		3D6A34A71262FD5500D0EC3A /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = MainMenu.xib; path = Resources/MainMenu.xib; sourceTree = "<group>"; };
 		3D6A37C31263998A00D0EC3A /* LoggerStatusWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerStatusWindowController.h; path = Classes/LoggerStatusWindowController.h; sourceTree = "<group>"; };
@@ -186,6 +168,7 @@
 		3DE01E931268D32100A39E7E /* LoggerDetailsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerDetailsWindowController.m; path = Classes/LoggerDetailsWindowController.m; sourceTree = "<group>"; };
 		3DE8CE7312AE49E7005C83D0 /* relaunch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = relaunch.m; path = Classes/relaunch.m; sourceTree = "<group>"; };
 		3DE8CE7812AE4A17005C83D0 /* relaunch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = relaunch; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CFECC4A21B9DB3D0040C795 /* README.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSColor+NSLogger.h"; path = "Classes/NSColor+NSLogger.h"; sourceTree = "<group>"; };
@@ -212,7 +195,6 @@
 			files = (
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				3D369CB71290009800462E79 /* Security.framework in Frameworks */,
-				3D24C40C125638A500435837 /* BWToolkitFramework.framework in Frameworks */,
 				3DC4A4C5175BC1E1004A3A34 /* HockeySDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -282,7 +264,7 @@
 		29B97314FDCFA39411CA2CEA /* NSLogger */ = {
 			isa = PBXGroup;
 			children = (
-				3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */,
+				4CFECC4A21B9DB3D0040C795 /* README.txt */,
 				3D65635B13EDA75800004DB6 /* Third Party */,
 				3D65635C13EDA78600004DB6 /* Shared */,
 				080E96DDFE201D6D7F000001 /* Classes */,
@@ -354,14 +336,6 @@
 				3D8E06231306C06A0024917B /* LoggerTransportStatusCell.m */,
 			);
 			name = "Views & Cells";
-			sourceTree = "<group>";
-		};
-		3D24C3FE1256387900435837 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3D24C4091256387900435837 /* BWToolkitFramework.framework */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		3D65635B13EDA75800004DB6 /* Third Party */ = {
@@ -473,7 +447,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				3D6A34A11262FCB100D0EC3A /* PBXTargetDependency */,
 				3DE8CE8B12AE4A96005C83D0 /* PBXTargetDependency */,
 			);
 			name = NSLogger;
@@ -488,7 +461,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = "Florent Pillet";
 				TargetAttributes = {
 					3DE8CE7712AE4A17005C83D0 = {
@@ -500,7 +473,7 @@
 				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "NSLoggerViewer" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -509,12 +482,6 @@
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* NSLogger */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 3D24C3FE1256387900435837 /* Products */;
-					ProjectRef = 3D24C3FD1256387900435837 /* BWToolkit.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* NSLogger */,
@@ -522,16 +489,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		3D24C4091256387900435837 /* BWToolkitFramework.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = BWToolkitFramework.framework;
-			remoteRef = 3D24C4081256387900435837 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		8D1107290486CEB800E47090 /* Resources */ = {
@@ -623,11 +580,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		3D6A34A11262FCB100D0EC3A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = BWToolkitFramework;
-			targetProxy = 3D6A34A01262FCB100D0EC3A /* PBXContainerItemProxy */;
-		};
 		3DE8CE8B12AE4A96005C83D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3DE8CE7712AE4A17005C83D0 /* relaunch tool */;
@@ -640,10 +592,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = ETK7NXHU9M;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -665,11 +618,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = ETK7NXHU9M;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
@@ -689,11 +643,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K42G4S78CE;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Third Party/HockeySDK-Mac\"",
@@ -705,6 +661,7 @@
 				HEADER_SEARCH_PATHS = "\"Third Party/BWToolkit\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = NSLogger;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -715,11 +672,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K42G4S78CE;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/Third Party/HockeySDK-Mac\"",
@@ -729,6 +688,7 @@
 				HEADER_SEARCH_PATHS = "\"Third Party/BWToolkit\"";
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.florentpillet.NSLogger;
 				PRODUCT_NAME = NSLogger;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -738,14 +698,38 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				SDKROOT = macosx;
@@ -755,11 +739,35 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				SDKROOT = macosx;
 			};

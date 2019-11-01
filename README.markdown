@@ -16,7 +16,7 @@
 The **NSLogger Viewer** runs on macOS and replaces *Xcode*, *Android Studio* or *Eclipse* consoles. It provides powerful additions like display filtering, defining log domain and level, image and binary logging, message coloring, traces buffering, timing information, link with source code, etc.
 
 <p align="center">
-  <img src="https://github.com/MonsieurDart/NSLogger/raw/swiftiosclient/Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
+  <img src="Screenshots/mainwindow.png" title="Desktop Viewer (main window)">
 </p>
 
 **NSLogger** feature summary:
@@ -42,6 +42,11 @@ Here is what it looks like in action:
 </p>
 
 
+And with macOS Mojave and later's dark mode:
+
+<p align="center">
+  <img src="Screenshots/mainwindow-dark.png" title="Desktop Viewer (main window)">
+</p>
 
 # Basic Usage
 
@@ -57,7 +62,7 @@ import NSLogger
 […]
 
 // logging some messages
-Loggger.shared.log(.network, .info, "Checking paper level…")
+Logger.shared.log(.network, .info, "Checking paper level…")
 
 // logging image
 Logger.shared.log(.view, .noise, myPrettyImage)
@@ -82,7 +87,7 @@ LoggerNetwork(1, @"Hello world! Today is: %@", [self myDate]);
 
 # Installation
 
-- **Step 1.** Download the *NSLogger desktop app* on your Mac.
+- **Step 1.** Download the [*NSLogger desktop app*](https://github.com/fpillet/NSLogger/releases) on your Mac.
 - **Step 2.** Add the *NSLogger framework* to your project.
 - **Step 3.** There is no step 3…
 
@@ -125,13 +130,6 @@ Depending on the framework you choose, your code will need to `import NSLogger` 
 github "fpillet/NSLogger"
 ```
 
-**or**
-
-```
-github "fpillet/NSLoggerSwift"
-```
-
-
 Then run:
 
 ```shell
@@ -157,6 +155,21 @@ Then, in the *Preferences* pane of the NSLogger.app desktop viewer, go to the `N
 This will allow the traces to be received only by the computer of the user who compiled the app.
 
 *This only work when NSLogger has been added to your project using CocoaPods*.
+
+## Set up logger options
+
+For example if you don't want to disable OS_ACTIVITY_MODE for your scheme because you need that logs. And you wanna have only your logs in NSLogger in Swift call init function:
+
+```Swift
+func LoggerInit() {
+    let pointer = LoggerGetDefaultLogger()
+    var options = LoggerGetOptions(pointer)
+    
+    options ^= UInt32(kLoggerOption_CaptureSystemConsole) // disable that option
+    
+    LoggerSetOptions(pointer, options)
+}
+```
 
 ## Manual Framework Install
 
@@ -208,4 +221,4 @@ The *NSLogger* framework runs in its own thread in your application. It tries ha
 
 # Credits
 
-NSLogger is Copyright (c) 2010-2018 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). NSLogger uses parts of [Brandon Walkin's BWToolkit](http://www.brandonwalkin.com/bwtoolkit/), for which source code is included with the NSLogger viewer application. The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
+NSLogger is Copyright (c) 2010-2018 Florent Pillet, All Rights Reserved, All Wrongs Revenged. Released under the [New BSD Licence](http://opensource.org/licenses/bsd-license.php). The NSLogger icon is Copyright (c) [Louis Harboe](http://harboe.me/)
