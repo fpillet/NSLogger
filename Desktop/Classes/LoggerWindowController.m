@@ -1726,22 +1726,20 @@ didReceiveMessages:(NSArray *)theMessages
 		// then we serialize all operations modifying the messages list in the connection's
 		// message processing queue
 		dispatch_async(self.attachedConnection.messageProcessingQueue, ^{
-			NSRange range;
 			@synchronized(self.attachedConnection.messages)
 			{
-				range.location = [self.attachedConnection.messages count];
-				range.length = 1;
+				NSUInteger location = [self.attachedConnection.messages count];
 				if (beforeMessage != nil)
 				{
 					NSUInteger pos = [self.attachedConnection.messages indexOfObjectIdenticalTo:beforeMessage];
 					if (pos != NSNotFound)
-						range.location = pos;
+						location = pos;
 				}
-				[self.attachedConnection.messages insertObject:mark atIndex:range.location];
+				[self.attachedConnection.messages insertObject:mark atIndex:location];
 			}
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[[self document] updateChangeCount:NSChangeDone];
-                [self refreshAllMessages:[NSArray arrayWithObjects: mark, beforeMessage, nil]]; // warning: don't convert to @[] as beforeMessage may be nil
+				[self refreshAllMessages:beforeMessage == nil ? @[mark] : @[mark, beforeMessage]];
 			});
 		});
 	});
