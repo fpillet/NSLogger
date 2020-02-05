@@ -1040,9 +1040,9 @@ void runSystemCommand(NSString *cmd)
 	NSArray *filteredMessages = [messages filteredArrayUsingPredicate:aFilter];
 	if ([filteredMessages count])
 	{
-		[self tileLogTableMessages:filteredMessages withSize:tableFrameSize forceUpdate:NO group:NULL];
 		LoggerConnection *theConnection = _attachedConnection;
 		dispatch_async(dispatch_get_main_queue(), ^{
+			[self tileLogTableMessages:filteredMessages withSize:tableFrameSize forceUpdate:NO group:NULL];
 			if (self.attachedConnection == theConnection)
 			{
 				[self appendMessagesToTable:filteredMessages];
@@ -1092,14 +1092,14 @@ void runSystemCommand(NSString *cmd)
 	{
 		_attachedConnection = aConnection;
 		_attachedConnection.attachedToWindow = YES;
-		//dispatch_async(dispatch_get_main_queue(), ^{
-			_initialRefreshDone = NO;
+		_initialRefreshDone = NO;
+		dispatch_async(dispatch_get_main_queue(), ^{
 			[self updateClientInfo];
 			if (!_clientAppSettingsRestored)
 				[self restoreClientApplicationSettings];
 			[self rebuildRunsSubmenu];
 			[self refreshAllMessages:nil];
-		//});
+		});
 	}
 }
 
