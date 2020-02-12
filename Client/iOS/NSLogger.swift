@@ -125,34 +125,40 @@ public final class Logger {
     public func log(_ domain: Domain,
                     _ level: Level,
                     _ message: @autoclosure () -> String,
-                    _ file: String = #file,
+                    _ file: String = "",
                     _ line: Int = #line,
-                    _ function: String = #function) {
+                    _ function: String = "") {
         whenEnabled {
-            LogMessage_noFormat(file, line, function, domain.rawValue, level.rawValue, message())
+            let filePath = #file
+            let functionName = #function
+            LogMessage_noFormat(filePath, line, functionName, domain.rawValue, level.rawValue, message())
         }
     }
-    
+        
     public func log(_ domain: Domain,
                     _ level: Level,
                     _ image: @autoclosure () -> Image,
-                    _ file: String = #file,
+                    _ file: String = "",
                     _ line: Int = #line,
-                    _ function: String = #function) {
+                    _ function: String = "") {
         whenEnabled {
             guard let rawImage = imageData(image()) else { return }
-            LogImage_noFormat(file, line, function, domain.rawValue, level.rawValue, rawImage.width, rawImage.height, rawImage.data)
+            let filePath = #file
+            let functionName = #function
+            LogImage_noFormat(filePath, line, functionName, domain.rawValue, level.rawValue, rawImage.width, rawImage.height, rawImage.data)
         }
     }
     
     public func log(_ domain: Domain,
                     _ level: Level,
                     _ data: @autoclosure () -> Data,
-                    _ file: String = #file,
+                    _ file: String = "",
                     _ line: Int = #line,
-                    _ function: String = #function) {
+                    _ function: String = "") {
         whenEnabled {
-            LogData_noFormat(file, line, function, domain.rawValue, level.rawValue, data())
+            let filePath = #file
+            let functionName = #function
+            LogData_noFormat(filePath, line, functionName, domain.rawValue, level.rawValue, data())
         }
     }
 }
