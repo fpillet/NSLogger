@@ -95,7 +95,8 @@ char sConnectionAssociatedObjectKey = 1;
 		!isSame(_clientVersion, aConnection.clientVersion) ||
 		!isSame(_clientOSName, aConnection.clientOSName) ||
 		!isSame(_clientOSVersion, aConnection.clientOSVersion) ||
-		!isSame(_clientDevice, aConnection.clientDevice))
+		!isSame(_clientDevice, aConnection.clientDevice) ||
+		!isSame(_clientUDID, aConnection.clientUDID))
 	{
 		return NO;
 	}
@@ -263,10 +264,13 @@ char sConnectionAssociatedObjectKey = 1;
 		[s appendFormat:@" %@", _clientVersion];
 	if (_clientName == nil && _clientVersion == nil)
 		[s appendString:NSLocalizedString(@"<unknown>", @"")];
+
 	if (_clientOSName != nil && _clientOSVersion != nil)
 		[s appendFormat:@"%@(%@ %@)", [s length] ? @" " : @"", _clientOSName, _clientOSVersion];
 	else if (_clientOSName != nil)
 		[s appendFormat:@"%@(%@)", [s length] ? @" " : @"", _clientOSName];
+	if (_clientUDID != nil)
+		[s appendFormat:@" — %@", _clientUDID];
 
 	return s;
 }
