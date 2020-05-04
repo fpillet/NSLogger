@@ -63,6 +63,9 @@
 	// make a new document for a connection (it is considered live once we have received
 	// the ClientInfo message) or reuse an existing document if this is a reconnection
 	dispatch_async(dispatch_get_main_queue(), ^{
+        // Wait to receive a ClientInfo with all metadata before attempting to attach
+        if (aConnection.clientOSName == nil) return;
+        
 		if (!aConnection.attachedToWindow)
 			[(LoggerAppDelegate *)[NSApp delegate] newConnection:aConnection fromTransport:self];
 	});
