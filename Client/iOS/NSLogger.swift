@@ -35,6 +35,9 @@
  */
 
 import Foundation
+#if SPMBuild
+@_exported import NSLoggerLibObjC
+#endif
 
 #if os(iOS) || os(tvOS)
 import UIKit
