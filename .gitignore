@@ -15,3 +15,8 @@ build/
 # is updated
 /Desktop Viewer/Resources/HockeyConf.plist
 Built Products
+
+# SPM
+.build
+.swiftpm
+xcshareddata
