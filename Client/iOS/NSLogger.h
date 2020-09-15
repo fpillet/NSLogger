@@ -62,7 +62,7 @@
     #define LoggerAd(level, ...)            LogMessageF(__FILE__, __LINE__, __FUNCTION__, @"Ad and Stat", level, __VA_ARGS__)
 
 #else
-    #define NSLog(...)                      LogMessageCompat(__VA_ARGS__)
+    // #define NSLog(...)                      LogMessageCompat(__VA_ARGS__)
     #define LoggerError(...)                while(0) {}
     #define LoggerApp(level, ...)           while(0) {}
     #define LoggerView(...)                 while(0) {}
