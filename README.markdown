@@ -4,7 +4,6 @@
 
 # NSLogger
 
-[![BuddyBuild](https://dashboard.buddybuild.com/api/statusImage?appID=5914439af77e0000015a7b82&branch=master&build=latest)](https://dashboard.buddybuild.com/apps/5914439af77e0000015a7b82/build/latest?branch=master)
 [![Pod Version](http://img.shields.io/cocoapods/v/NSLogger.svg?style=flat)](http://cocoadocs.org/docsets/NSLogger/)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![Pod Platform](http://img.shields.io/cocoapods/p/NSLogger.svg?style=flat)](http://cocoadocs.org/docsets/NSLogger/)
