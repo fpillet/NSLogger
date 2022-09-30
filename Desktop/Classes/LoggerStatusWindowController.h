@@ -29,6 +29,8 @@
  * 
  */
 
+#import <AppKit/AppKit.h>
+
 @class LoggerTransportStatusCell;
 
 @interface LoggerStatusWindowController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
