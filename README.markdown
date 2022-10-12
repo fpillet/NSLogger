@@ -4,11 +4,7 @@
 
 # NSLogger
 
-[![BuddyBuild](https://dashboard.buddybuild.com/api/statusImage?appID=5914439af77e0000015a7b82&branch=master&build=latest)](https://dashboard.buddybuild.com/apps/5914439af77e0000015a7b82/build/latest?branch=master)
-[![Pod Version](http://img.shields.io/cocoapods/v/NSLogger.svg?style=flat)](http://cocoadocs.org/docsets/NSLogger/)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![Pod Platform](http://img.shields.io/cocoapods/p/NSLogger.svg?style=flat)](http://cocoadocs.org/docsets/NSLogger/)
-[![Pod License](http://img.shields.io/cocoapods/l/NSLogger.svg?style=flat)](http://opensource.org/licenses/BSD-3-Clause)
 [![Reference Status](https://www.versioneye.com/objective-c/nslogger/reference_badge.svg?style=flat)](https://www.versioneye.com/objective-c/nslogger/references)
 
 **NSLogger** is a high performance logging utility which displays traces emitted by client applications running on *macOS*, *iOS* and *Android*. It replaces traditional console logging traces (*NSLog()*, Java *Log*).
