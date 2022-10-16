@@ -29,6 +29,8 @@
  * 
  */
 
+#import <Foundation/Foundation.h>
+
 // Value transformer for bindings that returns YES when the filter selection can be deleted
 // (to enable the Delete button in the filters list)
 @interface CanFilterSelectionBeDeletedValueTransformer : NSValueTransformer

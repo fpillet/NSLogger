@@ -29,6 +29,8 @@
  * 
  */
 
+#import <AppKit/AppKit.h>
+
 @interface LoggerTableView : NSTableView
 
 @property (nonatomic, retain) NSTrackingArea *tableTrackingArea;

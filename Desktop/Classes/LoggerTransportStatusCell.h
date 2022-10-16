@@ -29,6 +29,8 @@
  * 
  */
 
+#import <AppKit/AppKit.h>
+
 @interface LoggerTransportStatusCell : NSCell
 {
 }
