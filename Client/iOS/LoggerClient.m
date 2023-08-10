@@ -2405,34 +2405,17 @@ static void LoggerMessageAddCString(CFMutableDataRef data, const char *aString, 
 	if (aString == NULL || *aString == 0)
 		return;
 	
-	// convert to UTF-8
-	int len = (int)strlen(aString);
-	uint8_t *buf = malloc((size_t)(2 * len));
-	if (buf != NULL)
+	int n = (int)strlen(aString);
+	if (n)
 	{
-		int i, n = 0;
-		for (i = 0; i < len; i++)
+		uint8_t *p = LoggerMessagePrepareForPart(data, (uint32_t)n+6);
+		if (p != NULL)
 		{
-			uint8_t c = (uint8_t)(*aString++);
-			if (c < 0x80)
-				buf[n++] = c;
-			else {
-				buf[n++] = 0xC0 | (c >> 6);
-				buf[n++] = (c & 0x6F) | 0x80;
-			}
+			*p++ = (uint8_t)key;
+			*p++ = (uint8_t)PART_TYPE_STRING;
+			WRITE_MISALIGNED_INT32(p, n)
+			memcpy(p + 4, aString, (size_t)n);
 		}
-		if (n)
-		{
-			uint8_t *p = LoggerMessagePrepareForPart(data, (uint32_t)n+6);
-			if (p != NULL)
-			{
-				*p++ = (uint8_t)key;
-				*p++ = (uint8_t)PART_TYPE_STRING;
-				WRITE_MISALIGNED_INT32(p, n)
-				memcpy(p + 4, buf, (size_t)n);
-			}
-		}
-		free(buf);
 	}
 }
 
