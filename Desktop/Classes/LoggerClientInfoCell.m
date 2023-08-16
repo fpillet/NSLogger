@@ -37,9 +37,6 @@
 + (NSDictionary *)clientInfoAttributes:(BOOL)highlighted
 {
 	NSMutableDictionary *attrs = [self.defaultAttributes[@"text"] mutableCopy];
-    if (@available(macOS 10_14, *)) {
-        attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
-    }
 	NSMutableParagraphStyle *style = [attrs[NSParagraphStyleAttributeName] mutableCopy];
 	[style setAlignment:NSCenterTextAlignment];
 	attrs[NSParagraphStyleAttributeName] = style;
@@ -92,10 +89,14 @@
 												 31.0f / 255.0f,
 												 27.0f / 255.0f,
 												 1.0f);
-		backgroundColor = CGColorCreateGenericRGB(252.0f / 255.0f,
-												  224.0f / 255.0f,
-												  224.0f / 255.0f,
-												  1.0f);
+		if (@available(macOS 10_13, *)) {
+			backgroundColor = (CGColorRef)CFRetain([NSColor colorNamed:@"ClientDisconnectedBackgroundColor"].CGColor);
+		} else {
+			backgroundColor = CGColorCreateGenericRGB(252.0f / 255.0f,
+													  224.0f / 255.0f,
+													  224.0f / 255.0f,
+													  1.0f);
+		}
 	}
 	else
 	{
@@ -103,8 +104,8 @@
 												 227.0f / 255.0f,
 												 0.0f,
 												 1.0f);
-        if (@available(macOS 10_14, *)) {
-            backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
+        if (@available(macOS 10_13, *)) {
+			backgroundColor = (CGColorRef)CFRetain([NSColor colorNamed:@"ClientConnectedBackgroundColor"].CGColor);
         } else {
             backgroundColor = CGColorCreateGenericRGB(224.0f / 255.0f,
                                                       1.0f,

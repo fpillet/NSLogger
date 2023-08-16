@@ -41,10 +41,6 @@
 		attrs = [attrs mutableCopy];
 		attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
 	}
-	else if (@available(macOS 10_14, *))
-	{
-		attrs[NSForegroundColorAttributeName] = NSColor.whiteColor;
-	}
 	return attrs;
 }
 
@@ -88,9 +84,9 @@
 														10.0f / 255.0f,
 														1.0f);
 	CGColorRef backgroundColor;
-	if (@available(macOS 10_14, *))
+	if (@available(macOS 10_13, *))
 	{
-		backgroundColor = CGColorCreateCopy(NSColor.controlAccentColor.CGColor);
+		backgroundColor = (CGColorRef)CFRetain([NSColor colorNamed:@"MarkerBackgroundColor"].CGColor);
 	}
 	else
 	{
