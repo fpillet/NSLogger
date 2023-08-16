@@ -55,6 +55,7 @@
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B9C3CDBB16A86473005484D4 /* NSColor+NSLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */; };
+		C2B7D6D82A8B61A5005D994B /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2B7D6D72A8B61A5005D994B /* Media.xcassets */; };
 		D8D4B74D6609726C15D19B13 /* LoggerTCPTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B0F9DF2208FDCE15754B /* LoggerTCPTransport.m */; };
 		D8D4BD23F3908C5EC17401F5 /* LoggerJSONMessage.h in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B2864A6FBBFAB33FDF76 /* LoggerJSONMessage.h */; };
 		D8D4BDA48335FB53DDEE39C2 /* LoggerTCPConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D8D4BE2C91A1C3A56F55BC8A /* LoggerTCPConnection.m */; };
@@ -173,6 +174,7 @@
 		8D1107320486CEB800E47090 /* NSLogger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSLogger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C3CDB916A86472005484D4 /* NSColor+NSLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSColor+NSLogger.h"; path = "Classes/NSColor+NSLogger.h"; sourceTree = "<group>"; };
 		B9C3CDBA16A86472005484D4 /* NSColor+NSLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSColor+NSLogger.m"; path = "Classes/NSColor+NSLogger.m"; sourceTree = "<group>"; };
+		C2B7D6D72A8B61A5005D994B /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Media.xcassets; path = Resources/Media.xcassets; sourceTree = "<group>"; };
 		D8D4B0F9DF2208FDCE15754B /* LoggerTCPTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LoggerTCPTransport.m; path = Classes/LoggerTCPTransport.m; sourceTree = "<group>"; };
 		D8D4B2864A6FBBFAB33FDF76 /* LoggerJSONMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerJSONMessage.h; path = Classes/LoggerJSONMessage.h; sourceTree = "<group>"; };
 		D8D4B5AF19B9866951954508 /* LoggerTCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LoggerTCPConnection.h; path = Classes/LoggerTCPConnection.h; sourceTree = "<group>"; };
@@ -306,6 +308,7 @@
 				3DE01E8F1268D30C00A39E7E /* LoggerDetailsWindow.xib */,
 				3D8E078013097D6E0024917B /* ssl_badge.png */,
 				3D6ED59C12A3AE0C0005DD57 /* Credits.rtf */,
+				C2B7D6D72A8B61A5005D994B /* Media.xcassets */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -511,6 +514,7 @@
 				3D65634F13ED896400004DB6 /* ToolbarItemFonts.tiff in Resources */,
 				3DD2EB9314334BA8004EEB19 /* logfile.icns in Resources */,
 				3DD2EB9414334BA8004EEB19 /* rawlogfile.icns in Resources */,
+				C2B7D6D82A8B61A5005D994B /* Media.xcassets in Resources */,
 				3DC4A4C7175BC3EF004A3A34 /* HockeyConf.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
