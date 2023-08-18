@@ -134,6 +134,20 @@ $ carthage update
 
 Again, the `NSLogger.xcodeproj` top-level project offers two targets (`NSLogger` and `NSLoggerSwift`). Add the built framework that suits your needs.
 
+## Network Support for iOS 14+
+
+Since iOS 14, apps have to request permission to access your local network. To enable NSLogger for iOS 14, you have to update your `Info.plist` for development builds to include the following:
+
+```xml
+<key>NSBonjourServices</key>
+<array>
+  <string>_nslogger._tcp</string>
+  <string>_nslogger-ssl._tcp</string>
+</array>
+<key>NSLocalNetworkUsageDescription</key>
+<string>Access to the local network for development builds</string>
+```
+
 # Advanced Usage
 
 ## Using NSLogger on a Shared Network
