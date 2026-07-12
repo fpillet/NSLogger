@@ -90,7 +90,21 @@
 // Starts the logger with the username defined in the build settings.
 // The build setting NSLOGGER_BUILD_USERNAME is automatically configured when NSLogger is
 // added to a project using CocoaPods. To use it, just add this macro call to your main() function.
+#ifdef NSLOGGER_BUILD_USERNAME
 #define LoggerStartForBuildUser() LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(nslogger_xstr(NSLOGGER_BUILD_USERNAME)))
+#else
+// When NSLogger is built via Swift Package Manager, NSLOGGER_BUILD_USERNAME is not set
+// at compile time. Fall back to the USER environment variable at runtime so Bonjour
+// discovery still advertises the correct username instead of the literal string
+// "NSLOGGER_BUILD_USERNAME".
+#import <stdlib.h>
+#define LoggerStartForBuildUser() do { \
+    const char *_nslogger_user = getenv("USER"); \
+    CFStringRef _nslogger_name = _nslogger_user ? CFStringCreateWithCString(NULL, _nslogger_user, kCFStringEncodingUTF8) : NULL; \
+    LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, _nslogger_name); \
+    if (_nslogger_name) CFRelease(_nslogger_name); \
+} while(0)
+#endif
 
 
 

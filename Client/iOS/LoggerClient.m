@@ -406,10 +406,22 @@ CFStringRef LoggerGetBonjourServiceName(Logger *logger)
 #define nslogger_xstr(s) nslogger_str(s)
 #define nslogger_str(s) #s
 
+#ifdef NSLOGGER_BUILD_USERNAME
 void LoggerSetupBonjourForBuildUser()
 {
     LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, CFSTR(nslogger_xstr(NSLOGGER_BUILD_USERNAME)));
 }
+#else
+// When NSLogger is built via Swift Package Manager, NSLOGGER_BUILD_USERNAME is not set
+// at compile time. Fall back to the USER environment variable at runtime.
+void LoggerSetupBonjourForBuildUser()
+{
+    const char *user = getenv("USER");
+    CFStringRef name = user ? CFStringCreateWithCString(NULL, user, kCFStringEncodingUTF8) : NULL;
+    LoggerSetupBonjour(LoggerGetDefaultLogger(), NULL, name);
+    if (name) CFRelease(name);
+}
+#endif
 
 void LoggerSetViewerHost(Logger *logger, CFStringRef hostName, UInt32 port)
 {
